@@ -1,0 +1,57 @@
+{
+	"Name": "iRaceDeck",
+	"Version": "0.1.0.0",
+	"Author": "Niklas Lampén",
+	"Actions": [
+		{
+			"Name": "Speed",
+			"UUID": "fi.lampen.niklas.iracedeck.speed",
+			"Icon": "imgs/actions/speed/icon",
+			"Tooltip": "Displays current speed from iRacing. Press to toggle between MPH and KPH.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/speed/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		},
+		{
+			"Name": "Gear",
+			"UUID": "fi.lampen.niklas.iracedeck.gear",
+			"Icon": "imgs/actions/gear/icon",
+			"Tooltip": "Displays current gear from iRacing.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/gear/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		}
+	],
+	"Category": "iRaceDeck",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "Open source iRacing Stream Deck support",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 3,
+	"Software": {
+		"MinimumVersion": "6.9"
+	},
+	"OS": [
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "fi.lampen.niklas.iracedeck"
+}

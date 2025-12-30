@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version:*)",
+      "Bash(npm --version)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 3 tail:*)",
+      "Bash(timeout 5 tail:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
