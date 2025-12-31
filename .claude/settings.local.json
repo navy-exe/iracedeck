@@ -10,7 +10,8 @@
       "Bash(test:*)",
       "Bash(cat:*)",
       "Bash(git add:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(curl:*)"
     ]
   }
 }
