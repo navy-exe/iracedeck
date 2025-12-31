@@ -48,6 +48,21 @@
 					"TitleAlignment": "middle"
 				}
 			]
+		},
+		{
+			"Name": "Sky",
+			"UUID": "fi.lampen.niklas.iracedeck.sky",
+			"Icon": "imgs/actions/sky/icon",
+			"Tooltip": "Displays current sky conditions from iRacing.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/sky/key",
+					"TitleAlignment": "middle"
+				}
+			]
 		}
 	],
 	"Category": "iRaceDeck",
