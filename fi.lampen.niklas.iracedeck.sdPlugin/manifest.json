@@ -32,6 +32,22 @@
 					"TitleAlignment": "middle"
 				}
 			]
+		},
+		{
+			"Name": "Chat",
+			"UUID": "fi.lampen.niklas.iracedeck.chat",
+			"Icon": "imgs/actions/chat/icon",
+			"Tooltip": "Send a custom chat message to iRacing.",
+			"PropertyInspectorPath": "ui/chat.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/chat/key",
+					"TitleAlignment": "middle"
+				}
+			]
 		}
 	],
 	"Category": "iRaceDeck",

@@ -131,6 +131,14 @@ export class RPMDisplay extends SingletonAction {
 }
 ```
 
+**IMPORTANT: Connection Status Display**
+- ALL actions MUST display "iRacing\nnot\nconnected" when not connected to iRacing
+- This applies to both telemetry displays AND button actions (like chat)
+- Use the pattern above with updateDisplay() checking connection status
+- For button actions that don't show telemetry, show a preview/label when connected
+- Update interval: 100ms for telemetry displays, 1000ms for button actions
+```
+
 2. **Register in `src/plugin.ts`**:
 
 ```typescript
@@ -236,9 +244,33 @@ if (telemetry && typeof telemetry.Speed === 'number') {
 
 **Add new telemetry display**: Copy `speed-display.ts`, change variable name, update display logic
 
+**Add new chat message button**: Use the chat-message.ts pattern with connection status display
+
 **Debug connection**: Check logs for "Attempting to connect" and "Successfully connected" messages
 
 **Fix FFI errors**: Ensure Windows API parameters are correct types (int not bool)
+
+## Chat Message Feature
+
+The chat message action sends custom text to iRacing chat using Windows keyboard simulation.
+
+**Implementation**: Uses `keybd_event` API with `VkKeyScanW` for proper character mapping
+
+**Key APIs**:
+- `VkKeyScanW`: Converts Unicode characters to virtual key codes based on keyboard layout
+- `keybd_event`: Simulates keyboard input (key down/up events)
+
+**How it works**:
+1. Presses 't' to open iRacing chat
+2. Uses `VkKeyScanW` to map each character (including ö, ä, å) to correct virtual key + modifiers
+3. Simulates typing character-by-character with proper Shift/Ctrl/Alt modifiers
+4. Presses Enter to submit and close chat window
+
+**Character support**: Handles international characters (ö, ä, å, é, etc.) based on active keyboard layout
+
+**UI**: Shows "iRacing\nnot\nconnected" when disconnected, message preview when connected
+
+**Important**: The action MUST display connection status like all other actions
 
 **Optimize performance**: Share SDK instance across actions (currently each creates own)
 

@@ -18,6 +18,7 @@ import {
 	IRSDK_MAX_DESC
 } from './types';
 import yaml from 'yaml';
+import { BroadcastMsg, ChatCommandMode, HWND_BROADCAST, MAKELONG } from './broadcast-constants';
 
 // Windows API constants
 const FILE_MAP_READ = 0x0004;
@@ -30,6 +31,33 @@ const OpenFileMappingA = kernel32.func('OpenFileMappingA', 'void *', ['uint32', 
 const MapViewOfFile = kernel32.func('MapViewOfFile', 'void *', ['void *', 'uint32', 'uint32', 'uint32', 'uintptr']);
 const UnmapViewOfFile = kernel32.func('UnmapViewOfFile', 'int', ['void *']);
 const CloseHandle = kernel32.func('CloseHandle', 'int', ['void *']);
+
+// Load Windows user32.dll functions for sending messages
+const user32 = koffi.load('user32.dll');
+const RegisterWindowMessageA = user32.func('RegisterWindowMessageA', 'uint32', ['string']);
+const SendMessageW = user32.func('SendMessageW', 'intptr', ['void *', 'uint32', 'uintptr', 'intptr']);
+const SendNotifyMessageW = user32.func('SendNotifyMessageW', 'int', ['void *', 'uint32', 'uintptr', 'intptr']);
+const FindWindowA = user32.func('FindWindowA', 'void *', ['string', 'string']);
+const GetLastError = kernel32.func('GetLastError', 'uint32', []);
+
+// INPUT structure for SendInput
+// On Windows, this is: DWORD type + union (which we'll represent as a byte array)
+// The union is 24 bytes on 32-bit and 40 bytes on 64-bit (MOUSEINPUT is largest)
+// But we only use KEYBDINPUT which is smaller, padded to match union size
+const INPUT = koffi.struct('INPUT', {
+	type: 'uint32',
+	// KEYBDINPUT fields (when type == INPUT_KEYBOARD)
+	wVk: 'uint16',
+	wScan: 'uint16',
+	dwFlags: 'uint32',
+	time: 'uint32',
+	dwExtraInfo: 'uintptr',
+	// Padding to match MOUSEINPUT size (largest union member on 64-bit)
+	_padding: koffi.array('uint32', 2)
+});
+
+// Virtual key codes
+const VK_RETURN = 0x0D;
 
 // Define iRacing SDK structures using koffi
 const VarBufStruct = koffi.struct('VarBuf', {
@@ -387,5 +415,50 @@ export class IRacingSDK {
 	 */
 	getVarHeader(name: string): VarHeader | null {
 		return this.varHeaders.find(v => v.name === name) || null;
+	}
+
+	/**
+	 * Send a custom chat message to iRacing using keyboard simulation
+	 * Now using keybd_event instead of SendInput
+	 * @param message The message to send
+	 */
+	sendChatMessage(message: string): boolean {
+		if (!this.isConnected()) {
+			streamDeck.logger.warn('[iRacing SDK] Cannot send chat message - not connected');
+			return false;
+		}
+
+		try {
+			streamDeck.logger.info(`[iRacing SDK] Attempting to send chat message: "${message}"`);
+
+			// Register the broadcast message
+			const broadcastMsgID = RegisterWindowMessageA('IRSDK_BROADCASTMSG');
+			const res = SendNotifyMessageW(HWND_BROADCAST, broadcastMsgID, MAKELONG(BroadcastMsg.ChatCommand, ChatCommandMode.BeginChat), 0);
+
+			// Keyboard messages
+			const WM_KEYDOWN = 0x0100;
+			const WM_KEYUP = 0x0101;
+			const WM_CHAR = 0x0102;
+			const WM_SYSKEYDOWN = 0x0104;
+			const WM_SYSKEYUP = 0x0105;
+
+			const hwnd = FindWindowA(null, "iRacing.com Simulator"); // Find by title
+
+			setTimeout(() => {
+				for (const char of message) {
+					SendMessageW(hwnd, WM_CHAR, char.charCodeAt(0), 0);
+				}
+
+				SendMessageW(hwnd, WM_KEYDOWN, VK_RETURN, 0);
+				SendMessageW(hwnd, WM_KEYUP, VK_RETURN, 0);
+
+				SendNotifyMessageW(HWND_BROADCAST, broadcastMsgID, MAKELONG(BroadcastMsg.ChatCommand, ChatCommandMode.Cancel), 0);
+			}, 5);
+
+			return true;
+		} catch (error) {
+			streamDeck.logger.error(`[iRacing SDK] Error sending chat message: ${error}`);
+			return false;
+		}
 	}
 }

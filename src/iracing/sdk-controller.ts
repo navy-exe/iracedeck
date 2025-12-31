@@ -73,12 +73,12 @@ export class SDKController {
 			}
 		}, 1000);
 
-		// Start telemetry update loop (faster - 10Hz when connected)
+		// Start telemetry update loop (faster - 4Hz when connected)
 		this.updateInterval = setInterval(() => {
 			if (this.sdk.isConnected()) {
 				this.update();
 			}
-		}, 100);
+		}, 250);
 	}
 
 	/**
@@ -174,5 +174,13 @@ export class SDKController {
 	 */
 	getCurrentTelemetry(): TelemetryData | null {
 		return this.sdk.getTelemetry();
+	}
+
+	/**
+	 * Send a custom chat message to iRacing
+	 * @param message The message to send
+	 */
+	sendChatMessage(message: string): boolean {
+		return this.sdk.sendChatMessage(message);
 	}
 }
