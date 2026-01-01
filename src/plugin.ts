@@ -9,6 +9,8 @@ import { DisplaySky } from "./actions/environment/display-sky";
 
 // Pit actions
 import { DisplayFuelToAdd } from "./actions/pit/display-fuel-to-add";
+import { DoFuelAdd } from "./actions/pit/do-fuel-add";
+import { DoFuelReduce } from "./actions/pit/do-fuel-reduce";
 
 // Comms actions
 import { DoChatMessage } from "./actions/comms/do-chat-message";
@@ -21,6 +23,8 @@ streamDeck.actions.registerAction(new DisplaySpeed());
 streamDeck.actions.registerAction(new DisplayGear());
 streamDeck.actions.registerAction(new DisplaySky());
 streamDeck.actions.registerAction(new DisplayFuelToAdd());
+streamDeck.actions.registerAction(new DoFuelAdd());
+streamDeck.actions.registerAction(new DoFuelReduce());
 streamDeck.actions.registerAction(new DoChatMessage());
 
 // Finally, connect to the Stream Deck.

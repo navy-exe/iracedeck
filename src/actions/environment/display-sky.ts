@@ -27,9 +27,9 @@ export class DisplaySky extends SingletonAction {
 			case Skies.Clear:
 				return "Clear";
 			case Skies.PartlyCloudy:
-				return "Partly\nCloudy";
+				return "P Cloudy";
 			case Skies.MostlyCloudy:
-				return "Mostly\nCloudy";
+				return "M Cloudy";
 			case Skies.Overcast:
 				return "Overcast";
 			default:

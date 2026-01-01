@@ -288,12 +288,53 @@ The chat message action sends custom text to iRacing chat using Windows keyboard
 **koffi FFI**: https://github.com/Koromix/koffi
 **Reference Implementation**: https://github.com/kutu/pyirsdk
 
+## Stream Deck Icon Guidelines
+
+Based on https://docs.elgato.com/guidelines/streamdeck/plugins/images-and-layouts
+
+### Action Icons (Icon in manifest.json)
+- **Format**: SVG (recommended) or PNG
+- **Size**: 20×20px (40×40px @2x for PNG)
+- **Style**: Monochromatic white (#FFFFFF) stroke, transparent background
+- **Location**: `imgs/actions/{category}/{action-name}/icon.svg`
+
+### Key Icons (State Image in manifest.json)
+- **Format**: SVG (recommended), PNG, or GIF
+- **Size**: 72×72px (144×144px @2x for PNG)
+- **Style**: Can use colors, should be visually distinct
+- **Location**: `imgs/actions/{category}/{action-name}/key.svg`
+
+#### Key Icon Design Guidelines
+- **Background**: Transparent (user preference)
+- **Margins**: 6px on all sides (content area 6-66)
+- **Text display**: Reserve bottom portion for title text when needed
+  - For actions showing values: icon in top ~half, title at bottom
+  - For actions without dynamic text: icon can fill entire space
+- **Style**: Simple outlines preferred, use #888 for neutral strokes
+- **Variants**: Use `key-active.svg`, `key-{state}.svg` for different states
+
+### Category Icons
+- **Format**: SVG (recommended) or PNG
+- **Size**: 28×28px (56×56px @2x for PNG)
+- **Location**: `imgs/plugin/category-icon.svg`
+
+### Plugin Icons
+- **Format**: PNG only
+- **Size**: 256×256px (512×512px @2x)
+- **Location**: `imgs/plugin/marketplace.png`
+
+### Naming Convention
+- Action icons: `icon.svg`
+- Key icons: `key.svg`, `key-active.svg`, `key-{variant}.svg`
+- For PNG fallback: include `@2x` variants
+
 ## File Checklist for New Actions
 
-- [ ] Create `src/actions/new-action.ts`
+- [ ] Create `src/actions/{category}/{action-name}.ts`
 - [ ] Import and register in `src/plugin.ts`
 - [ ] Add entry to `manifest.json` Actions array
-- [ ] Add icons to `imgs/actions/new-action/` (icon.png, key.png, @2x versions)
+- [ ] Create `imgs/actions/{category}/{action-name}/icon.svg` (white monochrome)
+- [ ] Create `imgs/actions/{category}/{action-name}/key.svg` (can have colors)
 - [ ] Build and test
 
 ---

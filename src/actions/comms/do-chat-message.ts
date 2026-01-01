@@ -15,6 +15,7 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
 	private updateInterval: NodeJS.Timeout | null = null;
 	private activeContexts = new Map<string, ChatSettings>();
 	private lastTitle = new Map<string, string>();
+	private lastIconColor = new Map<string, string>();
 
 	/**
 	 * When the action appears on the Stream Deck
@@ -44,6 +45,7 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
 	override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
 		this.activeContexts.delete(ev.action.id);
 		this.lastTitle.delete(ev.action.id);
+		this.lastIconColor.delete(ev.action.id);
 
 		// Stop updates if no more instances
 		if (this.activeContexts.size === 0) {
@@ -73,6 +75,32 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
 	}
 
 	/**
+	 * Generate chat bubble SVG with configurable color
+	 */
+	private generateChatSvg(color: string): string {
+		const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <path d="M14 18
+           h44
+           a6 6 0 0 1 6 6
+           v24
+           a6 6 0 0 1-6 6
+           H26
+           l-4 8
+           l-4 -8
+           H14
+           a6 6 0 0 1-6-6
+           V24
+           a6 6 0 0 1 6-6
+           z"
+        fill="none"
+        stroke="${color}"
+        stroke-width="2.5"
+        stroke-linejoin="round"/>
+</svg>`;
+		return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+	}
+
+	/**
 	 * Update the display for a specific context
 	 */
 	private async updateDisplay(contextId: string, settings: ChatSettings): Promise<void> {
@@ -93,11 +121,21 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
 			}
 		}
 
-		// Only update if the title has changed
+		// Get configured color (default to #4a90d9)
+		const iconColor = settings.iconColor || "#4a90d9";
+
+		// Only update if the title or color has changed
 		const lastTitle = this.lastTitle.get(contextId);
-		if (lastTitle !== title) {
+		const lastColor = this.lastIconColor.get(contextId);
+
+		if (lastTitle !== title || lastColor !== iconColor) {
 			this.lastTitle.set(contextId, title);
+			this.lastIconColor.set(contextId, iconColor);
 			await action.setTitle(title);
+
+			// Generate SVG with configured color
+			const svgDataUri = this.generateChatSvg(iconColor);
+			await action.setImage(svgDataUri);
 		}
 	}
 
@@ -164,4 +202,5 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
  */
 type ChatSettings = {
 	message?: string;
+	iconColor?: string;
 };

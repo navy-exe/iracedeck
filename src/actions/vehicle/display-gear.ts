@@ -52,6 +52,7 @@ export class DisplayGear extends SingletonAction {
 		if (lastTitle !== title) {
 			this.lastTitle.set(contextId, title);
 			await action.setTitle(title);
+			await action.setImage("imgs/actions/vehicle/display-gear/key");
 		}
 	}
 }

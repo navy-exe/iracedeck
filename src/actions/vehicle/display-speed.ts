@@ -84,6 +84,7 @@ export class DisplaySpeed extends SingletonAction<SpeedSettings> {
 		if (lastTitle !== title) {
 			this.lastTitle.set(contextId, title);
 			await action.setTitle(title);
+			await action.setImage("imgs/actions/vehicle/display-speed/key");
 		}
 	}
 }
