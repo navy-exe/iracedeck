@@ -16,6 +16,7 @@ export class SDKController {
 	private updateInterval: NodeJS.Timeout | null = null;
 	private reconnectInterval: NodeJS.Timeout | null = null;
 	private isConnected = false;
+	private lastValidTelemetry: TelemetryData | null = null;
 
 	private constructor() {
 		this.sdk = new IRacingSDK();
@@ -131,6 +132,7 @@ export class SDKController {
 				streamDeck.logger.info('[iRaceDeck] Disconnected from iRacing');
 				this.sdk.disconnect();
 				this.isConnected = false;
+				this.lastValidTelemetry = null;
 				this.notifySubscribers(null);
 			}
 			return;
@@ -139,15 +141,17 @@ export class SDKController {
 		// SDK is connected, get telemetry
 		const telemetry = this.sdk.getTelemetry();
 
-		// Check if telemetry is null (shouldn't happen if connected, but safety check)
+		// Check if telemetry is null (could happen during buffer update)
 		if (!telemetry) {
-			streamDeck.logger.info('[iRaceDeck] Disconnected from iRacing');
-			this.sdk.disconnect();
-			this.isConnected = false;
-			this.notifySubscribers(null);
+			// Use last valid telemetry if available to avoid blinking
+			if (this.lastValidTelemetry) {
+				this.notifySubscribers(this.lastValidTelemetry);
+			}
 			return;
 		}
 
+		// Cache the valid telemetry
+		this.lastValidTelemetry = telemetry;
 		this.notifySubscribers(telemetry);
 	}
 
@@ -171,9 +175,16 @@ export class SDKController {
 
 	/**
 	 * Get current telemetry (for synchronous access)
+	 * Returns cached telemetry if fresh read fails
 	 */
 	getCurrentTelemetry(): TelemetryData | null {
-		return this.sdk.getTelemetry();
+		const telemetry = this.sdk.getTelemetry();
+		if (telemetry) {
+			this.lastValidTelemetry = telemetry;
+			return telemetry;
+		}
+		// Return cached telemetry if available
+		return this.lastValidTelemetry;
 	}
 
 	/**

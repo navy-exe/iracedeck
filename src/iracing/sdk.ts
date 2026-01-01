@@ -290,43 +290,92 @@ export class IRacingSDK {
 
 	/**
 	 * Get the latest telemetry data
+	 * Uses tick count verification to ensure consistent reads
 	 */
 	getTelemetry(): TelemetryData | null {
 		if (!this.isConnected() || !this.header || !this.pSharedMem) {
 			return null;
 		}
 
-		// Find the latest buffer
-		let latestBuf: VarBuf | null = null;
-		for (const buf of this.header.varBuf) {
-			if (!latestBuf || buf.tickCount > latestBuf.tickCount) {
-				latestBuf = buf;
+		// Retry up to 3 times to get a consistent read
+		for (let attempt = 0; attempt < 3; attempt++) {
+			// Re-read the variable buffer tick counts from shared memory
+			const varBufs = this.readVarBufs();
+			if (!varBufs) {
+				return null;
 			}
+
+			// Find the latest buffer
+			let latestBufIndex = 0;
+			let latestTickCount = varBufs[0].tickCount;
+			for (let i = 1; i < varBufs.length; i++) {
+				if (varBufs[i].tickCount > latestTickCount) {
+					latestTickCount = varBufs[i].tickCount;
+					latestBufIndex = i;
+				}
+			}
+
+			const latestBuf = varBufs[latestBufIndex];
+			if (latestBuf.bufOffset === 0) {
+				return null;
+			}
+
+			// Read the ENTIRE telemetry buffer in one go for speed
+			const bufferData = readBytes(this.pSharedMem, latestBuf.bufOffset, this.header.bufLen);
+
+			// Parse telemetry from the buffer
+			const telemetry: TelemetryData = {};
+
+			for (const varHeader of this.varHeaders) {
+				const value = this.parseVariableFromBuffer(bufferData, varHeader);
+				telemetry[varHeader.name] = value;
+			}
+
+			// Verify the tick count didn't change during our read
+			const verifyBufs = this.readVarBufs();
+			if (verifyBufs && verifyBufs[latestBufIndex].tickCount === latestTickCount) {
+				// Consistent read - return the data
+				return telemetry;
+			}
+
+			// Tick count changed during read, retry
+			streamDeck.logger.debug(`[iRacing SDK] Tick count changed during read, retrying (attempt ${attempt + 1})`);
 		}
 
-		if (!latestBuf || latestBuf.bufOffset === 0) {
-			return null;
-		}
-
-		// Read telemetry data from the buffer
-		const telemetry: TelemetryData = {};
-
-		for (const varHeader of this.varHeaders) {
-			const dataOffset = latestBuf.bufOffset + varHeader.offset;
-			const value = this.readVariable(dataOffset, varHeader);
-			telemetry[varHeader.name] = value;
-		}
-
-		return telemetry;
+		// All retries failed, return null
+		streamDeck.logger.warn('[iRacing SDK] Failed to get consistent telemetry read after 3 attempts');
+		return null;
 	}
 
 	/**
-	 * Read a variable value from memory based on its type
+	 * Read the variable buffer headers from shared memory
 	 */
-	private readVariable(offset: number, varHeader: VarHeader): any {
+	private readVarBufs(): VarBuf[] | null {
 		if (!this.pSharedMem) return null;
 
-		const { type, count } = varHeader;
+		try {
+			const varBufs: VarBuf[] = [];
+			for (let i = 0; i < IRSDK_MAX_BUFS; i++) {
+				const offset = 48 + (i * 16); // varBuf starts at offset 48, each is 16 bytes
+				const bufData = readBytes(this.pSharedMem, offset, 16);
+				varBufs.push({
+					tickCount: bufData.readInt32LE(0),
+					bufOffset: bufData.readInt32LE(4),
+					padData: []
+				});
+			}
+			return varBufs;
+		} catch (error) {
+			streamDeck.logger.error(`[iRacing SDK] Failed to read varBufs: ${error}`);
+			return null;
+		}
+	}
+
+	/**
+	 * Parse a variable value from a pre-loaded buffer
+	 */
+	private parseVariableFromBuffer(buffer: Buffer, varHeader: VarHeader): any {
+		const { type, count, offset } = varHeader;
 
 		// Handle arrays
 		if (count > 1) {
@@ -338,36 +387,37 @@ export class IRacingSDK {
 
 			for (let i = 0; i < count; i++) {
 				const elemOffset = offset + (i * elementSize);
-				values.push(this.readSingleValue(elemOffset, type));
+				values.push(this.parseSingleValueFromBuffer(buffer, elemOffset, type));
 			}
 
 			return values;
 		}
 
 		// Handle single values
-		return this.readSingleValue(offset, type);
+		return this.parseSingleValueFromBuffer(buffer, offset, type);
 	}
 
 	/**
-	 * Read a single value of a specific type
+	 * Parse a single value of a specific type from a buffer
 	 */
-	private readSingleValue(offset: number, type: VarType): any {
-		if (!this.pSharedMem) return null;
-
-		const buffer = readBytes(this.pSharedMem, offset, 8);
+	private parseSingleValueFromBuffer(buffer: Buffer, offset: number, type: VarType): any {
+		// Bounds check
+		if (offset < 0 || offset >= buffer.length) {
+			return null;
+		}
 
 		switch (type) {
 			case VarType.Char:
-				return buffer.readInt8(0);
+				return buffer.readInt8(offset);
 			case VarType.Bool:
-				return buffer.readInt8(0) !== 0;
+				return buffer.readInt8(offset) !== 0;
 			case VarType.Int:
 			case VarType.BitField:
-				return buffer.readInt32LE(0);
+				return buffer.readInt32LE(offset);
 			case VarType.Float:
-				return buffer.readFloatLE(0);
+				return buffer.readFloatLE(offset);
 			case VarType.Double:
-				return buffer.readDoubleLE(0);
+				return buffer.readDoubleLE(offset);
 			default:
 				return null;
 		}
