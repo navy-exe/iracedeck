@@ -12,6 +12,7 @@ import { DisplayFuelToAdd } from "./actions/pit/display-fuel-to-add";
 import { DoFuelAdd } from "./actions/pit/do-fuel-add";
 import { DoFuelReduce } from "./actions/pit/do-fuel-reduce";
 import { DoTireCompound } from "./actions/pit/do-tire-compound";
+import { DoChangeTires } from "./actions/pit/do-change-tires";
 
 // Comms actions
 import { DoChatMessage } from "./actions/comms/do-chat-message";
@@ -27,6 +28,7 @@ streamDeck.actions.registerAction(new DisplayFuelToAdd());
 streamDeck.actions.registerAction(new DoFuelAdd());
 streamDeck.actions.registerAction(new DoFuelReduce());
 streamDeck.actions.registerAction(new DoTireCompound());
+streamDeck.actions.registerAction(new DoChangeTires());
 streamDeck.actions.registerAction(new DoChatMessage());
 
 // Finally, connect to the Stream Deck.

@@ -120,6 +120,24 @@
 			]
 		},
 		{
+			"Name": "Change Tires",
+			"UUID": "fi.lampen.niklas.iracedeck.pit.do-change-tires",
+			"Icon": "imgs/actions/pit/do-change-tires/icon",
+			"Tooltip": "Select which tires to change at next pit stop.",
+			"PropertyInspectorPath": "ui/change-tires.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/pit/do-change-tires/key",
+					"TitleAlignment": "bottom",
+					"FontSize": 14
+				}
+			],
+			"UserTitleEnabled": false
+		},
+		{
 			"Name": "Chat",
 			"UUID": "fi.lampen.niklas.iracedeck.comms.do-chat-message",
 			"Icon": "imgs/actions/comms/do-chat-message/icon",
