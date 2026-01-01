@@ -63,6 +63,21 @@
 					"TitleAlignment": "middle"
 				}
 			]
+		},
+		{
+			"Name": "Fuel to Add",
+			"UUID": "fi.lampen.niklas.iracedeck.fuel-add",
+			"Icon": "imgs/actions/fuel-add/icon",
+			"Tooltip": "Displays amount of fuel to be added at next pit stop.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/fuel-add/key",
+					"TitleAlignment": "middle"
+				}
+			]
 		}
 	],
 	"Category": "iRaceDeck",
