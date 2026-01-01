@@ -49,7 +49,7 @@
 				{
 					"Image": "imgs/actions/environment/display-sky/key",
 					"TitleAlignment": "bottom",
-					"FontSize": 10
+					"FontSize": 9
 				}
 			],
 			"UserTitleEnabled": false

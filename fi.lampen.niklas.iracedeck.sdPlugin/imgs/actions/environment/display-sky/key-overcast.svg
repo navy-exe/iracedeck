@@ -1,21 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <defs>
-    <linearGradient id="overcastSkyBg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#5a6268"/>
-      <stop offset="100%" style="stop-color:#343a40"/>
-    </linearGradient>
-  </defs>
-  <!-- Background - dark gray sky -->
-  <rect width="72" height="72" fill="url(#overcastSkyBg)" rx="8"/>
-  <!-- Heavy cloud coverage - multiple layers -->
-  <ellipse cx="36" cy="24" rx="28" ry="12" fill="#6c757d"/>
-  <ellipse cx="18" cy="28" rx="16" ry="10" fill="#5a6268"/>
-  <ellipse cx="54" cy="28" rx="14" ry="9" fill="#5a6268"/>
-  <!-- Middle layer -->
-  <ellipse cx="30" cy="40" rx="22" ry="12" fill="#868e96"/>
-  <ellipse cx="50" cy="42" rx="16" ry="10" fill="#868e96"/>
-  <!-- Lower layer -->
-  <ellipse cx="36" cy="54" rx="26" ry="10" fill="#adb5bd"/>
-  <ellipse cx="16" cy="52" rx="12" ry="8" fill="#9ea7af"/>
-  <ellipse cx="56" cy="56" rx="12" ry="7" fill="#9ea7af"/>
+  <!-- Overcast - heavy dark clouds -->
+  <!-- Upper cloud layer -->
+  <ellipse cx="36" cy="12" rx="20" ry="8" fill="#808080"/>
+  <ellipse cx="20" cy="14" rx="12" ry="6" fill="#707070"/>
+  <ellipse cx="52" cy="14" rx="10" ry="5" fill="#707070"/>
+  <!-- Lower cloud layer -->
+  <ellipse cx="30" cy="26" rx="16" ry="9" fill="#909090"/>
+  <ellipse cx="48" cy="28" rx="12" ry="7" fill="#909090"/>
+  <ellipse cx="36" cy="20" rx="12" ry="6" fill="#A0A0A0"/>
 </svg>
