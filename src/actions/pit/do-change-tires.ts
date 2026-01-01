@@ -50,34 +50,59 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
 	 * Green: configured and currently ON (will turn OFF)
 	 */
 	private getTireColor(isConfigured: boolean, isCurrentlyOn: boolean): string {
-		if (!isConfigured) return "#666666";  // Light gray - nothing happens
+		if (!isConfigured) return "#000000ff";  // Light gray - nothing happens
 		if (isCurrentlyOn) return "#44FF44";   // Green - currently ON, will turn OFF
 		return "#FF4444";                       // Red - currently OFF, will turn ON
 	}
 
 	/**
 	 * Generate car SVG with tires colored based on settings and current state
+	 * Icon in top half, title text in bottom
 	 */
 	private generateCarSvg(
 		settings: ChangeTiresSettings,
-		currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean }
+		currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
+		isConnected: boolean
 	): string {
 		const lfColor = this.getTireColor(settings.lf ?? false, currentState.lf);
 		const rfColor = this.getTireColor(settings.rf ?? false, currentState.rf);
 		const lrColor = this.getTireColor(settings.lr ?? false, currentState.lr);
 		const rrColor = this.getTireColor(settings.rr ?? false, currentState.rr);
 
+		// Check if any configured tire is currently ON (will be changed)
+		const anyTireOn = (settings.lf && currentState.lf) ||
+						  (settings.rf && currentState.rf) ||
+						  (settings.lr && currentState.lr) ||
+						  (settings.rr && currentState.rr);
+
+		// Title text and color
+		let titleText: string;
+		let titleColor: string;
+
+		if (!isConnected) {
+			titleText = "Not Connected";
+			titleColor = "#888888";
+		} else if (anyTireOn) {
+			titleText = "Change";
+			titleColor = "#FFFFFF";
+		} else {
+			titleText = "No Change";
+			titleColor = "#FF4444";
+		}
+
 		const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <!-- Car body -->
-  <rect x="24" y="10" width="24" height="52" rx="4" fill="none" stroke="#888888" stroke-width="2"/>
+  <!-- Car body (top half) -->
+  <rect x="26" y="6" width="20" height="32" rx="3" fill="none" stroke="#888888" stroke-width="2"/>
   <!-- Left Front tire -->
-  <rect x="10" y="12" width="10" height="16" rx="2" fill="${lfColor}" stroke="#888888" stroke-width="1"/>
+  <rect x="14" y="8" width="8" height="10" rx="1.5" fill="${lfColor}" stroke="#888888" stroke-width="1"/>
   <!-- Right Front tire -->
-  <rect x="52" y="12" width="10" height="16" rx="2" fill="${rfColor}" stroke="#888888" stroke-width="1"/>
+  <rect x="50" y="8" width="8" height="10" rx="1.5" fill="${rfColor}" stroke="#888888" stroke-width="1"/>
   <!-- Left Rear tire -->
-  <rect x="10" y="44" width="10" height="16" rx="2" fill="${lrColor}" stroke="#888888" stroke-width="1"/>
+  <rect x="14" y="26" width="8" height="10" rx="1.5" fill="${lrColor}" stroke="#888888" stroke-width="1"/>
   <!-- Right Rear tire -->
-  <rect x="52" y="44" width="10" height="16" rx="2" fill="${rrColor}" stroke="#888888" stroke-width="1"/>
+  <rect x="50" y="26" width="8" height="10" rx="1.5" fill="${rrColor}" stroke="#888888" stroke-width="1"/>
+  <!-- Title text -->
+  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
 </svg>`;
 		return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 	}
@@ -111,26 +136,20 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
 		if (!action) return;
 
 		const settings = this.activeContexts.get(contextId) || {};
-		let title = "";
-
-		// Show "iRacing not connected" when disconnected
-		if (!isConnected) {
-			title = "iRacing\nnot\nconnected";
-		}
 
 		// Get current tire state from telemetry (for icon display)
 		const tireState = this.getTireState(telemetry);
 
 		// Generate SVG based on settings and current iRacing state
-		const svgDataUri = this.generateCarSvg(settings, tireState);
+		const svgDataUri = this.generateCarSvg(settings, tireState, isConnected);
 
 		// Create state key for caching (include settings)
-		const stateKey = `${title}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}`;
+		const stateKey = `${isConnected}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}`;
 		const lastState = this.lastState.get(contextId);
 
 		if (lastState !== stateKey) {
 			this.lastState.set(contextId, stateKey);
-			await action.setTitle(title);
+			await action.setTitle("");  // Title is now in the SVG
 			await action.setImage(svgDataUri);
 		}
 	}
