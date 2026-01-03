@@ -1,15 +1,30 @@
 {
-  "name": "iracedeck",
-  "private": true,
-  "packageManager": "pnpm@10.0.0",
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "clean": "turbo run clean"
-  },
-  "devDependencies": {
-    "@tsconfig/node20": "^20.1.2",
-    "turbo": "^2.0.0",
-    "typescript": "^5.2.2"
-  }
+    "name": "iracedeck",
+    "private": true,
+    "packageManager": "pnpm@10.0.0",
+    "type": "module",
+    "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "clean": "turbo run clean",
+        "lint": "eslint packages/*/src/**",
+        "lint:fix": "eslint --fix packages/*/src/**",
+        "format": "prettier --check \"packages/*/src/**/*.ts\"",
+        "format:fix": "prettier --write \"packages/*/src/**/*.ts\""
+    },
+    "devDependencies": {
+        "@elgato/eslint-config": "^0.3.1",
+        "@elgato/prettier-config": "^0.3.3",
+        "@eslint/js": "^9.39.2",
+        "@stylistic/eslint-plugin": "^5.6.1",
+        "@tsconfig/node20": "^20.1.2",
+        "@typescript-eslint/eslint-plugin": "^8.51.0",
+        "@typescript-eslint/parser": "^8.51.0",
+        "eslint": "^9.39.2",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^17.0.0",
+        "prettier": "^3.7.4",
+        "turbo": "^2.0.0",
+        "typescript": "^5.2.2"
+    }
 }

@@ -29,10 +29,11 @@
  * }
  */
 export function hasFlag(value: number | undefined, flag: number): boolean {
-    if (value === undefined || value === null) {
-        return false;
-    }
-    return (value & flag) !== 0;
+  if (value === undefined || value === null) {
+    return false;
+  }
+
+  return (value & flag) !== 0;
 }
 
 /**
@@ -49,15 +50,16 @@ export function hasFlag(value: number | undefined, flag: number): boolean {
  * }
  */
 export function hasAllFlags(value: number | undefined, flags: number[]): boolean {
-    if (value === undefined || value === null) {
-        return false;
+  if (value === undefined || value === null) {
+    return false;
+  }
+  for (const flag of flags) {
+    if ((value & flag) === 0) {
+      return false;
     }
-    for (const flag of flags) {
-        if ((value & flag) === 0) {
-            return false;
-        }
-    }
-    return true;
+  }
+
+  return true;
 }
 
 /**
@@ -77,15 +79,16 @@ export function hasAllFlags(value: number | undefined, flags: number[]): boolean
  * }
  */
 export function hasAnyFlag(value: number | undefined, flags: number[]): boolean {
-    if (value === undefined || value === null) {
-        return false;
-    }
-    for (const flag of flags) {
-        if ((value & flag) !== 0) {
-            return true;
-        }
-    }
+  if (value === undefined || value === null) {
     return false;
+  }
+  for (const flag of flags) {
+    if ((value & flag) !== 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -101,23 +104,21 @@ export function hasAnyFlag(value: number | undefined, flags: number[]): boolean 
  * const activeWarnings = getActiveFlags(telemetry.EngineWarnings, EngineWarnings);
  * // Returns e.g. [1, 4] for WaterTempWarning and OilPressureWarning
  */
-export function getActiveFlags<T extends Record<string, number>>(
-    value: number | undefined,
-    flagEnum: T
-): number[] {
-    if (value === undefined || value === null) {
-        return [];
-    }
+export function getActiveFlags<T extends Record<string, number>>(value: number | undefined, flagEnum: T): number[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
 
-    const activeFlags: number[] = [];
-    for (const key of Object.keys(flagEnum)) {
-        const flagValue = flagEnum[key];
-        // Skip non-numeric values (TypeScript enum reverse mappings)
-        if (typeof flagValue === 'number' && (value & flagValue) !== 0) {
-            activeFlags.push(flagValue);
-        }
+  const activeFlags: number[] = [];
+  for (const key of Object.keys(flagEnum)) {
+    const flagValue = flagEnum[key];
+    // Skip non-numeric values (TypeScript enum reverse mappings)
+    if (typeof flagValue === "number" && (value & flagValue) !== 0) {
+      activeFlags.push(flagValue);
     }
-    return activeFlags;
+  }
+
+  return activeFlags;
 }
 
 /**
@@ -134,22 +135,23 @@ export function getActiveFlags<T extends Record<string, number>>(
  * // Returns e.g. ['WaterTempWarning', 'OilPressureWarning']
  */
 export function getActiveFlagNames<T extends Record<string, number | string>>(
-    value: number | undefined,
-    flagEnum: T
+  value: number | undefined,
+  flagEnum: T,
 ): string[] {
-    if (value === undefined || value === null) {
-        return [];
-    }
+  if (value === undefined || value === null) {
+    return [];
+  }
 
-    const activeNames: string[] = [];
-    for (const key of Object.keys(flagEnum)) {
-        const flagValue = flagEnum[key];
-        // Only process numeric values (skip TypeScript enum reverse mappings)
-        if (typeof flagValue === 'number' && (value & flagValue) !== 0) {
-            activeNames.push(key);
-        }
+  const activeNames: string[] = [];
+  for (const key of Object.keys(flagEnum)) {
+    const flagValue = flagEnum[key];
+    // Only process numeric values (skip TypeScript enum reverse mappings)
+    if (typeof flagValue === "number" && (value & flagValue) !== 0) {
+      activeNames.push(key);
     }
-    return activeNames;
+  }
+
+  return activeNames;
 }
 
 /**
@@ -171,7 +173,7 @@ export function getActiveFlagNames<T extends Record<string, number | string>>(
  * flags = addFlag(flags, CameraState.UseAutoShotSelection);
  */
 export function addFlag(value: number | undefined, flag: number): number {
-    return (value ?? 0) | flag;
+  return (value ?? 0) | flag;
 }
 
 /**
@@ -190,11 +192,12 @@ export function addFlag(value: number | undefined, flag: number): number {
  * ]);
  */
 export function addFlags(value: number | undefined, flags: number[]): number {
-    let result = value ?? 0;
-    for (const flag of flags) {
-        result |= flag;
-    }
-    return result;
+  let result = value ?? 0;
+  for (const flag of flags) {
+    result |= flag;
+  }
+
+  return result;
 }
 
 /**
@@ -210,7 +213,7 @@ export function addFlags(value: number | undefined, flags: number[]): number {
  * const newState = removeFlag(currentState, CameraState.UIHidden);
  */
 export function removeFlag(value: number | undefined, flag: number): number {
-    return (value ?? 0) & ~flag;
+  return (value ?? 0) & ~flag;
 }
 
 /**
@@ -229,11 +232,12 @@ export function removeFlag(value: number | undefined, flag: number): number {
  * ]);
  */
 export function removeFlags(value: number | undefined, flags: number[]): number {
-    let result = value ?? 0;
-    for (const flag of flags) {
-        result &= ~flag;
-    }
-    return result;
+  let result = value ?? 0;
+  for (const flag of flags) {
+    result &= ~flag;
+  }
+
+  return result;
 }
 
 /**
@@ -249,7 +253,7 @@ export function removeFlags(value: number | undefined, flags: number[]): number 
  * const newState = toggleFlag(currentState, CameraState.UIHidden);
  */
 export function toggleFlag(value: number | undefined, flag: number): number {
-    return (value ?? 0) ^ flag;
+  return (value ?? 0) ^ flag;
 }
 
 /**
@@ -265,9 +269,9 @@ export function toggleFlag(value: number | undefined, flag: number): number {
  * const newState = setFlag(currentState, CameraState.UIHidden, shouldHideUI);
  */
 export function setFlag(value: number | undefined, flag: number, enabled: boolean): number {
-    if (enabled) {
-        return addFlag(value, flag);
-    } else {
-        return removeFlag(value, flag);
-    }
+  if (enabled) {
+    return addFlag(value, flag);
+  } else {
+    return removeFlag(value, flag);
+  }
 }

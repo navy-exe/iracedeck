@@ -23,32 +23,32 @@ pnpm --filter @iracedeck/stream-deck-plugin run build
 
 ### Vehicle Displays
 
-| Action | UUID | Description |
-|--------|------|-------------|
+| Action        | UUID                                               | Description                    |
+| ------------- | -------------------------------------------------- | ------------------------------ |
 | Speed Display | `fi.lampen.niklas.iracedeck.vehicle.display-speed` | Current speed (MPH/KPH toggle) |
-| Gear Display | `fi.lampen.niklas.iracedeck.vehicle.display-gear` | Current gear |
+| Gear Display  | `fi.lampen.niklas.iracedeck.vehicle.display-gear`  | Current gear                   |
 
 ### Pit Service
 
-| Action | UUID | Description |
-|--------|------|-------------|
-| Fuel to Add | `fi.lampen.niklas.iracedeck.pit.display-fuel-to-add` | Display/toggle fuel fill |
-| Add Fuel | `fi.lampen.niklas.iracedeck.pit.do-fuel-add` | Increase pit fuel amount |
-| Reduce Fuel | `fi.lampen.niklas.iracedeck.pit.do-fuel-reduce` | Decrease pit fuel amount |
-| Tire Compound | `fi.lampen.niklas.iracedeck.pit.do-tire-compound` | Toggle dry/wet tires |
-| Change Tires | `fi.lampen.niklas.iracedeck.pit.do-change-tires` | Configure tire changes |
-| Fast Repair | `fi.lampen.niklas.iracedeck.pit.do-fast-repair` | Toggle fast repair |
+| Action        | UUID                                                 | Description              |
+| ------------- | ---------------------------------------------------- | ------------------------ |
+| Fuel to Add   | `fi.lampen.niklas.iracedeck.pit.display-fuel-to-add` | Display/toggle fuel fill |
+| Add Fuel      | `fi.lampen.niklas.iracedeck.pit.do-fuel-add`         | Increase pit fuel amount |
+| Reduce Fuel   | `fi.lampen.niklas.iracedeck.pit.do-fuel-reduce`      | Decrease pit fuel amount |
+| Tire Compound | `fi.lampen.niklas.iracedeck.pit.do-tire-compound`    | Toggle dry/wet tires     |
+| Change Tires  | `fi.lampen.niklas.iracedeck.pit.do-change-tires`     | Configure tire changes   |
+| Fast Repair   | `fi.lampen.niklas.iracedeck.pit.do-fast-repair`      | Toggle fast repair       |
 
 ### Environment
 
-| Action | UUID | Description |
-|--------|------|-------------|
+| Action         | UUID                                                 | Description     |
+| -------------- | ---------------------------------------------------- | --------------- |
 | Sky Conditions | `fi.lampen.niklas.iracedeck.environment.display-sky` | Current weather |
 
 ### Communications
 
-| Action | UUID | Description |
-|--------|------|-------------|
+| Action       | UUID                                               | Description      |
+| ------------ | -------------------------------------------------- | ---------------- |
 | Chat Message | `fi.lampen.niklas.iracedeck.comms.do-chat-message` | Send custom chat |
 
 ## Architecture
@@ -58,17 +58,17 @@ pnpm --filter @iracedeck/stream-deck-plugin run build
 Singleton managing SDK connection and telemetry subscriptions:
 
 ```typescript
-import { SDKController } from './sdk-controller';
+import { SDKController } from "./sdk-controller";
 
 const controller = SDKController.getInstance();
 
 // Subscribe to telemetry updates
-controller.subscribe('action-id', (telemetry, isConnected) => {
+controller.subscribe("action-id", (telemetry, isConnected) => {
     // Handle telemetry update
 });
 
 // Unsubscribe when action disappears
-controller.unsubscribe('action-id');
+controller.unsubscribe("action-id");
 
 // Get current state
 const isConnected = controller.getConnectionStatus();
@@ -81,8 +81,9 @@ Actions extend `SingletonAction` from the Stream Deck SDK:
 
 ```typescript
 import streamDeck, { action, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { SDKController } from "../sdk-controller";
 import { TelemetryData } from "@iracedeck/iracing-sdk";
+
+import { SDKController } from "../sdk-controller";
 
 @action({ UUID: "fi.lampen.niklas.iracedeck.my-action" })
 export class MyAction extends SingletonAction {
@@ -103,7 +104,7 @@ export class MyAction extends SingletonAction {
     private async updateDisplay(
         contextId: string,
         telemetry: TelemetryData | null,
-        isConnected: boolean
+        isConnected: boolean,
     ): Promise<void> {
         const action = streamDeck.actions.getActionById(contextId);
         if (!action) return;

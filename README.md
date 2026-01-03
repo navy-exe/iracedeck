@@ -11,10 +11,12 @@ iRaceDeck transforms your Elgato Stream Deck into a virtual button box for iRaci
 ### Current Actions
 
 **Vehicle Displays:**
+
 - **Speed Display**: Shows current speed in MPH or KPH (press to toggle units)
 - **Gear Display**: Shows current gear (R, N, 1-9)
 
 **Pit Service:**
+
 - **Fuel to Add**: Display and toggle fuel fill
 - **Add/Reduce Fuel**: Adjust pit fuel amount
 - **Tire Compound**: Toggle between dry and wet tires
@@ -22,9 +24,11 @@ iRaceDeck transforms your Elgato Stream Deck into a virtual button box for iRaci
 - **Fast Repair**: Toggle fast repair
 
 **Environment:**
+
 - **Sky Conditions**: Display current weather
 
 **Communications:**
+
 - **Chat Message**: Send custom chat messages to iRacing
 
 ### Technical Features
@@ -120,11 +124,11 @@ iRaceDeck/
 
 ### Package Overview
 
-| Package | Description |
-|---------|-------------|
-| `@iracedeck/iracing-native` | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging) |
-| `@iracedeck/iracing-sdk` | TypeScript SDK for iRacing telemetry and broadcast commands |
-| `@iracedeck/stream-deck-plugin` | Stream Deck plugin using the SDK |
+| Package                         | Description                                                              |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| `@iracedeck/iracing-native`     | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging) |
+| `@iracedeck/iracing-sdk`        | TypeScript SDK for iRacing telemetry and broadcast commands              |
+| `@iracedeck/stream-deck-plugin` | Stream Deck plugin using the SDK                                         |
 
 ## Technical Architecture
 
@@ -179,8 +183,9 @@ Example:
 
 ```typescript
 import streamDeck, { action, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { SDKController } from "../sdk-controller";
 import { TelemetryData } from "@iracedeck/iracing-sdk";
+
+import { SDKController } from "../sdk-controller";
 
 @action({ UUID: "fi.lampen.niklas.iracedeck.rpm" })
 export class RPMDisplay extends SingletonAction {
@@ -224,9 +229,9 @@ export class RPMDisplay extends SingletonAction {
 - Ensure Python 3.x is installed and in PATH
 - Install Visual Studio Build Tools with "Desktop development with C++"
 - Set `msvs_version` if using a non-standard VS version:
-  ```bash
-  npm config set msvs_version 2022
-  ```
+    ```bash
+    npm config set msvs_version 2022
+    ```
 
 ### Display shows "N/A"
 
@@ -240,6 +245,7 @@ MIT
 ## Credits
 
 Built with:
+
 - [Elgato Stream Deck SDK](https://github.com/elgatosf/streamdeck)
 - [Node-API (N-API)](https://nodejs.org/api/n-api.html) - Native addon API
 - [iRacing SDK](https://forums.iracing.com/discussion/15068/official-iracing-sdk) - Official iRacing telemetry API

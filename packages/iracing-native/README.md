@@ -21,10 +21,10 @@ This package requires native compilation:
 ### Memory-Mapped Files
 
 ```typescript
-import { openMemoryMap, readMemory, closeMemoryMap } from '@iracedeck/iracing-native';
+import { closeMemoryMap, openMemoryMap, readMemory } from "@iracedeck/iracing-native";
 
 // Open iRacing's shared memory
-const handle = openMemoryMap('Local\\IRSDKMemMapFileName');
+const handle = openMemoryMap("Local\\IRSDKMemMapFileName");
 
 if (handle !== 0) {
     // Read 144 bytes from offset 0 (header)
@@ -38,18 +38,13 @@ if (handle !== 0) {
 ### Window Messaging
 
 ```typescript
-import {
-    findWindow,
-    registerWindowMessage,
-    sendNotifyMessage,
-    HWND_BROADCAST
-} from '@iracedeck/iracing-native';
+import { findWindow, HWND_BROADCAST, registerWindowMessage, sendNotifyMessage } from "@iracedeck/iracing-native";
 
 // Find iRacing window
-const hwnd = findWindow('SimWinClass', null);
+const hwnd = findWindow("SimWinClass", null);
 
 // Register broadcast message
-const msgId = registerWindowMessage('CYCLISTSDK_EVENT');
+const msgId = registerWindowMessage("CYCLISTSDK_EVENT");
 
 // Send broadcast message
 sendNotifyMessage(HWND_BROADCAST, msgId, wParam, lParam);
@@ -58,10 +53,10 @@ sendNotifyMessage(HWND_BROADCAST, msgId, wParam, lParam);
 ### Chat Messages
 
 ```typescript
-import { sendChatString, sendKeyPress, VK_RETURN } from '@iracedeck/iracing-native';
+import { sendChatString, sendKeyPress, VK_RETURN } from "@iracedeck/iracing-native";
 
 // Send text to a window using WM_CHAR (optimized C++ loop)
-sendChatString(hwnd, 'Hello World!');
+sendChatString(hwnd, "Hello World!");
 
 // Send Enter key
 sendKeyPress(hwnd, VK_RETURN);
@@ -69,29 +64,29 @@ sendKeyPress(hwnd, VK_RETURN);
 
 ## Exported Functions
 
-| Function | Description |
-|----------|-------------|
-| `openMemoryMap(name)` | Open a memory-mapped file, returns handle |
-| `closeMemoryMap(handle)` | Close a memory-mapped file |
-| `readMemory(handle, offset, length)` | Read bytes from memory map |
-| `findWindow(className, windowName)` | Find a window by class/title |
-| `registerWindowMessage(name)` | Register a window message |
-| `sendMessage(hwnd, msg, wParam, lParam)` | Send message (blocking) |
-| `postMessage(hwnd, msg, wParam, lParam)` | Post message (non-blocking) |
-| `sendNotifyMessage(hwnd, msg, wParam, lParam)` | Send notify message |
-| `sendChatString(hwnd, text)` | Send string via WM_CHAR |
-| `sendKeyPress(hwnd, vkCode)` | Send key press |
-| `getLastError()` | Get last Win32 error code |
+| Function                                       | Description                               |
+| ---------------------------------------------- | ----------------------------------------- |
+| `openMemoryMap(name)`                          | Open a memory-mapped file, returns handle |
+| `closeMemoryMap(handle)`                       | Close a memory-mapped file                |
+| `readMemory(handle, offset, length)`           | Read bytes from memory map                |
+| `findWindow(className, windowName)`            | Find a window by class/title              |
+| `registerWindowMessage(name)`                  | Register a window message                 |
+| `sendMessage(hwnd, msg, wParam, lParam)`       | Send message (blocking)                   |
+| `postMessage(hwnd, msg, wParam, lParam)`       | Post message (non-blocking)               |
+| `sendNotifyMessage(hwnd, msg, wParam, lParam)` | Send notify message                       |
+| `sendChatString(hwnd, text)`                   | Send string via WM_CHAR                   |
+| `sendKeyPress(hwnd, vkCode)`                   | Send key press                            |
+| `getLastError()`                               | Get last Win32 error code                 |
 
 ## Constants
 
-| Constant | Value | Description |
-|----------|-------|-------------|
+| Constant         | Value  | Description              |
+| ---------------- | ------ | ------------------------ |
 | `HWND_BROADCAST` | 0xFFFF | Broadcast to all windows |
-| `WM_KEYDOWN` | 0x0100 | Key down message |
-| `WM_KEYUP` | 0x0101 | Key up message |
-| `WM_CHAR` | 0x0102 | Character message |
-| `VK_RETURN` | 0x0D | Enter key |
+| `WM_KEYDOWN`     | 0x0100 | Key down message         |
+| `WM_KEYUP`       | 0x0101 | Key up message           |
+| `WM_CHAR`        | 0x0102 | Character message        |
+| `VK_RETURN`      | 0x0D   | Enter key                |
 
 ## Building
 

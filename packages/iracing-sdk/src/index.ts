@@ -5,88 +5,88 @@
  */
 
 // Main SDK class
-export { IRacingSDK } from './IRacingSDK.js';
+export { IRacingSDK } from "./IRacingSDK.js";
 
 // Logger
-export { Logger, setLogger, getLogger, consoleLogger, silentLogger } from './logger.js';
+export { Logger, setLogger, getLogger, consoleLogger, silentLogger } from "./logger.js";
 
 // Types and enums
 export {
-    // Constants
-    IRSDK_MAX_BUFS,
-    IRSDK_MAX_STRING,
-    IRSDK_MAX_DESC,
-    INCIDENT_REP_MASK,
-    INCIDENT_PEN_MASK,
+  // Constants
+  IRSDK_MAX_BUFS,
+  IRSDK_MAX_STRING,
+  IRSDK_MAX_DESC,
+  INCIDENT_REP_MASK,
+  INCIDENT_PEN_MASK,
 
-    // Types
-    VarType,
-    StatusField,
-    VarHeader,
-    VarBuf,
-    IRSDKHeader,
-    TelemetryData,
-    SessionInfo,
+  // Types
+  VarType,
+  StatusField,
+  VarHeader,
+  VarBuf,
+  IRSDKHeader,
+  TelemetryData,
+  SessionInfo,
 
-    // Enums
-    EngineWarnings,
-    Flags,
-    TrkLoc,
-    TrkSurf,
-    SessionState,
-    CameraState,
-    PitSvFlags,
-    PitSvStatus,
-    PaceMode,
-    PaceFlags,
-    CarLeftRight,
-    TrackWetness,
-    IncidentFlags,
-    Skies,
-    DisplayUnits,
-    EnterExitReset,
+  // Enums
+  EngineWarnings,
+  Flags,
+  TrkLoc,
+  TrkSurf,
+  SessionState,
+  CameraState,
+  PitSvFlags,
+  PitSvStatus,
+  PaceMode,
+  PaceFlags,
+  CarLeftRight,
+  TrackWetness,
+  IncidentFlags,
+  Skies,
+  DisplayUnits,
+  EnterExitReset,
 
-    // Utility functions
-    hasFlag,
-    hasAllFlags,
-    hasAnyFlag,
-    getActiveFlags,
-    getActiveFlagNames,
-    addFlag,
-    addFlags,
-    removeFlag,
-    removeFlags,
-    toggleFlag,
-    setFlag
-} from './types.js';
+  // Utility functions
+  hasFlag,
+  hasAllFlags,
+  hasAnyFlag,
+  getActiveFlags,
+  getActiveFlagNames,
+  addFlag,
+  addFlags,
+  removeFlag,
+  removeFlags,
+  toggleFlag,
+  setFlag,
+} from "./types.js";
 
 // Commands
 export {
-    // Base class
-    BroadcastCommand,
+  // Base class
+  BroadcastCommand,
 
-    // Command classes
-    CameraCommand,
-    ReplayCommand,
-    PitCommand,
-    ChatCommand,
-    TelemCommand,
-    TextureCommand,
-    FFBCommand,
-    VideoCaptureCommand,
+  // Command classes
+  CameraCommand,
+  ReplayCommand,
+  PitCommand,
+  ChatCommand,
+  TelemCommand,
+  TextureCommand,
+  FFBCommand,
+  VideoCaptureCommand,
 
-    // Constants and enums
-    BroadcastMsg,
-    ChatCommandMode,
-    PitCommandMode,
-    TelemCommandMode,
-    ReplayStateMode,
-    ReloadTexturesMode,
-    ReplaySearchMode,
-    ReplayPosMode,
-    FFBCommandMode,
-    CameraFocusMode,
-    VideoCaptureMode,
-    IRSDK_BROADCAST_MSG_NAME,
-    MAKELONG
-} from './commands/index.js';
+  // Constants and enums
+  BroadcastMsg,
+  ChatCommandMode,
+  PitCommandMode,
+  TelemCommandMode,
+  ReplayStateMode,
+  ReloadTexturesMode,
+  ReplaySearchMode,
+  ReplayPosMode,
+  FFBCommandMode,
+  CameraFocusMode,
+  VideoCaptureMode,
+  IRSDK_BROADCAST_MSG_NAME,
+  MAKELONG,
+} from "./commands/index.js";

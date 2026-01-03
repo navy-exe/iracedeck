@@ -3,210 +3,215 @@
  *
  * Note: Replay commands only work when you are out of your car (spectating/replay)
  */
-
-import { getLogger } from '../logger.js';
-import { BroadcastCommand } from './BroadcastCommand.js';
-import { BroadcastMsg, ReplaySearchMode, ReplayPosMode, ReplayStateMode } from './constants.js';
+import { getLogger } from "../logger.js";
+import { BroadcastCommand } from "./BroadcastCommand.js";
+import { BroadcastMsg, ReplayPosMode, ReplaySearchMode, ReplayStateMode } from "./constants.js";
 
 /**
  * Replay control commands
  */
 export class ReplayCommand extends BroadcastCommand {
-    private static _instance: ReplayCommand;
+  private static _instance: ReplayCommand;
 
-    private constructor() {
-        super();
+  private constructor() {
+    super();
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): ReplayCommand {
+    if (!ReplayCommand._instance) {
+      ReplayCommand._instance = new ReplayCommand();
     }
 
-    /**
-     * Get singleton instance
-     */
-    static getInstance(): ReplayCommand {
-        if (!ReplayCommand._instance) {
-            ReplayCommand._instance = new ReplayCommand();
-        }
-        return ReplayCommand._instance;
-    }
+    return ReplayCommand._instance;
+  }
 
-    /**
-     * Set replay playback speed
-     * @param speed Playback speed (negative for reverse)
-     * @param slowMotion Enable slow motion mode
-     */
-    setPlaySpeed(speed: number, slowMotion: boolean = false): boolean {
-        getLogger().info(`[ReplayCommand] SetPlaySpeed: speed=${speed}, slowMotion=${slowMotion}`);
-        return this.sendBroadcast(BroadcastMsg.ReplaySetPlaySpeed, speed, slowMotion ? 1 : 0);
-    }
+  /**
+   * Set replay playback speed
+   * @param speed Playback speed (negative for reverse)
+   * @param slowMotion Enable slow motion mode
+   */
+  setPlaySpeed(speed: number, slowMotion: boolean = false): boolean {
+    getLogger().info(`[ReplayCommand] SetPlaySpeed: speed=${speed}, slowMotion=${slowMotion}`);
 
-    /**
-     * Set replay play position
-     * @param mode Position mode (Begin, Current, End)
-     * @param frameNumber Frame number (60 frames per second)
-     */
-    setPlayPosition(mode: ReplayPosMode, frameNumber: number): boolean {
-        const frameHigh = (frameNumber >> 16) & 0xFFFF;
-        const frameLow = frameNumber & 0xFFFF;
-        getLogger().info(`[ReplayCommand] SetPlayPosition: mode=${ReplayPosMode[mode]}, frame=${frameNumber}`);
-        return this.sendBroadcast(BroadcastMsg.ReplaySetPlayPosition, mode, frameLow, frameHigh);
-    }
+    return this.sendBroadcast(BroadcastMsg.ReplaySetPlaySpeed, speed, slowMotion ? 1 : 0);
+  }
 
-    /**
-     * Search replay for events
-     * @param mode Search mode
-     */
-    search(mode: ReplaySearchMode): boolean {
-        getLogger().info(`[ReplayCommand] Search: mode=${ReplaySearchMode[mode]}`);
-        return this.sendBroadcast(BroadcastMsg.ReplaySearch, mode);
-    }
+  /**
+   * Set replay play position
+   * @param mode Position mode (Begin, Current, End)
+   * @param frameNumber Frame number (60 frames per second)
+   */
+  setPlayPosition(mode: ReplayPosMode, frameNumber: number): boolean {
+    const frameHigh = (frameNumber >> 16) & 0xffff;
+    const frameLow = frameNumber & 0xffff;
+    getLogger().info(`[ReplayCommand] SetPlayPosition: mode=${ReplayPosMode[mode]}, frame=${frameNumber}`);
 
-    /**
-     * Set replay state
-     * @param mode Replay state mode
-     */
-    setState(mode: ReplayStateMode): boolean {
-        getLogger().info(`[ReplayCommand] SetState: mode=${ReplayStateMode[mode]}`);
-        return this.sendBroadcast(BroadcastMsg.ReplaySetState, mode);
-    }
+    return this.sendBroadcast(BroadcastMsg.ReplaySetPlayPosition, mode, frameLow, frameHigh);
+  }
 
-    /**
-     * Search replay by session time
-     * @param sessionNum Session number
-     * @param sessionTimeMs Session time in milliseconds
-     */
-    searchSessionTime(sessionNum: number, sessionTimeMs: number): boolean {
-        const timeHigh = (sessionTimeMs >> 16) & 0xFFFF;
-        const timeLow = sessionTimeMs & 0xFFFF;
-        getLogger().info(`[ReplayCommand] SearchSessionTime: session=${sessionNum}, timeMs=${sessionTimeMs}`);
-        return this.sendBroadcast(BroadcastMsg.ReplaySearchSessionTime, sessionNum, timeLow, timeHigh);
-    }
+  /**
+   * Search replay for events
+   * @param mode Search mode
+   */
+  search(mode: ReplaySearchMode): boolean {
+    getLogger().info(`[ReplayCommand] Search: mode=${ReplaySearchMode[mode]}`);
 
-    // ========== Convenience methods ==========
+    return this.sendBroadcast(BroadcastMsg.ReplaySearch, mode);
+  }
 
-    /**
-     * Play replay at normal speed
-     */
-    play(): boolean {
-        return this.setPlaySpeed(1);
-    }
+  /**
+   * Set replay state
+   * @param mode Replay state mode
+   */
+  setState(mode: ReplayStateMode): boolean {
+    getLogger().info(`[ReplayCommand] SetState: mode=${ReplayStateMode[mode]}`);
 
-    /**
-     * Pause replay
-     */
-    pause(): boolean {
-        return this.setPlaySpeed(0);
-    }
+    return this.sendBroadcast(BroadcastMsg.ReplaySetState, mode);
+  }
 
-    /**
-     * Fast forward at 2x speed
-     */
-    fastForward(): boolean {
-        return this.setPlaySpeed(2);
-    }
+  /**
+   * Search replay by session time
+   * @param sessionNum Session number
+   * @param sessionTimeMs Session time in milliseconds
+   */
+  searchSessionTime(sessionNum: number, sessionTimeMs: number): boolean {
+    const timeHigh = (sessionTimeMs >> 16) & 0xffff;
+    const timeLow = sessionTimeMs & 0xffff;
+    getLogger().info(`[ReplayCommand] SearchSessionTime: session=${sessionNum}, timeMs=${sessionTimeMs}`);
 
-    /**
-     * Fast forward at specified speed
-     * @param speed Playback speed multiplier
-     */
-    fastForwardAt(speed: number): boolean {
-        return this.setPlaySpeed(speed);
-    }
+    return this.sendBroadcast(BroadcastMsg.ReplaySearchSessionTime, sessionNum, timeLow, timeHigh);
+  }
 
-    /**
-     * Rewind at 2x speed
-     */
-    rewind(): boolean {
-        return this.setPlaySpeed(-2);
-    }
+  // ========== Convenience methods ==========
 
-    /**
-     * Rewind at specified speed
-     * @param speed Playback speed multiplier (positive number, will be negated)
-     */
-    rewindAt(speed: number): boolean {
-        return this.setPlaySpeed(-Math.abs(speed));
-    }
+  /**
+   * Play replay at normal speed
+   */
+  play(): boolean {
+    return this.setPlaySpeed(1);
+  }
 
-    /**
-     * Play in slow motion
-     */
-    slowMotion(): boolean {
-        return this.setPlaySpeed(1, true);
-    }
+  /**
+   * Pause replay
+   */
+  pause(): boolean {
+    return this.setPlaySpeed(0);
+  }
 
-    /**
-     * Go to start of replay
-     */
-    goToStart(): boolean {
-        return this.search(ReplaySearchMode.ToStart);
-    }
+  /**
+   * Fast forward at 2x speed
+   */
+  fastForward(): boolean {
+    return this.setPlaySpeed(2);
+  }
 
-    /**
-     * Go to end of replay
-     */
-    goToEnd(): boolean {
-        return this.search(ReplaySearchMode.ToEnd);
-    }
+  /**
+   * Fast forward at specified speed
+   * @param speed Playback speed multiplier
+   */
+  fastForwardAt(speed: number): boolean {
+    return this.setPlaySpeed(speed);
+  }
 
-    /**
-     * Go to previous session
-     */
-    prevSession(): boolean {
-        return this.search(ReplaySearchMode.PrevSession);
-    }
+  /**
+   * Rewind at 2x speed
+   */
+  rewind(): boolean {
+    return this.setPlaySpeed(-2);
+  }
 
-    /**
-     * Go to next session
-     */
-    nextSession(): boolean {
-        return this.search(ReplaySearchMode.NextSession);
-    }
+  /**
+   * Rewind at specified speed
+   * @param speed Playback speed multiplier (positive number, will be negated)
+   */
+  rewindAt(speed: number): boolean {
+    return this.setPlaySpeed(-Math.abs(speed));
+  }
 
-    /**
-     * Go to previous lap
-     */
-    prevLap(): boolean {
-        return this.search(ReplaySearchMode.PrevLap);
-    }
+  /**
+   * Play in slow motion
+   */
+  slowMotion(): boolean {
+    return this.setPlaySpeed(1, true);
+  }
 
-    /**
-     * Go to next lap
-     */
-    nextLap(): boolean {
-        return this.search(ReplaySearchMode.NextLap);
-    }
+  /**
+   * Go to start of replay
+   */
+  goToStart(): boolean {
+    return this.search(ReplaySearchMode.ToStart);
+  }
 
-    /**
-     * Go to previous frame
-     */
-    prevFrame(): boolean {
-        return this.search(ReplaySearchMode.PrevFrame);
-    }
+  /**
+   * Go to end of replay
+   */
+  goToEnd(): boolean {
+    return this.search(ReplaySearchMode.ToEnd);
+  }
 
-    /**
-     * Go to next frame
-     */
-    nextFrame(): boolean {
-        return this.search(ReplaySearchMode.NextFrame);
-    }
+  /**
+   * Go to previous session
+   */
+  prevSession(): boolean {
+    return this.search(ReplaySearchMode.PrevSession);
+  }
 
-    /**
-     * Go to previous incident
-     */
-    prevIncident(): boolean {
-        return this.search(ReplaySearchMode.PrevIncident);
-    }
+  /**
+   * Go to next session
+   */
+  nextSession(): boolean {
+    return this.search(ReplaySearchMode.NextSession);
+  }
 
-    /**
-     * Go to next incident
-     */
-    nextIncident(): boolean {
-        return this.search(ReplaySearchMode.NextIncident);
-    }
+  /**
+   * Go to previous lap
+   */
+  prevLap(): boolean {
+    return this.search(ReplaySearchMode.PrevLap);
+  }
 
-    /**
-     * Erase replay tape
-     */
-    eraseTape(): boolean {
-        return this.setState(ReplayStateMode.EraseTape);
-    }
+  /**
+   * Go to next lap
+   */
+  nextLap(): boolean {
+    return this.search(ReplaySearchMode.NextLap);
+  }
+
+  /**
+   * Go to previous frame
+   */
+  prevFrame(): boolean {
+    return this.search(ReplaySearchMode.PrevFrame);
+  }
+
+  /**
+   * Go to next frame
+   */
+  nextFrame(): boolean {
+    return this.search(ReplaySearchMode.NextFrame);
+  }
+
+  /**
+   * Go to previous incident
+   */
+  prevIncident(): boolean {
+    return this.search(ReplaySearchMode.PrevIncident);
+  }
+
+  /**
+   * Go to next incident
+   */
+  nextIncident(): boolean {
+    return this.search(ReplaySearchMode.NextIncident);
+  }
+
+  /**
+   * Erase replay tape
+   */
+  eraseTape(): boolean {
+    return this.setState(ReplayStateMode.EraseTape);
+  }
 }

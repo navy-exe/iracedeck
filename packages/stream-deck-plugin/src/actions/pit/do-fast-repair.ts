@@ -1,6 +1,13 @@
-import streamDeck, { action, SingletonAction, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, {
+  action,
+  KeyDownEvent,
+  SingletonAction,
+  WillAppearEvent,
+  WillDisappearEvent,
+} from "@elgato/streamdeck";
+import { hasFlag, PitCommand, PitSvFlags, TelemetryData } from "@iracedeck/iracing-sdk";
+
 import { SDKController } from "../../sdk-controller.js";
-import { PitCommand, PitSvFlags, TelemetryData, hasFlag } from "@iracedeck/iracing-sdk";
 
 /**
  * Fast Repair Action
@@ -10,56 +17,60 @@ import { PitCommand, PitSvFlags, TelemetryData, hasFlag } from "@iracedeck/iraci
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-fast-repair" })
 export class DoFastRepair extends SingletonAction {
-	private sdkController = SDKController.getInstance();
-	private pitCommand = PitCommand.getInstance();
-	private activeContexts = new Set<string>();
-	private lastState = new Map<string, string>();
+  private sdkController = SDKController.getInstance();
+  private pitCommand = PitCommand.getInstance();
+  private activeContexts = new Set<string>();
+  private lastState = new Map<string, string>();
 
-	override async onWillAppear(ev: WillAppearEvent): Promise<void> {
-		this.activeContexts.add(ev.action.id);
+  override async onWillAppear(ev: WillAppearEvent): Promise<void> {
+    this.activeContexts.add(ev.action.id);
 
-		// Subscribe to telemetry updates
-		this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
-			this.updateDisplay(ev.action.id, telemetry, isConnected);
-		});
-	}
+    // Subscribe to telemetry updates
+    this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
+      this.updateDisplay(ev.action.id, telemetry, isConnected);
+    });
+  }
 
-	override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
-		this.sdkController.unsubscribe(ev.action.id);
-		this.activeContexts.delete(ev.action.id);
-		this.lastState.delete(ev.action.id);
-	}
+  override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
+    this.sdkController.unsubscribe(ev.action.id);
+    this.activeContexts.delete(ev.action.id);
+    this.lastState.delete(ev.action.id);
+  }
 
-	/**
-	 * Get fast repair state from telemetry
-	 */
-	private getFastRepairState(telemetry: TelemetryData | null): boolean {
-		if (!telemetry || telemetry.PitSvFlags === undefined) {
-			return false;
-		}
-		return hasFlag(telemetry.PitSvFlags, PitSvFlags.FastRepair);
-	}
+  /**
+   * Get fast repair state from telemetry
+   */
+  private getFastRepairState(telemetry: TelemetryData | null): boolean {
+    if (!telemetry || telemetry.PitSvFlags === undefined) {
+      return false;
+    }
 
-	/**
-	 * Check if fast repairs are available
-	 */
-	private getFastRepairsAvailable(telemetry: TelemetryData | null): number {
-		if (!telemetry || telemetry.FastRepairAvailable === undefined) {
-			return 0;
-		}
-		return telemetry.FastRepairAvailable;
-	}
+    return hasFlag(telemetry.PitSvFlags, PitSvFlags.FastRepair);
+  }
 
-	/**
-	 * Generate magic wand SVG with color based on current state
-	 */
-	private generateSvg(iconColor: string, showRedX: boolean): string {
-		const redX = showRedX ? `
+  /**
+   * Check if fast repairs are available
+   */
+  private getFastRepairsAvailable(telemetry: TelemetryData | null): number {
+    if (!telemetry || telemetry.FastRepairAvailable === undefined) {
+      return 0;
+    }
+
+    return telemetry.FastRepairAvailable;
+  }
+
+  /**
+   * Generate magic wand SVG with color based on current state
+   */
+  private generateSvg(iconColor: string, showRedX: boolean): string {
+    const redX = showRedX
+      ? `
   <!-- Red X (same size as fuel icon X) -->
   <line x1="21" y1="6" x2="51" y2="36" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>
-  <line x1="51" y1="6" x2="21" y2="36" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>` : '';
+  <line x1="51" y1="6" x2="21" y2="36" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>`
+      : "";
 
-		const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
   <!-- Magic wand (diagonal) -->
   <rect x="10" y="25" width="40" height="5" rx="2" transform="rotate(-45 28 22)" fill="${iconColor}"/>
   <!-- 4-pointed stars (large) -->
@@ -71,88 +82,87 @@ export class DoFastRepair extends SingletonAction {
   <circle cx="28" cy="6" r="2" fill="${iconColor}"/>
   <circle cx="60" cy="34" r="1.5" fill="${iconColor}"/>${redX}
 </svg>`;
-		return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-	}
 
-	/**
-	 * Update the display for a specific context
-	 */
-	private async updateDisplay(
-		contextId: string,
-		telemetry: TelemetryData | null,
-		isConnected: boolean
-	): Promise<void> {
-		const action = streamDeck.actions.getActionById(contextId);
-		if (!action) return;
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  }
 
-		let title: string;
-		let iconColor: string;
-		let showRedX = false;
+  /**
+   * Update the display for a specific context
+   */
+  private async updateDisplay(contextId: string, telemetry: TelemetryData | null, isConnected: boolean): Promise<void> {
+    const action = streamDeck.actions.getActionById(contextId);
+    if (!action) return;
 
-		if (!isConnected) {
-			title = "iRacing\nnot\nconnected";
-			iconColor = "#888888";
-		} else {
-			const isOn = this.getFastRepairState(telemetry);
-			const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
+    let title: string;
+    let iconColor: string;
+    let showRedX = false;
 
-			if (fastRepairsAvailable === 0) {
-				title = "Not Avail";
-				iconColor = "#888888";
-				showRedX = true;
-			} else if (isOn) {
-				title = "Fast Repair";
-				iconColor = "#44FF44";
-			} else {
-				title = "No fast\nRepair";
-				iconColor = "#FF4444";
-			}
-		}
+    if (!isConnected) {
+      title = "iRacing\nnot\nconnected";
+      iconColor = "#888888";
+    } else {
+      const isOn = this.getFastRepairState(telemetry);
+      const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
 
-		const svgDataUri = this.generateSvg(iconColor, showRedX);
+      if (fastRepairsAvailable === 0) {
+        title = "Not Avail";
+        iconColor = "#888888";
+        showRedX = true;
+      } else if (isOn) {
+        title = "Fast Repair";
+        iconColor = "#44FF44";
+      } else {
+        title = "No fast\nRepair";
+        iconColor = "#FF4444";
+      }
+    }
 
-		// Create state key for caching
-		const stateKey = `${title}|${iconColor}|${showRedX}`;
-		const lastState = this.lastState.get(contextId);
+    const svgDataUri = this.generateSvg(iconColor, showRedX);
 
-		if (lastState !== stateKey) {
-			this.lastState.set(contextId, stateKey);
-			await action.setTitle(title);
-			await action.setImage(svgDataUri);
-		}
-	}
+    // Create state key for caching
+    const stateKey = `${title}|${iconColor}|${showRedX}`;
+    const lastState = this.lastState.get(contextId);
 
-	/**
-	 * When the key is pressed - toggle fast repair
-	 */
-	override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
-		streamDeck.logger.info('[DoFastRepair] Key down received');
+    if (lastState !== stateKey) {
+      this.lastState.set(contextId, stateKey);
+      await action.setTitle(title);
+      await action.setImage(svgDataUri);
+    }
+  }
 
-		// Check if connected to iRacing
-		if (!this.sdkController.getConnectionStatus()) {
-			streamDeck.logger.info('[DoFastRepair] Not connected to iRacing');
-			return;
-		}
+  /**
+   * When the key is pressed - toggle fast repair
+   */
+  override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
+    streamDeck.logger.info("[DoFastRepair] Key down received");
 
-		const telemetry = this.sdkController.getCurrentTelemetry();
+    // Check if connected to iRacing
+    if (!this.sdkController.getConnectionStatus()) {
+      streamDeck.logger.info("[DoFastRepair] Not connected to iRacing");
 
-		// Check if fast repairs are available
-		const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
-		if (fastRepairsAvailable === 0) {
-			streamDeck.logger.info('[DoFastRepair] No fast repairs available');
-			return;
-		}
+      return;
+    }
 
-		const isCurrentlyOn = this.getFastRepairState(telemetry);
+    const telemetry = this.sdkController.getCurrentTelemetry();
 
-		if (isCurrentlyOn) {
-			// Currently on, turn off
-			this.pitCommand.clearFastRepair();
-			streamDeck.logger.info('[DoFastRepair] Toggling fast repair OFF');
-		} else {
-			// Currently off, turn on
-			this.pitCommand.fastRepair();
-			streamDeck.logger.info('[DoFastRepair] Toggling fast repair ON');
-		}
-	}
+    // Check if fast repairs are available
+    const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
+    if (fastRepairsAvailable === 0) {
+      streamDeck.logger.info("[DoFastRepair] No fast repairs available");
+
+      return;
+    }
+
+    const isCurrentlyOn = this.getFastRepairState(telemetry);
+
+    if (isCurrentlyOn) {
+      // Currently on, turn off
+      this.pitCommand.clearFastRepair();
+      streamDeck.logger.info("[DoFastRepair] Toggling fast repair OFF");
+    } else {
+      // Currently off, turn on
+      this.pitCommand.fastRepair();
+      streamDeck.logger.info("[DoFastRepair] Toggling fast repair ON");
+    }
+  }
 }

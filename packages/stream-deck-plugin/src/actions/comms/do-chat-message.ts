@@ -1,6 +1,13 @@
-import streamDeck, { action, SingletonAction, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, {
+  action,
+  KeyDownEvent,
+  SingletonAction,
+  WillAppearEvent,
+  WillDisappearEvent,
+} from "@elgato/streamdeck";
+import { CameraCommand, CameraState, hasFlag } from "@iracedeck/iracing-sdk";
+
 import { SDKController } from "../../sdk-controller.js";
-import { hasFlag, CameraState, CameraCommand } from "@iracedeck/iracing-sdk";
 
 /**
  * Do Chat Message Action
@@ -8,75 +15,75 @@ import { hasFlag, CameraState, CameraCommand } from "@iracedeck/iracing-sdk";
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.comms.do-chat-message" })
 export class DoChatMessage extends SingletonAction<ChatSettings> {
-	private sdkController = SDKController.getInstance();
-	private cameraCommand = CameraCommand.getInstance();
-	private updateInterval: NodeJS.Timeout | null = null;
-	private activeContexts = new Map<string, ChatSettings>();
-	private lastTitle = new Map<string, string>();
-	private lastIconColor = new Map<string, string>();
+  private sdkController = SDKController.getInstance();
+  private cameraCommand = CameraCommand.getInstance();
+  private updateInterval: NodeJS.Timeout | null = null;
+  private activeContexts = new Map<string, ChatSettings>();
+  private lastTitle = new Map<string, string>();
+  private lastIconColor = new Map<string, string>();
 
-	/**
-	 * When the action appears on the Stream Deck
-	 */
-	override async onWillAppear(ev: WillAppearEvent<ChatSettings>): Promise<void> {
-		this.activeContexts.set(ev.action.id, ev.payload.settings);
+  /**
+   * When the action appears on the Stream Deck
+   */
+  override async onWillAppear(ev: WillAppearEvent<ChatSettings>): Promise<void> {
+    this.activeContexts.set(ev.action.id, ev.payload.settings);
 
-		// Set default message if not configured
-		if (!ev.payload.settings.message) {
-			await ev.action.setSettings({
-				message: ""
-			});
-		}
+    // Set default message if not configured
+    if (!ev.payload.settings.message) {
+      await ev.action.setSettings({
+        message: "",
+      });
+    }
 
-		// Start updating display
-		if (!this.updateInterval) {
-			this.startUpdates();
-		}
+    // Start updating display
+    if (!this.updateInterval) {
+      this.startUpdates();
+    }
 
-		// Update immediately
-		this.updateDisplay(ev.action.id, ev.payload.settings);
-	}
+    // Update immediately
+    this.updateDisplay(ev.action.id, ev.payload.settings);
+  }
 
-	/**
-	 * When the action disappears from the Stream Deck
-	 */
-	override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
-		this.activeContexts.delete(ev.action.id);
-		this.lastTitle.delete(ev.action.id);
-		this.lastIconColor.delete(ev.action.id);
+  /**
+   * When the action disappears from the Stream Deck
+   */
+  override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
+    this.activeContexts.delete(ev.action.id);
+    this.lastTitle.delete(ev.action.id);
+    this.lastIconColor.delete(ev.action.id);
 
-		// Stop updates if no more instances
-		if (this.activeContexts.size === 0) {
-			this.stopUpdates();
-		}
-	}
+    // Stop updates if no more instances
+    if (this.activeContexts.size === 0) {
+      this.stopUpdates();
+    }
+  }
 
-	/**
-	 * Start periodic updates
-	 */
-	private startUpdates(): void {
-		this.updateInterval = setInterval(() => {
-			for (const [contextId, settings] of this.activeContexts) {
-				this.updateDisplay(contextId, settings);
-			}
-		}, 1000); // Update every second
-	}
+  /**
+   * Start periodic updates
+   */
+  private startUpdates(): void {
+    this.updateInterval = setInterval(() => {
+      for (const [contextId, settings] of this.activeContexts) {
+        this.updateDisplay(contextId, settings);
+      }
+    }, 1000); // Update every second
+  }
 
-	/**
-	 * Stop periodic updates
-	 */
-	private stopUpdates(): void {
-		if (this.updateInterval) {
-			clearInterval(this.updateInterval);
-			this.updateInterval = null;
-		}
-	}
+  /**
+   * Stop periodic updates
+   */
+  private stopUpdates(): void {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
+  }
 
-	/**
-	 * Generate chat bubble SVG with configurable color
-	 */
-	private generateChatSvg(color: string): string {
-		const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  /**
+   * Generate chat bubble SVG with configurable color
+   */
+  private generateChatSvg(color: string): string {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
   <path d="M14 18
            h44
            a6 6 0 0 1 6 6
@@ -95,110 +102,113 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
         stroke-width="2.5"
         stroke-linejoin="round"/>
 </svg>`;
-		return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-	}
 
-	/**
-	 * Update the display for a specific context
-	 */
-	private async updateDisplay(contextId: string, settings: ChatSettings): Promise<void> {
-		const action = streamDeck.actions.getActionById(contextId);
-		if (!action) return;
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  }
 
-		let title = "iRacing\nnot\nconnected";
+  /**
+   * Update the display for a specific context
+   */
+  private async updateDisplay(contextId: string, settings: ChatSettings): Promise<void> {
+    const action = streamDeck.actions.getActionById(contextId);
+    if (!action) return;
 
-		if (this.sdkController.getConnectionStatus()) {
-			// Connected - show the message preview
-			const message = settings.message?.trim();
+    let title = "iRacing\nnot\nconnected";
 
-			if (message) {
-				// Show first few words of the message
-				title = message.length > 20 ? message.substring(0, 17) + "..." : message;
-			} else {
-				title = "";
-			}
-		}
+    if (this.sdkController.getConnectionStatus()) {
+      // Connected - show the message preview
+      const message = settings.message?.trim();
 
-		// Get configured color (default to #4a90d9)
-		const iconColor = settings.iconColor || "#4a90d9";
+      if (message) {
+        // Show first few words of the message
+        title = message.length > 20 ? message.substring(0, 17) + "..." : message;
+      } else {
+        title = "";
+      }
+    }
 
-		// Only update if the title or color has changed
-		const lastTitle = this.lastTitle.get(contextId);
-		const lastColor = this.lastIconColor.get(contextId);
+    // Get configured color (default to #4a90d9)
+    const iconColor = settings.iconColor || "#4a90d9";
 
-		if (lastTitle !== title || lastColor !== iconColor) {
-			this.lastTitle.set(contextId, title);
-			this.lastIconColor.set(contextId, iconColor);
-			await action.setTitle(title);
+    // Only update if the title or color has changed
+    const lastTitle = this.lastTitle.get(contextId);
+    const lastColor = this.lastIconColor.get(contextId);
 
-			// Generate SVG with configured color
-			const svgDataUri = this.generateChatSvg(iconColor);
-			await action.setImage(svgDataUri);
-		}
-	}
+    if (lastTitle !== title || lastColor !== iconColor) {
+      this.lastTitle.set(contextId, title);
+      this.lastIconColor.set(contextId, iconColor);
+      await action.setTitle(title);
 
-	/**
-	 * When settings are received or updated
-	 */
-	override async onDidReceiveSettings(ev: any): Promise<void> {
-		// Update stored settings
-		this.activeContexts.set(ev.action.id, ev.payload.settings);
+      // Generate SVG with configured color
+      const svgDataUri = this.generateChatSvg(iconColor);
+      await action.setImage(svgDataUri);
+    }
+  }
 
-		// Update display when settings change
-		this.updateDisplay(ev.action.id, ev.payload.settings);
-	}
+  /**
+   * When settings are received or updated
+   */
+  override async onDidReceiveSettings(ev: any): Promise<void> {
+    // Update stored settings
+    this.activeContexts.set(ev.action.id, ev.payload.settings);
 
-	/**
-	 * When the key is pressed
-	 */
-	override async onKeyDown(ev: KeyDownEvent<ChatSettings>): Promise<void> {
-		streamDeck.logger.info('[DoChatMessage] Key down received');
+    // Update display when settings change
+    this.updateDisplay(ev.action.id, ev.payload.settings);
+  }
 
-		const message = ev.payload.settings.message?.trim();
+  /**
+   * When the key is pressed
+   */
+  override async onKeyDown(ev: KeyDownEvent<ChatSettings>): Promise<void> {
+    streamDeck.logger.info("[DoChatMessage] Key down received");
 
-		const telemetry = this.sdkController.getCurrentTelemetry();
+    const message = ev.payload.settings.message?.trim();
 
-		if (!telemetry || !telemetry.CamCameraState) {
-			streamDeck.logger.error("[DoChatMessage] Couldn't get CamCameraState");
+    const telemetry = this.sdkController.getCurrentTelemetry();
 
-			return;
-		}
+    if (!telemetry || !telemetry.CamCameraState) {
+      streamDeck.logger.error("[DoChatMessage] Couldn't get CamCameraState");
 
-		var origCamCameraState = telemetry.CamCameraState;
+      return;
+    }
 
-		// Then use hasFlag on the telemetry data
-		if (hasFlag(origCamCameraState, CameraState.UIHidden)) {
-			this.cameraCommand.showUI(origCamCameraState);
-		}
+    var origCamCameraState = telemetry.CamCameraState;
 
-		if (!message) {
-			streamDeck.logger.info('[DoChatMessage] No message to send');
-			return;
-		}
+    // Then use hasFlag on the telemetry data
+    if (hasFlag(origCamCameraState, CameraState.UIHidden)) {
+      this.cameraCommand.showUI(origCamCameraState);
+    }
 
-		// Check if connected to iRacing
-		if (!this.sdkController.getConnectionStatus()) {
-			streamDeck.logger.info('[DoChatMessage] Not connected to iRacing');
-			return;
-		}
+    if (!message) {
+      streamDeck.logger.info("[DoChatMessage] No message to send");
 
-		// Send the chat message
-		const success = this.sdkController.sendChatMessage(message);
+      return;
+    }
 
-		if (success) {
-			streamDeck.logger.info('[DoChatMessage] Message sent succesfully');
-		} else {
-			streamDeck.logger.warn('[DoChatMessage] Sending message failed');
-		}
+    // Check if connected to iRacing
+    if (!this.sdkController.getConnectionStatus()) {
+      streamDeck.logger.info("[DoChatMessage] Not connected to iRacing");
 
-		this.cameraCommand.setState(origCamCameraState);
-	}
+      return;
+    }
+
+    // Send the chat message
+    const success = this.sdkController.sendChatMessage(message);
+
+    if (success) {
+      streamDeck.logger.info("[DoChatMessage] Message sent succesfully");
+    } else {
+      streamDeck.logger.warn("[DoChatMessage] Sending message failed");
+    }
+
+    this.cameraCommand.setState(origCamCameraState);
+  }
 }
 
 /**
  * Settings for the chat message action
  */
 type ChatSettings = {
-	message?: string;
-	iconColor?: string;
+  message?: string;
+  iconColor?: string;
 };

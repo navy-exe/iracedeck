@@ -1,24 +1,24 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(node --version:*)",
-      "Bash(npm --version)",
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)",
-      "Bash(timeout 3 tail:*)",
-      "Bash(timeout 5 tail:*)",
-      "Bash(test:*)",
-      "Bash(cat:*)",
-      "Bash(git add:*)",
-      "Bash(git config:*)",
-      "Bash(curl:*)",
-      "Bash(node:*)",
-      "Bash(pnpm install:*)",
-      "Bash(pnpm run build:*)",
-      "Bash(pnpm --filter @iracedeck/iracing-sdk run build:*)",
-      "Bash(pnpm --filter @iracedeck/stream-deck-plugin run build)",
-      "Bash(pnpm --filter @iracedeck/iracing-native run build:*)",
-      "Bash(dir:*)"
-    ]
-  }
+    "permissions": {
+        "allow": [
+            "Bash(node --version:*)",
+            "Bash(npm --version)",
+            "Bash(npm install:*)",
+            "Bash(npm run build:*)",
+            "Bash(timeout 3 tail:*)",
+            "Bash(timeout 5 tail:*)",
+            "Bash(test:*)",
+            "Bash(cat:*)",
+            "Bash(git add:*)",
+            "Bash(git config:*)",
+            "Bash(curl:*)",
+            "Bash(node:*)",
+            "Bash(pnpm install:*)",
+            "Bash(pnpm run build:*)",
+            "Bash(pnpm --filter @iracedeck/iracing-sdk run build:*)",
+            "Bash(pnpm --filter @iracedeck/stream-deck-plugin run build)",
+            "Bash(pnpm --filter @iracedeck/iracing-native run build:*)",
+            "Bash(dir:*)"
+        ]
+    }
 }

@@ -1,76 +1,82 @@
 /**
  * VideoCaptureCommand - Video capture commands for iRacing
  */
-
-import { getLogger } from '../logger.js';
-import { BroadcastCommand } from './BroadcastCommand.js';
-import { BroadcastMsg, VideoCaptureMode } from './constants.js';
+import { getLogger } from "../logger.js";
+import { BroadcastCommand } from "./BroadcastCommand.js";
+import { BroadcastMsg, VideoCaptureMode } from "./constants.js";
 
 /**
  * Video capture commands
  */
 export class VideoCaptureCommand extends BroadcastCommand {
-    private static _instance: VideoCaptureCommand;
+  private static _instance: VideoCaptureCommand;
 
-    private constructor() {
-        super();
+  private constructor() {
+    super();
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): VideoCaptureCommand {
+    if (!VideoCaptureCommand._instance) {
+      VideoCaptureCommand._instance = new VideoCaptureCommand();
     }
 
-    /**
-     * Get singleton instance
-     */
-    static getInstance(): VideoCaptureCommand {
-        if (!VideoCaptureCommand._instance) {
-            VideoCaptureCommand._instance = new VideoCaptureCommand();
-        }
-        return VideoCaptureCommand._instance;
-    }
+    return VideoCaptureCommand._instance;
+  }
 
-    /**
-     * Take a screenshot
-     */
-    screenshot(): boolean {
-        getLogger().info('[VideoCaptureCommand] Screenshot');
-        return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.TriggerScreenShot);
-    }
+  /**
+   * Take a screenshot
+   */
+  screenshot(): boolean {
+    getLogger().info("[VideoCaptureCommand] Screenshot");
 
-    /**
-     * Start video capture
-     */
-    start(): boolean {
-        getLogger().info('[VideoCaptureCommand] Start');
-        return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.StartVideoCapture);
-    }
+    return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.TriggerScreenShot);
+  }
 
-    /**
-     * Stop video capture
-     */
-    stop(): boolean {
-        getLogger().info('[VideoCaptureCommand] Stop');
-        return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.EndVideoCapture);
-    }
+  /**
+   * Start video capture
+   */
+  start(): boolean {
+    getLogger().info("[VideoCaptureCommand] Start");
 
-    /**
-     * Toggle video capture on/off
-     */
-    toggle(): boolean {
-        getLogger().info('[VideoCaptureCommand] Toggle');
-        return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.ToggleVideoCapture);
-    }
+    return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.StartVideoCapture);
+  }
 
-    /**
-     * Show video timer in upper left corner
-     */
-    showTimer(): boolean {
-        getLogger().info('[VideoCaptureCommand] Show timer');
-        return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.ShowVideoTimer);
-    }
+  /**
+   * Stop video capture
+   */
+  stop(): boolean {
+    getLogger().info("[VideoCaptureCommand] Stop");
 
-    /**
-     * Hide video timer
-     */
-    hideTimer(): boolean {
-        getLogger().info('[VideoCaptureCommand] Hide timer');
-        return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.HideVideoTimer);
-    }
+    return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.EndVideoCapture);
+  }
+
+  /**
+   * Toggle video capture on/off
+   */
+  toggle(): boolean {
+    getLogger().info("[VideoCaptureCommand] Toggle");
+
+    return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.ToggleVideoCapture);
+  }
+
+  /**
+   * Show video timer in upper left corner
+   */
+  showTimer(): boolean {
+    getLogger().info("[VideoCaptureCommand] Show timer");
+
+    return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.ShowVideoTimer);
+  }
+
+  /**
+   * Hide video timer
+   */
+  hideTimer(): boolean {
+    getLogger().info("[VideoCaptureCommand] Hide timer");
+
+    return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.HideVideoTimer);
+  }
 }

@@ -42,12 +42,12 @@ fi.lampen.niklas.iracedeck.sdPlugin/
 
 ```typescript
 export class IRacingSDK {
-    connect(): boolean           // Open memory-mapped file
-    disconnect(): void           // Close handles
-    isConnected(): boolean       // Check status
-    getTelemetry(): TelemetryData | null  // Read all variables
-    getVar(name: string): any    // Get specific variable
-    getSessionInfo(): SessionInfo | null  // Parse YAML session data
+    connect(): boolean; // Open memory-mapped file
+    disconnect(): void; // Close handles
+    isConnected(): boolean; // Check status
+    getTelemetry(): TelemetryData | null; // Read all variables
+    getVar(name: string): any; // Get specific variable
+    getSessionInfo(): SessionInfo | null; // Parse YAML session data
 }
 ```
 
@@ -61,6 +61,7 @@ export class IRacingSDK {
 ### `src/actions/*.ts` - Stream Deck Actions
 
 Each action extends `SingletonAction`:
+
 - `onWillAppear`: Connect SDK, start updates
 - `onWillDisappear`: Stop updates, disconnect
 - `updateDisplay`: Read telemetry, update button title
@@ -73,6 +74,7 @@ Each action extends `SingletonAction`:
 
 ```typescript
 import { action, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+
 import { IRacingSDK } from "../iracing/sdk";
 
 @action({ UUID: "fi.lampen.niklas.iracedeck.rpm" })
@@ -121,7 +123,7 @@ export class RPMDisplay extends SingletonAction {
 
         if (this.sdk.isConnected()) {
             const telemetry = this.sdk.getTelemetry();
-            if (telemetry && typeof telemetry.RPM === 'number') {
+            if (telemetry && typeof telemetry.RPM === "number") {
                 title = Math.round(telemetry.RPM).toString();
             }
         }
@@ -132,19 +134,21 @@ export class RPMDisplay extends SingletonAction {
 ```
 
 **IMPORTANT: Connection Status Display**
+
 - ALL actions MUST display "iRacing\nnot\nconnected" when not connected to iRacing
 - This applies to both telemetry displays AND button actions (like chat)
 - Use the pattern above with updateDisplay() checking connection status
 - For button actions that don't show telemetry, show a preview/label when connected
 - Update interval: 100ms for telemetry displays, 1000ms for button actions
-```
+
+````
 
 2. **Register in `src/plugin.ts`**:
 
 ```typescript
 import { RPMDisplay } from "./actions/rpm-display";
 streamDeck.actions.registerAction(new RPMDisplay());
-```
+````
 
 3. **Add to `manifest.json`**:
 
@@ -155,7 +159,7 @@ streamDeck.actions.registerAction(new RPMDisplay());
     "Icon": "imgs/actions/rpm/icon",
     "Tooltip": "Displays engine RPM",
     "Controllers": ["Keypad"],
-    "States": [{"Image": "imgs/actions/rpm/key", "TitleAlignment": "middle"}]
+    "States": [{ "Image": "imgs/actions/rpm/key", "TitleAlignment": "middle" }]
 }
 ```
 
@@ -164,13 +168,13 @@ streamDeck.actions.registerAction(new RPMDisplay());
 ```typescript
 const telemetry = sdk.getTelemetry();
 if (telemetry) {
-    const speed = telemetry.Speed;        // m/s (× 2.23694 = MPH, × 3.6 = KPH)
-    const gear = telemetry.Gear;          // -1=R, 0=N, 1+=forward
-    const rpm = telemetry.RPM;            // Engine RPM
-    const fuel = telemetry.FuelLevel;     // Liters
-    const throttle = telemetry.Throttle;  // 0-1
-    const brake = telemetry.Brake;        // 0-1
-    const lapTime = telemetry.LapCurrentLapTime;  // Seconds
+    const speed = telemetry.Speed; // m/s (× 2.23694 = MPH, × 3.6 = KPH)
+    const gear = telemetry.Gear; // -1=R, 0=N, 1+=forward
+    const rpm = telemetry.RPM; // Engine RPM
+    const fuel = telemetry.FuelLevel; // Liters
+    const throttle = telemetry.Throttle; // 0-1
+    const brake = telemetry.Brake; // 0-1
+    const lapTime = telemetry.LapCurrentLapTime; // Seconds
     const position = telemetry.PlayerCarPosition; // 1-based
 }
 ```
@@ -193,6 +197,7 @@ npm run watch        # Auto-rebuild on changes
 ```
 
 **Build Process**:
+
 1. Rollup bundles TypeScript → JavaScript
 2. Marks `koffi` and `yaml` as external
 3. Emits `package.json` in bin folder
@@ -208,10 +213,10 @@ npm run watch        # Auto-rebuild on changes
 
 ```typescript
 // ✅ Correct - integers for Windows API
-OpenFileMappingA(FILE_MAP_READ, 0, 'Local\\IRSDKMemMapFileName');
+OpenFileMappingA(FILE_MAP_READ, 0, "Local\\IRSDKMemMapFileName");
 
 // ❌ Wrong - boolean causes type error
-OpenFileMappingA(FILE_MAP_READ, false, 'Local\\IRSDKMemMapFileName');
+OpenFileMappingA(FILE_MAP_READ, false, "Local\\IRSDKMemMapFileName");
 ```
 
 ### Memory Reading
@@ -219,7 +224,7 @@ OpenFileMappingA(FILE_MAP_READ, false, 'Local\\IRSDKMemMapFileName');
 ```typescript
 function readBytes(ptr: any, offset: number, length: number): Buffer {
     const arrayType = `uint8_t[${length}]`;
-    const pOffset = koffi.as(koffi.decode(ptr, 'uintptr') + offset, 'void *');
+    const pOffset = koffi.as(koffi.decode(ptr, "uintptr") + offset, "void *");
     const bytes = koffi.decode(pOffset, arrayType);
     return Buffer.from(bytes);
 }
@@ -235,7 +240,7 @@ function readBytes(ptr: any, offset: number, length: number): Buffer {
 
 ```typescript
 // Always check types from telemetry
-if (telemetry && typeof telemetry.Speed === 'number') {
+if (telemetry && typeof telemetry.Speed === "number") {
     const mph = telemetry.Speed * 2.23694;
 }
 ```
@@ -257,10 +262,12 @@ The chat message action sends custom text to iRacing chat using Windows keyboard
 **Implementation**: Uses `keybd_event` API with `VkKeyScanW` for proper character mapping
 
 **Key APIs**:
+
 - `VkKeyScanW`: Converts Unicode characters to virtual key codes based on keyboard layout
 - `keybd_event`: Simulates keyboard input (key down/up events)
 
 **How it works**:
+
 1. Presses 't' to open iRacing chat
 2. Uses `VkKeyScanW` to map each character (including ö, ä, å) to correct virtual key + modifiers
 3. Simulates typing character-by-character with proper Shift/Ctrl/Alt modifiers
@@ -293,37 +300,43 @@ The chat message action sends custom text to iRacing chat using Windows keyboard
 Based on https://docs.elgato.com/guidelines/streamdeck/plugins/images-and-layouts
 
 ### Action Icons (Icon in manifest.json)
+
 - **Format**: SVG (recommended) or PNG
 - **Size**: 20×20px (40×40px @2x for PNG)
 - **Style**: Monochromatic white (#FFFFFF) stroke, transparent background
 - **Location**: `imgs/actions/{category}/{action-name}/icon.svg`
 
 ### Key Icons (State Image in manifest.json)
+
 - **Format**: SVG (recommended), PNG, or GIF
 - **Size**: 72×72px (144×144px @2x for PNG)
 - **Style**: Can use colors, should be visually distinct
 - **Location**: `imgs/actions/{category}/{action-name}/key.svg`
 
 #### Key Icon Design Guidelines
+
 - **Background**: Transparent (user preference)
 - **Margins**: 6px on all sides (content area 6-66)
 - **Text display**: Reserve bottom portion for title text when needed
-  - For actions showing values: icon in top ~half, title at bottom
-  - For actions without dynamic text: icon can fill entire space
+    - For actions showing values: icon in top ~half, title at bottom
+    - For actions without dynamic text: icon can fill entire space
 - **Style**: Simple outlines preferred, use #888 for neutral strokes
 - **Variants**: Use `key-active.svg`, `key-{state}.svg` for different states
 
 ### Category Icons
+
 - **Format**: SVG (recommended) or PNG
 - **Size**: 28×28px (56×56px @2x for PNG)
 - **Location**: `imgs/plugin/category-icon.svg`
 
 ### Plugin Icons
+
 - **Format**: PNG only
 - **Size**: 256×256px (512×512px @2x)
 - **Location**: `imgs/plugin/marketplace.png`
 
 ### Naming Convention
+
 - Action icons: `icon.svg`
 - Key icons: `key.svg`, `key-active.svg`, `key-{variant}.svg`
 - For PNG fallback: include `@2x` variants

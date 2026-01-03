@@ -18,9 +18,9 @@ const config = {
 		sourcemap: isWatching,
 		sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
 			return url.pathToFileURL(path.resolve(path.dirname(sourcemapPath), relativeSourcePath)).href;
-		}
+		},
 	},
-	external: ['@iracedeck/iracing-native', 'yaml'],
+	external: ["@iracedeck/iracing-native", "yaml"],
 	plugins: [
 		{
 			name: "watch-externals",
@@ -29,18 +29,18 @@ const config = {
 			},
 		},
 		typescript({
-			mapRoot: isWatching ? "./" : undefined
+			mapRoot: isWatching ? "./" : undefined,
 		}),
 		nodeResolve({
 			browser: false,
 			exportConditions: ["node"],
-			preferBuiltins: true
+			preferBuiltins: true,
 		}),
 		commonjs({
 			ignore: (id) => {
 				// Exclude .node native modules from bundling
-				return id.endsWith('.node');
-			}
+				return id.endsWith(".node");
+			},
 		}),
 		!isWatching && terser(),
 		{
@@ -50,13 +50,13 @@ const config = {
 					type: "module",
 					dependencies: {
 						"@iracedeck/iracing-native": "file:../../../iracing-native",
-						"yaml": "^2.8.2"
-					}
+						yaml: "^2.8.2",
+					},
 				};
 				this.emitFile({ fileName: "package.json", source: JSON.stringify(pkg, null, 2), type: "asset" });
-			}
-		}
-	]
+			},
+		},
+	],
 };
 
 export default config;

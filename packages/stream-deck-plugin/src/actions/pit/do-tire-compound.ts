@@ -1,6 +1,13 @@
-import streamDeck, { action, SingletonAction, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, {
+  action,
+  KeyDownEvent,
+  SingletonAction,
+  WillAppearEvent,
+  WillDisappearEvent,
+} from "@elgato/streamdeck";
+import { PitCommand, TelemetryData } from "@iracedeck/iracing-sdk";
+
 import { SDKController } from "../../sdk-controller.js";
-import { TelemetryData, PitCommand } from "@iracedeck/iracing-sdk";
 
 /**
  * Tire Compound Action
@@ -9,99 +16,100 @@ import { TelemetryData, PitCommand } from "@iracedeck/iracing-sdk";
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-tire-compound" })
 export class DoTireCompound extends SingletonAction {
-	private sdkController = SDKController.getInstance();
-	private pitCommand = PitCommand.getInstance();
-	private lastState = new Map<string, string>();
+  private sdkController = SDKController.getInstance();
+  private pitCommand = PitCommand.getInstance();
+  private lastState = new Map<string, string>();
 
-	override async onWillAppear(ev: WillAppearEvent): Promise<void> {
-		this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
-			this.updateDisplay(ev.action.id, telemetry, isConnected);
-		});
-	}
+  override async onWillAppear(ev: WillAppearEvent): Promise<void> {
+    this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
+      this.updateDisplay(ev.action.id, telemetry, isConnected);
+    });
+  }
 
-	override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
-		this.sdkController.unsubscribe(ev.action.id);
-		this.lastState.delete(ev.action.id);
-	}
+  override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
+    this.sdkController.unsubscribe(ev.action.id);
+    this.lastState.delete(ev.action.id);
+  }
 
-	/**
-	 * When the key is pressed - toggle tire compound
-	 */
-	override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
-		streamDeck.logger.info('[DoTireCompound] Key down received');
+  /**
+   * When the key is pressed - toggle tire compound
+   */
+  override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
+    streamDeck.logger.info("[DoTireCompound] Key down received");
 
-		// Check if connected to iRacing
-		if (!this.sdkController.getConnectionStatus()) {
-			streamDeck.logger.info('[DoTireCompound] Not connected to iRacing');
-			return;
-		}
+    // Check if connected to iRacing
+    if (!this.sdkController.getConnectionStatus()) {
+      streamDeck.logger.info("[DoTireCompound] Not connected to iRacing");
 
-		const telemetry = this.sdkController.getCurrentTelemetry();
-		if (!telemetry) {
-			streamDeck.logger.warn('[DoTireCompound] No telemetry data available');
-			return;
-		}
+      return;
+    }
 
-		const currentCompound = telemetry.PitSvTireCompound;
+    const telemetry = this.sdkController.getCurrentTelemetry();
+    if (!telemetry) {
+      streamDeck.logger.warn("[DoTireCompound] No telemetry data available");
 
-		if (currentCompound === null || currentCompound === undefined || typeof currentCompound !== 'number') {
-			streamDeck.logger.warn('[DoTireCompound] PitSvTireCompound not available');
-			return;
-		}
+      return;
+    }
 
-		// Toggle between compounds: 0 = Dry, 1 = Wet
-		const newCompound = currentCompound === 0 ? 1 : 0;
-		streamDeck.logger.info(`[DoTireCompound] Switching from ${currentCompound === 0 ? 'Dry' : 'Wet'} to ${newCompound === 0 ? 'Dry' : 'Wet'}`);
+    const currentCompound = telemetry.PitSvTireCompound;
 
-		const success = this.pitCommand.tireCompound(newCompound);
-		if (success) {
-			streamDeck.logger.info(`[DoTireCompound] Set tire compound to ${newCompound === 0 ? 'Dry' : 'Wet'}`);
-		} else {
-			streamDeck.logger.warn('[DoTireCompound] Failed to set tire compound');
-		}
-	}
+    if (currentCompound === null || currentCompound === undefined || typeof currentCompound !== "number") {
+      streamDeck.logger.warn("[DoTireCompound] PitSvTireCompound not available");
 
-	private async updateDisplay(
-		contextId: string,
-		telemetry: TelemetryData | null,
-		isConnected: boolean
-	): Promise<void> {
-		const action = streamDeck.actions.getActionById(contextId);
-		if (!action) return;
+      return;
+    }
 
-		let title = "iRacing\nnot\nconnected";
-		let image = "imgs/actions/pit/do-tire-compound/key";
+    // Toggle between compounds: 0 = Dry, 1 = Wet
+    const newCompound = currentCompound === 0 ? 1 : 0;
+    streamDeck.logger.info(
+      `[DoTireCompound] Switching from ${currentCompound === 0 ? "Dry" : "Wet"} to ${newCompound === 0 ? "Dry" : "Wet"}`,
+    );
 
-		if (isConnected && telemetry) {
-			const tireCompound = telemetry.PitSvTireCompound;
+    const success = this.pitCommand.tireCompound(newCompound);
+    if (success) {
+      streamDeck.logger.info(`[DoTireCompound] Set tire compound to ${newCompound === 0 ? "Dry" : "Wet"}`);
+    } else {
+      streamDeck.logger.warn("[DoTireCompound] Failed to set tire compound");
+    }
+  }
 
-			if (tireCompound !== null && tireCompound !== undefined && typeof tireCompound === 'number') {
-				// 0 = Dry, 1 = Wet
-				switch (tireCompound) {
-					case 0:
-						title = "Dry";
-						image = "imgs/actions/pit/do-tire-compound/key-dry";
-						break;
-					case 1:
-						title = "Wet";
-						image = "imgs/actions/pit/do-tire-compound/key-wet";
-						break;
-					default:
-						title = `TC: ${tireCompound}`;
-						image = "imgs/actions/pit/do-tire-compound/key";
-						break;
-				}
-			} else {
-				title = "N/A";
-			}
-		}
+  private async updateDisplay(contextId: string, telemetry: TelemetryData | null, isConnected: boolean): Promise<void> {
+    const action = streamDeck.actions.getActionById(contextId);
+    if (!action) return;
 
-		const stateKey = `${title}|${image}`;
-		const lastState = this.lastState.get(contextId);
-		if (lastState !== stateKey) {
-			this.lastState.set(contextId, stateKey);
-			await action.setTitle(title);
-			await action.setImage(image);
-		}
-	}
+    let title = "iRacing\nnot\nconnected";
+    let image = "imgs/actions/pit/do-tire-compound/key";
+
+    if (isConnected && telemetry) {
+      const tireCompound = telemetry.PitSvTireCompound;
+
+      if (tireCompound !== null && tireCompound !== undefined && typeof tireCompound === "number") {
+        // 0 = Dry, 1 = Wet
+        switch (tireCompound) {
+          case 0:
+            title = "Dry";
+            image = "imgs/actions/pit/do-tire-compound/key-dry";
+            break;
+          case 1:
+            title = "Wet";
+            image = "imgs/actions/pit/do-tire-compound/key-wet";
+            break;
+          default:
+            title = `TC: ${tireCompound}`;
+            image = "imgs/actions/pit/do-tire-compound/key";
+            break;
+        }
+      } else {
+        title = "N/A";
+      }
+    }
+
+    const stateKey = `${title}|${image}`;
+    const lastState = this.lastState.get(contextId);
+    if (lastState !== stateKey) {
+      this.lastState.set(contextId, stateKey);
+      await action.setTitle(title);
+      await action.setImage(image);
+    }
+  }
 }

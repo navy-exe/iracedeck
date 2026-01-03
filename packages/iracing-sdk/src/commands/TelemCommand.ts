@@ -3,52 +3,55 @@
  *
  * You can call this any time, but telemetry only records when driver is in their car
  */
-
-import { getLogger } from '../logger.js';
-import { BroadcastCommand } from './BroadcastCommand.js';
-import { BroadcastMsg, TelemCommandMode } from './constants.js';
+import { getLogger } from "../logger.js";
+import { BroadcastCommand } from "./BroadcastCommand.js";
+import { BroadcastMsg, TelemCommandMode } from "./constants.js";
 
 /**
  * Telemetry recording commands
  */
 export class TelemCommand extends BroadcastCommand {
-    private static _instance: TelemCommand;
+  private static _instance: TelemCommand;
 
-    private constructor() {
-        super();
+  private constructor() {
+    super();
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): TelemCommand {
+    if (!TelemCommand._instance) {
+      TelemCommand._instance = new TelemCommand();
     }
 
-    /**
-     * Get singleton instance
-     */
-    static getInstance(): TelemCommand {
-        if (!TelemCommand._instance) {
-            TelemCommand._instance = new TelemCommand();
-        }
-        return TelemCommand._instance;
-    }
+    return TelemCommand._instance;
+  }
 
-    /**
-     * Stop telemetry recording
-     */
-    stop(): boolean {
-        getLogger().info('[TelemCommand] Stop');
-        return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Stop);
-    }
+  /**
+   * Stop telemetry recording
+   */
+  stop(): boolean {
+    getLogger().info("[TelemCommand] Stop");
 
-    /**
-     * Start telemetry recording
-     */
-    start(): boolean {
-        getLogger().info('[TelemCommand] Start');
-        return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Start);
-    }
+    return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Stop);
+  }
 
-    /**
-     * Write current telemetry file to disk and start a new one
-     */
-    restart(): boolean {
-        getLogger().info('[TelemCommand] Restart');
-        return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Restart);
-    }
+  /**
+   * Start telemetry recording
+   */
+  start(): boolean {
+    getLogger().info("[TelemCommand] Start");
+
+    return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Start);
+  }
+
+  /**
+   * Write current telemetry file to disk and start a new one
+   */
+  restart(): boolean {
+    getLogger().info("[TelemCommand] Restart");
+
+    return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Restart);
+  }
 }
