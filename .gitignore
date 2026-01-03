@@ -3,8 +3,12 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
+pnpm-debug.log*
 yarn.lock
+*.log
+
+# pnpm
+# Note: pnpm-lock.yaml should be committed
 
 # Stream Deck files
 *.sdPlugin/bin/
@@ -42,3 +46,9 @@ desktop.ini
 
 # Debug
 *.pdb
+
+# Python
+Python/
+
+# Turbo
+.turbo/cache

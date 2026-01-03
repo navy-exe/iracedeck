@@ -1,0 +1,36 @@
+{
+  "name": "@iracedeck/iracing-sdk",
+  "version": "0.1.0",
+  "description": "iRacing SDK for Node.js - telemetry reading and broadcast commands",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@iracedeck/iracing-native": "workspace:*",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "~20.15.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.2.2"
+  },
+  "os": ["win32"],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "iracing",
+    "sdk",
+    "telemetry",
+    "racing",
+    "simulation"
+  ],
+  "license": "MIT"
+}

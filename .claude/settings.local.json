@@ -12,7 +12,13 @@
       "Bash(git add:*)",
       "Bash(git config:*)",
       "Bash(curl:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm --filter @iracedeck/iracing-sdk run build:*)",
+      "Bash(pnpm --filter @iracedeck/stream-deck-plugin run build)",
+      "Bash(pnpm --filter @iracedeck/iracing-native run build:*)",
+      "Bash(dir:*)"
     ]
   }
 }
