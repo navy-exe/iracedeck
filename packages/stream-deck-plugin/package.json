@@ -8,6 +8,7 @@
     "postbuild": "cd fi.lampen.niklas.iracedeck.sdPlugin/bin && pnpm install",
     "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart fi.lampen.niklas.iracedeck\"",
     "clean": "rimraf fi.lampen.niklas.iracedeck.sdPlugin/bin/plugin.js fi.lampen.niklas.iracedeck.sdPlugin/bin/plugin.js.map"
+    
   },
   "dependencies": {
     "@iracedeck/iracing-sdk": "workspace:*",

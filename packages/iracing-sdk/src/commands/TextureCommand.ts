@@ -2,9 +2,9 @@
  * TextureCommand - Texture reload commands for iRacing
  */
 
-import { getLogger } from '../logger';
-import { BroadcastCommand } from './BroadcastCommand';
-import { BroadcastMsg, ReloadTexturesMode } from './constants';
+import { getLogger } from '../logger.js';
+import { BroadcastCommand } from './BroadcastCommand.js';
+import { BroadcastMsg, ReloadTexturesMode } from './constants.js';
 
 /**
  * Texture reload commands

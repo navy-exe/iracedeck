@@ -5,17 +5,17 @@
  */
 
 // Base class
-export { BroadcastCommand } from './BroadcastCommand';
+export { BroadcastCommand } from './BroadcastCommand.js';
 
 // Command classes
-export { CameraCommand } from './CameraCommand';
-export { ReplayCommand } from './ReplayCommand';
-export { PitCommand } from './PitCommand';
-export { ChatCommand } from './ChatCommand';
-export { TelemCommand } from './TelemCommand';
-export { TextureCommand } from './TextureCommand';
-export { FFBCommand } from './FFBCommand';
-export { VideoCaptureCommand } from './VideoCaptureCommand';
+export { CameraCommand } from './CameraCommand.js';
+export { ReplayCommand } from './ReplayCommand.js';
+export { PitCommand } from './PitCommand.js';
+export { ChatCommand } from './ChatCommand.js';
+export { TelemCommand } from './TelemCommand.js';
+export { TextureCommand } from './TextureCommand.js';
+export { FFBCommand } from './FFBCommand.js';
+export { VideoCaptureCommand } from './VideoCaptureCommand.js';
 
 // Constants and enums
 export {
@@ -32,4 +32,4 @@ export {
     VideoCaptureMode,
     IRSDK_BROADCAST_MSG_NAME,
     MAKELONG
-} from './constants';
+} from './constants.js';

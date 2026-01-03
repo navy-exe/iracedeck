@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "packageManager": "pnpm",
   "scripts": {
     "build": "tsc",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test-native": "node -e \"import('@iracedeck/iracing-native').then(console.log).catch(console.error)\""
   },
   "files": [
     "dist"

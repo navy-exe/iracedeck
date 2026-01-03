@@ -4,9 +4,9 @@
  * Note: Pit commands only work when the driver is in the car
  */
 
-import { getLogger } from '../logger';
-import { BroadcastCommand } from './BroadcastCommand';
-import { BroadcastMsg, PitCommandMode } from './constants';
+import { getLogger } from '../logger.js';
+import { BroadcastCommand } from './BroadcastCommand.js';
+import { BroadcastMsg, PitCommandMode } from './constants.js';
 
 /**
  * Pit service commands

@@ -5,8 +5,8 @@
  */
 
 import { registerWindowMessage, sendNotifyMessage, HWND_BROADCAST } from '@iracedeck/iracing-native';
-import { getLogger } from '../logger';
-import { BroadcastMsg, IRSDK_BROADCAST_MSG_NAME, MAKELONG } from './constants';
+import { getLogger } from '../logger.js';
+import { BroadcastMsg, IRSDK_BROADCAST_MSG_NAME, MAKELONG } from './constants.js';
 
 /**
  * Base class for iRacing broadcast commands

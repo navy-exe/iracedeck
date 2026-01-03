@@ -7,7 +7,7 @@
 export {
     hasFlag, hasAllFlags, hasAnyFlag, getActiveFlags, getActiveFlagNames,
     addFlag, addFlags, removeFlag, removeFlags, toggleFlag, setFlag
-} from './utils';
+} from './utils.js';
 
 export const IRSDK_MAX_BUFS = 4;
 export const IRSDK_MAX_STRING = 32;

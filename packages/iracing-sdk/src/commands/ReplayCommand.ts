@@ -4,9 +4,9 @@
  * Note: Replay commands only work when you are out of your car (spectating/replay)
  */
 
-import { getLogger } from '../logger';
-import { BroadcastCommand } from './BroadcastCommand';
-import { BroadcastMsg, ReplaySearchMode, ReplayPosMode, ReplayStateMode } from './constants';
+import { getLogger } from '../logger.js';
+import { BroadcastCommand } from './BroadcastCommand.js';
+import { BroadcastMsg, ReplaySearchMode, ReplayPosMode, ReplayStateMode } from './constants.js';
 
 /**
  * Replay control commands

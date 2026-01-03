@@ -4,10 +4,10 @@
  * Note: Camera commands only work when you are out of your car (spectating/replay)
  */
 
-import { getLogger } from '../logger';
-import { BroadcastCommand } from './BroadcastCommand';
-import { BroadcastMsg, CameraFocusMode } from './constants';
-import { CameraState, addFlag, removeFlag } from '../types';
+import { getLogger } from '../logger.js';
+import { BroadcastCommand } from './BroadcastCommand.js';
+import { BroadcastMsg, CameraFocusMode } from './constants.js';
+import { CameraState, addFlag, removeFlag } from '../types.js';
 
 /**
  * Camera control commands

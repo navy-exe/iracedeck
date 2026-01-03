@@ -10,7 +10,7 @@ import {
     findWindow
 } from '@iracedeck/iracing-native';
 import yaml from 'yaml';
-import { getLogger } from './logger';
+import { getLogger } from './logger.js';
 import {
     IRSDKHeader,
     VarHeader,
@@ -22,8 +22,8 @@ import {
     IRSDK_MAX_BUFS,
     IRSDK_MAX_STRING,
     IRSDK_MAX_DESC
-} from './types';
-import { ChatCommand } from './commands/ChatCommand';
+} from './types.js';
+import { ChatCommand } from './commands/ChatCommand.js';
 
 // iRacing shared memory name
 const IRACING_MEMMAPFILENAME = 'Local\\IRSDKMemMapFileName';

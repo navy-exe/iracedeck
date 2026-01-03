@@ -5,10 +5,10 @@
  */
 
 // Main SDK class
-export { IRacingSDK } from './IRacingSDK';
+export { IRacingSDK } from './IRacingSDK.js';
 
 // Logger
-export { Logger, setLogger, getLogger, consoleLogger, silentLogger } from './logger';
+export { Logger, setLogger, getLogger, consoleLogger, silentLogger } from './logger.js';
 
 // Types and enums
 export {
@@ -58,7 +58,7 @@ export {
     removeFlags,
     toggleFlag,
     setFlag
-} from './types';
+} from './types.js';
 
 // Commands
 export {
@@ -89,4 +89,4 @@ export {
     VideoCaptureMode,
     IRSDK_BROADCAST_MSG_NAME,
     MAKELONG
-} from './commands/index';
+} from './commands/index.js';
