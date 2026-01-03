@@ -138,6 +138,23 @@
 			"UserTitleEnabled": false
 		},
 		{
+			"Name": "Fast Repair",
+			"UUID": "fi.lampen.niklas.iracedeck.pit.do-fast-repair",
+			"Icon": "imgs/actions/pit/do-fast-repair/icon",
+			"Tooltip": "Toggle fast repair at next pit stop.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/pit/do-fast-repair/key",
+					"TitleAlignment": "bottom",
+					"FontSize": 10
+				}
+			],
+			"UserTitleEnabled": false
+		},
+		{
 			"Name": "Chat",
 			"UUID": "fi.lampen.niklas.iracedeck.comms.do-chat-message",
 			"Icon": "imgs/actions/comms/do-chat-message/icon",
