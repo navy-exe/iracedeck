@@ -3,7 +3,6 @@
  *
  * You can call this any time, but telemetry only records when driver is in their car
  */
-import { getLogger } from "../logger.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, TelemCommandMode } from "./constants.js";
 
@@ -14,7 +13,7 @@ export class TelemCommand extends BroadcastCommand {
   private static _instance: TelemCommand;
 
   private constructor() {
-    super();
+    super("TelemCommand");
   }
 
   /**
@@ -32,7 +31,7 @@ export class TelemCommand extends BroadcastCommand {
    * Stop telemetry recording
    */
   stop(): boolean {
-    getLogger().info("[TelemCommand] Stop");
+    this.logger.info("Stop");
 
     return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Stop);
   }
@@ -41,7 +40,7 @@ export class TelemCommand extends BroadcastCommand {
    * Start telemetry recording
    */
   start(): boolean {
-    getLogger().info("[TelemCommand] Start");
+    this.logger.info("Start");
 
     return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Start);
   }
@@ -50,7 +49,7 @@ export class TelemCommand extends BroadcastCommand {
    * Write current telemetry file to disk and start a new one
    */
   restart(): boolean {
-    getLogger().info("[TelemCommand] Restart");
+    this.logger.info("Restart");
 
     return this.sendBroadcast(BroadcastMsg.TelemCommand, TelemCommandMode.Restart);
   }

@@ -5,7 +5,7 @@
  */
 import { HWND_BROADCAST, registerWindowMessage, sendNotifyMessage } from "@iracedeck/iracing-native";
 
-import { getLogger } from "../logger.js";
+import { getLogger, Logger } from "../logger.js";
 import { BroadcastMsg, IRSDK_BROADCAST_MSG_NAME, MAKELONG } from "./constants.js";
 
 /**
@@ -13,9 +13,11 @@ import { BroadcastMsg, IRSDK_BROADCAST_MSG_NAME, MAKELONG } from "./constants.js
  */
 export abstract class BroadcastCommand {
   protected broadcastMsgID: number;
+  protected logger: Logger;
 
-  protected constructor() {
+  protected constructor(loggerScope: string) {
     this.broadcastMsgID = registerWindowMessage(IRSDK_BROADCAST_MSG_NAME);
+    this.logger = getLogger().createScope(loggerScope);
   }
 
   /**
@@ -28,7 +30,7 @@ export abstract class BroadcastCommand {
   protected sendBroadcast(msg: BroadcastMsg, var1: number = 0, var2: number = 0, var3: number = 0): boolean {
     const wParam = MAKELONG(msg, var1);
     const lParam = MAKELONG(var2, var3);
-    getLogger().debug(`[BroadcastCommand] Sending: msg=${BroadcastMsg[msg]}, var1=${var1}, var2=${var2}, var3=${var3}`);
+    this.logger.debug(`Sending: msg=${BroadcastMsg[msg]}, var1=${var1}, var2=${var2}, var3=${var3}`);
 
     return sendNotifyMessage(HWND_BROADCAST, this.broadcastMsgID, wParam, lParam);
   }

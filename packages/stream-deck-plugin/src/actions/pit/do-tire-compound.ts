@@ -19,6 +19,7 @@ export class DoTireCompound extends SingletonAction {
   private sdkController = SDKController.getInstance();
   private pitCommand = PitCommand.getInstance();
   private lastState = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DoTireCompound");
 
   override async onWillAppear(ev: WillAppearEvent): Promise<void> {
     this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
@@ -35,18 +36,18 @@ export class DoTireCompound extends SingletonAction {
    * When the key is pressed - toggle tire compound
    */
   override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
-    streamDeck.logger.info("[DoTireCompound] Key down received");
+    this.logger.info("Key down received");
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DoTireCompound] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
 
     const telemetry = this.sdkController.getCurrentTelemetry();
     if (!telemetry) {
-      streamDeck.logger.warn("[DoTireCompound] No telemetry data available");
+      this.logger.warn("No telemetry data available");
 
       return;
     }
@@ -54,22 +55,22 @@ export class DoTireCompound extends SingletonAction {
     const currentCompound = telemetry.PitSvTireCompound;
 
     if (currentCompound === null || currentCompound === undefined || typeof currentCompound !== "number") {
-      streamDeck.logger.warn("[DoTireCompound] PitSvTireCompound not available");
+      this.logger.warn("PitSvTireCompound not available");
 
       return;
     }
 
     // Toggle between compounds: 0 = Dry, 1 = Wet
     const newCompound = currentCompound === 0 ? 1 : 0;
-    streamDeck.logger.info(
-      `[DoTireCompound] Switching from ${currentCompound === 0 ? "Dry" : "Wet"} to ${newCompound === 0 ? "Dry" : "Wet"}`,
+    this.logger.info(
+      `Switching from ${currentCompound === 0 ? "Dry" : "Wet"} to ${newCompound === 0 ? "Dry" : "Wet"}`,
     );
 
     const success = this.pitCommand.tireCompound(newCompound);
     if (success) {
-      streamDeck.logger.info(`[DoTireCompound] Set tire compound to ${newCompound === 0 ? "Dry" : "Wet"}`);
+      this.logger.info(`Set tire compound to ${newCompound === 0 ? "Dry" : "Wet"}`);
     } else {
-      streamDeck.logger.warn("[DoTireCompound] Failed to set tire compound");
+      this.logger.warn("Failed to set tire compound");
     }
   }
 

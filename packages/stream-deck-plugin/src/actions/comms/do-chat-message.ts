@@ -21,6 +21,7 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
   private activeContexts = new Map<string, ChatSettings>();
   private lastTitle = new Map<string, string>();
   private lastIconColor = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DoChatMessage");
 
   /**
    * When the action appears on the Stream Deck
@@ -160,14 +161,14 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
    * When the key is pressed
    */
   override async onKeyDown(ev: KeyDownEvent<ChatSettings>): Promise<void> {
-    streamDeck.logger.info("[DoChatMessage] Key down received");
+    this.logger.info("Key down received");
 
     const message = ev.payload.settings.message?.trim();
 
     const telemetry = this.sdkController.getCurrentTelemetry();
 
     if (!telemetry || !telemetry.CamCameraState) {
-      streamDeck.logger.error("[DoChatMessage] Couldn't get CamCameraState");
+      this.logger.error("Couldn't get CamCameraState");
 
       return;
     }
@@ -180,14 +181,14 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
     }
 
     if (!message) {
-      streamDeck.logger.info("[DoChatMessage] No message to send");
+      this.logger.info("No message to send");
 
       return;
     }
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DoChatMessage] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
@@ -196,9 +197,9 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
     const success = this.sdkController.sendChatMessage(message);
 
     if (success) {
-      streamDeck.logger.info("[DoChatMessage] Message sent succesfully");
+      this.logger.info("Message sent succesfully");
     } else {
-      streamDeck.logger.warn("[DoChatMessage] Sending message failed");
+      this.logger.warn("Sending message failed");
     }
 
     this.cameraCommand.setState(origCamCameraState);

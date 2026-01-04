@@ -1,7 +1,6 @@
 /**
  * VideoCaptureCommand - Video capture commands for iRacing
  */
-import { getLogger } from "../logger.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, VideoCaptureMode } from "./constants.js";
 
@@ -12,7 +11,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
   private static _instance: VideoCaptureCommand;
 
   private constructor() {
-    super();
+    super("VideoCaptureCommand");
   }
 
   /**
@@ -30,7 +29,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
    * Take a screenshot
    */
   screenshot(): boolean {
-    getLogger().info("[VideoCaptureCommand] Screenshot");
+    this.logger.info("Screenshot");
 
     return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.TriggerScreenShot);
   }
@@ -39,7 +38,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
    * Start video capture
    */
   start(): boolean {
-    getLogger().info("[VideoCaptureCommand] Start");
+    this.logger.info("Start");
 
     return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.StartVideoCapture);
   }
@@ -48,7 +47,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
    * Stop video capture
    */
   stop(): boolean {
-    getLogger().info("[VideoCaptureCommand] Stop");
+    this.logger.info("Stop");
 
     return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.EndVideoCapture);
   }
@@ -57,7 +56,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
    * Toggle video capture on/off
    */
   toggle(): boolean {
-    getLogger().info("[VideoCaptureCommand] Toggle");
+    this.logger.info("Toggle");
 
     return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.ToggleVideoCapture);
   }
@@ -66,7 +65,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
    * Show video timer in upper left corner
    */
   showTimer(): boolean {
-    getLogger().info("[VideoCaptureCommand] Show timer");
+    this.logger.info("Show timer");
 
     return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.ShowVideoTimer);
   }
@@ -75,7 +74,7 @@ export class VideoCaptureCommand extends BroadcastCommand {
    * Hide video timer
    */
   hideTimer(): boolean {
-    getLogger().info("[VideoCaptureCommand] Hide timer");
+    this.logger.info("Hide timer");
 
     return this.sendBroadcast(BroadcastMsg.VideoCapture, VideoCaptureMode.HideVideoTimer);
   }

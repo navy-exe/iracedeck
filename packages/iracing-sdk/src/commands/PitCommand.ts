@@ -3,7 +3,6 @@
  *
  * Note: Pit commands only work when the driver is in the car
  */
-import { getLogger } from "../logger.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, PitCommandMode } from "./constants.js";
 
@@ -14,7 +13,7 @@ export class PitCommand extends BroadcastCommand {
   private static _instance: PitCommand;
 
   private constructor() {
-    super();
+    super("PitCommand");
   }
 
   /**
@@ -32,7 +31,7 @@ export class PitCommand extends BroadcastCommand {
    * Clear all pit checkboxes
    */
   clear(): boolean {
-    getLogger().info("[PitCommand] Clear all");
+    this.logger.info("Clear all");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.Clear);
   }
@@ -41,7 +40,7 @@ export class PitCommand extends BroadcastCommand {
    * Request windshield tearoff
    */
   windshield(): boolean {
-    getLogger().info("[PitCommand] Windshield tearoff");
+    this.logger.info("Windshield tearoff");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.WS);
   }
@@ -50,7 +49,7 @@ export class PitCommand extends BroadcastCommand {
    * Clear windshield checkbox
    */
   clearWindshield(): boolean {
-    getLogger().info("[PitCommand] Clear windshield");
+    this.logger.info("Clear windshield");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.ClearWS);
   }
@@ -60,7 +59,7 @@ export class PitCommand extends BroadcastCommand {
    * @param liters Amount of fuel to add (0 = use existing amount)
    */
   fuel(liters: number = 0): boolean {
-    getLogger().info(`[PitCommand] Fuel: ${liters}L`);
+    this.logger.info(`Fuel: ${liters}L`);
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.Fuel, liters);
   }
@@ -69,7 +68,7 @@ export class PitCommand extends BroadcastCommand {
    * Clear fuel checkbox
    */
   clearFuel(): boolean {
-    getLogger().info("[PitCommand] Clear fuel");
+    this.logger.info("Clear fuel");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.ClearFuel);
   }
@@ -79,7 +78,7 @@ export class PitCommand extends BroadcastCommand {
    * @param pressureKpa Tire pressure in kPa (0 = use existing pressure)
    */
   leftFront(pressureKpa: number = 0): boolean {
-    getLogger().info(`[PitCommand] Left front: ${pressureKpa}kPa`);
+    this.logger.info(`Left front: ${pressureKpa}kPa`);
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.LF, pressureKpa);
   }
@@ -89,7 +88,7 @@ export class PitCommand extends BroadcastCommand {
    * @param pressureKpa Tire pressure in kPa (0 = use existing pressure)
    */
   rightFront(pressureKpa: number = 0): boolean {
-    getLogger().info(`[PitCommand] Right front: ${pressureKpa}kPa`);
+    this.logger.info(`Right front: ${pressureKpa}kPa`);
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.RF, pressureKpa);
   }
@@ -99,7 +98,7 @@ export class PitCommand extends BroadcastCommand {
    * @param pressureKpa Tire pressure in kPa (0 = use existing pressure)
    */
   leftRear(pressureKpa: number = 0): boolean {
-    getLogger().info(`[PitCommand] Left rear: ${pressureKpa}kPa`);
+    this.logger.info(`Left rear: ${pressureKpa}kPa`);
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.LR, pressureKpa);
   }
@@ -109,7 +108,7 @@ export class PitCommand extends BroadcastCommand {
    * @param pressureKpa Tire pressure in kPa (0 = use existing pressure)
    */
   rightRear(pressureKpa: number = 0): boolean {
-    getLogger().info(`[PitCommand] Right rear: ${pressureKpa}kPa`);
+    this.logger.info(`Right rear: ${pressureKpa}kPa`);
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.RR, pressureKpa);
   }
@@ -118,7 +117,7 @@ export class PitCommand extends BroadcastCommand {
    * Clear tire pit checkboxes
    */
   clearTires(): boolean {
-    getLogger().info("[PitCommand] Clear tires");
+    this.logger.info("Clear tires");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.ClearTires);
   }
@@ -127,7 +126,7 @@ export class PitCommand extends BroadcastCommand {
    * Request fast repair
    */
   fastRepair(): boolean {
-    getLogger().info("[PitCommand] Fast repair");
+    this.logger.info("Fast repair");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.FR);
   }
@@ -136,7 +135,7 @@ export class PitCommand extends BroadcastCommand {
    * Clear fast repair checkbox
    */
   clearFastRepair(): boolean {
-    getLogger().info("[PitCommand] Clear fast repair");
+    this.logger.info("Clear fast repair");
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.ClearFR);
   }
@@ -146,7 +145,7 @@ export class PitCommand extends BroadcastCommand {
    * @param compound Tire compound index
    */
   tireCompound(compound: number): boolean {
-    getLogger().info(`[PitCommand] Tire compound: ${compound}`);
+    this.logger.info(`Tire compound: ${compound}`);
 
     return this.sendBroadcast(BroadcastMsg.PitCommand, PitCommandMode.TC, compound);
   }

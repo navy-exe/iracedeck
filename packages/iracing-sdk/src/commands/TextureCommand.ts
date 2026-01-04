@@ -1,7 +1,6 @@
 /**
  * TextureCommand - Texture reload commands for iRacing
  */
-import { getLogger } from "../logger.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, ReloadTexturesMode } from "./constants.js";
 
@@ -12,7 +11,7 @@ export class TextureCommand extends BroadcastCommand {
   private static _instance: TextureCommand;
 
   private constructor() {
-    super();
+    super("TextureCommand");
   }
 
   /**
@@ -30,7 +29,7 @@ export class TextureCommand extends BroadcastCommand {
    * Reload all textures
    */
   reloadAll(): boolean {
-    getLogger().info("[TextureCommand] Reload all");
+    this.logger.info("Reload all");
 
     return this.sendBroadcast(BroadcastMsg.ReloadTextures, ReloadTexturesMode.All);
   }
@@ -40,7 +39,7 @@ export class TextureCommand extends BroadcastCommand {
    * @param carIdx Car index
    */
   reloadCar(carIdx: number): boolean {
-    getLogger().info(`[TextureCommand] Reload car: ${carIdx}`);
+    this.logger.info(`Reload car: ${carIdx}`);
 
     return this.sendBroadcast(BroadcastMsg.ReloadTextures, ReloadTexturesMode.CarIdx, carIdx);
   }

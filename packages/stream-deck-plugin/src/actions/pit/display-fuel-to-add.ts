@@ -19,6 +19,7 @@ export class DisplayFuelToAdd extends SingletonAction {
   private sdkController = SDKController.getInstance();
   private pitCommand = PitCommand.getInstance();
   private lastState = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DisplayFuelToAdd");
 
   override async onWillAppear(ev: WillAppearEvent): Promise<void> {
     this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
@@ -35,25 +36,25 @@ export class DisplayFuelToAdd extends SingletonAction {
    * When the key is pressed - toggle fuel fill
    */
   override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
-    streamDeck.logger.info("[DisplayFuelToAdd] Key down received");
+    this.logger.info("Key down received");
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DisplayFuelToAdd] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
 
     const telemetry = this.sdkController.getCurrentTelemetry();
     if (!telemetry) {
-      streamDeck.logger.warn("[DisplayFuelToAdd] No telemetry data available");
+      this.logger.warn("No telemetry data available");
 
       return;
     }
 
     const pitSvFlags = telemetry.PitSvFlags;
     if (pitSvFlags === null || pitSvFlags === undefined || typeof pitSvFlags !== "number") {
-      streamDeck.logger.warn("[DisplayFuelToAdd] PitSvFlags not available");
+      this.logger.warn("PitSvFlags not available");
 
       return;
     }
@@ -63,17 +64,17 @@ export class DisplayFuelToAdd extends SingletonAction {
       // Fuel fill is on - clear it
       const success = this.pitCommand.clearFuel();
       if (success) {
-        streamDeck.logger.info("[DisplayFuelToAdd] Cleared fuel fill");
+        this.logger.info("Cleared fuel fill");
       } else {
-        streamDeck.logger.warn("[DisplayFuelToAdd] Failed to clear fuel fill");
+        this.logger.warn("Failed to clear fuel fill");
       }
     } else {
       // Fuel fill is off - enable it with current PitSvFuel amount (0 = use existing)
       const success = this.pitCommand.fuel(0);
       if (success) {
-        streamDeck.logger.info("[DisplayFuelToAdd] Enabled fuel fill");
+        this.logger.info("Enabled fuel fill");
       } else {
-        streamDeck.logger.warn("[DisplayFuelToAdd] Failed to enable fuel fill");
+        this.logger.warn("Failed to enable fuel fill");
       }
     }
   }

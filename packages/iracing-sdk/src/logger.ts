@@ -10,6 +10,20 @@ export interface Logger {
   info(message: string): void;
   warn(message: string): void;
   error(message: string): void;
+  createScope(scope: string): Logger;
+}
+
+/**
+ * Create a scoped logger that prefixes messages with a scope name
+ */
+function createScopedLogger(baseLogger: Omit<Logger, "createScope">, scope: string): Logger {
+  return {
+    debug: (message: string) => baseLogger.debug(`[${scope}] ${message}`),
+    info: (message: string) => baseLogger.info(`[${scope}] ${message}`),
+    warn: (message: string) => baseLogger.warn(`[${scope}] ${message}`),
+    error: (message: string) => baseLogger.error(`[${scope}] ${message}`),
+    createScope: (newScope: string) => createScopedLogger(baseLogger, `${scope}:${newScope}`),
+  };
 }
 
 /**
@@ -20,6 +34,7 @@ export const consoleLogger: Logger = {
   info: (message: string) => console.info(message),
   warn: (message: string) => console.warn(message),
   error: (message: string) => console.error(message),
+  createScope: (scope: string) => createScopedLogger(consoleLogger, scope),
 };
 
 /**
@@ -30,6 +45,7 @@ export const silentLogger: Logger = {
   info: () => {},
   warn: () => {},
   error: () => {},
+  createScope: () => silentLogger,
 };
 
 /**

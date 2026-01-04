@@ -20,6 +20,7 @@ export class DoFuelReduce extends SingletonAction<FuelSettings> {
   private updateInterval: NodeJS.Timeout | null = null;
   private activeContexts = new Map<string, FuelSettings>();
   private lastTitle = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DoFuelReduce");
 
   /**
    * When the action appears on the Stream Deck
@@ -111,11 +112,11 @@ export class DoFuelReduce extends SingletonAction<FuelSettings> {
    * When the key is pressed
    */
   override async onKeyDown(ev: KeyDownEvent<FuelSettings>): Promise<void> {
-    streamDeck.logger.info("[DoFuelReduce] Key down received");
+    this.logger.info("Key down received");
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DoFuelReduce] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
@@ -123,14 +124,14 @@ export class DoFuelReduce extends SingletonAction<FuelSettings> {
     // Get current fuel to add from telemetry
     const telemetry = this.sdkController.getCurrentTelemetry();
     if (!telemetry) {
-      streamDeck.logger.warn("[DoFuelReduce] No telemetry data available");
+      this.logger.warn("No telemetry data available");
 
       return;
     }
 
     const currentFuel = telemetry.PitSvFuel;
     if (currentFuel === null || currentFuel === undefined || typeof currentFuel !== "number") {
-      streamDeck.logger.warn("[DoFuelReduce] PitSvFuel not available");
+      this.logger.warn("PitSvFuel not available");
 
       return;
     }
@@ -144,20 +145,20 @@ export class DoFuelReduce extends SingletonAction<FuelSettings> {
       // Use clearFuel() to set fuel to 0
       success = this.pitCommand.clearFuel();
       if (success) {
-        streamDeck.logger.info(`[DoFuelReduce] Cleared fuel (was ${currentFuel}L)`);
+        this.logger.info(`Cleared fuel (was ${currentFuel}L)`);
       }
     } else {
       // Send the pit command with the new total fuel amount
       success = this.pitCommand.fuel(newFuelAmount);
       if (success) {
-        streamDeck.logger.info(
-          `[DoFuelReduce] Set fuel to ${newFuelAmount}L (was ${currentFuel}L, reduced ${amount}L)`,
+        this.logger.info(
+          `Set fuel to ${newFuelAmount}L (was ${currentFuel}L, reduced ${amount}L)`,
         );
       }
     }
 
     if (!success) {
-      streamDeck.logger.warn("[DoFuelReduce] Failed to set fuel");
+      this.logger.warn("Failed to set fuel");
     }
   }
 }

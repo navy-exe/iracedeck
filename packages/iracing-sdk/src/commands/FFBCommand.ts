@@ -3,7 +3,6 @@
  *
  * You can call this any time
  */
-import { getLogger } from "../logger.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, FFBCommandMode } from "./constants.js";
 
@@ -14,7 +13,7 @@ export class FFBCommand extends BroadcastCommand {
   private static _instance: FFBCommand;
 
   private constructor() {
-    super();
+    super("FFBCommand");
   }
 
   /**
@@ -39,7 +38,7 @@ export class FFBCommand extends BroadcastCommand {
     view.setFloat32(0, forceNm, true); // little-endian
     const low = view.getUint16(0, true);
     const high = view.getUint16(2, true);
-    getLogger().info(`[FFBCommand] SetMaxForce: ${forceNm}Nm`);
+    this.logger.info(`SetMaxForce: ${forceNm}Nm`);
 
     return this.sendBroadcast(BroadcastMsg.FFBCommand, FFBCommandMode.MaxForce, low, high);
   }

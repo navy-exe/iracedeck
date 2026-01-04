@@ -32,6 +32,7 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
   private pitCommand = PitCommand.getInstance();
   private activeContexts = new Map<string, ChangeTiresSettings>();
   private lastState = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DoChangeTires");
 
   override async onWillAppear(ev: WillAppearEvent<ChangeTiresSettings>): Promise<void> {
     this.activeContexts.set(ev.action.id, ev.payload.settings);
@@ -175,18 +176,18 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
    * When the key is pressed - toggle tire change selections
    */
   override async onKeyDown(ev: KeyDownEvent<ChangeTiresSettings>): Promise<void> {
-    streamDeck.logger.info("[DoChangeTires] Key down received");
+    this.logger.info("Key down received");
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DoChangeTires] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
 
     const telemetry = this.sdkController.getCurrentTelemetry();
     if (!telemetry) {
-      streamDeck.logger.warn("[DoChangeTires] No telemetry data available");
+      this.logger.warn("No telemetry data available");
 
       return;
     }
@@ -199,34 +200,34 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
     if (settings.lf) {
       if (currentState.lf) {
         // Currently on, turn off by clearing and re-enabling others
-        streamDeck.logger.info("[DoChangeTires] Toggling LF off");
+        this.logger.info("Toggling LF off");
       } else {
         this.pitCommand.leftFront(0);
-        streamDeck.logger.info("[DoChangeTires] Toggling LF on");
+        this.logger.info("Toggling LF on");
       }
     }
     if (settings.rf) {
       if (currentState.rf) {
-        streamDeck.logger.info("[DoChangeTires] Toggling RF off");
+        this.logger.info("Toggling RF off");
       } else {
         this.pitCommand.rightFront(0);
-        streamDeck.logger.info("[DoChangeTires] Toggling RF on");
+        this.logger.info("Toggling RF on");
       }
     }
     if (settings.lr) {
       if (currentState.lr) {
-        streamDeck.logger.info("[DoChangeTires] Toggling LR off");
+        this.logger.info("Toggling LR off");
       } else {
         this.pitCommand.leftRear(0);
-        streamDeck.logger.info("[DoChangeTires] Toggling LR on");
+        this.logger.info("Toggling LR on");
       }
     }
     if (settings.rr) {
       if (currentState.rr) {
-        streamDeck.logger.info("[DoChangeTires] Toggling RR off");
+        this.logger.info("Toggling RR off");
       } else {
         this.pitCommand.rightRear(0);
-        streamDeck.logger.info("[DoChangeTires] Toggling RR on");
+        this.logger.info("Toggling RR on");
       }
     }
 
@@ -254,6 +255,6 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
       if (!currentState.rr && settings.rr) this.pitCommand.rightRear(0);
     }
 
-    streamDeck.logger.info("[DoChangeTires] Tire toggle complete");
+    this.logger.info("Tire toggle complete");
   }
 }

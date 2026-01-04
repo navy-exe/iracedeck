@@ -3,7 +3,6 @@
  *
  * Note: Replay commands only work when you are out of your car (spectating/replay)
  */
-import { getLogger } from "../logger.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, ReplayPosMode, ReplaySearchMode, ReplayStateMode } from "./constants.js";
 
@@ -14,7 +13,7 @@ export class ReplayCommand extends BroadcastCommand {
   private static _instance: ReplayCommand;
 
   private constructor() {
-    super();
+    super("ReplayCommand");
   }
 
   /**
@@ -34,7 +33,7 @@ export class ReplayCommand extends BroadcastCommand {
    * @param slowMotion Enable slow motion mode
    */
   setPlaySpeed(speed: number, slowMotion: boolean = false): boolean {
-    getLogger().info(`[ReplayCommand] SetPlaySpeed: speed=${speed}, slowMotion=${slowMotion}`);
+    this.logger.info(`SetPlaySpeed: speed=${speed}, slowMotion=${slowMotion}`);
 
     return this.sendBroadcast(BroadcastMsg.ReplaySetPlaySpeed, speed, slowMotion ? 1 : 0);
   }
@@ -47,7 +46,7 @@ export class ReplayCommand extends BroadcastCommand {
   setPlayPosition(mode: ReplayPosMode, frameNumber: number): boolean {
     const frameHigh = (frameNumber >> 16) & 0xffff;
     const frameLow = frameNumber & 0xffff;
-    getLogger().info(`[ReplayCommand] SetPlayPosition: mode=${ReplayPosMode[mode]}, frame=${frameNumber}`);
+    this.logger.info(`SetPlayPosition: mode=${ReplayPosMode[mode]}, frame=${frameNumber}`);
 
     return this.sendBroadcast(BroadcastMsg.ReplaySetPlayPosition, mode, frameLow, frameHigh);
   }
@@ -57,7 +56,7 @@ export class ReplayCommand extends BroadcastCommand {
    * @param mode Search mode
    */
   search(mode: ReplaySearchMode): boolean {
-    getLogger().info(`[ReplayCommand] Search: mode=${ReplaySearchMode[mode]}`);
+    this.logger.info(`Search: mode=${ReplaySearchMode[mode]}`);
 
     return this.sendBroadcast(BroadcastMsg.ReplaySearch, mode);
   }
@@ -67,7 +66,7 @@ export class ReplayCommand extends BroadcastCommand {
    * @param mode Replay state mode
    */
   setState(mode: ReplayStateMode): boolean {
-    getLogger().info(`[ReplayCommand] SetState: mode=${ReplayStateMode[mode]}`);
+    this.logger.info(`SetState: mode=${ReplayStateMode[mode]}`);
 
     return this.sendBroadcast(BroadcastMsg.ReplaySetState, mode);
   }
@@ -80,7 +79,7 @@ export class ReplayCommand extends BroadcastCommand {
   searchSessionTime(sessionNum: number, sessionTimeMs: number): boolean {
     const timeHigh = (sessionTimeMs >> 16) & 0xffff;
     const timeLow = sessionTimeMs & 0xffff;
-    getLogger().info(`[ReplayCommand] SearchSessionTime: session=${sessionNum}, timeMs=${sessionTimeMs}`);
+    this.logger.info(`SearchSessionTime: session=${sessionNum}, timeMs=${sessionTimeMs}`);
 
     return this.sendBroadcast(BroadcastMsg.ReplaySearchSessionTime, sessionNum, timeLow, timeHigh);
   }

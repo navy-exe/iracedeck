@@ -6,11 +6,23 @@ import streamDeck from "@elgato/streamdeck";
 import { IRacingSDK, setLogger, TelemetryData } from "@iracedeck/iracing-sdk";
 
 // Configure SDK to use Stream Deck logger
+const sdkLogger = streamDeck.logger.createScope("iRacingSDK");
 setLogger({
-  debug: (msg) => streamDeck.logger.debug(msg),
-  info: (msg) => streamDeck.logger.info(msg),
-  warn: (msg) => streamDeck.logger.warn(msg),
-  error: (msg) => streamDeck.logger.error(msg),
+  debug: (msg) => sdkLogger.debug(msg),
+  info: (msg) => sdkLogger.info(msg),
+  warn: (msg) => sdkLogger.warn(msg),
+  error: (msg) => sdkLogger.error(msg),
+  createScope: (scope) => {
+    const scopedLogger = sdkLogger.createScope(scope);
+    
+    return {
+      debug: (msg) => scopedLogger.debug(msg),
+      info: (msg) => scopedLogger.info(msg),
+      warn: (msg) => scopedLogger.warn(msg),
+      error: (msg) => scopedLogger.error(msg),
+      createScope: () => scopedLogger, // Nested scopes just return the same scoped logger
+    };
+  },
 });
 
 type TelemetryCallback = (telemetry: TelemetryData | null, isConnected: boolean) => void;

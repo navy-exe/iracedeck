@@ -3,7 +3,6 @@
  *
  * Note: Camera commands only work when you are out of your car (spectating/replay)
  */
-import { getLogger } from "../logger.js";
 import { addFlag, CameraState, removeFlag } from "../types.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, CameraFocusMode } from "./constants.js";
@@ -15,7 +14,7 @@ export class CameraCommand extends BroadcastCommand {
   private static _instance: CameraCommand;
 
   private constructor() {
-    super();
+    super("CameraCommand");
   }
 
   /**
@@ -36,7 +35,7 @@ export class CameraCommand extends BroadcastCommand {
    * @param camera Camera number within group
    */
   switchPos(position: number | CameraFocusMode, group: number, camera: number): boolean {
-    getLogger().info(`[CameraCommand] SwitchPos: position=${position}, group=${group}, camera=${camera}`);
+    this.logger.info(`SwitchPos: position=${position}, group=${group}, camera=${camera}`);
 
     return this.sendBroadcast(BroadcastMsg.CamSwitchPos, position, group, camera);
   }
@@ -48,7 +47,7 @@ export class CameraCommand extends BroadcastCommand {
    * @param camera Camera number within group
    */
   switchNum(carNumber: number | CameraFocusMode, group: number, camera: number): boolean {
-    getLogger().info(`[CameraCommand] SwitchNum: carNumber=${carNumber}, group=${group}, camera=${camera}`);
+    this.logger.info(`SwitchNum: carNumber=${carNumber}, group=${group}, camera=${camera}`);
 
     return this.sendBroadcast(BroadcastMsg.CamSwitchNum, carNumber, group, camera);
   }
@@ -67,7 +66,7 @@ export class CameraCommand extends BroadcastCommand {
    * camera.setState(removeFlag(currentState, CameraState.UIHidden));
    */
   setState(state: number): boolean {
-    getLogger().info(`[CameraCommand] SetState: state=${state} (0x${state.toString(16)})`);
+    this.logger.info(`SetState: state=${state} (0x${state.toString(16)})`);
 
     return this.sendBroadcast(BroadcastMsg.CamSetState, state);
   }

@@ -20,6 +20,7 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
   private updateInterval: NodeJS.Timeout | null = null;
   private activeContexts = new Map<string, FuelSettings>();
   private lastTitle = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DoFuelAdd");
 
   /**
    * When the action appears on the Stream Deck
@@ -111,11 +112,11 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
    * When the key is pressed
    */
   override async onKeyDown(ev: KeyDownEvent<FuelSettings>): Promise<void> {
-    streamDeck.logger.info("[DoFuelAdd] Key down received");
+    this.logger.info("Key down received");
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DoFuelAdd] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
@@ -123,14 +124,14 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
     // Get current fuel to add from telemetry
     const telemetry = this.sdkController.getCurrentTelemetry();
     if (!telemetry) {
-      streamDeck.logger.warn("[DoFuelAdd] No telemetry data available");
+      this.logger.warn("No telemetry data available");
 
       return;
     }
 
     const currentFuel = telemetry.PitSvFuel;
     if (currentFuel === null || currentFuel === undefined || typeof currentFuel !== "number") {
-      streamDeck.logger.warn("[DoFuelAdd] PitSvFuel not available");
+      this.logger.warn("PitSvFuel not available");
 
       return;
     }
@@ -142,9 +143,9 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
     const success = this.pitCommand.fuel(newFuelAmount);
 
     if (success) {
-      streamDeck.logger.info(`[DoFuelAdd] Set fuel to ${newFuelAmount}L (was ${currentFuel}L, added ${amount}L)`);
+      this.logger.info(`Set fuel to ${newFuelAmount}L (was ${currentFuel}L, added ${amount}L)`);
     } else {
-      streamDeck.logger.warn("[DoFuelAdd] Failed to set fuel");
+      this.logger.warn("Failed to set fuel");
     }
   }
 }

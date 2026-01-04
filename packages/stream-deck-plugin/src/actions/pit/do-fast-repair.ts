@@ -21,6 +21,7 @@ export class DoFastRepair extends SingletonAction {
   private pitCommand = PitCommand.getInstance();
   private activeContexts = new Set<string>();
   private lastState = new Map<string, string>();
+  private logger = streamDeck.logger.createScope("DoFastRepair");
 
   override async onWillAppear(ev: WillAppearEvent): Promise<void> {
     this.activeContexts.add(ev.action.id);
@@ -134,11 +135,11 @@ export class DoFastRepair extends SingletonAction {
    * When the key is pressed - toggle fast repair
    */
   override async onKeyDown(_ev: KeyDownEvent): Promise<void> {
-    streamDeck.logger.info("[DoFastRepair] Key down received");
+    this.logger.info("Key down received");
 
     // Check if connected to iRacing
     if (!this.sdkController.getConnectionStatus()) {
-      streamDeck.logger.info("[DoFastRepair] Not connected to iRacing");
+      this.logger.info("Not connected to iRacing");
 
       return;
     }
@@ -148,7 +149,7 @@ export class DoFastRepair extends SingletonAction {
     // Check if fast repairs are available
     const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
     if (fastRepairsAvailable === 0) {
-      streamDeck.logger.info("[DoFastRepair] No fast repairs available");
+      this.logger.info("No fast repairs available");
 
       return;
     }
@@ -158,11 +159,11 @@ export class DoFastRepair extends SingletonAction {
     if (isCurrentlyOn) {
       // Currently on, turn off
       this.pitCommand.clearFastRepair();
-      streamDeck.logger.info("[DoFastRepair] Toggling fast repair OFF");
+      this.logger.info("Toggling fast repair OFF");
     } else {
       // Currently off, turn on
       this.pitCommand.fastRepair();
-      streamDeck.logger.info("[DoFastRepair] Toggling fast repair ON");
+      this.logger.info("Toggling fast repair ON");
     }
   }
 }
