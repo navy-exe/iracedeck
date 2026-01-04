@@ -8,16 +8,19 @@
 #include <napi.h>
 #include <windows.h>
 #include <string>
+#include "irsdk_defines.h"
 
 /**
  * Open a memory-mapped file by name
  * @param name - Name of the memory-mapped file (e.g., "Local\\IRSDKMemMapFileName")
  * @returns Handle as number, or 0 on failure
  */
-Napi::Value OpenMemoryMap(const Napi::CallbackInfo& info) {
+Napi::Value OpenMemoryMap(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 1 || !info[0].IsString()) {
+    if (info.Length() < 1 || !info[0].IsString())
+    {
         Napi::TypeError::New(env, "String argument expected for memory map name").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -26,14 +29,16 @@ Napi::Value OpenMemoryMap(const Napi::CallbackInfo& info) {
 
     HANDLE hMapFile = OpenFileMappingA(FILE_MAP_READ, FALSE, name.c_str());
 
-    if (hMapFile == NULL || hMapFile == INVALID_HANDLE_VALUE) {
+    if (hMapFile == NULL || hMapFile == INVALID_HANDLE_VALUE)
+    {
         return Napi::Number::New(env, 0);
     }
 
     // Map the file into memory
     LPVOID pMem = MapViewOfFile(hMapFile, FILE_MAP_READ, 0, 0, 0);
 
-    if (pMem == NULL) {
+    if (pMem == NULL)
+    {
         CloseHandle(hMapFile);
         return Napi::Number::New(env, 0);
     }
@@ -47,17 +52,20 @@ Napi::Value OpenMemoryMap(const Napi::CallbackInfo& info) {
  * Close a memory-mapped file
  * @param handle - Handle returned from OpenMemoryMap
  */
-Napi::Value CloseMemoryMap(const Napi::CallbackInfo& info) {
+Napi::Value CloseMemoryMap(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 1 || !info[0].IsNumber()) {
+    if (info.Length() < 1 || !info[0].IsNumber())
+    {
         Napi::TypeError::New(env, "Number argument expected for handle").ThrowAsJavaScriptException();
         return env.Undefined();
     }
 
     uintptr_t ptr = static_cast<uintptr_t>(info[0].As<Napi::Number>().Int64Value());
 
-    if (ptr != 0) {
+    if (ptr != 0)
+    {
         UnmapViewOfFile(reinterpret_cast<LPVOID>(ptr));
         // Note: We don't have the original file handle here, so we can't close it
         // In a production implementation, we'd want to track both handles
@@ -73,10 +81,12 @@ Napi::Value CloseMemoryMap(const Napi::CallbackInfo& info) {
  * @param length - Number of bytes to read
  * @returns Buffer containing the bytes
  */
-Napi::Value ReadMemory(const Napi::CallbackInfo& info) {
+Napi::Value ReadMemory(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+    if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber())
+    {
         Napi::TypeError::New(env, "Expected (handle: number, offset: number, length: number)").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -85,14 +95,15 @@ Napi::Value ReadMemory(const Napi::CallbackInfo& info) {
     uint32_t offset = info[1].As<Napi::Number>().Uint32Value();
     uint32_t length = info[2].As<Napi::Number>().Uint32Value();
 
-    if (ptr == 0) {
+    if (ptr == 0)
+    {
         Napi::Error::New(env, "Invalid handle").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Create a buffer and copy the data
     Napi::Buffer<uint8_t> buffer = Napi::Buffer<uint8_t>::New(env, length);
-    uint8_t* basePtr = reinterpret_cast<uint8_t*>(ptr);
+    uint8_t *basePtr = reinterpret_cast<uint8_t *>(ptr);
     memcpy(buffer.Data(), basePtr + offset, length);
 
     return buffer;
@@ -104,19 +115,22 @@ Napi::Value ReadMemory(const Napi::CallbackInfo& info) {
  * @param windowName - Window title (or null)
  * @returns Window handle as number, or 0 if not found
  */
-Napi::Value FindWindowByName(const Napi::CallbackInfo& info) {
+Napi::Value FindWindowByName(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    const char* className = nullptr;
-    const char* windowName = nullptr;
+    const char *className = nullptr;
+    const char *windowName = nullptr;
     std::string classNameStr, windowNameStr;
 
-    if (info.Length() >= 1 && info[0].IsString()) {
+    if (info.Length() >= 1 && info[0].IsString())
+    {
         classNameStr = info[0].As<Napi::String>().Utf8Value();
         className = classNameStr.c_str();
     }
 
-    if (info.Length() >= 2 && info[1].IsString()) {
+    if (info.Length() >= 2 && info[1].IsString())
+    {
         windowNameStr = info[1].As<Napi::String>().Utf8Value();
         windowName = windowNameStr.c_str();
     }
@@ -131,10 +145,12 @@ Napi::Value FindWindowByName(const Napi::CallbackInfo& info) {
  * @param messageName - Name of the message to register
  * @returns Message ID
  */
-Napi::Value RegisterWindowMessageWrapper(const Napi::CallbackInfo& info) {
+Napi::Value RegisterWindowMessageWrapper(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 1 || !info[0].IsString()) {
+    if (info.Length() < 1 || !info[0].IsString())
+    {
         Napi::TypeError::New(env, "String argument expected for message name").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -153,10 +169,12 @@ Napi::Value RegisterWindowMessageWrapper(const Napi::CallbackInfo& info) {
  * @param lParam - Second parameter
  * @returns Result of SendMessage
  */
-Napi::Value SendMessageToWindow(const Napi::CallbackInfo& info) {
+Napi::Value SendMessageToWindow(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 4) {
+    if (info.Length() < 4)
+    {
         Napi::TypeError::New(env, "Expected (hwnd, msg, wParam, lParam)").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -179,10 +197,12 @@ Napi::Value SendMessageToWindow(const Napi::CallbackInfo& info) {
  * @param lParam - Second parameter
  * @returns Success boolean
  */
-Napi::Value PostMessageToWindow(const Napi::CallbackInfo& info) {
+Napi::Value PostMessageToWindow(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 4) {
+    if (info.Length() < 4)
+    {
         Napi::TypeError::New(env, "Expected (hwnd, msg, wParam, lParam)").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -205,10 +225,12 @@ Napi::Value PostMessageToWindow(const Napi::CallbackInfo& info) {
  * @param lParam - Second parameter
  * @returns Success boolean
  */
-Napi::Value SendNotifyMessageToWindow(const Napi::CallbackInfo& info) {
+Napi::Value SendNotifyMessageToWindow(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 4) {
+    if (info.Length() < 4)
+    {
         Napi::TypeError::New(env, "Expected (hwnd, msg, wParam, lParam)").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -217,9 +239,12 @@ Napi::Value SendNotifyMessageToWindow(const Napi::CallbackInfo& info) {
     HWND hwnd;
 
     // Handle HWND_BROADCAST (0xFFFF)
-    if (hwndVal == 0xFFFF) {
+    if (hwndVal == 0xFFFF)
+    {
         hwnd = HWND_BROADCAST;
-    } else {
+    }
+    else
+    {
         hwnd = reinterpret_cast<HWND>(hwndVal);
     }
 
@@ -239,10 +264,12 @@ Napi::Value SendNotifyMessageToWindow(const Napi::CallbackInfo& info) {
  * @param text - String to send
  * @returns Success boolean
  */
-Napi::Value SendChatString(const Napi::CallbackInfo& info) {
+Napi::Value SendChatString(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsString()) {
+    if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsString())
+    {
         Napi::TypeError::New(env, "Expected (hwnd: number, text: string)").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -250,12 +277,14 @@ Napi::Value SendChatString(const Napi::CallbackInfo& info) {
     HWND hwnd = reinterpret_cast<HWND>(static_cast<uintptr_t>(info[0].As<Napi::Number>().Int64Value()));
     std::u16string text = info[1].As<Napi::String>().Utf16Value();
 
-    if (hwnd == NULL) {
+    if (hwnd == NULL)
+    {
         return Napi::Boolean::New(env, false);
     }
 
     // Send each character using WM_CHAR
-    for (char16_t ch : text) {
+    for (char16_t ch : text)
+    {
         SendMessageW(hwnd, WM_CHAR, static_cast<WPARAM>(ch), 0);
     }
 
@@ -267,10 +296,12 @@ Napi::Value SendChatString(const Napi::CallbackInfo& info) {
  * @param hwnd - Window handle
  * @param vkCode - Virtual key code
  */
-Napi::Value SendKeyPress(const Napi::CallbackInfo& info) {
+Napi::Value SendKeyPress(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
 
-    if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+    if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber())
+    {
         Napi::TypeError::New(env, "Expected (hwnd: number, vkCode: number)").ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -285,10 +316,93 @@ Napi::Value SendKeyPress(const Napi::CallbackInfo& info) {
 }
 
 /**
+ * Send a complete chat message to iRacing
+ * This function handles the entire chat flow:
+ * 1. Opens chat window via broadcast message
+ * 2. Waits for chat window to open
+ * 3. Types the message using WM_CHAR
+ * 4. Presses Enter to send
+ * 5. Closes the chat window
+ *
+ * @param message - The message to send
+ * @returns Success boolean
+ */
+Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 1 || !info[0].IsString())
+    {
+        Napi::TypeError::New(env, "Expected (message: string)").ThrowAsJavaScriptException();
+        return Napi::Boolean::New(env, false);
+    }
+
+    std::u16string message = info[0].As<Napi::String>().Utf16Value();
+
+    if (message.empty())
+    {
+        return Napi::Boolean::New(env, false);
+    }
+
+    // Register the iRacing broadcast message
+    UINT broadcastMsgId = RegisterWindowMessageA("IRSDK_BROADCASTMSG");
+    if (broadcastMsgId == 0)
+    {
+        return Napi::Boolean::New(env, false);
+    }
+
+    // Helper to create wParam (from iRacing SDK CYCLEVARIABLE_CYCLEVARIABLE macro)
+    auto makeWParam = [](int msgType, int var1) -> WPARAM
+    {
+        return (msgType & 0xFFFF) | ((var1 & 0xFFFF) << 16);
+    };
+
+    // 1. Open chat window via broadcast
+    WPARAM openChatWParam = makeWParam(irsdk_BroadcastChatComand, irsdk_ChatCommand_BeginChat);
+    SendNotifyMessageW(HWND_BROADCAST, broadcastMsgId, openChatWParam, 0);
+
+    // 2. Wait for chat window to open
+    Sleep(1);
+
+    // 3. Find the iRacing sim window to send characters to
+    HWND hwnd = FindWindowA("SimWinClass", nullptr);
+    if (hwnd == NULL)
+    {
+        // Try alternate window class
+        hwnd = FindWindowA("obsimwin", nullptr);
+    }
+
+    if (hwnd == NULL)
+    {
+        // Cancel the chat if we can't find the window
+        WPARAM cancelWParam = makeWParam(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel);
+        SendNotifyMessageW(HWND_BROADCAST, broadcastMsgId, cancelWParam, 0);
+        return Napi::Boolean::New(env, false);
+    }
+
+    // 4. Type the message using WM_CHAR
+    for (char16_t ch : message)
+    {
+        SendMessageW(hwnd, WM_CHAR, static_cast<WPARAM>(ch), 0);
+    }
+
+    // 5. Press Enter to send
+    SendMessageW(hwnd, WM_KEYDOWN, VK_RETURN, 0);
+    SendMessageW(hwnd, WM_KEYUP, VK_RETURN, 0);
+
+    // 6. Close chat window
+    WPARAM cancelWParam = makeWParam(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel);
+    SendNotifyMessageW(HWND_BROADCAST, broadcastMsgId, cancelWParam, 0);
+
+    return Napi::Boolean::New(env, true);
+}
+
+/**
  * Get the last Win32 error code
  * @returns Error code
  */
-Napi::Value GetLastWin32Error(const Napi::CallbackInfo& info) {
+Napi::Value GetLastWin32Error(const Napi::CallbackInfo &info)
+{
     Napi::Env env = info.Env();
     return Napi::Number::New(env, GetLastError());
 }
@@ -296,7 +410,8 @@ Napi::Value GetLastWin32Error(const Napi::CallbackInfo& info) {
 /**
  * Module initialization
  */
-Napi::Object Init(Napi::Env env, Napi::Object exports) {
+Napi::Object Init(Napi::Env env, Napi::Object exports)
+{
     // Memory-mapped file operations
     exports.Set("openMemoryMap", Napi::Function::New(env, OpenMemoryMap));
     exports.Set("closeMemoryMap", Napi::Function::New(env, CloseMemoryMap));
@@ -314,6 +429,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     // Optimized chat
     exports.Set("sendChatString", Napi::Function::New(env, SendChatString));
     exports.Set("sendKeyPress", Napi::Function::New(env, SendKeyPress));
+    exports.Set("sendChatMessage", Napi::Function::New(env, SendChatMessage));
 
     // Utilities
     exports.Set("getLastError", Napi::Function::New(env, GetLastWin32Error));

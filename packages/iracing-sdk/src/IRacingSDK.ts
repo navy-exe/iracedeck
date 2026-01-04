@@ -2,7 +2,7 @@
  * iRacing SDK - Memory-mapped file reader
  * Uses native addon to access Windows APIs for reading iRacing's shared memory
  */
-import { closeMemoryMap, findWindow, openMemoryMap, readMemory } from "@iracedeck/iracing-native";
+import { closeMemoryMap, openMemoryMap, readMemory } from "@iracedeck/iracing-native";
 import yaml from "yaml";
 
 import { ChatCommand } from "./commands/ChatCommand.js";
@@ -22,9 +22,6 @@ import {
 
 // iRacing shared memory name
 const IRACING_MEMMAPFILENAME = "Local\\IRSDKMemMapFileName";
-
-// iRacing window title
-const IRACING_WINDOW_TITLE = "iRacing.com Simulator";
 
 /**
  * iRacing SDK Client
@@ -373,50 +370,16 @@ export class IRacingSDK {
   }
 
   /**
-   * Find the iRacing window
-   * @returns Window handle as number, or 0 if not found
-   */
-  findIRacingWindow(): number {
-    getLogger().info("[iRacing SDK] Finding iRacing window");
-    const hwnd = findWindow(null, IRACING_WINDOW_TITLE);
-    if (!hwnd) {
-      getLogger().warn("[iRacing SDK] iRacing window not found");
-    } else {
-      getLogger().info("[iRacing SDK] iRacing window found");
-    }
-
-    return hwnd;
-  }
-
-  /**
    * Send a custom chat message to iRacing
    * @param message The message to send
    */
   sendChatMessage(message: string): boolean {
-    getLogger().info("[iRacing SDK] About to send a chat message");
-
     if (!this.isConnected()) {
       getLogger().warn("[iRacing SDK] Cannot send chat message - not connected");
 
       return false;
     }
 
-    try {
-      const hwnd = this.findIRacingWindow();
-
-      if (!hwnd) {
-        getLogger().error("[iRacing SDK] Could not find iRacing window");
-
-        return false;
-      }
-
-      getLogger().debug("[iRacing SDK] iRacing window found");
-
-      return ChatCommand.getInstance().sendMessage(hwnd, message);
-    } catch (error) {
-      getLogger().error(`[iRacing SDK] Error sending chat message: ${error}`);
-
-      return false;
-    }
+    return ChatCommand.getInstance().sendMessage(message);
   }
 }

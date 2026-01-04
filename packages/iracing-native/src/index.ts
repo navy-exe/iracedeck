@@ -120,6 +120,22 @@ export function sendKeyPress(hwnd: number, vkCode: number): void {
 }
 
 /**
+ * Send a complete chat message to iRacing
+ * This function handles the entire chat flow:
+ * 1. Opens chat window via broadcast message
+ * 2. Waits for chat window to open
+ * 3. Types the message using WM_CHAR
+ * 4. Presses Enter to send
+ * 5. Closes the chat window
+ *
+ * @param message - The message to send
+ * @returns Success boolean
+ */
+export function sendChatMessage(message: string): boolean {
+  return addon.sendChatMessage(message);
+}
+
+/**
  * Get the last Win32 error code
  * @returns Error code
  */

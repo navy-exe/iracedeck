@@ -3,7 +3,7 @@
  *
  * Handles chat operations using the iRacing broadcast API and Windows messaging
  */
-import { sendChatString, sendKeyPress, VK_RETURN } from "@iracedeck/iracing-native";
+import { sendChatMessage as nativeSendChatMessage } from "@iracedeck/iracing-native";
 
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, ChatCommandMode } from "./constants.js";
@@ -88,20 +88,13 @@ export class ChatCommand extends BroadcastCommand {
 
   /**
    * Send a custom chat message to iRacing
-   * Opens chat, types the message, and sends it
-   * @param hwnd Window handle to send the message to
+   * Opens chat, types the message, sends it, and closes the chat window
    * @param message The message to send
    * @returns Success
    */
-  sendMessage(hwnd: number, message: string): boolean {
+  sendMessage(message: string): boolean {
     if (!message || message.trim().length === 0) {
       this.logger.warn("Cannot send empty message");
-
-      return false;
-    }
-
-    if (!hwnd) {
-      this.logger.error("Invalid window handle");
 
       return false;
     }
@@ -109,26 +102,15 @@ export class ChatCommand extends BroadcastCommand {
     try {
       this.logger.info(`Sending chat message: "${message}"`);
 
-      // Open chat window
-      this.beginChat();
+      const result = nativeSendChatMessage(message);
 
-      this.logger.info("Chat window opened");
-
-      // Wait for chat window to open, then type message
-      setTimeout(() => {
-        // Send each character using WM_CHAR (optimized in native addon)
-        sendChatString(hwnd, message);
-
-        // Press Enter to send
-        sendKeyPress(hwnd, VK_RETURN);
-
-        // Close chat window
-        this.cancel();
-
+      if (result) {
         this.logger.info("Chat message sent successfully");
-      }, 5);
+      } else {
+        this.logger.error("Failed to send chat message");
+      }
 
-      return true;
+      return result;
     } catch (error) {
       this.logger.error(`Error sending chat message: ${error}`);
 
