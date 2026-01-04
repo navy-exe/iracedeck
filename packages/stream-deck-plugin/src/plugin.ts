@@ -14,11 +14,13 @@ import { DoTireCompound } from "./actions/pit/do-tire-compound.js";
 import { DisplayGear } from "./actions/vehicle/display-gear.js";
 // Vehicle actions
 import { DisplaySpeed } from "./actions/vehicle/display-speed.js";
+import { TestAction } from "./actions/comms/test-action.js";
 
 // We can enable "trace" logging so that all messages between the Stream Deck, and the plugin are recorded. When storing sensitive information
 streamDeck.logger.setLevel("trace");
 
 // Register iRacing actions
+streamDeck.actions.registerAction(new TestAction());
 streamDeck.actions.registerAction(new DisplaySpeed());
 streamDeck.actions.registerAction(new DisplayGear());
 streamDeck.actions.registerAction(new DisplaySky());

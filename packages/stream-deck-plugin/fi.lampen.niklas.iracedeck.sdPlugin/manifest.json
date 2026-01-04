@@ -5,6 +5,22 @@
     "Author": "Niklas Lampén",
     "Actions": [
         {
+            "Name": "Test Action",
+            "UUID": "fi.lampen.niklas.iracedeck.comms.test-action",
+            "Icon": "imgs/actions/vehicle/display-speed/icon",
+            "Tooltip": "Test action.",
+            "Controllers": [
+                "Keypad"
+            ],
+            "States": [
+                {
+                    "Image": "imgs/actions/vehicle/display-speed/key",
+                    "TitleAlignment": "middle",
+                    "FontSize": 10
+                }
+            ]
+        },
+        {
             "Name": "Display Speed",
             "UUID": "fi.lampen.niklas.iracedeck.vehicle.display-speed",
             "Icon": "imgs/actions/vehicle/display-speed/icon",
