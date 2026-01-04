@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "type": "module",
-    "packageManager": "pnpm",
+    "packageManager": "pnpm@10.0.0",
     "scripts": {
         "build": "tsc",
         "clean": "rimraf dist",
