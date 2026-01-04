@@ -4,6 +4,7 @@ import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import path from "node:path";
 import url from "node:url";
+import process from "node:process";
 
 const isWatching = !!process.env.ROLLUP_WATCH;
 const sdPlugin = "fi.lampen.niklas.iracedeck.sdPlugin";
@@ -51,7 +52,7 @@ const config = {
 					dependencies: {
 						"@iracedeck/iracing-native": "file:../../../iracing-native",
 						yaml: "^2.8.2",
-					},
+					}
 				};
 				this.emitFile({ fileName: "package.json", source: JSON.stringify(pkg, null, 2), type: "asset" });
 			},
