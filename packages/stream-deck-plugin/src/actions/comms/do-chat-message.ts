@@ -6,6 +6,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { CameraCommand, CameraState, hasFlag, SDKController } from "@iracedeck/iracing-sdk";
+import z from "zod";
 
 /**
  * Do Chat Message Action
@@ -205,10 +206,12 @@ export class DoChatMessage extends SingletonAction<ChatSettings> {
   }
 }
 
+const ChatSettings = z.object({
+  message: z.string().default(""),
+  iconColor: z.string().default("#4a90d9"),
+});
+
 /**
  * Settings for the chat message action
  */
-type ChatSettings = {
-  message?: string;
-  iconColor?: string;
-};
+type ChatSettings = z.infer<typeof ChatSettings>;

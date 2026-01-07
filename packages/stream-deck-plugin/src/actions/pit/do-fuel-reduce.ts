@@ -6,6 +6,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { PitCommand, SDKController } from "@iracedeck/iracing-sdk";
+import z from "zod";
 
 /**
  * Do Fuel Reduce Action
@@ -138,7 +139,7 @@ export class DoFuelReduce extends SingletonAction<FuelSettings> {
       return;
     }
 
-    const amount = ev.payload.settings.amount || 1;
+    const { amount } = FuelSettings.parse(ev.payload.settings);
     const newFuelAmount = Math.max(0, currentFuel - amount);
 
     let success: boolean;
@@ -166,9 +167,11 @@ export class DoFuelReduce extends SingletonAction<FuelSettings> {
   }
 }
 
+const FuelSettings = z.object({
+  amount: z.coerce.number().default(1),
+});
+
 /**
  * Settings for the fuel reduce action
  */
-type FuelSettings = {
-  amount?: number;
-};
+type FuelSettings = z.infer<typeof FuelSettings>;

@@ -23,6 +23,7 @@ export default [
       ...tseslint.configs.recommended.rules,
       "@typescript-eslint/no-explicit-any": "off",
       "no-undef": 'off',
+      'no-redeclare': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {

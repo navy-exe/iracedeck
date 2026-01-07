@@ -6,6 +6,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { PitCommand, SDKController } from "@iracedeck/iracing-sdk";
+import z from "zod";
 
 /**
  * Do Fuel Add Action
@@ -87,7 +88,7 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
     let title = "iRacing\nnot\nconnected";
 
     if (this.sdkController.getConnectionStatus()) {
-      const amount = settings.amount || 1;
+      const amount = settings.amount || 2;
       title = `+${amount} L`;
     }
 
@@ -138,7 +139,7 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
       return;
     }
 
-    const amount = ev.payload.settings.amount || 1;
+    const { amount } = FuelSettings.parse(ev.payload.settings);
     const newFuelAmount = currentFuel + amount;
 
     // Send the pit command with the new total fuel amount
@@ -152,9 +153,11 @@ export class DoFuelAdd extends SingletonAction<FuelSettings> {
   }
 }
 
+const FuelSettings = z.object({
+  amount: z.coerce.number().default(2),
+});
+
 /**
  * Settings for the fuel add action
  */
-type FuelSettings = {
-  amount?: number;
-};
+type FuelSettings = z.infer<typeof FuelSettings>;

@@ -6,6 +6,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { SDKController } from "@iracedeck/iracing-sdk";
+import z from "zod";
 
 /**
  * Test Action
@@ -143,9 +144,11 @@ export class TestAction extends SingletonAction<TestSettings> {
   }
 }
 
+const TestSettings = z.object({
+  message: z.string().default(""),
+});
+
 /**
- * Settings for the chat message action
+ * Settings for the test action
  */
-type TestSettings = {
-  message?: string;
-};
+type TestSettings = z.infer<typeof TestSettings>;

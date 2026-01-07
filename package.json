@@ -11,7 +11,7 @@
         "lint:fix": "eslint --fix packages/*/src/**",
         "format": "prettier --check \"packages/*/src/**/*.ts\"",
         "format:fix": "prettier --write \"packages/*/src/**/*.ts\"",
-        "precommit": "pnpm lint && pnpm format && pnpm clean && pnpm build"
+        "precommit": "pnpm lint:fix && pnpm format:fix && pnpm install && pnpm clean && pnpm build"
     },
     "devDependencies": {
         "@elgato/eslint-config": "^0.3.1",

@@ -6,16 +6,19 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { hasFlag, PitCommand, PitSvFlags, SDKController, TelemetryData } from "@iracedeck/iracing-sdk";
+import z from "zod";
+
+const ChangeTiresSettings = z.object({
+  lf: z.coerce.boolean().default(true),
+  rf: z.coerce.boolean().default(true),
+  lr: z.coerce.boolean().default(true),
+  rr: z.coerce.boolean().default(true),
+});
 
 /**
  * Settings for the change tires action
  */
-type ChangeTiresSettings = {
-  lf?: boolean; // Toggle left front
-  rf?: boolean; // Toggle right front
-  lr?: boolean; // Toggle left rear
-  rr?: boolean; // Toggle right rear
-};
+type ChangeTiresSettings = z.infer<typeof ChangeTiresSettings>;
 
 /**
  * Toggle Tires Action
@@ -146,7 +149,7 @@ export class DoChangeTires extends SingletonAction<ChangeTiresSettings> {
 
     if (!action) return;
 
-    const settings = this.activeContexts.get(contextId) || {};
+    const settings = ChangeTiresSettings.parse(this.activeContexts.get(contextId) || {});
 
     // Get current tire state from telemetry (for icon display)
     const tireState = this.getTireState(telemetry);
