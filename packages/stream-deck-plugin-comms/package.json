@@ -1,14 +1,14 @@
 {
-    "name": "@iracedeck/stream-deck-plugin",
+    "name": "@iracedeck/stream-deck-plugin-comms",
     "version": "1.0.0",
-    "description": "Stream Deck plugin for iRacing - displays telemetry and controls pit service",
+    "description": "Stream Deck plugin for iRacing - Communication related functionality",
     "type": "module",
     "packageManager": "pnpm@10.0.0",
     "scripts": {
         "build": "rollup -c && npm run postbuild",
-        "postbuild": "cd fi.lampen.niklas.iracedeck.sdPlugin/bin && npm install",
-        "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart fi.lampen.niklas.iracedeck\"",
-        "clean": "rimraf fi.lampen.niklas.iracedeck.sdPlugin/bin/plugin.js fi.lampen.niklas.iracedeck.sdPlugin/bin/plugin.js.map"
+        "postbuild": "cd fi.lampen.niklas.iracedeck.comms.sdPlugin/bin && npm install",
+        "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart fi.lampen.niklas.iracedeck.comms\"",
+        "clean": "rimraf fi.lampen.niklas.iracedeck.comms.sdPlugin/bin/plugin.js fi.lampen.niklas.iracedeck.comms.sdPlugin/bin/plugin.js.map"
     },
     "dependencies": {
         "@elgato/streamdeck": "^2.0.0",
@@ -21,6 +21,7 @@
         "@rollup/plugin-node-resolve": "^15.2.2",
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^12.1.0",
+        "@tsconfig/node20": "^20.1.2",
         "@types/node": "~20.15.0",
         "rimraf": "^5.0.0",
         "rollup": "^4.0.2",

@@ -5,13 +5,15 @@
     "type": "module",
     "scripts": {
         "build": "turbo run build",
+        "build:stream-deck": "pnpm --filter \"@iracedeck/stream-deck-*\" build",
         "dev": "turbo run dev",
         "clean": "turbo run clean",
         "lint": "eslint packages/*/src/**",
         "lint:fix": "eslint --fix packages/*/src/**",
         "format": "prettier --check \"packages/*/src/**/*.ts\"",
         "format:fix": "prettier --write \"packages/*/src/**/*.ts\"",
-        "precommit": "pnpm lint:fix && pnpm format:fix && pnpm install && pnpm clean && pnpm build"
+        "precommit": "pnpm lint:fix && pnpm format:fix && pnpm install && pnpm clean && pnpm build",
+        "watch:stream-deck": "pnpm --filter \"@iracedeck/stream-deck-*\" run watch"
     },
     "devDependencies": {
         "@elgato/eslint-config": "^0.3.1",

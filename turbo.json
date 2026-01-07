@@ -3,7 +3,13 @@
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
-            "outputs": ["dist/**", "build/**", "bin/**", "fi.lampen.niklas.iracedeck.sdPlugin/**"]
+            "outputs": [
+                "dist/**", 
+                "build/**", 
+                "bin/**", 
+                "fi.lampen.niklas.iracedeck.sdPlugin/**",
+                "fi.lampen.niklas.iracedeck.*.sdPlugin/**"
+            ]
         },
         "dev": {
             "dependsOn": ["^build"],
