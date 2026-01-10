@@ -12,6 +12,8 @@
         "lint:fix": "eslint --fix packages/*/src/**",
         "format": "prettier --check \"packages/*/src/**/*.ts\"",
         "format:fix": "prettier --write \"packages/*/src/**/*.ts\"",
+        "test": "vitest run",
+        "test:watch": "vitest",
         "precommit": "pnpm lint:fix && pnpm format:fix && pnpm install && pnpm clean && pnpm build",
         "watch:stream-deck": "pnpm --filter \"@iracedeck/stream-deck-*\" run watch"
     },
@@ -28,6 +30,7 @@
         "globals": "^17.0.0",
         "prettier": "^3.7.4",
         "turbo": "^2.0.0",
-        "typescript": "^5.2.2"
+        "typescript": "^5.2.2",
+        "vitest": "^4.0.16"
     }
 }

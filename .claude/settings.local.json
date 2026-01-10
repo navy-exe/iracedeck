@@ -23,7 +23,9 @@
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
       "Bash(git mv:*)",
-      "Bash(pnpm --filter @iracedeck/logger run build:*)"
+      "Bash(pnpm --filter @iracedeck/logger run build:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm test:*)"
     ]
   }
 }
