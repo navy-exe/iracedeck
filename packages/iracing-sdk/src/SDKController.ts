@@ -10,35 +10,16 @@ import { TelemetryData } from "./types.js";
 export type TelemetryCallback = (telemetry: TelemetryData | null, isConnected: boolean) => void;
 
 export class SDKController {
-  private static _instance: SDKController;
-
-  private sdk: IRacingSDK;
-  private logger: ILogger = silentLogger;
+  private readonly sdk: IRacingSDK;
+  private readonly logger: ILogger;
   private subscribers = new Map<string, TelemetryCallback>();
   private updateInterval: NodeJS.Timeout | null = null;
   private reconnectInterval: NodeJS.Timeout | null = null;
   private isConnected = false;
   private lastValidTelemetry: TelemetryData | null = null;
 
-  private constructor() {
-    this.sdk = IRacingSDK.getInstance();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): SDKController {
-    if (!SDKController._instance) {
-      SDKController._instance = new SDKController();
-    }
-
-    return SDKController._instance;
-  }
-
-  /**
-   * Set the logger for this instance
-   */
-  setLogger(logger: ILogger): void {
+  constructor(sdk: IRacingSDK, logger: ILogger = silentLogger) {
+    this.sdk = sdk;
     this.logger = logger;
   }
 

@@ -3,26 +3,20 @@
  *
  * Provides the core messaging functionality that all command classes inherit.
  */
-import { IRacingNative } from "@iracedeck/iracing-native";
 import { ILogger, silentLogger } from "@iracedeck/logger";
 
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastMsg } from "./constants.js";
 
 /**
  * Base class for iRacing broadcast commands
  */
 export abstract class BroadcastCommand {
-  protected logger: ILogger = silentLogger;
-  protected native: IRacingNative;
+  protected readonly native: INativeSDK;
+  protected readonly logger: ILogger;
 
-  protected constructor() {
-    this.native = new IRacingNative();
-  }
-
-  /**
-   * Set the logger for this command instance
-   */
-  setLogger(logger: ILogger): void {
+  protected constructor(native: INativeSDK, logger: ILogger = silentLogger) {
+    this.native = native;
     this.logger = logger;
   }
 

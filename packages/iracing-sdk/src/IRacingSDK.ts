@@ -2,20 +2,10 @@
  * iRacing SDK - Telemetry and Session Data Client
  * Uses native addon to access the official iRacing SDK
  */
-import { IRacingNative } from "@iracedeck/iracing-native";
 import { ILogger, silentLogger } from "@iracedeck/logger";
 import yaml from "yaml";
 
-import {
-  CameraCommand,
-  ChatCommand,
-  FFBCommand,
-  PitCommand,
-  ReplayCommand,
-  TelemCommand,
-  TextureCommand,
-  VideoCaptureCommand,
-} from "./commands/index.js";
+import type { INativeSDK } from "./interfaces.js";
 import { SessionInfo, TelemetryData, VarHeader, VarType } from "./types.js";
 
 /**
@@ -23,51 +13,16 @@ import { SessionInfo, TelemetryData, VarHeader, VarType } from "./types.js";
  * Manages connection to iRacing's shared memory and provides telemetry data
  */
 export class IRacingSDK {
-  private static _instance: IRacingSDK;
-
-  private native: IRacingNative;
-  private logger: ILogger = silentLogger;
+  private readonly native: INativeSDK;
+  private readonly logger: ILogger;
   private varHeaders: VarHeader[] = [];
   private lastSessionInfoUpdate = -1;
   private sessionInfo: SessionInfo | null = null;
   private connected = false;
 
-  private constructor() {
-    this.native = new IRacingNative();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): IRacingSDK {
-    if (!IRacingSDK._instance) {
-      IRacingSDK._instance = new IRacingSDK();
-    }
-
-    return IRacingSDK._instance;
-  }
-
-  /**
-   * Set the logger for this instance
-   */
-  setLogger(logger: ILogger): void {
+  constructor(native: INativeSDK, logger: ILogger = silentLogger) {
+    this.native = native;
     this.logger = logger;
-  }
-
-  /**
-   * Set loggers on all SDK singletons using scoped loggers from the base logger
-   * @param logger Base logger to create scopes from
-   */
-  static setLoggers(logger: ILogger): void {
-    IRacingSDK.getInstance().setLogger(logger.createScope("IRacingSDK"));
-    CameraCommand.getInstance().setLogger(logger.createScope("CameraCommand"));
-    ChatCommand.getInstance().setLogger(logger.createScope("ChatCommand"));
-    FFBCommand.getInstance().setLogger(logger.createScope("FFBCommand"));
-    PitCommand.getInstance().setLogger(logger.createScope("PitCommand"));
-    ReplayCommand.getInstance().setLogger(logger.createScope("ReplayCommand"));
-    TelemCommand.getInstance().setLogger(logger.createScope("TelemCommand"));
-    TextureCommand.getInstance().setLogger(logger.createScope("TextureCommand"));
-    VideoCaptureCommand.getInstance().setLogger(logger.createScope("VideoCaptureCommand"));
   }
 
   /**

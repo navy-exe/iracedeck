@@ -3,6 +3,9 @@
  *
  * You can call this any time, but telemetry only records when driver is in their car
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, TelemCommandMode } from "./constants.js";
 
@@ -10,21 +13,8 @@ import { BroadcastMsg, TelemCommandMode } from "./constants.js";
  * Telemetry recording commands
  */
 export class TelemCommand extends BroadcastCommand {
-  private static _instance: TelemCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): TelemCommand {
-    if (!TelemCommand._instance) {
-      TelemCommand._instance = new TelemCommand();
-    }
-
-    return TelemCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

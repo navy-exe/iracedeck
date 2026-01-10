@@ -1,6 +1,9 @@
 /**
  * TextureCommand - Texture reload commands for iRacing
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, ReloadTexturesMode } from "./constants.js";
 
@@ -8,21 +11,8 @@ import { BroadcastMsg, ReloadTexturesMode } from "./constants.js";
  * Texture reload commands
  */
 export class TextureCommand extends BroadcastCommand {
-  private static _instance: TextureCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): TextureCommand {
-    if (!TextureCommand._instance) {
-      TextureCommand._instance = new TextureCommand();
-    }
-
-    return TextureCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

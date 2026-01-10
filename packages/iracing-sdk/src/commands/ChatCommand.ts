@@ -3,6 +3,9 @@
  *
  * Handles chat operations using the iRacing broadcast API and Windows messaging
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, ChatCommandMode } from "./constants.js";
 
@@ -10,21 +13,8 @@ import { BroadcastMsg, ChatCommandMode } from "./constants.js";
  * Chat commands
  */
 export class ChatCommand extends BroadcastCommand {
-  private static _instance: ChatCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): ChatCommand {
-    if (!ChatCommand._instance) {
-      ChatCommand._instance = new ChatCommand();
-    }
-
-    return ChatCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

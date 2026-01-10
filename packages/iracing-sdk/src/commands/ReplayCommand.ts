@@ -3,6 +3,9 @@
  *
  * Note: Replay commands only work when you are out of your car (spectating/replay)
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, ReplayPosMode, ReplaySearchMode, ReplayStateMode } from "./constants.js";
 
@@ -10,21 +13,8 @@ import { BroadcastMsg, ReplayPosMode, ReplaySearchMode, ReplayStateMode } from "
  * Replay control commands
  */
 export class ReplayCommand extends BroadcastCommand {
-  private static _instance: ReplayCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): ReplayCommand {
-    if (!ReplayCommand._instance) {
-      ReplayCommand._instance = new ReplayCommand();
-    }
-
-    return ReplayCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

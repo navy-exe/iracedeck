@@ -3,6 +3,9 @@
  *
  * Note: Pit commands only work when the driver is in the car
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, PitCommandMode } from "./constants.js";
 
@@ -10,21 +13,8 @@ import { BroadcastMsg, PitCommandMode } from "./constants.js";
  * Pit service commands
  */
 export class PitCommand extends BroadcastCommand {
-  private static _instance: PitCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): PitCommand {
-    if (!PitCommand._instance) {
-      PitCommand._instance = new PitCommand();
-    }
-
-    return PitCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

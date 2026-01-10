@@ -1,6 +1,9 @@
 /**
  * VideoCaptureCommand - Video capture commands for iRacing
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, VideoCaptureMode } from "./constants.js";
 
@@ -8,21 +11,8 @@ import { BroadcastMsg, VideoCaptureMode } from "./constants.js";
  * Video capture commands
  */
 export class VideoCaptureCommand extends BroadcastCommand {
-  private static _instance: VideoCaptureCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): VideoCaptureCommand {
-    if (!VideoCaptureCommand._instance) {
-      VideoCaptureCommand._instance = new VideoCaptureCommand();
-    }
-
-    return VideoCaptureCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

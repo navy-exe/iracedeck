@@ -3,6 +3,9 @@
  *
  * Note: Camera commands only work when you are out of your car (spectating/replay)
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { addFlag, CameraState, removeFlag } from "../types.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, CameraFocusMode } from "./constants.js";
@@ -11,21 +14,8 @@ import { BroadcastMsg, CameraFocusMode } from "./constants.js";
  * Camera control commands
  */
 export class CameraCommand extends BroadcastCommand {
-  private static _instance: CameraCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): CameraCommand {
-    if (!CameraCommand._instance) {
-      CameraCommand._instance = new CameraCommand();
-    }
-
-    return CameraCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

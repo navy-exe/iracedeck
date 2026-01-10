@@ -3,6 +3,9 @@
  *
  * You can call this any time
  */
+import { ILogger } from "@iracedeck/logger";
+
+import type { INativeSDK } from "../interfaces.js";
 import { BroadcastCommand } from "./BroadcastCommand.js";
 import { BroadcastMsg, FFBCommandMode } from "./constants.js";
 
@@ -10,21 +13,8 @@ import { BroadcastMsg, FFBCommandMode } from "./constants.js";
  * Force feedback commands
  */
 export class FFBCommand extends BroadcastCommand {
-  private static _instance: FFBCommand;
-
-  private constructor() {
-    super();
-  }
-
-  /**
-   * Get the singleton instance
-   */
-  static getInstance(): FFBCommand {
-    if (!FFBCommand._instance) {
-      FFBCommand._instance = new FFBCommand();
-    }
-
-    return FFBCommand._instance;
+  constructor(native: INativeSDK, logger?: ILogger) {
+    super(native, logger);
   }
 
   /**

@@ -10,6 +10,12 @@ export { IRacingSDK } from "./IRacingSDK.js";
 // SDK Controller (manages connections and subscribers)
 export { SDKController, TelemetryCallback } from "./SDKController.js";
 
+// Interfaces for dependency injection
+export type { INativeSDK } from "./interfaces.js";
+
+// Factory functions for easy SDK creation
+export { createSDK, createCommands, type SDKBundle, type Commands } from "./factory.js";
+
 // Re-export logger types for convenience
 export { ILogger, consoleLogger, silentLogger, LogLevel } from "@iracedeck/logger";
 

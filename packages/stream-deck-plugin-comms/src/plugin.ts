@@ -1,5 +1,5 @@
 import streamDeck from "@elgato/streamdeck";
-import { IRacingSDK, ILogger, LogLevel } from "@iracedeck/iracing-sdk";
+import { createSDK, ILogger, LogLevel } from "@iracedeck/iracing-sdk";
 
 // Comms actions
 import { DoChatMessage } from "./actions/comms/do-chat-message.js";
@@ -33,8 +33,11 @@ function createSDLogger(
   };
 }
 
-// Set up loggers for all SDK singletons
-IRacingSDK.setLoggers(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));
+// Create SDK with all components wired together
+const { controller, commands } = createSDK(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));
+
+// Export for use in actions
+export { controller, commands };
 
 // Register iRacing actions
 streamDeck.actions.registerAction(new DoChatMessage());
