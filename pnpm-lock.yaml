@@ -49,7 +49,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(terser@5.44.1)(yaml@2.8.2)
+        version: 4.0.16(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2)
 
   packages/iracing-native:
     dependencies:
@@ -91,6 +91,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.9.3
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2)
 
   packages/logger:
     devDependencies:
@@ -2797,7 +2800,7 @@ snapshots:
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.1(terser@5.44.1)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2)
 
   '@vitest/pretty-format@4.0.16':
     dependencies:
@@ -3755,7 +3758,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  vite@7.3.1(terser@5.44.1)(yaml@2.8.2):
+  vite@7.3.1(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)
@@ -3764,11 +3767,12 @@ snapshots:
       rollup: 4.54.0
       tinyglobby: 0.2.15
     optionalDependencies:
+      '@types/node': 20.15.0
       fsevents: 2.3.3
       terser: 5.44.1
       yaml: 2.8.2
 
-  vitest@4.0.16(terser@5.44.1)(yaml@2.8.2):
+  vitest@4.0.16(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.16
       '@vitest/mocker': 4.0.16(vite@7.3.1(terser@5.44.1)(yaml@2.8.2))
@@ -3788,8 +3792,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.3.1(terser@5.44.1)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2)
       why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 20.15.0
     transitivePeerDependencies:
       - jiti
       - less
