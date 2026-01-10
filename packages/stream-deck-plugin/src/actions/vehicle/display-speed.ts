@@ -1,28 +1,51 @@
-import streamDeck, {
-  action,
-  KeyDownEvent,
-  SingletonAction,
-  WillAppearEvent,
-  WillDisappearEvent,
-} from "@elgato/streamdeck";
+import { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { TelemetryData } from "@iracedeck/iracing-sdk";
 
-import { controller } from "../../plugin.js";
+import { ConnectionStateAwareAction } from "../../base/connection-state-aware-action.js";
+
+/**
+ * Generate the speed display SVG with the given speed text.
+ * Text is centered below the speedometer arc.
+ */
+function generateSpeedSvg(speedText: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g opacity="1" filter="url(#grayscale-darken-on-inactive)">
+    <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#333" stroke-width="5" stroke-linecap="round"/>
+    <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#00d4ff" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
+    <line x1="36" y1="12" x2="36" y2="17" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="16" y1="32" x2="21" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="56" y1="32" x2="51" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="21.86" y1="17.86" x2="25.4" y2="21.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="50.14" y1="17.86" x2="46.6" y2="21.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="36" y1="32" x2="50" y2="20" stroke="#ff4757" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="36" cy="32" r="4" fill="#ff4757"/>
+    <circle cx="36" cy="32" r="2.5" fill="#fff"/>
+    <text x="36" y="65" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#fff" text-anchor="middle">${speedText}</text>
+  </g>
+</svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
 
 /**
  * Display Speed Action
  * Displays current speed from iRacing telemetry
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.vehicle.display-speed" })
-export class DisplaySpeed extends SingletonAction<SpeedSettings> {
-  private sdkController = controller;
+export class DisplaySpeed extends ConnectionStateAwareAction<SpeedSettings> {
   private activeContexts = new Map<string, SpeedSettings>();
   private lastTitle = new Map<string, string>();
 
   override async onWillAppear(ev: WillAppearEvent<SpeedSettings>): Promise<void> {
     this.activeContexts.set(ev.action.id, ev.payload.settings);
 
+    // Set initial image with "N/A" text
+    await this.setKeyImage(ev, generateSpeedSvg("N/A"));
+
     this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
+      // Update connection state for overlay
+      this.updateConnectionState();
+
       const settings = this.activeContexts.get(ev.action.id);
 
       if (settings) {
@@ -32,6 +55,7 @@ export class DisplaySpeed extends SingletonAction<SpeedSettings> {
   }
 
   override async onWillDisappear(ev: WillDisappearEvent<SpeedSettings>): Promise<void> {
+    await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.activeContexts.delete(ev.action.id);
     this.lastTitle.delete(ev.action.id);
@@ -62,15 +86,12 @@ export class DisplaySpeed extends SingletonAction<SpeedSettings> {
     contextId: string,
     settings: SpeedSettings,
     telemetry: TelemetryData | null,
-    isConnected: boolean,
+    _isConnected: boolean,
   ): Promise<void> {
-    const action = streamDeck.actions.getActionById(contextId);
+    // Default to N/A when no data available
+    let speedText = "N/A";
 
-    if (!action) return;
-
-    let title = "iRacing\nnot\nconnected";
-
-    if (isConnected && telemetry) {
+    if (telemetry) {
       const speed = telemetry.Speed;
 
       if (speed !== null && speed !== undefined && typeof speed === "number") {
@@ -83,18 +104,15 @@ export class DisplaySpeed extends SingletonAction<SpeedSettings> {
           displaySpeed = speed * 2.23694;
         }
 
-        title = Math.round(displaySpeed).toString();
-      } else {
-        title = "N/A";
+        speedText = Math.round(displaySpeed).toString();
       }
     }
 
-    const lastTitle = this.lastTitle.get(contextId);
+    const lastText = this.lastTitle.get(contextId);
 
-    if (lastTitle !== title) {
-      this.lastTitle.set(contextId, title);
-      await action.setTitle(title);
-      await action.setImage("imgs/actions/vehicle/display-speed/key");
+    if (lastText !== speedText) {
+      this.lastTitle.set(contextId, speedText);
+      await this.updateKeyImage(contextId, generateSpeedSvg(speedText));
     }
   }
 }

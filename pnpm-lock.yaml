@@ -125,6 +125,9 @@ importers:
       '@elgato/cli':
         specifier: ^1.6.0
         version: 1.6.0(@types/node@20.15.0)
+      '@elgato/utils':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@rollup/plugin-commonjs':
         specifier: ^28.0.0
         version: 28.0.9(rollup@4.54.0)
@@ -210,6 +213,9 @@ importers:
 
   packages/stream-deck-utils:
     dependencies:
+      '@iracedeck/iracing-sdk':
+        specifier: workspace:*
+        version: link:../iracing-sdk
       '@iracedeck/logger':
         specifier: workspace:*
         version: link:../logger
