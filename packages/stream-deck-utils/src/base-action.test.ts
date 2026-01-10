@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BaseAction } from "./base-action.js";
+import { applyInactiveOverlay } from "./overlay-utils.js";
 
 // Mock KeyAction
 function createMockKeyAction(id: string) {
@@ -62,16 +63,15 @@ describe("BaseAction", () => {
       expect(ev.action.setImage).toHaveBeenCalledWith(svg);
     });
 
-    it("should apply overlay when inactive", async () => {
+    it("should call action.setImage with the original SVG even when inactive", async () => {
       const ev = createMockEvent("context-1");
       const svg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 
       testAction.setActive(false);
       await testAction.setImage(ev, svg);
 
-      const calledWith = ev.action.setImage.mock.calls[0][0];
-
-      expect(calledWith).toContain("rgba(128, 128, 128, 0.6)");
+      // setKeyImage always passes through original SVG - overlay is applied on setActive state change
+      expect(ev.action.setImage).toHaveBeenCalledWith(svg);
     });
 
     it("should not call setImage for non-key actions", async () => {
@@ -107,7 +107,7 @@ describe("BaseAction", () => {
       expect(testAction.getIsActive()).toBe(true);
     });
 
-    it("should not refresh if state hasn't changed", async () => {
+    it("should not trigger any action when state hasn't changed", async () => {
       const ev = createMockEvent("context-1");
 
       await testAction.setImage(ev, "<svg></svg>");
@@ -119,38 +119,46 @@ describe("BaseAction", () => {
       expect(ev.action.setImage).not.toHaveBeenCalled();
     });
 
-    it("should refresh all contexts with overlay when becoming inactive", async () => {
+    it("should refresh all contexts with grayscale overlay when becoming inactive", async () => {
       const ev1 = createMockEvent("context-1");
       const ev2 = createMockEvent("context-2");
 
-      await testAction.setImage(ev1, '<svg id="1"></svg>');
-      await testAction.setImage(ev2, '<svg id="2"></svg>');
+      const svg1 = '<svg id="1" fill="#ff0000"></svg>';
+      const svg2 = '<svg id="2" fill="#00ff00"></svg>';
+
+      await testAction.setImage(ev1, svg1);
+      await testAction.setImage(ev2, svg2);
 
       ev1.action.setImage.mockClear();
       ev2.action.setImage.mockClear();
 
       testAction.setActive(false);
 
-      expect(ev1.action.setImage).toHaveBeenCalled();
-      expect(ev2.action.setImage).toHaveBeenCalled();
-
-      // Both should have overlay
-      expect(ev1.action.setImage.mock.calls[0][0]).toContain("rgba(128, 128, 128, 0.6)");
-      expect(ev2.action.setImage.mock.calls[0][0]).toContain("rgba(128, 128, 128, 0.6)");
+      // BaseAction refreshes all contexts with grayscale overlay
+      expect(ev1.action.setImage).toHaveBeenCalledWith(applyInactiveOverlay(svg1));
+      expect(ev2.action.setImage).toHaveBeenCalledWith(applyInactiveOverlay(svg2));
     });
 
-    it("should refresh with original SVG when becoming active", async () => {
-      const ev = createMockEvent("context-1");
-      const originalSvg = '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>';
+    it("should refresh all contexts with original images when becoming active", async () => {
+      const ev1 = createMockEvent("context-1");
+      const ev2 = createMockEvent("context-2");
 
-      await testAction.setImage(ev, originalSvg);
+      const svg1 = '<svg id="1" fill="#ff0000"></svg>';
+      const svg2 = '<svg id="2" fill="#00ff00"></svg>';
+
+      await testAction.setImage(ev1, svg1);
+      await testAction.setImage(ev2, svg2);
 
       testAction.setActive(false);
-      ev.action.setImage.mockClear();
+
+      ev1.action.setImage.mockClear();
+      ev2.action.setImage.mockClear();
 
       testAction.setActive(true);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith(originalSvg);
+      // BaseAction refreshes all contexts with original images
+      expect(ev1.action.setImage).toHaveBeenCalledWith(svg1);
+      expect(ev2.action.setImage).toHaveBeenCalledWith(svg2);
     });
   });
 
@@ -180,18 +188,13 @@ describe("BaseAction", () => {
       expect(testAction.getStoredImage("context-2")).toBe("<svg>2</svg>");
     });
 
-    it("should stop refreshing disappeared context on setActive", async () => {
+    it("should remove context from storage", async () => {
       const ev = createMockEvent("context-1") as any;
 
       await testAction.setImage(ev, "<svg></svg>");
       await testAction.onWillDisappear(ev);
 
-      ev.action.setImage.mockClear();
-
-      testAction.setActive(false);
-
-      // Should not try to refresh the disappeared context
-      expect(ev.action.setImage).not.toHaveBeenCalled();
+      expect(testAction.getStoredImage("context-1")).toBeUndefined();
     });
   });
 
@@ -232,7 +235,7 @@ describe("BaseAction", () => {
       expect(ev.action.setImage).toHaveBeenCalledWith("<svg>updated</svg>");
     });
 
-    it("should apply overlay when inactive", async () => {
+    it("should call action.setImage with original SVG when inactive (no automatic overlay on update)", async () => {
       const ev = createMockEvent("context-1");
 
       await testAction.setImage(ev, "<svg>original</svg>");
@@ -241,9 +244,8 @@ describe("BaseAction", () => {
 
       await testAction.updateImage("context-1", "<svg>updated</svg>");
 
-      const calledWith = ev.action.setImage.mock.calls[0][0];
-
-      expect(calledWith).toContain("rgba(128, 128, 128, 0.6)");
+      // updateKeyImage always passes through original SVG - overlay is only applied on setActive state change
+      expect(ev.action.setImage).toHaveBeenCalledWith("<svg>updated</svg>");
     });
 
     it("should return false for unknown context", async () => {

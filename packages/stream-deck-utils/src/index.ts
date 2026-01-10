@@ -11,7 +11,14 @@ export { createSDLogger, SDLoggerLike } from "./sd-logger.js";
 export { BaseAction } from "./base-action.js";
 
 // Overlay utilities
-export { applyInactiveOverlay, isDataUri, isRawSvg, svgToDataUri, dataUriToSvg } from "./overlay-utils.js";
+export {
+  applyInactiveOverlay,
+  hexToGrayscale,
+  isDataUri,
+  isRawSvg,
+  svgToDataUri,
+  dataUriToSvg,
+} from "./overlay-utils.js";
 
 // Re-export LogLevel for convenience
 export { LogLevel } from "@iracedeck/logger";

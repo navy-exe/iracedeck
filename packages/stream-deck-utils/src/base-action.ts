@@ -2,8 +2,8 @@
  * Base Action for Stream Deck
  *
  * Abstract base class that extends SingletonAction with:
- * - SVG image management with inactive overlay support
- * - Per-instance active/inactive state
+ * - SVG image management
+ * - Per-instance active/inactive state tracking
  */
 import {
   type DidReceiveSettingsEvent,
@@ -38,11 +38,12 @@ interface ContextEntry<T extends JsonObject> {
 }
 
 /**
- * Abstract base class for Stream Deck actions with inactive overlay support.
+ * Abstract base class for Stream Deck actions.
  *
  * Features:
- * - Provides `setKeyImage(ev, svg)` for setting images with automatic overlay when inactive
- * - Provides `setActive(isActive)` to toggle overlay state and refresh all contexts
+ * - Provides `setKeyImage(ev, svg)` for setting images
+ * - Provides `setActive(isActive)` to track active state
+ * - Subclasses should handle inactive appearance in their SVG generation
  *
  * @template T - The settings type for this action
  *
@@ -52,7 +53,7 @@ interface ContextEntry<T extends JsonObject> {
  * export class MyAction extends BaseAction<MySettings> {
  *   override async onWillAppear(ev: WillAppearEvent<MySettings>): Promise<void> {
  *     await super.onWillAppear(ev);
- *     await this.setKeyImage(ev, generateMySvg());
+ *     await this.setKeyImage(ev, generateMySvg(this.getIsActive()));
  *   }
  * }
  *
@@ -69,7 +70,7 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
   protected logger: ILogger = silentLogger;
 
   /**
-   * Per-instance active state - when false, images get the inactive overlay
+   * Per-instance active state
    */
   private _isActive = true;
 
@@ -112,8 +113,7 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
   }
 
   /**
-   * Set the key image for an action. The image is stored and will have
-   * an inactive overlay applied if this action is inactive.
+   * Set the key image for an action. The image is stored for later reference.
    *
    * @param ev - The event containing the action reference
    * @param svg - Raw SVG string or base64 data URI
@@ -131,8 +131,7 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
     this.contexts.set(ev.action.id, { action: keyAction, svg });
     this.logger.debug(`setKeyImage: stored context ${ev.action.id}, isActive=${this._isActive}`);
 
-    const finalImage = this._isActive ? svg : applyInactiveOverlay(svg);
-    await keyAction.setImage(finalImage);
+    await keyAction.setImage(svg);
     this.logger.trace(`setKeyImage: image set for ${ev.action.id}`);
   }
 
@@ -161,8 +160,7 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
     }
 
     entry.svg = svg;
-    const finalImage = this._isActive ? svg : applyInactiveOverlay(svg);
-    await entry.action.setImage(finalImage);
+    await entry.action.setImage(svg);
     this.logger.trace(`updateKeyImage: updated ${contextId}, isActive=${this._isActive}`);
 
     return true;

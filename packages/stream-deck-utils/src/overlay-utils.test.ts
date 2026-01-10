@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { applyInactiveOverlay, dataUriToSvg, isDataUri, isRawSvg, svgToDataUri } from "./overlay-utils.js";
+import {
+  applyInactiveOverlay,
+  dataUriToSvg,
+  hexToGrayscale,
+  isDataUri,
+  isRawSvg,
+  svgToDataUri,
+} from "./overlay-utils.js";
 
 describe("overlay-utils", () => {
   const simpleSvg =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" fill="#ff0000"/></svg>';
   const simpleSvgBase64 = Buffer.from(simpleSvg).toString("base64");
   const simpleDataUri = `data:image/svg+xml;base64,${simpleSvgBase64}`;
 
@@ -81,31 +88,81 @@ describe("overlay-utils", () => {
     });
   });
 
-  describe("applyInactiveOverlay", () => {
-    it("should add overlay rect to raw SVG", () => {
-      const result = applyInactiveOverlay(simpleSvg);
-
-      expect(result).toContain('<rect width="100%" height="100%" fill="rgba(128, 128, 128, 0.6)"/>');
-      expect(result).toContain("</svg>");
-      expect(result.endsWith("</svg>")).toBe(true);
+  describe("hexToGrayscale", () => {
+    it("should convert red to grayscale", () => {
+      // Red (255, 0, 0) -> 0.299 * 255 = 76.245 -> #4c4c4c
+      expect(hexToGrayscale("#ff0000")).toBe("#4c4c4c");
     });
 
-    it("should preserve SVG content when adding overlay", () => {
+    it("should convert green to grayscale", () => {
+      // Green (0, 255, 0) -> 0.587 * 255 = 149.685 -> #969696
+      expect(hexToGrayscale("#00ff00")).toBe("#969696");
+    });
+
+    it("should convert blue to grayscale", () => {
+      // Blue (0, 0, 255) -> 0.114 * 255 = 29.07 -> #1d1d1d
+      expect(hexToGrayscale("#0000ff")).toBe("#1d1d1d");
+    });
+
+    it("should convert white to white", () => {
+      expect(hexToGrayscale("#ffffff")).toBe("#ffffff");
+    });
+
+    it("should convert black to black", () => {
+      expect(hexToGrayscale("#000000")).toBe("#000000");
+    });
+
+    it("should handle short hex format", () => {
+      // #f00 = #ff0000 -> #4c4c4c
+      expect(hexToGrayscale("#f00")).toBe("#4c4c4c");
+    });
+
+    it("should handle hex without #", () => {
+      expect(hexToGrayscale("ff0000")).toBe("#4c4c4c");
+    });
+
+    it("should return invalid formats unchanged", () => {
+      expect(hexToGrayscale("#gg0000")).toBe("#gg0000");
+      expect(hexToGrayscale("red")).toBe("red");
+    });
+  });
+
+  describe("applyInactiveOverlay", () => {
+    it("should convert hex colors to grayscale in raw SVG", () => {
       const result = applyInactiveOverlay(simpleSvg);
 
-      expect(result).toContain('<circle cx="36" cy="36" r="30"/>');
+      // Red #ff0000 should become grayscale #4c4c4c
+      expect(result).toContain('fill="#4c4c4c"');
+      expect(result).not.toContain("#ff0000");
+    });
+
+    it("should preserve SVG structure when applying grayscale", () => {
+      const result = applyInactiveOverlay(simpleSvg);
+
+      expect(result).toContain('<circle cx="36" cy="36" r="30"');
       expect(result).toContain('viewBox="0 0 72 72"');
     });
 
-    it("should add overlay rect to data URI and return data URI", () => {
+    it("should convert colors in data URI and return data URI", () => {
       const result = applyInactiveOverlay(simpleDataUri);
 
       expect(isDataUri(result)).toBe(true);
 
-      // Decode and verify overlay was added
+      // Decode and verify grayscale was applied
       const decoded = dataUriToSvg(result);
 
-      expect(decoded).toContain('<rect width="100%" height="100%" fill="rgba(128, 128, 128, 0.6)"/>');
+      expect(decoded).toContain('fill="#4c4c4c"');
+      expect(decoded).not.toContain("#ff0000");
+    });
+
+    it("should convert multiple colors", () => {
+      const multiColorSvg =
+        '<svg><rect fill="#ff0000"/><circle stroke="#00ff00"/><path fill="#0000ff"/></svg>';
+      const result = applyInactiveOverlay(multiColorSvg);
+
+      expect(result).toContain('fill="#4c4c4c"'); // red -> gray
+      expect(result).toContain('stroke="#969696"'); // green -> gray
+      expect(result).toContain('fill="#1d1d1d"'); // blue -> gray
     });
 
     it("should return input unchanged for non-SVG strings", () => {
@@ -113,11 +170,18 @@ describe("overlay-utils", () => {
       expect(applyInactiveOverlay("<div></div>")).toBe("<div></div>");
     });
 
-    it("should handle SVG with whitespace after closing tag", () => {
-      const svgWithWhitespace = '<svg xmlns="http://www.w3.org/2000/svg"></svg>\n  ';
-      const result = applyInactiveOverlay(svgWithWhitespace);
+    it("should handle SVG with no colors", () => {
+      const noColorSvg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+      const result = applyInactiveOverlay(noColorSvg);
 
-      expect(result).toContain("rect");
+      expect(result).toBe(noColorSvg);
+    });
+
+    it("should handle short hex format", () => {
+      const shortHexSvg = '<svg><rect fill="#f00"/></svg>';
+      const result = applyInactiveOverlay(shortHexSvg);
+
+      expect(result).toContain('fill="#4c4c4c"');
     });
   });
 

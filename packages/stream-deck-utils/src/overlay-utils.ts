@@ -6,11 +6,6 @@
  */
 
 /**
- * Default overlay color - semi-transparent gray
- */
-const OVERLAY_COLOR = "rgba(128, 128, 128, 0.6)";
-
-/**
  * Checks if a string is a base64 data URI
  */
 export function isDataUri(value: string): boolean {
@@ -55,11 +50,54 @@ export function dataUriToSvg(dataUri: string): string {
 }
 
 /**
- * Applies a semi-transparent gray overlay to an SVG image.
+ * Converts a hex color to grayscale.
+ * Uses luminance formula: 0.299*R + 0.587*G + 0.114*B
+ *
+ * @param hex - Hex color string (#RGB, #RRGGBB, or without #)
+ * @returns Grayscale hex color (#RRGGBB format)
+ */
+export function hexToGrayscale(hex: string): string {
+  // Remove # if present
+  const cleanHex = hex.replace(/^#/, "");
+
+  // Validate hex characters
+  if (!/^[0-9a-fA-F]+$/.test(cleanHex)) {
+    return hex;
+  }
+
+  let r: number, g: number, b: number;
+
+  if (cleanHex.length === 3) {
+    // Short form: #RGB -> #RRGGBB
+    r = parseInt(cleanHex[0] + cleanHex[0], 16);
+    g = parseInt(cleanHex[1] + cleanHex[1], 16);
+    b = parseInt(cleanHex[2] + cleanHex[2], 16);
+  } else if (cleanHex.length === 6) {
+    r = parseInt(cleanHex.slice(0, 2), 16);
+    g = parseInt(cleanHex.slice(2, 4), 16);
+    b = parseInt(cleanHex.slice(4, 6), 16);
+  } else {
+    // Invalid format, return as-is
+    return hex;
+  }
+
+  // Calculate luminance (perceived brightness)
+  const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+  // Convert back to hex
+  const grayHex = gray.toString(16).padStart(2, "0");
+
+  return `#${grayHex}${grayHex}${grayHex}`;
+}
+
+/**
+ * Applies a grayscale effect to an SVG image by converting all hex colors.
  * Used to indicate inactive/disconnected state.
  *
+ * Finds all hex colors (#RGB or #RRGGBB) and converts them to grayscale.
+ *
  * @param svg - Raw SVG string or base64 data URI
- * @returns SVG with overlay applied, in the same format as input
+ * @returns SVG with colors converted to grayscale, in the same format as input
  */
 export function applyInactiveOverlay(svg: string): string {
   const wasDataUri = isDataUri(svg);
@@ -76,9 +114,11 @@ export function applyInactiveOverlay(svg: string): string {
     return svg;
   }
 
-  // Insert overlay rect just before </svg>
-  const overlayRect = `<rect width="100%" height="100%" fill="${OVERLAY_COLOR}"/>`;
-  const modifiedSvg = rawSvg.replace(/<\/svg>\s*$/i, `${overlayRect}</svg>`);
+  // Replace all hex colors with their grayscale equivalents
+  // Matches #RGB and #RRGGBB formats
+  const modifiedSvg = rawSvg.replace(/#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g, (match) => {
+    return hexToGrayscale(match);
+  });
 
   // Return in same format as input
   return wasDataUri ? svgToDataUri(modifiedSvg) : modifiedSvg;
