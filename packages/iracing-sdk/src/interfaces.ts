@@ -3,7 +3,6 @@
  *
  * These interfaces allow for testability and follow the Dependency Inversion principle.
  */
-
 import type { BroadcastMsg, IRSDKHeader, VarHeader } from "@iracedeck/iracing-native";
 
 /**

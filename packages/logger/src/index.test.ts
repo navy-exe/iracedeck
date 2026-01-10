@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { LogLevel, createConsoleLogger, consoleLogger, silentLogger, ILogger } from "./index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { consoleLogger, createConsoleLogger, LogLevel, silentLogger } from "./index.js";
 
 describe("LogLevel", () => {
   it("should have correct ordering (Trace most verbose)", () => {
@@ -63,7 +64,7 @@ describe("createConsoleLogger", () => {
 
   it("withLevel should return new logger without mutating original", () => {
     const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
-    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    vi.spyOn(console, "info").mockImplementation(() => {});
 
     const original = createConsoleLogger(undefined, LogLevel.Info);
     const verbose = original.withLevel(LogLevel.Debug);
