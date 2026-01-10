@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Stream Deck generated files
+*.sdPlugin/bin/
+*.sdPlugin/logs/
+*.streamDeckPlugin
+
+# Lock files (large, auto-generated)
+pnpm-lock.yaml
+
+# Cache directories
+.cache/
+.turbo/
+
+# Python (not relevant for this project)
+Python/
