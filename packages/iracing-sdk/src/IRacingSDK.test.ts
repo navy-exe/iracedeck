@@ -21,8 +21,7 @@ function createMockNative(): INativeSDK {
       varHeaderOffset: 244,
       numBuf: 4,
       bufLen: 1000,
-      bufOffset: 0,
-    }),
+          }),
     getData: vi.fn(),
     waitForData: vi.fn(),
     getSessionInfoStr: vi.fn().mockReturnValue("WeekendInfo:\n  TrackName: Spa"),
@@ -135,8 +134,7 @@ describe("IRacingSDK", () => {
         varHeaderOffset: 244,
         numBuf: 4,
         bufLen: 1000,
-        bufOffset: 0,
-      });
+              });
       vi.mocked(mockNative.getVarHeaderEntry)
         .mockReturnValueOnce({
           type: VarType.Float,
@@ -175,7 +173,7 @@ describe("IRacingSDK", () => {
       const sessionInfo = sdk.getSessionInfo();
 
       expect(sessionInfo).not.toBe(null);
-      expect(sessionInfo?.WeekendInfo?.TrackName).toBe("Spa");
+      expect((sessionInfo?.WeekendInfo as Record<string, unknown>)?.TrackName).toBe("Spa");
     });
 
     it("should cache session info", () => {
@@ -220,8 +218,7 @@ describe("IRacingSDK", () => {
         varHeaderOffset: 244,
         numBuf: 4,
         bufLen: 1000,
-        bufOffset: 0,
-      });
+              });
       sdk.connect();
 
       expect(sdk.getVarNames()).toEqual([]);
@@ -239,8 +236,7 @@ describe("IRacingSDK", () => {
         varHeaderOffset: 244,
         numBuf: 4,
         bufLen: 1000,
-        bufOffset: 0,
-      });
+              });
       vi.mocked(mockNative.getVarHeaderEntry)
         .mockReturnValueOnce({
           type: VarType.Float,

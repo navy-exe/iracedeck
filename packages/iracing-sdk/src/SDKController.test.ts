@@ -206,7 +206,7 @@ describe("SDKController", () => {
     });
 
     it("should notify subscribers on disconnect", () => {
-      const callback: TelemetryCallback = vi.fn();
+      const callback = vi.fn<TelemetryCallback>();
       vi.mocked(mockSdk.connect).mockReturnValue(true);
       vi.mocked(mockSdk.isConnected).mockReturnValue(true);
 

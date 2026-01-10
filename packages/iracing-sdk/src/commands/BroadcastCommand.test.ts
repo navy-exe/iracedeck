@@ -22,13 +22,17 @@ function createMockNative(): INativeSDK {
 }
 
 function createMockLogger(): ILogger {
-  return {
+  const logger: ILogger = {
     trace: vi.fn(),
     debug: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
+    withLevel: vi.fn(() => logger),
+    createScope: vi.fn(() => logger),
   };
+
+  return logger;
 }
 
 // Create a concrete implementation for testing the abstract class
