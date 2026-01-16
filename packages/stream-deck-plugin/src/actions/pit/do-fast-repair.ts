@@ -24,12 +24,12 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
     this.activeContexts.add(ev.action.id);
 
     // Update display immediately
-    await this.updateDisplayWithEvent(ev, null, this.sdkController.getConnectionStatus());
+    await this.updateDisplayWithEvent(ev, null);
 
     // Subscribe to telemetry updates
-    this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
+    this.sdkController.subscribe(ev.action.id, (telemetry) => {
       this.updateConnectionState();
-      this.updateDisplay(ev.action.id, telemetry, isConnected);
+      this.updateDisplay(ev.action.id, telemetry);
     });
   }
 
@@ -64,8 +64,9 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
 
   /**
    * Generate magic wand SVG with color based on current state
+   * Icon in top half, title text in bottom
    */
-  private generateSvg(iconColor: string, showRedX: boolean): string {
+  private generateSvg(iconColor: string, showRedX: boolean, titleText: string, titleColor: string): string {
     const redX = showRedX
       ? `
       <!-- Red X (same size as fuel icon X) -->
@@ -84,7 +85,10 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
     <path d="M38,18 L39,21 L40,18 L39,15 Z M36,18 L39,19 L42,18 L39,17 Z" fill="${iconColor}"/>
     <!-- Small dots -->
     <circle cx="28" cy="6" r="2" fill="${iconColor}"/>
-    <circle cx="60" cy="34" r="1.5" fill="${iconColor}"/>${redX}
+    <circle cx="60" cy="34" r="1.5" fill="${iconColor}"/>
+    <!-- Title text -->
+    <text x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
+    ${redX}
   </g>
 </svg>`;
 
@@ -92,37 +96,40 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
   }
 
   /**
-   * Calculate display state from telemetry and connection status
+   * Calculate display state from telemetry
+   * Note: Connection state is handled by grayscale overlay from ConnectionStateAwareAction
    */
-  private getDisplayState(
-    telemetry: TelemetryData | null,
-    isConnected: boolean,
-  ): { title: string; iconColor: string; showRedX: boolean } {
-    let title: string;
-    let iconColor: string;
-    let showRedX = false;
+  private getDisplayState(telemetry: TelemetryData | null): {
+    titleText: string;
+    titleColor: string;
+    iconColor: string;
+    showRedX: boolean;
+  } {
+    const isOn = this.getFastRepairState(telemetry);
+    const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
 
-    if (!isConnected) {
-      title = "iRacing\nnot\nconnected";
-      iconColor = "#888888";
+    if (fastRepairsAvailable === 0) {
+      return {
+        titleText: "N/A",
+        titleColor: "#888888",
+        iconColor: "#888888",
+        showRedX: false,
+      };
+    } else if (isOn) {
+      return {
+        titleText: "Fast Repair",
+        titleColor: "#FFFFFF",
+        iconColor: "#44FF44",
+        showRedX: false,
+      };
     } else {
-      const isOn = this.getFastRepairState(telemetry);
-      const fastRepairsAvailable = this.getFastRepairsAvailable(telemetry);
-
-      if (fastRepairsAvailable === 0) {
-        title = "Not Avail";
-        iconColor = "#888888";
-        showRedX = true;
-      } else if (isOn) {
-        title = "Fast Repair";
-        iconColor = "#44FF44";
-      } else {
-        title = "No fast\nRepair";
-        iconColor = "#FF4444";
-      }
+      return {
+        titleText: "No Repair",
+        titleColor: "#FF4444",
+        iconColor: "#FF4444",
+        showRedX: false,
+      };
     }
-
-    return { title, iconColor, showRedX };
   }
 
   /**
@@ -131,41 +138,39 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
   private async updateDisplayWithEvent(
     ev: WillAppearEvent<FastRepairSettings>,
     telemetry: TelemetryData | null,
-    isConnected: boolean,
   ): Promise<void> {
-    const { title, iconColor, showRedX } = this.getDisplayState(telemetry, isConnected);
-    const svgDataUri = this.generateSvg(iconColor, showRedX);
+    const { titleText, titleColor, iconColor, showRedX } = this.getDisplayState(telemetry);
+    const svgDataUri = this.generateSvg(iconColor, showRedX, titleText, titleColor);
 
     // Update connection state for initial overlay
     this.updateConnectionState();
 
     // Store state for caching
-    const stateKey = `${title}|${iconColor}|${showRedX}`;
+    const stateKey = `${titleText}|${titleColor}|${iconColor}|${showRedX}`;
     this.lastState.set(ev.action.id, stateKey);
 
     // Set via BaseAction (stores for overlay refresh)
     await this.setKeyImage(ev, svgDataUri);
-    await ev.action.setTitle(title);
+    await ev.action.setTitle(""); // Title is in the SVG
   }
 
   /**
    * Update the display for a specific context (called from subscription callback)
    */
-  private async updateDisplay(contextId: string, telemetry: TelemetryData | null, isConnected: boolean): Promise<void> {
+  private async updateDisplay(contextId: string, telemetry: TelemetryData | null): Promise<void> {
     const action = streamDeck.actions.getActionById(contextId);
 
     if (!action) return;
 
-    const { title, iconColor, showRedX } = this.getDisplayState(telemetry, isConnected);
-    const svgDataUri = this.generateSvg(iconColor, showRedX);
+    const { titleText, titleColor, iconColor, showRedX } = this.getDisplayState(telemetry);
+    const svgDataUri = this.generateSvg(iconColor, showRedX, titleText, titleColor);
 
     // Create state key for caching
-    const stateKey = `${title}|${iconColor}|${showRedX}`;
+    const stateKey = `${titleText}|${titleColor}|${iconColor}|${showRedX}`;
     const lastState = this.lastState.get(contextId);
 
     if (lastState !== stateKey) {
       this.lastState.set(contextId, stateKey);
-      await action.setTitle(title);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }

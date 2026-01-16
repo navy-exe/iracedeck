@@ -64,7 +64,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     this.updateConnectionState();
 
     // Generate SVG and set via BaseAction (stores for overlay refresh)
-    const svgDataUri = this.generateCarSvg(settings, tireState, isConnected);
+    const svgDataUri = this.generateCarSvg(settings, tireState);
     await ev.action.setTitle(""); // Title is in the SVG
     await this.setKeyImage(ev, svgDataUri);
 
@@ -101,7 +101,6 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
   private generateCarSvg(
     settings: ChangeTiresSettings,
     currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
-    isConnected: boolean,
   ): string {
     const lfColor = this.getTireColor(settings.lf ?? false, currentState.lf);
     const rfColor = this.getTireColor(settings.rf ?? false, currentState.rf);
@@ -119,10 +118,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     let titleText: string;
     let titleColor: string;
 
-    if (!isConnected) {
-      titleText = "Not Connected";
-      titleColor = "#888888";
-    } else if (anyTireOn) {
+    if (anyTireOn) {
       titleText = "Change";
       titleColor = "#FFFFFF";
     } else {
@@ -143,7 +139,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     <!-- Right Rear tire -->
     <rect x="50" y="26" width="8" height="10" rx="1.5" fill="${rrColor}" stroke="#888888" stroke-width="1"/>
     <!-- Title text -->
-    <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
+    <text x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
   </g>
 </svg>`;
 
@@ -191,7 +187,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
       this.lastState.set(contextId, stateKey);
 
       // Generate SVG and update via BaseAction (uses stored action ref)
-      const svgDataUri = this.generateCarSvg(settings, tireState, isConnected);
+      const svgDataUri = this.generateCarSvg(settings, tireState);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }
@@ -213,7 +209,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     this.updateConnectionState();
 
     // Generate SVG and set via BaseAction
-    const svgDataUri = this.generateCarSvg(settings, tireState, isConnected);
+    const svgDataUri = this.generateCarSvg(settings, tireState);
     await this.setKeyImage(ev, svgDataUri);
 
     // Update state cache
