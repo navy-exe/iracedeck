@@ -6,7 +6,7 @@
  */
 import type { JsonObject } from "@elgato/utils";
 import type { SDKController } from "@iracedeck/iracing-sdk";
-import { BaseAction } from "@iracedeck/stream-deck-utils";
+import { BaseAction } from "@iracedeck/stream-deck-shared";
 
 import { controller } from "../plugin.js";
 

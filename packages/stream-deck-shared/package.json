@@ -1,5 +1,5 @@
 {
-  "name": "@iracedeck/stream-deck-utils",
+  "name": "@iracedeck/stream-deck-shared",
   "version": "1.0.0",
   "description": "Shared utilities for Stream Deck plugins",
   "type": "module",

@@ -1,6 +1,6 @@
 import streamDeck, { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { CameraState, hasFlag } from "@iracedeck/iracing-sdk";
-import { createSDLogger, LogLevel } from "@iracedeck/stream-deck-utils";
+import { createSDLogger, LogLevel } from "@iracedeck/stream-deck-shared";
 import z from "zod";
 
 import { ConnectionStateAwareAction } from "../../base/connection-state-aware-action.js";

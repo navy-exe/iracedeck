@@ -6,7 +6,7 @@
  */
 import streamDeck from "@elgato/streamdeck";
 import { createSDK } from "@iracedeck/iracing-sdk";
-import { createSDLogger } from "@iracedeck/stream-deck-utils";
+import { createSDLogger } from "@iracedeck/stream-deck-shared";
 
 // Create SDK with all components wired together
 const { controller, commands } = createSDK(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));

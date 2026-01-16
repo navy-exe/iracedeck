@@ -115,9 +115,9 @@ importers:
       '@iracedeck/iracing-sdk':
         specifier: workspace:*
         version: link:../iracing-sdk
-      '@iracedeck/stream-deck-utils':
+      '@iracedeck/stream-deck-shared':
         specifier: workspace:*
-        version: link:../stream-deck-utils
+        version: link:../stream-deck-shared
       zod:
         specifier: ^4.3.5
         version: 4.3.5
@@ -164,9 +164,9 @@ importers:
       '@iracedeck/iracing-sdk':
         specifier: workspace:*
         version: link:../iracing-sdk
-      '@iracedeck/stream-deck-utils':
+      '@iracedeck/stream-deck-shared':
         specifier: workspace:*
-        version: link:../stream-deck-utils
+        version: link:../stream-deck-shared
       zod:
         specifier: ^4.3.5
         version: 4.3.5
@@ -211,7 +211,7 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@types/node@20.15.0)(terser@5.44.1)(yaml@2.8.2)
 
-  packages/stream-deck-utils:
+  packages/stream-deck-shared:
     dependencies:
       '@iracedeck/iracing-sdk':
         specifier: workspace:*

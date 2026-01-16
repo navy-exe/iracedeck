@@ -1,6 +1,6 @@
 import streamDeck from "@elgato/streamdeck";
 import { createSDK } from "@iracedeck/iracing-sdk";
-import { createSDLogger } from "@iracedeck/stream-deck-utils";
+import { createSDLogger } from "@iracedeck/stream-deck-shared";
 
 // Environment actions
 import { DisplaySky } from "./actions/environment/display-sky.js";
