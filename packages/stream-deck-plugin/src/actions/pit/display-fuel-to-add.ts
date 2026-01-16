@@ -19,6 +19,7 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
 
   private lastFuelAmount = new Map<string, number | null>();
   private lastFuelFillEnabled = new Map<string, boolean>();
+  private lastConnected = new Map<string, boolean>();
 
   override async onWillAppear(ev: WillAppearEvent): Promise<void> {
     // Update immediately with event (stores action ref for later updates)
@@ -38,6 +39,7 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
     this.sdkController.unsubscribe(ev.action.id);
     this.lastFuelAmount.delete(ev.action.id);
     this.lastFuelFillEnabled.delete(ev.action.id);
+    this.lastConnected.delete(ev.action.id);
   }
 
   /**
@@ -106,9 +108,10 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
 
     this.lastFuelAmount.set(ev.action.id, fuelAmount);
     this.lastFuelFillEnabled.set(ev.action.id, isFuelFillEnabled);
+    this.lastConnected.set(ev.action.id, isConnected);
 
     // Generate SVG and set via BaseAction (stores for overlay refresh)
-    const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount);
+    const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount, isConnected);
     await this.setKeyImage(ev, svgDataUri);
   }
 
@@ -121,13 +124,15 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
     // Only update if values have changed
     const lastAmount = this.lastFuelAmount.get(contextId);
     const lastEnabled = this.lastFuelFillEnabled.get(contextId);
+    const wasConnected = this.lastConnected.get(contextId);
 
-    if (lastAmount !== fuelAmount || lastEnabled !== isFuelFillEnabled) {
+    if (lastAmount !== fuelAmount || lastEnabled !== isFuelFillEnabled || wasConnected !== isConnected) {
       this.lastFuelAmount.set(contextId, fuelAmount);
       this.lastFuelFillEnabled.set(contextId, isFuelFillEnabled);
+      this.lastConnected.set(contextId, isConnected);
 
       // Generate SVG and update via BaseAction (uses stored action ref)
-      const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount);
+      const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount, isConnected);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }

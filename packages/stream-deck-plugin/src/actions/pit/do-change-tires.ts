@@ -63,8 +63,8 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     // Update connection state for initial overlay
     this.updateConnectionState();
 
-    // Generate SVG and set via BaseAction (stores for overlay refresh)
-    const svgDataUri = this.generateCarSvg(settings, tireState);
+    // Generate SVG - show N/A when not connected
+    const svgDataUri = isConnected ? this.generateCarSvg(settings, tireState) : this.generateNaSvg();
     await ev.action.setTitle(""); // Title is in the SVG
     await this.setKeyImage(ev, svgDataUri);
 
@@ -92,6 +92,30 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     if (isCurrentlyOn) return "#44FF44"; // Green - currently ON, will turn OFF
 
     return "#FF4444"; // Red - currently OFF, will turn ON
+  }
+
+  /**
+   * Generate SVG for the N/A state (disconnected)
+   */
+  private generateNaSvg(): string {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g filter="url(#activity-state)">
+    <!-- Car body (top half) -->
+    <rect x="26" y="6" width="20" height="32" rx="3" fill="none" stroke="#888888" stroke-width="2"/>
+    <!-- Left Front tire -->
+    <rect x="14" y="8" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
+    <!-- Right Front tire -->
+    <rect x="50" y="8" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
+    <!-- Left Rear tire -->
+    <rect x="14" y="26" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
+    <!-- Right Rear tire -->
+    <rect x="50" y="26" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
+    <!-- Title text -->
+    <text x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">N/A</text>
+  </g>
+</svg>`;
+
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
   }
 
   /**
@@ -186,8 +210,8 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     if (lastState !== stateKey) {
       this.lastState.set(contextId, stateKey);
 
-      // Generate SVG and update via BaseAction (uses stored action ref)
-      const svgDataUri = this.generateCarSvg(settings, tireState);
+      // Generate SVG - show N/A when not connected
+      const svgDataUri = isConnected ? this.generateCarSvg(settings, tireState) : this.generateNaSvg();
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }
@@ -208,8 +232,8 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     // Update connection state for overlay
     this.updateConnectionState();
 
-    // Generate SVG and set via BaseAction
-    const svgDataUri = this.generateCarSvg(settings, tireState);
+    // Generate SVG - show N/A when not connected
+    const svgDataUri = isConnected ? this.generateCarSvg(settings, tireState) : this.generateNaSvg();
     await this.setKeyImage(ev, svgDataUri);
 
     // Update state cache

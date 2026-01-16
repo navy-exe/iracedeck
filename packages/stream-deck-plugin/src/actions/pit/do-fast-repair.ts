@@ -111,7 +111,7 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
     if (fastRepairsAvailable === 0) {
       return {
         titleText: "N/A",
-        titleColor: "#888888",
+        titleColor: "#ffffff",
         iconColor: "#888888",
         showRedX: false,
       };

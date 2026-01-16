@@ -36,9 +36,19 @@ function escapeXml(str: string): string {
  *
  * @param isFuelFillEnabled - Whether fuel fill is enabled in pit service
  * @param fuelAmount - The amount of fuel to display (in liters), or null if unavailable
+ * @param isConnected - Whether connected to iRacing (optional, defaults to true for backward compatibility)
  * @returns A base64-encoded data URI for the SVG
  */
-export function generateFuelDisplaySvg(isFuelFillEnabled: boolean, fuelAmount: number | null): string {
+export function generateFuelDisplaySvg(
+  isFuelFillEnabled: boolean,
+  fuelAmount: number | null,
+  isConnected: boolean = true,
+): string {
+  // When not connected, show N/A state
+  if (!isConnected) {
+    return generateNaFuelSvg();
+  }
+
   const color = isFuelFillEnabled ? FUEL_ACTIVE_COLOR : FUEL_INACTIVE_COLOR;
   const disabledOverlay = isFuelFillEnabled ? "" : generateDisabledOverlay();
   const textElement = generateFuelText(isFuelFillEnabled, fuelAmount);
@@ -57,6 +67,31 @@ export function generateFuelDisplaySvg(isFuelFillEnabled: boolean, fuelAmount: n
     <!-- Nozzle -->
     <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="${color}"/>
 ${disabledOverlay}${textElement}
+  </g>
+</svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+
+/**
+ * Generates the N/A state SVG for when not connected.
+ */
+function generateNaFuelSvg(): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g filter="url(#activity-state)">
+    <!-- Fuel pump body -->
+    <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="${FUEL_INACTIVE_COLOR}" stroke-width="2.5"/>
+
+    <!-- Fuel gauge inside pump -->
+    <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="${FUEL_INACTIVE_COLOR}" stroke-width="1.5"/>
+
+    <!-- Hose -->
+    <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="${FUEL_INACTIVE_COLOR}" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Nozzle -->
+    <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="${FUEL_INACTIVE_COLOR}"/>
+
+    <text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="12" font-weight="bold">N/A</text>
   </g>
 </svg>`;
 
