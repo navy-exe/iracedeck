@@ -98,7 +98,7 @@ export function generateSkyIcon(skies: number | null | undefined, text?: string)
   const graphics = getSkyGraphics(skies);
 
   const textElement = text
-    ? `<text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="12" font-weight="bold">${text}</text>`
+    ? `<text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="12" font-weight="bold" class="title">${text}</text>`
     : "";
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">

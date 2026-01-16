@@ -57,7 +57,7 @@ export class DoTireCompound extends ConnectionStateAwareAction<TireCompoundSetti
     <!-- Rim center -->
     <circle cx="36" cy="28" r="4" fill="#666666"/>
     <!-- Compound label -->
-    <text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="16" font-weight="bold">${label}</text>
+    <text class="title" x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="16" font-weight="bold">${label}</text>
   </g>
 </svg>`;
 

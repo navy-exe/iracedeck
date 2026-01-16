@@ -2,6 +2,7 @@ import streamDeck, { action, WillAppearEvent, WillDisappearEvent } from "@elgato
 import { TelemetryData } from "@iracedeck/iracing-sdk";
 import { ConnectionStateAwareAction, createSDLogger, LogLevel } from "@iracedeck/stream-deck-shared";
 import z from "zod";
+
 import { generateDefaultSkyIcon, generateSkyIcon, getSkyText } from "./sky-display-utils";
 
 /**

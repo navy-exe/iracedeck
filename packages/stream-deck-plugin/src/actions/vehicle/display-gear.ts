@@ -37,7 +37,7 @@ export class DisplayGear extends ConnectionStateAwareAction<GearSettings> {
 
     <!-- Horizontal connecting line -->
     <line x1="18" y1="21" x2="54" y2="21" stroke="#4a90d9" stroke-width="3" stroke-linecap="round"/>
-    <text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="25" font-weight="bold">${gearText}</text>
+    <text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="25" font-weight="bold" class="title">${gearText}</text>
   </g>
 </svg>`;
 
@@ -49,7 +49,7 @@ export class DisplayGear extends ConnectionStateAwareAction<GearSettings> {
    */
   private getGearText(gear: number | null | undefined): string {
     if (gear === null || gear === undefined || typeof gear !== "number") {
-      return "N/A";
+      return "N";
     }
 
     if (gear === -1) {

@@ -19,18 +19,17 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
 
   private lastFuelAmount = new Map<string, number | null>();
   private lastFuelFillEnabled = new Map<string, boolean>();
-  private lastConnected = new Map<string, boolean>();
 
   override async onWillAppear(ev: WillAppearEvent): Promise<void> {
     // Update immediately with event (stores action ref for later updates)
-    await this.updateDisplayWithEvent(ev, null, false);
+    await this.updateDisplayWithEvent(ev, null);
 
     // Subscribe to telemetry updates
-    this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
+    this.sdkController.subscribe(ev.action.id, (telemetry) => {
       // Update connection state (triggers grayscale overlay via BaseAction.setActive)
       this.updateConnectionState();
 
-      this.updateDisplay(ev.action.id, telemetry, isConnected);
+      this.updateDisplay(ev.action.id, telemetry);
     });
   }
 
@@ -39,7 +38,6 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
     this.sdkController.unsubscribe(ev.action.id);
     this.lastFuelAmount.delete(ev.action.id);
     this.lastFuelFillEnabled.delete(ev.action.id);
-    this.lastConnected.delete(ev.action.id);
   }
 
   /**
@@ -96,43 +94,36 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
   /**
    * Update display using an event (for initial setup, stores action ref)
    */
-  private async updateDisplayWithEvent(
-    ev: WillAppearEvent,
-    telemetry: TelemetryData | null,
-    isConnected: boolean,
-  ): Promise<void> {
+  private async updateDisplayWithEvent(ev: WillAppearEvent, telemetry: TelemetryData | null): Promise<void> {
     // Update connection state for initial overlay
     this.updateConnectionState();
 
-    const { fuelAmount, isFuelFillEnabled } = this.extractFuelData(telemetry, isConnected);
+    const { fuelAmount, isFuelFillEnabled } = this.extractFuelData(telemetry);
 
     this.lastFuelAmount.set(ev.action.id, fuelAmount);
     this.lastFuelFillEnabled.set(ev.action.id, isFuelFillEnabled);
-    this.lastConnected.set(ev.action.id, isConnected);
 
     // Generate SVG and set via BaseAction (stores for overlay refresh)
-    const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount, isConnected);
+    const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount);
     await this.setKeyImage(ev, svgDataUri);
   }
 
   /**
    * Update the display for a specific context (called from subscription callback)
    */
-  private async updateDisplay(contextId: string, telemetry: TelemetryData | null, isConnected: boolean): Promise<void> {
-    const { fuelAmount, isFuelFillEnabled } = this.extractFuelData(telemetry, isConnected);
+  private async updateDisplay(contextId: string, telemetry: TelemetryData | null): Promise<void> {
+    const { fuelAmount, isFuelFillEnabled } = this.extractFuelData(telemetry);
 
     // Only update if values have changed
     const lastAmount = this.lastFuelAmount.get(contextId);
     const lastEnabled = this.lastFuelFillEnabled.get(contextId);
-    const wasConnected = this.lastConnected.get(contextId);
 
-    if (lastAmount !== fuelAmount || lastEnabled !== isFuelFillEnabled || wasConnected !== isConnected) {
+    if (lastAmount !== fuelAmount || lastEnabled !== isFuelFillEnabled) {
       this.lastFuelAmount.set(contextId, fuelAmount);
       this.lastFuelFillEnabled.set(contextId, isFuelFillEnabled);
-      this.lastConnected.set(contextId, isConnected);
 
       // Generate SVG and update via BaseAction (uses stored action ref)
-      const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount, isConnected);
+      const svgDataUri = generateFuelDisplaySvg(isFuelFillEnabled, fuelAmount);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }
@@ -140,11 +131,8 @@ export class DisplayFuelToAdd extends ConnectionStateAwareAction {
   /**
    * Extract fuel data from telemetry
    */
-  private extractFuelData(
-    telemetry: TelemetryData | null,
-    isConnected: boolean,
-  ): { fuelAmount: number | null; isFuelFillEnabled: boolean } {
-    if (!isConnected || !telemetry) {
+  private extractFuelData(telemetry: TelemetryData | null): { fuelAmount: number | null; isFuelFillEnabled: boolean } {
+    if (!telemetry) {
       return { fuelAmount: null, isFuelFillEnabled: false };
     }
 

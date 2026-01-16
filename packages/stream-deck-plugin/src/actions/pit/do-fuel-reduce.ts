@@ -21,7 +21,7 @@ export class DoFuelReduce extends ConnectionStateAwareAction<FuelSettings> {
    * Generate SVG for the fuel reduce button
    */
   private generateSvg(amount: number): string {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" data-no-na="true">
   <g filter="url(#activity-state)">
     <!-- Fuel pump body -->
     <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#e74c3c" stroke-width="2.5"/>

@@ -111,7 +111,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     <!-- Right Rear tire -->
     <rect x="50" y="26" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
     <!-- Title text -->
-    <text x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">N/A</text>
+    <text class="title" x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">N/A</text>
   </g>
 </svg>`;
 
@@ -163,7 +163,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
     <!-- Right Rear tire -->
     <rect x="50" y="26" width="8" height="10" rx="1.5" fill="${rrColor}" stroke="#888888" stroke-width="1"/>
     <!-- Title text -->
-    <text x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
+    <text class="title" x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
   </g>
 </svg>`;
 

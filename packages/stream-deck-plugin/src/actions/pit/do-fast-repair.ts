@@ -87,7 +87,7 @@ export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings>
     <circle cx="28" cy="6" r="2" fill="${iconColor}"/>
     <circle cx="60" cy="34" r="1.5" fill="${iconColor}"/>
     <!-- Title text -->
-    <text x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
+    <text class="title" x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
     ${redX}
   </g>
 </svg>`;

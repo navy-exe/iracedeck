@@ -20,7 +20,7 @@ function generateSpeedSvg(speedText: string): string {
     <line x1="36" y1="32" x2="50" y2="20" stroke="#ff4757" stroke-width="2.5" stroke-linecap="round"/>
     <circle cx="36" cy="32" r="4" fill="#ff4757"/>
     <circle cx="36" cy="32" r="2.5" fill="#fff"/>
-    <text x="36" y="65" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#fff" text-anchor="middle">${speedText}</text>
+    <text x="36" y="65" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#fff" text-anchor="middle" class="title">${speedText}</text>
   </g>
 </svg>`;
 
@@ -91,7 +91,7 @@ export class DisplaySpeed extends ConnectionStateAwareAction<SpeedSettings> {
     _isConnected: boolean,
   ): Promise<void> {
     // Default to N/A when no data available
-    let speedText = "N/A";
+    let speedText = "0";
 
     if (telemetry) {
       const speed = telemetry.Speed;

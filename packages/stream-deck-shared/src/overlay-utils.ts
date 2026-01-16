@@ -125,7 +125,17 @@ export function applyInactiveOverlay(svg: string): string {
     </filter>
   </defs>`;
 
-  const modifiedSvg = rawSvg.replace(/<svg(.*?)>/, `<svg$1>\n${filters}\n`);
+  let modifiedSvg = rawSvg.replace(/<svg(.*?)>/, `<svg$1>\n${filters}\n`);
+
+  // Remove all text elements with class="title" (CSS display:none not supported by Stream Deck renderer)
+  modifiedSvg = modifiedSvg.replace(/<text[^>]*class="title"[^>]*>.*?<\/text>/g, "");
+
+  if (!modifiedSvg.match(/<svg[^>]*data-no-na="true"[^>]*>/)) {
+    const naText = `<text x="36" y="65" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="25" font-weight="bold">N/A</text>`;
+
+    // Add N/A text before closing </g>
+    modifiedSvg = modifiedSvg.replace(/<\/g>\s*<\/svg>/, `${naText}\n</g>\n</svg>`);
+  }
 
   // Return in same format as input
   return wasDataUri ? svgToDataUri(modifiedSvg) : modifiedSvg;
