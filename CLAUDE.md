@@ -30,8 +30,9 @@ Stream Deck plugins for iRacing. Monorepo with pnpm workspaces + Turbo.
 
 ## Stream Deck Plugins
 
+- Stream Deck Actions are located in {package}/src/actions/\*\*
 - All actions must extend class ConnectionStateAwareAction from packages\stream-deck-shared\src\connection-state-aware-action.ts
-- All action settings must be using Zod
+- All action settings must be using Zod if action has settings
 - Actions must not handle offline state (no data available) themselves. This is handled globally.
 
 ## Icons
