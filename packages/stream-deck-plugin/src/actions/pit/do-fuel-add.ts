@@ -5,9 +5,8 @@ import streamDeck, {
   WillAppearEvent,
   WillDisappearEvent,
 } from "@elgato/streamdeck";
+import { getCommands, getController } from "@iracedeck/stream-deck-shared";
 import z from "zod";
-
-import { commands, controller } from "../../plugin.js";
 
 /**
  * Do Fuel Add Action
@@ -15,8 +14,13 @@ import { commands, controller } from "../../plugin.js";
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-fuel-add" })
 export class DoFuelAdd extends SingletonAction<FuelSettings> {
-  private sdkController = controller;
-  private pitCommand = commands.pit;
+  private get sdkController() {
+    return getController();
+  }
+
+  private get pitCommand() {
+    return getCommands().pit;
+  }
   private activeContexts = new Map<string, FuelSettings>();
   private lastTitle = new Map<string, string>();
   private logger = streamDeck.logger.createScope("DoFuelAdd");

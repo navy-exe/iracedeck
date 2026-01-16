@@ -6,8 +6,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { hasFlag, PitSvFlags, TelemetryData } from "@iracedeck/iracing-sdk";
-
-import { commands, controller } from "../../plugin.js";
+import { getCommands, getController } from "@iracedeck/stream-deck-shared";
 
 /**
  * Display Fuel to Add Action
@@ -16,8 +15,13 @@ import { commands, controller } from "../../plugin.js";
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.pit.display-fuel-to-add" })
 export class DisplayFuelToAdd extends SingletonAction {
-  private sdkController = controller;
-  private pitCommand = commands.pit;
+  private get sdkController() {
+    return getController();
+  }
+
+  private get pitCommand() {
+    return getCommands().pit;
+  }
   private lastState = new Map<string, string>();
   private logger = streamDeck.logger.createScope("DisplayFuelToAdd");
 

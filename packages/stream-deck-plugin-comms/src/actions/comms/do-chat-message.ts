@@ -1,9 +1,8 @@
 import streamDeck, { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { CameraState, hasFlag } from "@iracedeck/iracing-sdk";
-import { ConnectionStateAwareAction, createSDLogger, LogLevel } from "@iracedeck/stream-deck-shared";
+import { ConnectionStateAwareAction, createSDLogger, getCommands, LogLevel } from "@iracedeck/stream-deck-shared";
 import z from "zod";
 
-import { commands, controller } from "../../sdk.js";
 import { debugKeyText, DEFAULT_ICON_COLOR, generateChatSvg } from "./chat-utils.js";
 
 /**
@@ -14,11 +13,9 @@ import { debugKeyText, DEFAULT_ICON_COLOR, generateChatSvg } from "./chat-utils.
 export class DoChatMessage extends ConnectionStateAwareAction<ChatSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoChatMessage"), LogLevel.Info);
 
-  constructor() {
-    super(controller);
+  private get cameraCommand() {
+    return getCommands().camera;
   }
-
-  private cameraCommand = commands.camera;
   private activeContexts = new Map<string, ChatSettings>();
   private lastIconColor = new Map<string, string>();
   private lastKeyText = new Map<string, string>();

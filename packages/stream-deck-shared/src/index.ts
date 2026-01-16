@@ -25,3 +25,6 @@ export {
 
 // Re-export LogLevel for convenience
 export { LogLevel } from "@iracedeck/logger";
+
+// SDK singleton for lazy initialization
+export { initializeSDK, getSDK, getController, getCommands, isSDKInitialized, _resetSDK } from "./sdk-singleton.js";

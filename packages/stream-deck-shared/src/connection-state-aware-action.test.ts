@@ -1,18 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ConnectionStateAwareAction } from "./connection-state-aware-action.js";
+import * as sdkSingleton from "./sdk-singleton.js";
 
-// Mock SDKController
-function createMockSDKController(initialConnected: boolean = false) {
-  let isConnected = initialConnected;
-
-  return {
-    getConnectionStatus: vi.fn(() => isConnected),
-    setConnectionStatus: (status: boolean) => {
-      isConnected = status;
-    },
-  };
-}
+// Mock the SDK singleton module
+vi.mock("./sdk-singleton.js", () => ({
+  getController: vi.fn(),
+}));
 
 // Mock KeyAction
 function createMockKeyAction(id: string) {
@@ -30,6 +24,18 @@ function createMockEvent<T>(actionId: string, settings: T = {} as T) {
   return {
     action,
     payload: { settings },
+  };
+}
+
+// Mock SDKController
+function createMockSDKController(initialConnected: boolean = false) {
+  let isConnected = initialConnected;
+
+  return {
+    getConnectionStatus: vi.fn(() => isConnected),
+    setConnectionStatus: (status: boolean) => {
+      isConnected = status;
+    },
   };
 }
 
@@ -59,15 +65,19 @@ describe("ConnectionStateAwareAction", () => {
 
   beforeEach(() => {
     mockController = createMockSDKController(false);
-    testAction = new TestConnectionAction(mockController as any);
+    vi.mocked(sdkSingleton.getController).mockReturnValue(mockController as any);
+    testAction = new TestConnectionAction();
   });
 
-  describe("constructor", () => {
-    it("should accept an SDKController via constructor", () => {
-      const controller = createMockSDKController(true);
-      const action = new TestConnectionAction(controller as any);
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
-      expect(action.callGetConnectionStatus()).toBe(true);
+  describe("sdkController getter", () => {
+    it("should get controller from SDK singleton", () => {
+      testAction.callGetConnectionStatus();
+
+      expect(sdkSingleton.getController).toHaveBeenCalled();
     });
   });
 
@@ -201,30 +211,32 @@ describe("ConnectionStateAwareAction", () => {
     });
   });
 
-  describe("multiple instances with different controllers", () => {
-    it("should have independent controllers", () => {
-      const controller1 = createMockSDKController(true);
-      const controller2 = createMockSDKController(false);
+  describe("multiple action instances", () => {
+    it("should share the same controller from singleton", () => {
+      const action1 = new TestConnectionAction();
+      const action2 = new TestConnectionAction();
 
-      const action1 = new TestConnectionAction(controller1 as any);
-      const action2 = new TestConnectionAction(controller2 as any);
+      action1.callGetConnectionStatus();
+      action2.callGetConnectionStatus();
 
-      expect(action1.callGetConnectionStatus()).toBe(true);
-      expect(action2.callGetConnectionStatus()).toBe(false);
+      // Both should use the same singleton controller
+      expect(sdkSingleton.getController).toHaveBeenCalledTimes(2);
     });
 
-    it("should track connection state independently", () => {
-      const controller1 = createMockSDKController(true);
-      const controller2 = createMockSDKController(false);
+    it("should have independent active state tracking", () => {
+      const action1 = new TestConnectionAction();
+      const action2 = new TestConnectionAction();
 
-      const action1 = new TestConnectionAction(controller1 as any);
-      const action2 = new TestConnectionAction(controller2 as any);
-
-      action1.callUpdateConnectionState();
-      action2.callUpdateConnectionState();
-
+      // Both start with default active state
       expect(action1.getIsActive()).toBe(true);
-      expect(action2.getIsActive()).toBe(false);
+      expect(action2.getIsActive()).toBe(true);
+
+      // Update action1 connection state (will set to false since mock starts disconnected)
+      action1.callUpdateConnectionState();
+
+      // action1 should be inactive, action2 still default active
+      expect(action1.getIsActive()).toBe(false);
+      expect(action2.getIsActive()).toBe(true);
     });
   });
 });

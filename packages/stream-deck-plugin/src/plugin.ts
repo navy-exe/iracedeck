@@ -1,6 +1,5 @@
 import streamDeck from "@elgato/streamdeck";
-import { createSDK } from "@iracedeck/iracing-sdk";
-import { createSDLogger } from "@iracedeck/stream-deck-shared";
+import { createSDLogger, initializeSDK } from "@iracedeck/stream-deck-shared";
 
 // Environment actions
 import { DisplaySky } from "./actions/environment/display-sky.js";
@@ -18,11 +17,8 @@ import { DisplaySpeed } from "./actions/vehicle/display-speed.js";
 // Enable trace logging
 streamDeck.logger.setLevel("trace");
 
-// Create SDK with all components wired together
-const { controller, commands } = createSDK(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));
-
-// Export for use in actions
-export { controller, commands };
+// Initialize the SDK singleton
+initializeSDK(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));
 
 // Register iRacing actions
 streamDeck.actions.registerAction(new DisplaySpeed());

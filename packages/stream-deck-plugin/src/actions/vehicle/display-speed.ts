@@ -2,8 +2,6 @@ import { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elga
 import { TelemetryData } from "@iracedeck/iracing-sdk";
 import { ConnectionStateAwareAction } from "@iracedeck/stream-deck-shared";
 
-import { controller } from "../../plugin.js";
-
 /**
  * Generate the speed display SVG with the given speed text.
  * Text is centered below the speedometer arc.
@@ -34,10 +32,6 @@ function generateSpeedSvg(speedText: string): string {
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.vehicle.display-speed" })
 export class DisplaySpeed extends ConnectionStateAwareAction<SpeedSettings> {
-  constructor() {
-    super(controller);
-  }
-
   private activeContexts = new Map<string, SpeedSettings>();
   private lastTitle = new Map<string, string>();
 

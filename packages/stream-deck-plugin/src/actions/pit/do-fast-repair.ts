@@ -6,8 +6,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { hasFlag, PitSvFlags, TelemetryData } from "@iracedeck/iracing-sdk";
-
-import { commands, controller } from "../../plugin.js";
+import { getCommands, getController } from "@iracedeck/stream-deck-shared";
 
 /**
  * Fast Repair Action
@@ -17,8 +16,13 @@ import { commands, controller } from "../../plugin.js";
  */
 @action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-fast-repair" })
 export class DoFastRepair extends SingletonAction {
-  private sdkController = controller;
-  private pitCommand = commands.pit;
+  private get sdkController() {
+    return getController();
+  }
+
+  private get pitCommand() {
+    return getCommands().pit;
+  }
   private activeContexts = new Set<string>();
   private lastState = new Map<string, string>();
   private logger = streamDeck.logger.createScope("DoFastRepair");
