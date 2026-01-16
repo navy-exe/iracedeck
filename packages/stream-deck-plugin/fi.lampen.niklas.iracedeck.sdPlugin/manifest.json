@@ -34,8 +34,7 @@
           "TitleAlignment": "bottom",
           "FontSize": 18
         }
-      ],
-      "UserTitleEnabled": false
+      ]
     },
     {
       "Name": "Display Sky",
@@ -51,8 +50,7 @@
           "TitleAlignment": "bottom",
           "FontSize": 9
         }
-      ],
-      "UserTitleEnabled": false
+      ]
     },
     {
       "Name": "Display Fuel to Add",
@@ -134,8 +132,7 @@
           "TitleAlignment": "bottom",
           "FontSize": 14
         }
-      ],
-      "UserTitleEnabled": false
+      ]
     },
     {
       "Name": "Fast Repair",
@@ -151,8 +148,7 @@
           "TitleAlignment": "bottom",
           "FontSize": 10
         }
-      ],
-      "UserTitleEnabled": false
+      ]
     }
   ],
   "Category": "iRaceDeck",
