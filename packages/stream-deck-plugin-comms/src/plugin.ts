@@ -2,7 +2,7 @@ import streamDeck from "@elgato/streamdeck";
 import { createSDLogger, initializeSDK } from "@iracedeck/stream-deck-shared";
 
 // Comms actions
-import { DoChatMessage } from "./actions/comms/do-chat-message.js";
+import { DoChatMessage } from "./actions/do-chat-message.js";
 
 // Enable trace logging
 streamDeck.logger.setLevel("trace");

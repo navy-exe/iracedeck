@@ -6,7 +6,7 @@
     {
       "Name": "Chat",
       "UUID": "com.iracedeck.sd.comms.do-chat-message",
-      "Icon": "imgs/actions/comms/do-chat-message/icon",
+      "Icon": "imgs/actions/do-chat-message/icon",
       "Tooltip": "Send a custom chat message to iRacing.",
       "PropertyInspectorPath": "ui/chat.html",
       "Controllers": [
@@ -14,7 +14,7 @@
       ],
       "States": [
         {
-          "Image": "imgs/actions/comms/do-chat-message/key",
+          "Image": "imgs/actions/do-chat-message/key",
           "TitleAlignment": "middle",
           "FontSize": 8
         }
