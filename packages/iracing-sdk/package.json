@@ -6,12 +6,16 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "packageManager": "pnpm@10.0.0",
+  "bin": {
+    "telemetry-snapshot": "dist/cli/telemetry-snapshot.js"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test-native": "node -e \"import('@iracedeck/iracing-native').then(console.log).catch(console.error)\""
+    "test-native": "node -e \"import('@iracedeck/iracing-native').then(console.log).catch(console.error)\"",
+    "telemetry-snapshot": "node dist/cli/telemetry-snapshot.js"
   },
   "files": [
     "dist"
