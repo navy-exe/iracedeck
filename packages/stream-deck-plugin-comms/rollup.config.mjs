@@ -5,6 +5,22 @@ import typescript from "@rollup/plugin-typescript";
 import path from "node:path";
 import url from "node:url";
 import process from "node:process";
+import { readFileSync } from "node:fs";
+
+/**
+ * Rollup plugin to import SVG files as strings
+ */
+function svgPlugin() {
+	return {
+		name: "svg",
+		load(id) {
+			if (id.endsWith(".svg")) {
+				const content = readFileSync(id, "utf-8");
+				return `export default ${JSON.stringify(content)};`;
+			}
+		}
+	};
+}
 
 const isWatching = !!process.env.ROLLUP_WATCH;
 const sdPlugin = "com.iracedeck.sd.comms.sdPlugin";
@@ -23,6 +39,7 @@ const config = {
 	},
 	external: ["@iracedeck/iracing-native", "yaml"],
 	plugins: [
+		svgPlugin(),
 		{
 			name: "watch-externals",
 			buildStart: function () {

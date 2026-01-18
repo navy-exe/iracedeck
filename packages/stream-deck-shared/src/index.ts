@@ -23,6 +23,16 @@ export {
   dataUriToSvg,
 } from "./overlay-utils.js";
 
+// Icon template utilities
+export {
+  clearTemplateCache,
+  escapeXml,
+  loadIconTemplate,
+  renderIcon,
+  renderIconTemplate,
+  validateIconTemplate,
+} from "./icon-template.js";
+
 // Re-export LogLevel for convenience
 export { LogLevel } from "@iracedeck/logger";
 

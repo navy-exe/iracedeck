@@ -1,7 +1,17 @@
 import streamDeck, { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { hasFlag, PitSvFlags, TelemetryData } from "@iracedeck/iracing-sdk";
-import { ConnectionStateAwareAction, createSDLogger, getCommands, LogLevel } from "@iracedeck/stream-deck-shared";
+import {
+  ConnectionStateAwareAction,
+  createSDLogger,
+  getCommands,
+  LogLevel,
+  renderIconTemplate,
+  svgToDataUri,
+} from "@iracedeck/stream-deck-shared";
 import z from "zod";
+
+import doChangeTiresNaTemplate from "../../icons/do-change-tires-na.svg";
+import doChangeTiresTemplate from "../../icons/do-change-tires.svg";
 
 const ChangeTiresSettings = z.object({
   lf: z.coerce.boolean().default(true),
@@ -98,24 +108,7 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
    * Generate SVG for the N/A state (disconnected)
    */
   private generateNaSvg(): string {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <g filter="url(#activity-state)">
-    <!-- Car body (top half) -->
-    <rect x="26" y="6" width="20" height="32" rx="3" fill="none" stroke="#888888" stroke-width="2"/>
-    <!-- Left Front tire -->
-    <rect x="14" y="8" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
-    <!-- Right Front tire -->
-    <rect x="50" y="8" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
-    <!-- Left Rear tire -->
-    <rect x="14" y="26" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
-    <!-- Right Rear tire -->
-    <rect x="50" y="26" width="8" height="10" rx="1.5" fill="#888888" stroke="#888888" stroke-width="1"/>
-    <!-- Title text -->
-    <text class="title" x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">N/A</text>
-  </g>
-</svg>`;
-
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+    return svgToDataUri(doChangeTiresNaTemplate);
   }
 
   /**
@@ -150,24 +143,16 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
       titleColor = "#FF4444";
     }
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <g filter="url(#activity-state)">
-    <!-- Car body (top half) -->
-    <rect x="26" y="6" width="20" height="32" rx="3" fill="none" stroke="#888888" stroke-width="2"/>
-    <!-- Left Front tire -->
-    <rect x="14" y="8" width="8" height="10" rx="1.5" fill="${lfColor}" stroke="#888888" stroke-width="1"/>
-    <!-- Right Front tire -->
-    <rect x="50" y="8" width="8" height="10" rx="1.5" fill="${rfColor}" stroke="#888888" stroke-width="1"/>
-    <!-- Left Rear tire -->
-    <rect x="14" y="26" width="8" height="10" rx="1.5" fill="${lrColor}" stroke="#888888" stroke-width="1"/>
-    <!-- Right Rear tire -->
-    <rect x="50" y="26" width="8" height="10" rx="1.5" fill="${rrColor}" stroke="#888888" stroke-width="1"/>
-    <!-- Title text -->
-    <text class="title" x="36" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${titleColor}">${titleText}</text>
-  </g>
-</svg>`;
+    const svg = renderIconTemplate(doChangeTiresTemplate, {
+      lfColor,
+      rfColor,
+      lrColor,
+      rrColor,
+      titleText,
+      titleColor,
+    });
 
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+    return svgToDataUri(svg);
   }
 
   /**

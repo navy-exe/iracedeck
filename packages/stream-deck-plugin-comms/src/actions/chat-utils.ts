@@ -3,6 +3,9 @@
  *
  * Pure functions for chat message display logic.
  */
+import { escapeXml, renderIconTemplate, svgToDataUri } from "@iracedeck/stream-deck-shared";
+
+import doChatMessageTemplate from "../../icons/do-chat-message.svg";
 
 /**
  * Generates an SVG chat bubble icon with configurable color and optional text.
@@ -15,42 +18,9 @@ export function generateChatSvg(color: string, keyText?: string): string {
   const trimmedText = keyText?.trim();
   const textElement = trimmedText ? generateTextElement(trimmedText) : "";
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" data-no-na="true">
-  <g filter="url(#activity-state)">
-  <path d="M14 14
-           h45
-           a6 6 0 0 1 6 6
-           v34
-           a6 6 0 0 1-6 6
-           H29
-           l-4 8
-           l-4 -8
-           H13
-           a6 6 0 0 1-6-6
-           V20
-           a6 6 0 0 1 6-6
-           z"
-        fill="none"
-        stroke="${color}"
-        stroke-width="2.5"
-        stroke-linejoin="round"/>
-    ${textElement}
-  </g>
-</svg>`;
+  const svg = renderIconTemplate(doChatMessageTemplate, { color, textElement });
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
-}
-
-/**
- * Escapes special XML characters in a string.
- */
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+  return svgToDataUri(svg);
 }
 
 /**

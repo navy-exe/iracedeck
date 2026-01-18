@@ -1,0 +1,225 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+import {
+  clearTemplateCache,
+  escapeXml,
+  loadIconTemplate,
+  renderIcon,
+  renderIconTemplate,
+  validateIconTemplate,
+} from "./icon-template.js";
+
+describe("icon-template", () => {
+  const testDir = join(import.meta.dirname, "__test-templates__");
+  const validTemplate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g filter="url(#activity-state)">
+    <text x="36" y="65" class="title">{{text}}</text>
+  </g>
+</svg>`;
+
+  beforeEach(() => {
+    clearTemplateCache();
+    mkdirSync(join(testDir, "imgs", "actions", "test-action"), { recursive: true });
+    writeFileSync(join(testDir, "imgs", "actions", "test-action", "key-template.svg"), validTemplate);
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  describe("escapeXml", () => {
+    it("should escape ampersand", () => {
+      expect(escapeXml("A & B")).toBe("A &amp; B");
+    });
+
+    it("should escape less than", () => {
+      expect(escapeXml("A < B")).toBe("A &lt; B");
+    });
+
+    it("should escape greater than", () => {
+      expect(escapeXml("A > B")).toBe("A &gt; B");
+    });
+
+    it("should escape double quotes", () => {
+      expect(escapeXml('Say "hello"')).toBe("Say &quot;hello&quot;");
+    });
+
+    it("should escape single quotes", () => {
+      expect(escapeXml("It's")).toBe("It&apos;s");
+    });
+
+    it("should handle multiple special characters", () => {
+      expect(escapeXml('<script>alert("xss")</script>')).toBe("&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;");
+    });
+
+    it("should leave normal text unchanged", () => {
+      expect(escapeXml("Hello World 123")).toBe("Hello World 123");
+    });
+  });
+
+  describe("loadIconTemplate", () => {
+    it("should load template from file system", () => {
+      const template = loadIconTemplate(testDir, "test-action");
+
+      expect(template).toBe(validTemplate);
+    });
+
+    it("should cache loaded templates", () => {
+      const template1 = loadIconTemplate(testDir, "test-action");
+      const template2 = loadIconTemplate(testDir, "test-action");
+
+      expect(template1).toBe(template2);
+    });
+
+    it("should throw for non-existent template", () => {
+      expect(() => loadIconTemplate(testDir, "non-existent")).toThrow();
+    });
+  });
+
+  describe("renderIconTemplate", () => {
+    it("should replace single placeholder", () => {
+      const template = "<svg>{{name}}</svg>";
+      const result = renderIconTemplate(template, { name: "Hello" });
+
+      expect(result).toBe("<svg>Hello</svg>");
+    });
+
+    it("should replace multiple placeholders", () => {
+      const template = "<svg>{{a}} and {{b}}</svg>";
+      const result = renderIconTemplate(template, { a: "First", b: "Second" });
+
+      expect(result).toBe("<svg>First and Second</svg>");
+    });
+
+    it("should replace same placeholder multiple times", () => {
+      const template = "<svg>{{x}} + {{x}} = {{x}}{{x}}</svg>";
+      const result = renderIconTemplate(template, { x: "1" });
+
+      expect(result).toBe("<svg>1 + 1 = 11</svg>");
+    });
+
+    it("should leave unmatched placeholders unchanged", () => {
+      const template = "<svg>{{known}} and {{unknown}}</svg>";
+      const result = renderIconTemplate(template, { known: "Hello" });
+
+      expect(result).toBe("<svg>Hello and {{unknown}}</svg>");
+    });
+
+    it("should handle empty values", () => {
+      const template = "<svg>{{empty}}</svg>";
+      const result = renderIconTemplate(template, { empty: "" });
+
+      expect(result).toBe("<svg></svg>");
+    });
+
+    it("should handle SVG content in values", () => {
+      const template = "<svg>{{content}}</svg>";
+      const result = renderIconTemplate(template, { content: '<rect fill="#ff0000"/>' });
+
+      expect(result).toBe('<svg><rect fill="#ff0000"/></svg>');
+    });
+  });
+
+  describe("renderIcon", () => {
+    it("should load, render, and convert to data URI", () => {
+      const result = renderIcon(testDir, "test-action", { text: "Hello" });
+
+      expect(result.startsWith("data:image/svg+xml;base64,")).toBe(true);
+
+      // Decode and verify content
+      const decoded = Buffer.from(result.replace("data:image/svg+xml;base64,", ""), "base64").toString("utf-8");
+
+      expect(decoded).toContain("Hello");
+      expect(decoded).not.toContain("{{text}}");
+    });
+
+    it("should use cached template on subsequent calls", () => {
+      const result1 = renderIcon(testDir, "test-action", { text: "First" });
+      const result2 = renderIcon(testDir, "test-action", { text: "Second" });
+
+      // Both should be valid data URIs
+      expect(result1.startsWith("data:image/svg+xml;base64,")).toBe(true);
+      expect(result2.startsWith("data:image/svg+xml;base64,")).toBe(true);
+
+      // But with different content
+      expect(result1).not.toBe(result2);
+    });
+  });
+
+  describe("validateIconTemplate", () => {
+    it("should return empty array for valid template", () => {
+      const errors = validateIconTemplate(validTemplate);
+
+      expect(errors).toEqual([]);
+    });
+
+    it("should detect missing viewBox", () => {
+      const template = `<svg xmlns="http://www.w3.org/2000/svg">
+        <g filter="url(#activity-state)"></g>
+      </svg>`;
+      const errors = validateIconTemplate(template);
+
+      expect(errors).toContain('Missing or incorrect viewBox. Expected: viewBox="0 0 72 72"');
+    });
+
+    it("should detect incorrect viewBox", () => {
+      const template = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <g filter="url(#activity-state)"></g>
+      </svg>`;
+      const errors = validateIconTemplate(template);
+
+      expect(errors).toContain('Missing or incorrect viewBox. Expected: viewBox="0 0 72 72"');
+    });
+
+    it("should detect missing activity-state filter", () => {
+      const template = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+        <g></g>
+      </svg>`;
+      const errors = validateIconTemplate(template);
+
+      expect(errors).toContain('Missing activity-state filter group. Expected: <g filter="url(#activity-state)">');
+    });
+
+    it("should detect missing namespace", () => {
+      const template = `<svg viewBox="0 0 72 72">
+        <g filter="url(#activity-state)"></g>
+      </svg>`;
+      const errors = validateIconTemplate(template);
+
+      expect(errors).toContain('Missing SVG namespace. Expected: xmlns="http://www.w3.org/2000/svg"');
+    });
+
+    it("should report multiple errors", () => {
+      const template = "<svg><g></g></svg>";
+      const errors = validateIconTemplate(template);
+
+      expect(errors.length).toBe(3);
+    });
+  });
+
+  describe("clearTemplateCache", () => {
+    it("should clear all cached templates", () => {
+      // Load a template to populate cache
+      loadIconTemplate(testDir, "test-action");
+
+      // Modify the file
+      const modifiedTemplate = validTemplate.replace("{{text}}", "{{modified}}");
+
+      writeFileSync(join(testDir, "imgs", "actions", "test-action", "key-template.svg"), modifiedTemplate);
+
+      // Should still return cached version
+      const cached = loadIconTemplate(testDir, "test-action");
+
+      expect(cached).toBe(validTemplate);
+
+      // Clear cache and reload
+      clearTemplateCache();
+
+      const fresh = loadIconTemplate(testDir, "test-action");
+
+      expect(fresh).toBe(modifiedTemplate);
+    });
+  });
+});

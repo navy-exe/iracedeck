@@ -1,4 +1,7 @@
 import { Skies } from "@iracedeck/iracing-sdk";
+import { renderIconTemplate, svgToDataUri } from "@iracedeck/stream-deck-shared";
+
+import displaySkyTemplate from "../../../icons/display-sky.svg";
 
 /**
  * SVG graphics for each sky condition (without the outer svg wrapper)
@@ -95,20 +98,15 @@ function getSkyGraphics(skies: number | null | undefined): string {
  * @returns Base64-encoded SVG data URI
  */
 export function generateSkyIcon(skies: number | null | undefined, text?: string): string {
-  const graphics = getSkyGraphics(skies);
+  const skyGraphics = getSkyGraphics(skies);
 
   const textElement = text
     ? `<text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="12" font-weight="bold" class="title">${text}</text>`
     : "";
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <g filter="url(#activity-state)">
-    ${graphics}
-    ${textElement}
-  </g>
-</svg>`;
+  const svg = renderIconTemplate(displaySkyTemplate, { skyGraphics, textElement });
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  return svgToDataUri(svg);
 }
 
 /**

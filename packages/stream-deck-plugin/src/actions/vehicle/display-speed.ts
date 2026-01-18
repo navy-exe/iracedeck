@@ -1,30 +1,24 @@
 import streamDeck, { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { TelemetryData } from "@iracedeck/iracing-sdk";
-import { ConnectionStateAwareAction, createSDLogger, LogLevel } from "@iracedeck/stream-deck-shared";
+import {
+  ConnectionStateAwareAction,
+  createSDLogger,
+  LogLevel,
+  renderIconTemplate,
+  svgToDataUri,
+} from "@iracedeck/stream-deck-shared";
 import z from "zod";
+
+import displaySpeedTemplate from "../../../icons/display-speed.svg";
 
 /**
  * Generate the speed display SVG with the given speed text.
  * Text is centered below the speedometer arc.
  */
 function generateSpeedSvg(speedText: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <g filter="url(#activity-state)">
-    <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-    <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#00d4ff" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
-    <line x1="36" y1="12" x2="36" y2="17" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="16" y1="32" x2="21" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="56" y1="32" x2="51" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="21.86" y1="17.86" x2="25.4" y2="21.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="50.14" y1="17.86" x2="46.6" y2="21.4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="36" y1="32" x2="50" y2="20" stroke="#ff4757" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="36" cy="32" r="4" fill="#ff4757"/>
-    <circle cx="36" cy="32" r="2.5" fill="#fff"/>
-    <text x="36" y="65" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#fff" text-anchor="middle" class="title">${speedText}</text>
-  </g>
-</svg>`;
+  const svg = renderIconTemplate(displaySpeedTemplate, { speedText });
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  return svgToDataUri(svg);
 }
 
 /**

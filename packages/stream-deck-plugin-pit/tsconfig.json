@@ -11,7 +11,9 @@
     "declarationMap": false
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "icons/**/*.svg",
+    "../../types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

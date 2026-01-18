@@ -57,10 +57,40 @@ Stream Deck plugins for iRacing. Monorepo with pnpm workspaces + Turbo.
 
 - The text size should be between 12 and 25 pixels
 - The text y-position below the graphic must be y="65"
-- Any <text class="title"> will be removed from SVG when no data is available. This is used for example with do-reduce-fuel.ts, do-add-fuel.ts, and display-fuelt-to-add.ts.
-- If property data-no-na="true" is added to <svg>, "N/A" will not be displayed when data is not active.
+- Any `<text class="title">` will be removed from SVG when no data is available
+- If property `data-no-na="true"` is added to `<svg>`, "N/A" will not be displayed when data is not active
 
-The <g> tag with the filter is very important as that controls the activity state.
+The `<g>` tag with the filter is very important as that controls the activity state.
+
+### Icon Templates
+
+Icon templates are SVG files with Mustache-style `{{placeholder}}` syntax for dynamic values. Templates are:
+
+- Located in `{package}/icons/` folder (e.g., `packages/stream-deck-plugin-pit/icons/do-fuel-add.svg`)
+- Imported as strings at build time via rollup svgPlugin
+- Rendered using `renderIconTemplate(template, { placeholder: "value" })`
+- Converted to data URIs with `svgToDataUri(svg)`
+
+Example template (`icons/do-fuel-add.svg`):
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" data-no-na="true">
+  <g filter="url(#activity-state)">
+    <!-- icon graphics -->
+    <text x="36" y="65">{{amount}}</text>
+  </g>
+</svg>
+```
+
+Example usage in action:
+```typescript
+import { renderIconTemplate, svgToDataUri } from "@iracedeck/stream-deck-shared";
+import doFuelAddTemplate from "../../icons/do-fuel-add.svg";
+
+const svg = renderIconTemplate(doFuelAddTemplate, { amount: "+5 L" });
+const dataUri = svgToDataUri(svg);
+```
+
+Use `escapeXml()` from `@iracedeck/stream-deck-shared` for user-provided text values.
 
 ## Conventions
 

@@ -1,6 +1,15 @@
 import streamDeck, { action, KeyDownEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { ConnectionStateAwareAction, createSDLogger, getCommands, LogLevel } from "@iracedeck/stream-deck-shared";
+import {
+  ConnectionStateAwareAction,
+  createSDLogger,
+  getCommands,
+  LogLevel,
+  renderIconTemplate,
+  svgToDataUri,
+} from "@iracedeck/stream-deck-shared";
 import z from "zod";
+
+import doFuelAddTemplate from "../../icons/do-fuel-add.svg";
 
 /**
  * Do Fuel Add Action
@@ -21,30 +30,9 @@ export class DoFuelAdd extends ConnectionStateAwareAction<FuelSettings> {
    * Generate SVG for the fuel add button
    */
   private generateSvg(amount: number): string {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" data-no-na="true">
-  <g filter="url(#activity-state)">
-    <!-- Fuel pump body -->
-    <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#2ecc71" stroke-width="2.5"/>
+    const svg = renderIconTemplate(doFuelAddTemplate, { amount: `+${amount} L` });
 
-    <!-- Fuel gauge inside pump -->
-    <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="#2ecc71" stroke-width="1.5"/>
-
-    <!-- Hose -->
-    <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-
-    <!-- Nozzle -->
-    <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="#2ecc71"/>
-
-    <!-- Plus sign -->
-    <rect x="12" y="42" width="12" height="3" rx="1" fill="#2ecc71"/>
-    <rect x="16.5" y="37.5" width="3" height="12" rx="1" fill="#2ecc71"/>
-
-    <!-- Amount text -->
-    <text x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="20" font-weight="bold">+${amount} L</text>
-  </g>
-</svg>`;
-
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+    return svgToDataUri(svg);
   }
 
   /**
