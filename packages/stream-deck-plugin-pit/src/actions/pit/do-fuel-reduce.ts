@@ -6,7 +6,7 @@ import z from "zod";
  * Do Fuel Reduce Action
  * Reduces fuel from the pit service fuel amount when pressed
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-fuel-reduce" })
+@action({ UUID: "com.iracedeck.sd.pit.do-fuel-reduce" })
 export class DoFuelReduce extends ConnectionStateAwareAction<FuelSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoFuelReduce"), LogLevel.Info);
 

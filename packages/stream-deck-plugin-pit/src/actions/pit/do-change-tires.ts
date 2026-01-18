@@ -22,7 +22,7 @@ type ChangeTiresSettings = z.infer<typeof ChangeTiresSettings>;
  * White outline = will be changed, Gray outline = will NOT be changed.
  * On press: toggles the configured tires (if currently on, turns off; if off, turns on).
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-change-tires" })
+@action({ UUID: "com.iracedeck.sd.pit.do-change-tires" })
 export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoChangeTires"), LogLevel.Info);
 

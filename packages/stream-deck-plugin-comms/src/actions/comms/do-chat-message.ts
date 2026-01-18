@@ -9,7 +9,7 @@ import { debugKeyText, DEFAULT_ICON_COLOR, generateChatSvg } from "./chat-utils.
  * Do Chat Message Action
  * Sends a custom chat message to iRacing when pressed
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.comms.do-chat-message" })
+@action({ UUID: "com.iracedeck.sd.comms.do-chat-message" })
 export class DoChatMessage extends ConnectionStateAwareAction<ChatSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoChatMessage"), LogLevel.Info);
 

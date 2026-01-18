@@ -5,7 +5,7 @@
   "Actions": [
     {
       "Name": "Chat",
-      "UUID": "fi.lampen.niklas.iracedeck.comms.do-chat-message",
+      "UUID": "com.iracedeck.sd.comms.do-chat-message",
       "Icon": "imgs/actions/comms/do-chat-message/icon",
       "Tooltip": "Send a custom chat message to iRacing.",
       "PropertyInspectorPath": "ui/chat.html",
@@ -44,5 +44,5 @@
     "Version": "20",
     "Debug": "enabled"
   },
-  "UUID": "fi.lampen.niklas.iracedeck.comms"
+  "UUID": "com.iracedeck.sd.comms"
 }

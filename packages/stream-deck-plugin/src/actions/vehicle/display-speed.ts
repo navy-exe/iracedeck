@@ -31,7 +31,7 @@ function generateSpeedSvg(speedText: string): string {
  * Display Speed Action
  * Displays current speed from iRacing telemetry
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.vehicle.display-speed" })
+@action({ UUID: "com.iracedeck.sd.vehicle.display-speed" })
 export class DisplaySpeed extends ConnectionStateAwareAction<SpeedSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DisplaySpeed"), LogLevel.Info);
 

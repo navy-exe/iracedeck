@@ -7,8 +7,8 @@
         "dist/**",
         "build/**",
         "bin/**",
-        "fi.lampen.niklas.iracedeck.sdPlugin/**",
-        "fi.lampen.niklas.iracedeck.*.sdPlugin/**"
+        "com.iracedeck.sd.sdPlugin/**",
+        "com.iracedeck.sd.*.sdPlugin/**"
       ]
     },
     "dev": {

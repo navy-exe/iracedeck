@@ -7,7 +7,7 @@ import url from "node:url";
 import process from "node:process";
 
 const isWatching = !!process.env.ROLLUP_WATCH;
-const sdPlugin = "fi.lampen.niklas.iracedeck.comms.sdPlugin";
+const sdPlugin = "com.iracedeck.sd.comms.sdPlugin";
 
 /**
  * @type {import('rollup').RollupOptions}

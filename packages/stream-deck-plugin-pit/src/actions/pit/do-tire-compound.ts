@@ -7,7 +7,7 @@ import z from "zod";
  * Displays the tire compound to be used at next pit stop (PitSvTireCompound)
  * Press to toggle between dry and wet compounds
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-tire-compound" })
+@action({ UUID: "com.iracedeck.sd.pit.do-tire-compound" })
 export class DoTireCompound extends ConnectionStateAwareAction<TireCompoundSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoTireCompound"), LogLevel.Info);
 

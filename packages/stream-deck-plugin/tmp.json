@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./fi.lampen.niklas.iracedeck.sdPlugin/bin",
+    "outDir": "./com.iracedeck.sd.sdPlugin/bin",
     "rootDir": "./src",
     "customConditions": ["node"],
     "experimentalDecorators": true,
@@ -14,5 +14,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "fi.lampen.niklas.iracedeck.sdPlugin"]
+  "exclude": ["node_modules", "dist", "com.iracedeck.sd.sdPlugin"]
 }

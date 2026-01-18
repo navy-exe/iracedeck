@@ -7,7 +7,7 @@ import z from "zod";
  * Display Gear Action
  * Displays current gear from iRacing telemetry
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.vehicle.display-gear" })
+@action({ UUID: "com.iracedeck.sd.vehicle.display-gear" })
 export class DisplayGear extends ConnectionStateAwareAction<GearSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DisplayGear"), LogLevel.Info);
 

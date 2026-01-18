@@ -6,7 +6,7 @@
   "Actions": [
     {
       "Name": "Display Speed",
-      "UUID": "fi.lampen.niklas.iracedeck.vehicle.display-speed",
+      "UUID": "com.iracedeck.sd.vehicle.display-speed",
       "Icon": "imgs/actions/vehicle/display-speed/icon",
       "Tooltip": "Displays current speed from iRacing. Press to toggle between MPH and KPH.",
       "Controllers": [
@@ -22,7 +22,7 @@
     },
     {
       "Name": "Display Gear",
-      "UUID": "fi.lampen.niklas.iracedeck.vehicle.display-gear",
+      "UUID": "com.iracedeck.sd.vehicle.display-gear",
       "Icon": "imgs/actions/vehicle/display-gear/icon",
       "Tooltip": "Displays current gear from iRacing.",
       "Controllers": [
@@ -38,7 +38,7 @@
     },
     {
       "Name": "Display Sky",
-      "UUID": "fi.lampen.niklas.iracedeck.environment.display-sky",
+      "UUID": "com.iracedeck.sd.environment.display-sky",
       "Icon": "imgs/actions/environment/display-sky/icon",
       "Tooltip": "Displays current sky conditions from iRacing.",
       "Controllers": [
@@ -72,5 +72,5 @@
     "Version": "20",
     "Debug": "enabled"
   },
-  "UUID": "fi.lampen.niklas.iracedeck"
+  "UUID": "com.iracedeck.sd"
 }

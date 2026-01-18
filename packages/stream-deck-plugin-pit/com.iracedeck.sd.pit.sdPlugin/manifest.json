@@ -6,7 +6,7 @@
   "Actions": [
     {
       "Name": "Display Fuel to Add",
-      "UUID": "fi.lampen.niklas.iracedeck.pit.display-fuel-to-add",
+      "UUID": "com.iracedeck.sd.pit.display-fuel-to-add",
       "Icon": "imgs/actions/pit/display-fuel-to-add/icon",
       "Tooltip": "Displays amount of fuel to be added at next pit stop.",
       "Controllers": [
@@ -21,7 +21,7 @@
     },
     {
       "Name": "Add Fuel",
-      "UUID": "fi.lampen.niklas.iracedeck.pit.do-fuel-add",
+      "UUID": "com.iracedeck.sd.pit.do-fuel-add",
       "Icon": "imgs/actions/pit/do-fuel-add/icon",
       "Tooltip": "Add fuel to pit service amount.",
       "PropertyInspectorPath": "ui/fuel.html",
@@ -38,7 +38,7 @@
     },
     {
       "Name": "Reduce Fuel",
-      "UUID": "fi.lampen.niklas.iracedeck.pit.do-fuel-reduce",
+      "UUID": "com.iracedeck.sd.pit.do-fuel-reduce",
       "Icon": "imgs/actions/pit/do-fuel-reduce/icon",
       "Tooltip": "Reduce fuel from pit service amount.",
       "PropertyInspectorPath": "ui/fuel.html",
@@ -55,7 +55,7 @@
     },
     {
       "Name": "Tire Compound",
-      "UUID": "fi.lampen.niklas.iracedeck.pit.do-tire-compound",
+      "UUID": "com.iracedeck.sd.pit.do-tire-compound",
       "Icon": "imgs/actions/pit/do-tire-compound/icon",
       "Tooltip": "Toggle tire compound between dry and wet.",
       "Controllers": [
@@ -71,7 +71,7 @@
     },
     {
       "Name": "Change Tires",
-      "UUID": "fi.lampen.niklas.iracedeck.pit.do-change-tires",
+      "UUID": "com.iracedeck.sd.pit.do-change-tires",
       "Icon": "imgs/actions/pit/do-change-tires/icon",
       "Tooltip": "Select which tires to change at next pit stop.",
       "PropertyInspectorPath": "ui/change-tires.html",
@@ -88,7 +88,7 @@
     },
     {
       "Name": "Fast Repair",
-      "UUID": "fi.lampen.niklas.iracedeck.pit.do-fast-repair",
+      "UUID": "com.iracedeck.sd.pit.do-fast-repair",
       "Icon": "imgs/actions/pit/do-fast-repair/icon",
       "Tooltip": "Toggle fast repair at next pit stop.",
       "Controllers": [
@@ -122,5 +122,5 @@
     "Version": "20",
     "Debug": "enabled"
   },
-  "UUID": "fi.lampen.niklas.iracedeck.pit"
+  "UUID": "com.iracedeck.sd.pit"
 }

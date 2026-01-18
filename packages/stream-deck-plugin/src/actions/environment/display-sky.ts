@@ -9,7 +9,7 @@ import { generateDefaultSkyIcon, generateSkyIcon, getSkyText } from "./sky-displ
  * Display Sky Action
  * Displays current sky conditions from iRacing telemetry
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.environment.display-sky" })
+@action({ UUID: "com.iracedeck.sd.environment.display-sky" })
 export class DisplaySky extends ConnectionStateAwareAction<SkySettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DisplaySky"), LogLevel.Info);
 

@@ -9,7 +9,7 @@ import { generateFuelDisplaySvg } from "./fuel-display-utils.js";
  * Displays the amount of fuel to be added at next pit stop (PitSvFuel)
  * Press to toggle fuel fill on/off
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.pit.display-fuel-to-add" })
+@action({ UUID: "com.iracedeck.sd.pit.display-fuel-to-add" })
 export class DisplayFuelToAdd extends ConnectionStateAwareAction {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DisplayFuelToAdd"), LogLevel.Info);
 

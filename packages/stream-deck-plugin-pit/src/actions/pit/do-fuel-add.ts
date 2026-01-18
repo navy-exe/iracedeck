@@ -6,7 +6,7 @@ import z from "zod";
  * Do Fuel Add Action
  * Adds fuel to the pit service fuel amount when pressed
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-fuel-add" })
+@action({ UUID: "com.iracedeck.sd.pit.do-fuel-add" })
 export class DoFuelAdd extends ConnectionStateAwareAction<FuelSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoFuelAdd"), LogLevel.Info);
 

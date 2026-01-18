@@ -110,7 +110,7 @@ iRaceDeck/
 │       │   ├── plugin.ts         # Plugin entry point
 │       │   ├── sdk-controller.ts # SDK connection manager
 │       │   └── actions/          # Stream Deck actions
-│       ├── fi.lampen.niklas.iracedeck.sdPlugin/
+│       ├── com.iracedeck.sd.sdPlugin/
 │       │   ├── manifest.json     # Plugin metadata
 │       │   ├── bin/              # Compiled output
 │       │   └── imgs/             # Plugin icons
@@ -187,32 +187,32 @@ import { TelemetryData } from "@iracedeck/iracing-sdk";
 
 import { SDKController } from "../sdk-controller";
 
-@action({ UUID: "fi.lampen.niklas.iracedeck.rpm" })
+@action({ UUID: "com.iracedeck.sd.rpm" })
 export class RPMDisplay extends SingletonAction {
-    private sdkController = SDKController.getInstance();
+  private sdkController = SDKController.getInstance();
 
-    override async onWillAppear(ev: WillAppearEvent): Promise<void> {
-        this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
-            this.updateDisplay(ev.action.id, telemetry, isConnected);
-        });
+  override async onWillAppear(ev: WillAppearEvent): Promise<void> {
+    this.sdkController.subscribe(ev.action.id, (telemetry, isConnected) => {
+      this.updateDisplay(ev.action.id, telemetry, isConnected);
+    });
+  }
+
+  override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
+    this.sdkController.unsubscribe(ev.action.id);
+  }
+
+  private async updateDisplay(contextId: string, telemetry: TelemetryData | null, isConnected: boolean) {
+    const action = streamDeck.actions.getActionById(contextId);
+    if (!action) return;
+
+    if (!isConnected) {
+      await action.setTitle("iRacing\nnot\nconnected");
+    } else if (telemetry?.RPM) {
+      await action.setTitle(Math.round(telemetry.RPM).toString());
+    } else {
+      await action.setTitle("N/A");
     }
-
-    override async onWillDisappear(ev: WillDisappearEvent): Promise<void> {
-        this.sdkController.unsubscribe(ev.action.id);
-    }
-
-    private async updateDisplay(contextId: string, telemetry: TelemetryData | null, isConnected: boolean) {
-        const action = streamDeck.actions.getActionById(contextId);
-        if (!action) return;
-
-        if (!isConnected) {
-            await action.setTitle("iRacing\nnot\nconnected");
-        } else if (telemetry?.RPM) {
-            await action.setTitle(Math.round(telemetry.RPM).toString());
-        } else {
-            await action.setTitle("N/A");
-        }
-    }
+  }
 }
 ```
 
@@ -229,9 +229,9 @@ export class RPMDisplay extends SingletonAction {
 - Ensure Python 3.x is installed and in PATH
 - Install Visual Studio Build Tools with "Desktop development with C++"
 - Set `msvs_version` if using a non-standard VS version:
-    ```bash
-    npm config set msvs_version 2022
-    ```
+  ```bash
+  npm config set msvs_version 2022
+  ```
 
 ### Display shows "N/A"
 

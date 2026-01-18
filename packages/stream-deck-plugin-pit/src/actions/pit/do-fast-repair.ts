@@ -9,7 +9,7 @@ import z from "zod";
  * Dynamic icon shows wrench with color based on current state.
  * Green = currently ON (will turn OFF), Red = currently OFF (will turn ON)
  */
-@action({ UUID: "fi.lampen.niklas.iracedeck.pit.do-fast-repair" })
+@action({ UUID: "com.iracedeck.sd.pit.do-fast-repair" })
 export class DoFastRepair extends ConnectionStateAwareAction<FastRepairSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("DoFastRepair"), LogLevel.Info);
 

@@ -6,9 +6,9 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "build": "rollup -c && npm run postbuild",
-    "postbuild": "cd fi.lampen.niklas.iracedeck.sdPlugin/bin && npm install",
-    "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart fi.lampen.niklas.iracedeck\"",
-    "clean": "rimraf fi.lampen.niklas.iracedeck.sdPlugin/bin/plugin.js fi.lampen.niklas.iracedeck.sdPlugin/bin/plugin.js.map"
+    "postbuild": "cd com.iracedeck.sd.sdPlugin/bin && npm install",
+    "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.iracedeck.sd\"",
+    "clean": "rimraf com.iracedeck.sd.sdPlugin/bin/plugin.js com.iracedeck.sd.sdPlugin/bin/plugin.js.map"
   },
   "dependencies": {
     "@elgato/streamdeck": "^2.0.0",
