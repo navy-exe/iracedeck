@@ -249,74 +249,67 @@ export class DoChangeTires extends ConnectionStateAwareAction<ChangeTiresSetting
 
     // Get current state and settings
     const currentState = this.getTireState(telemetry);
-    const settings = ev.payload.settings;
+    const settings = ChangeTiresSettings.parse(ev.payload.settings);
 
-    // Toggle each configured tire
-    if (settings.lf) {
-      if (currentState.lf) {
-        // Currently on, turn off by clearing and re-enabling others
-        this.logger.info("Toggling LF off");
-      } else {
-        this.pitCommand.leftFront(0);
-        this.logger.info("Toggling LF on");
-      }
-    }
+    this.logger.info(
+      `Current: LF=${currentState.lf} RF=${currentState.rf} LR=${currentState.lr} RR=${currentState.rr}`,
+    );
+    this.logger.info(`Settings: LF=${settings.lf} RF=${settings.rf} LR=${settings.lr} RR=${settings.rr}`);
 
-    if (settings.rf) {
-      if (currentState.rf) {
-        this.logger.info("Toggling RF off");
-      } else {
-        this.pitCommand.rightFront(0);
-        this.logger.info("Toggling RF on");
-      }
-    }
-
-    if (settings.lr) {
-      if (currentState.lr) {
-        this.logger.info("Toggling LR off");
-      } else {
-        this.pitCommand.leftRear(0);
-        this.logger.info("Toggling LR on");
-      }
-    }
-
-    if (settings.rr) {
-      if (currentState.rr) {
-        this.logger.info("Toggling RR off");
-      } else {
-        this.pitCommand.rightRear(0);
-        this.logger.info("Toggling RR on");
-      }
-    }
-
-    // If we need to turn any tires OFF, we have to clear all and re-enable the ones we want
-    const turningOff =
+    // Check if any of the configured tires is currently active
+    const anyConfiguredTireActive =
       (settings.lf && currentState.lf) ||
       (settings.rf && currentState.rf) ||
       (settings.lr && currentState.lr) ||
       (settings.rr && currentState.rr);
 
-    if (turningOff) {
-      // Clear all tires first
+    if (anyConfiguredTireActive) {
+      // At least one configured tire is active -> deactivate all configured tires
+      // Must clear all and re-enable only the non-configured tires that were active
       this.pitCommand.clearTires();
+      this.logger.info("Deactivating configured tires - cleared all");
 
-      // Re-enable tires that should stay on (were on and not being toggled off)
-      if (currentState.lf && !settings.lf) this.pitCommand.leftFront(0);
+      // Re-enable tires that were active but are NOT configured (should stay on)
+      if (currentState.lf && !settings.lf) {
+        this.pitCommand.leftFront(0);
+        this.logger.info("Re-enabled LF (not configured)");
+      }
 
-      if (currentState.rf && !settings.rf) this.pitCommand.rightFront(0);
+      if (currentState.rf && !settings.rf) {
+        this.pitCommand.rightFront(0);
+        this.logger.info("Re-enabled RF (not configured)");
+      }
 
-      if (currentState.lr && !settings.lr) this.pitCommand.leftRear(0);
+      if (currentState.lr && !settings.lr) {
+        this.pitCommand.leftRear(0);
+        this.logger.info("Re-enabled LR (not configured)");
+      }
 
-      if (currentState.rr && !settings.rr) this.pitCommand.rightRear(0);
+      if (currentState.rr && !settings.rr) {
+        this.pitCommand.rightRear(0);
+        this.logger.info("Re-enabled RR (not configured)");
+      }
+    } else {
+      // No configured tire is active -> activate all configured tires
+      if (settings.lf) {
+        this.pitCommand.leftFront(0);
+        this.logger.info("Activated LF");
+      }
 
-      // Enable tires that are being toggled on (were off and configured)
-      if (!currentState.lf && settings.lf) this.pitCommand.leftFront(0);
+      if (settings.rf) {
+        this.pitCommand.rightFront(0);
+        this.logger.info("Activated RF");
+      }
 
-      if (!currentState.rf && settings.rf) this.pitCommand.rightFront(0);
+      if (settings.lr) {
+        this.pitCommand.leftRear(0);
+        this.logger.info("Activated LR");
+      }
 
-      if (!currentState.lr && settings.lr) this.pitCommand.leftRear(0);
-
-      if (!currentState.rr && settings.rr) this.pitCommand.rightRear(0);
+      if (settings.rr) {
+        this.pitCommand.rightRear(0);
+        this.logger.info("Activated RR");
+      }
     }
 
     this.logger.info("Tire toggle complete");
