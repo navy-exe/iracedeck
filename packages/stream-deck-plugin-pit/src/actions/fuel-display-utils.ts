@@ -57,7 +57,7 @@ function generateFuelText(isFuelFillEnabled: boolean, fuelAmount: number | null)
 
   if (isFuelFillEnabled) {
     if (fuelAmount !== null) {
-      displayText = `${Math.round(fuelAmount)} L`;
+      displayText = `${fuelAmount.toFixed(1)} L`;
     } else {
       displayText = "-";
     }
@@ -67,5 +67,5 @@ function generateFuelText(isFuelFillEnabled: boolean, fuelAmount: number | null)
 
   // Position text in the bottom portion of the icon (below the pump graphic)
   return `
-    <text class="title" x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="12" font-weight="bold">${escapeXml(displayText)}</text>`;
+    <text class="title" x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="20" font-weight="bold">${escapeXml(displayText)}</text>`;
 }

@@ -140,13 +140,15 @@ export class DoFuelAdd extends ConnectionStateAwareAction<FuelSettings> {
     }
 
     const { amount } = FuelSettings.parse(ev.payload.settings);
-    const newFuelAmount = currentFuel + amount;
+    // Round to 1 decimal place to avoid floating point precision issues
+    const roundedCurrentFuel = Math.round(currentFuel * 10) / 10;
+    const newFuelAmount = Math.round((roundedCurrentFuel + amount) * 10) / 10;
 
     // Send the pit command with the new total fuel amount
     const success = this.pitCommand.fuel(newFuelAmount);
 
     if (success) {
-      this.logger.info(`Set fuel to ${newFuelAmount}L (was ${currentFuel}L, added ${amount}L)`);
+      this.logger.info(`Set fuel to ${newFuelAmount}L (was ${roundedCurrentFuel}L, added ${amount}L)`);
     } else {
       this.logger.warn("Failed to set fuel");
     }
@@ -154,7 +156,13 @@ export class DoFuelAdd extends ConnectionStateAwareAction<FuelSettings> {
 }
 
 const FuelSettings = z.object({
-  amount: z.coerce.number().default(1),
+  amount: z.preprocess((val) => {
+    if (typeof val === "string") {
+      return val.replace(",", ".");
+    }
+
+    return val;
+  }, z.coerce.number().default(1)),
 });
 
 /**

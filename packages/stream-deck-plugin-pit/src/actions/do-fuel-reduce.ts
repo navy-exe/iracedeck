@@ -140,7 +140,9 @@ export class DoFuelReduce extends ConnectionStateAwareAction<FuelSettings> {
     }
 
     const { amount } = FuelSettings.parse(ev.payload.settings);
-    const newFuelAmount = Math.max(0, currentFuel - amount);
+    // Round to 1 decimal place to avoid floating point precision issues
+    const roundedCurrentFuel = Math.round(currentFuel * 10) / 10;
+    const newFuelAmount = Math.max(0, Math.round((roundedCurrentFuel - amount) * 10) / 10);
 
     let success: boolean;
 
@@ -150,14 +152,14 @@ export class DoFuelReduce extends ConnectionStateAwareAction<FuelSettings> {
       success = this.pitCommand.clearFuel();
 
       if (success) {
-        this.logger.info(`Cleared fuel (was ${currentFuel}L)`);
+        this.logger.info(`Cleared fuel (was ${roundedCurrentFuel}L)`);
       }
     } else {
       // Send the pit command with the new total fuel amount
       success = this.pitCommand.fuel(newFuelAmount);
 
       if (success) {
-        this.logger.info(`Set fuel to ${newFuelAmount}L (was ${currentFuel}L, reduced ${amount}L)`);
+        this.logger.info(`Set fuel to ${newFuelAmount}L (was ${roundedCurrentFuel}L, reduced ${amount}L)`);
       }
     }
 
@@ -168,7 +170,13 @@ export class DoFuelReduce extends ConnectionStateAwareAction<FuelSettings> {
 }
 
 const FuelSettings = z.object({
-  amount: z.coerce.number().default(1),
+  amount: z.preprocess((val) => {
+    if (typeof val === "string") {
+      return val.replace(",", ".");
+    }
+
+    return val;
+  }, z.coerce.number().default(1)),
 });
 
 /**
