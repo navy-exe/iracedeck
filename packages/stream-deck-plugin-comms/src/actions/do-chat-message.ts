@@ -24,18 +24,26 @@ export class DoChatMessage extends ConnectionStateAwareAction<ChatSettings> {
    * When the action appears on the Stream Deck
    */
   override async onWillAppear(ev: WillAppearEvent<ChatSettings>): Promise<void> {
-    this.activeContexts.set(ev.action.id, ev.payload.settings);
+    // Parse settings through Zod to apply defaults
+    const parsed = ChatSettings.safeParse(ev.payload.settings);
+    const settings = parsed.success ? parsed.data : ChatSettings.parse({});
 
-    // Set default message if not configured
-    if (!ev.payload.settings.message) {
-      await ev.action.setSettings({
-        keyText: "Thanks",
-        message: "Thank you",
-        iconColor: DEFAULT_ICON_COLOR,
-      });
+    // Check if settings changed (defaults were applied)
+    const original = ev.payload.settings;
+    const settingsChanged =
+      settings.keyText !== original.keyText ||
+      settings.message !== original.message ||
+      settings.iconColor !== original.iconColor;
+
+    // Update event with parsed settings
+    ev.payload.settings = settings;
+    this.activeContexts.set(ev.action.id, settings);
+
+    if (settingsChanged) {
+      await ev.action.setSettings(settings);
     }
 
-    // Update immediately with event (stores action ref for later updates)
+    // Update display with event (stores action ref for later updates)
     await this.updateDisplayWithEvent(ev);
 
     // Subscribe to telemetry updates - callback handles connection state changes
@@ -67,17 +75,15 @@ export class DoChatMessage extends ConnectionStateAwareAction<ChatSettings> {
    */
   private async updateDisplayWithEvent(ev: WillAppearEvent<ChatSettings>): Promise<void> {
     const settings = ev.payload.settings;
-    const iconColor = settings.iconColor || DEFAULT_ICON_COLOR;
-    const keyText = settings.keyText || "";
 
     // Update connection state for initial overlay
     this.updateConnectionState();
 
-    this.lastIconColor.set(ev.action.id, iconColor);
-    this.lastKeyText.set(ev.action.id, keyText);
+    this.lastIconColor.set(ev.action.id, settings.iconColor);
+    this.lastKeyText.set(ev.action.id, settings.keyText);
 
     // Generate SVG and set via BaseAction (stores for overlay refresh)
-    const svgDataUri = generateChatSvg(iconColor, keyText);
+    const svgDataUri = generateChatSvg(settings.iconColor, settings.keyText);
     await this.setKeyImage(ev, svgDataUri);
   }
 
@@ -85,19 +91,16 @@ export class DoChatMessage extends ConnectionStateAwareAction<ChatSettings> {
    * Update the display for a specific context (called from subscription callback)
    */
   private async updateDisplay(contextId: string, settings: ChatSettings, _isConnected: boolean): Promise<void> {
-    const iconColor = settings.iconColor || DEFAULT_ICON_COLOR;
-    const keyText = settings.keyText || "";
-
     // Only update if the color or keyText has changed
     const lastColor = this.lastIconColor.get(contextId);
     const lastText = this.lastKeyText.get(contextId);
 
-    if (lastColor !== iconColor || lastText !== keyText) {
-      this.lastIconColor.set(contextId, iconColor);
-      this.lastKeyText.set(contextId, keyText);
+    if (lastColor !== settings.iconColor || lastText !== settings.keyText) {
+      this.lastIconColor.set(contextId, settings.iconColor);
+      this.lastKeyText.set(contextId, settings.keyText);
 
       // Generate SVG and update via BaseAction (uses stored action ref)
-      const svgDataUri = generateChatSvg(iconColor, keyText);
+      const svgDataUri = generateChatSvg(settings.iconColor, settings.keyText);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }
@@ -106,24 +109,23 @@ export class DoChatMessage extends ConnectionStateAwareAction<ChatSettings> {
    * When settings are received or updated
    */
   override async onDidReceiveSettings(ev: any): Promise<void> {
-    // Update stored settings
-    this.activeContexts.set(ev.action.id, ev.payload.settings);
+    // Parse settings through Zod to apply defaults
+    const parsed = ChatSettings.safeParse(ev.payload.settings);
+    const settings = parsed.success ? parsed.data : ChatSettings.parse({});
 
-    // Update display when settings change
-    const settings = ev.payload.settings;
-    const iconColor = settings.iconColor || DEFAULT_ICON_COLOR;
-    const keyText = settings.keyText || "";
+    // Update stored settings
+    this.activeContexts.set(ev.action.id, settings);
 
     // Debug logging to see what characters are in keyText
-    this.logger.info(debugKeyText(keyText));
+    this.logger.info(debugKeyText(settings.keyText));
 
     // Update connection state for overlay
     this.updateConnectionState();
 
-    this.lastIconColor.set(ev.action.id, iconColor);
-    this.lastKeyText.set(ev.action.id, keyText);
+    this.lastIconColor.set(ev.action.id, settings.iconColor);
+    this.lastKeyText.set(ev.action.id, settings.keyText);
 
-    const svgDataUri = generateChatSvg(iconColor, keyText);
+    const svgDataUri = generateChatSvg(settings.iconColor, settings.keyText);
     await this.setKeyImage(ev, svgDataUri);
   }
 
