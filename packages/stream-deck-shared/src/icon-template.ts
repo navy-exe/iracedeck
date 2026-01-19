@@ -103,6 +103,77 @@ export function clearTemplateCache(): void {
  * - Text elements at y="65" for bottom positioning
  * - Dynamic text elements have class="title"
  */
+/**
+ * Options for generating icon text elements.
+ */
+export interface GenerateIconTextOptions {
+  /**
+   * The text to display. Use "\n" to create multiple lines.
+   */
+  text: string;
+  /**
+   * Font size in pixels. Default: 14
+   */
+  fontSize?: number;
+  /**
+   * Base Y position for single line or bottom line of multi-line text. Default: 65
+   */
+  baseY?: number;
+  /**
+   * Line height multiplier relative to font size. Default: 1.2
+   */
+  lineHeightMultiplier?: number;
+}
+
+/**
+ * Generates SVG text element(s) for icon display.
+ * Supports multi-line text by splitting on "\n".
+ *
+ * For single line: places text at baseY (default 65)
+ * For multiple lines: centers the text block vertically around baseY
+ * (each additional line shifts the block up by half the line height)
+ *
+ * @param options - Configuration options for text generation
+ * @returns SVG text element(s) string to be used with {{textElement}} placeholder
+ *
+ * @example
+ * // Single line
+ * generateIconText({ text: "+5 L" })
+ * // Returns: <text class="title" x="36" y="65" ...>+5 L</text>
+ *
+ * @example
+ * // Multi-line
+ * generateIconText({ text: "Line 1\nLine 2", fontSize: 12 })
+ * // Returns two <text> elements centered around baseY
+ */
+export function generateIconText(options: GenerateIconTextOptions): string {
+  const { text, fontSize = 14, baseY = 62, lineHeightMultiplier = 1 } = options;
+
+  const lines = text.split("\n");
+  const lineHeight = fontSize * lineHeightMultiplier;
+
+  if (lines.length === 1) {
+    return `<text class="title" x="36" y="${baseY}" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="${fontSize}" font-weight="bold">${escapeXml(text)}</text>`;
+  }
+
+  // For multiple lines, center the text block around baseY
+  // Total height of text block is (lines.length - 1) * lineHeight
+  // We offset up by half of that to center it
+  const totalBlockHeight = (lines.length - 1) * lineHeight;
+  const startY = baseY - totalBlockHeight / 2;
+
+  const textElements: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const y = startY + i * lineHeight;
+    textElements.push(
+      `<text class="title" x="36" y="${y}" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="${fontSize}" font-weight="bold">${escapeXml(lines[i])}</text>`,
+    );
+  }
+
+  return textElements.join("\n    ");
+}
+
 export function validateIconTemplate(svg: string): string[] {
   const errors: string[] = [];
 

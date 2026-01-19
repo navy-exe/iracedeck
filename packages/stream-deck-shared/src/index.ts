@@ -27,10 +27,12 @@ export {
 export {
   clearTemplateCache,
   escapeXml,
+  generateIconText,
   loadIconTemplate,
   renderIcon,
   renderIconTemplate,
   validateIconTemplate,
+  type GenerateIconTextOptions,
 } from "./icon-template.js";
 
 // Re-export LogLevel for convenience

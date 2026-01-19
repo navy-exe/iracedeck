@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   clearTemplateCache,
   escapeXml,
+  generateIconText,
   loadIconTemplate,
   renderIcon,
   renderIconTemplate,
@@ -220,6 +221,94 @@ describe("icon-template", () => {
       const fresh = loadIconTemplate(testDir, "test-action");
 
       expect(fresh).toBe(modifiedTemplate);
+    });
+  });
+
+  describe("generateIconText", () => {
+    it("should generate single line text at y=62 by default", () => {
+      const result = generateIconText({ text: "+5 L" });
+
+      expect(result).toContain('y="62"');
+      expect(result).toContain(">+5 L</text>");
+      expect(result).toContain('class="title"');
+      expect(result).toContain('font-size="14"');
+    });
+
+    it("should use custom font size", () => {
+      const result = generateIconText({ text: "Test", fontSize: 18 });
+
+      expect(result).toContain('font-size="18"');
+    });
+
+    it("should use custom baseY", () => {
+      const result = generateIconText({ text: "Test", baseY: 50 });
+
+      expect(result).toContain('y="50"');
+    });
+
+    it("should escape XML characters in text", () => {
+      const result = generateIconText({ text: "<test>" });
+
+      expect(result).toContain("&lt;test&gt;");
+    });
+
+    it("should generate multiple text elements for multi-line text", () => {
+      const result = generateIconText({ text: "Line 1\nLine 2" });
+
+      expect(result).toContain(">Line 1</text>");
+      expect(result).toContain(">Line 2</text>");
+      // Should have two separate <text> elements
+      expect(result.match(/<text/g)?.length).toBe(2);
+    });
+
+    it("should center multi-line text around baseY", () => {
+      const result = generateIconText({ text: "Line 1\nLine 2", fontSize: 14, baseY: 62 });
+
+      // 2 lines, lineHeight = 14 * 1 = 14
+      // totalBlockHeight = (2-1) * 14 = 14
+      // startY = 62 - 14/2 = 62 - 7 = 55
+      // Line 1 at y=55, Line 2 at y=55+14=69
+      expect(result).toContain('y="55"');
+      expect(result).toContain('y="69"');
+    });
+
+    it("should handle three lines correctly", () => {
+      const result = generateIconText({ text: "A\nB\nC", fontSize: 10, baseY: 62 });
+
+      // 3 lines, lineHeight = 10 * 1 = 10
+      // totalBlockHeight = (3-1) * 10 = 20
+      // startY = 62 - 20/2 = 62 - 10 = 52
+      // A at y=52, B at y=62, C at y=72
+      expect(result).toContain('y="52"');
+      expect(result).toContain('y="62"');
+      expect(result).toContain('y="72"');
+    });
+
+    it("should respect custom lineHeightMultiplier", () => {
+      const result = generateIconText({
+        text: "Line 1\nLine 2",
+        fontSize: 10,
+        baseY: 62,
+        lineHeightMultiplier: 1.5,
+      });
+
+      // lineHeight = 10 * 1.5 = 15
+      // totalBlockHeight = (2-1) * 15 = 15
+      // startY = 62 - 15/2 = 62 - 7.5 = 54.5
+      // Line 1 at y=54.5, Line 2 at y=54.5+15=69.5
+      expect(result).toContain('y="54.5"');
+      expect(result).toContain('y="69.5"');
+    });
+
+    it("should include all required text attributes", () => {
+      const result = generateIconText({ text: "Test" });
+
+      expect(result).toContain('x="36"');
+      expect(result).toContain('text-anchor="middle"');
+      expect(result).toContain('dominant-baseline="central"');
+      expect(result).toContain('fill="#ffffff"');
+      expect(result).toContain('font-family="sans-serif"');
+      expect(result).toContain('font-weight="bold"');
     });
   });
 });

@@ -4,7 +4,7 @@
  * Pure functions for fuel display logic.
  */
 import { DisplayUnits } from "@iracedeck/iracing-sdk";
-import { escapeXml, formatFuelAmount, renderIconTemplate, svgToDataUri } from "@iracedeck/stream-deck-shared";
+import { formatFuelAmount, generateIconText, renderIconTemplate, svgToDataUri } from "@iracedeck/stream-deck-shared";
 
 import displayFuelToAddTemplate from "../../icons/display-fuel-to-add.svg";
 
@@ -72,10 +72,9 @@ function generateFuelText(
       displayText = "-";
     }
   } else {
-    displayText = "No Refuel";
+    displayText = "No\nRefuel";
   }
 
-  // Position text in the bottom portion of the icon (below the pump graphic)
   return `
-    <text class="title" x="36" y="65" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold">${escapeXml(displayText)}</text>`;
+    ${generateIconText({ text: displayText, fontSize: 14 })}`;
 }
