@@ -43,24 +43,55 @@ Stream Deck plugins for iRacing. Monorepo with pnpm workspaces + Turbo.
 
 ## Icons
 
-- Key Icon is an icon that is displayed in Stream Deck
-- These icons must always be of type SVG
-- The SVG must follow this format:
+Key Icons are SVG icons displayed on Stream Deck buttons.
+
+### SVG Structure
+
+All icons must follow this format:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
   <g filter="url(#activity-state)">
-    {The actual content here}
+    {icon content}
   </g>
 </svg>
 ```
 
-- The text size should be between 12 and 25 pixels
-- The text y-position below the graphic must be y="65"
-- Any `<text class="title">` will be removed from SVG when no data is available
-- If property `data-no-na="true"` is added to `<svg>`, "N/A" will not be displayed when data is not active
+The `<g filter="url(#activity-state)">` wrapper is required - it controls the dimmed appearance when disconnected.
 
-The `<g>` tag with the filter is very important as that controls the activity state.
+### Design Specifications
+
+| Property | Value |
+|----------|-------|
+| Canvas size | 72x72 |
+| Safe area | 8px margin (content in 56x56 centered area) |
+| Stroke width | 2-2.5px for main elements, 1-1.5px for details |
+| Corner radius | 1.5-3px for rounded rectangles |
+
+### Color Palette
+
+| Color | Hex | Usage |
+|-------|-----|-------|
+| White | `#ffffff` | Default icon elements |
+| Green | `#2ecc71` | Positive actions (add, increase, on) |
+| Red | `#e74c3c` | Negative actions (remove, decrease, off) |
+| Yellow | `#f1c40f` | Warning, caution states |
+| Gray | `#888888` | Inactive, secondary elements |
+
+### Text in Icons
+
+- Font size: 12-25px
+- Bottom label position: `x="36" y="65" text-anchor="middle"`
+- Use `<text class="title">` for labels that should hide when disconnected
+- If `data-no-na="true"` is added to `<svg>`, "N/A" will not be displayed when disconnected
+
+### Icon Variants
+
+For actions with configurable direction (+/- type), design the icon to reflect the selected direction:
+
+- **Increase/Up**: Arrow pointing up, plus sign, or expanding visual
+- **Decrease/Down**: Arrow pointing down, minus sign, or contracting visual
+- **Left/Right**: Horizontal arrows or directional indicators
 
 ### Icon Templates
 
@@ -75,18 +106,30 @@ Example template (`icons/do-fuel-add.svg`):
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" data-no-na="true">
   <g filter="url(#activity-state)">
-    <!-- icon graphics -->
-    <text x="36" y="65">{{amount}}</text>
+    <!-- Fuel pump body -->
+    <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#2ecc71" stroke-width="2.5"/>
+    <!-- Fuel gauge inside pump -->
+    <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="#2ecc71" stroke-width="1.5"/>
+    <!-- Hose -->
+    <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Nozzle -->
+    <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="#2ecc71"/>
+    <!-- Plus sign -->
+    <rect x="22" y="25" width="12" height="3" rx="1" fill="#2ecc71"/>
+    <rect x="26.5" y="20.5" width="3" height="12" rx="1" fill="#2ecc71"/>
+{{textElement}}
   </g>
 </svg>
 ```
 
 Example usage in action:
 ```typescript
-import { renderIconTemplate, svgToDataUri } from "@iracedeck/stream-deck-shared";
+import { renderIconTemplate, svgToDataUri, generateIconText } from "@iracedeck/stream-deck-shared";
 import doFuelAddTemplate from "../../icons/do-fuel-add.svg";
 
-const svg = renderIconTemplate(doFuelAddTemplate, { amount: "+5 L" });
+const svg = renderIconTemplate(doFuelAddTemplate, {
+  textElement: generateIconText("+5 L")
+});
 const dataUri = svgToDataUri(svg);
 ```
 
@@ -117,6 +160,13 @@ pnpm test:watch               # Run tests in watch mode
 - The scope in conventional commit should usually be the package
 - Do not add any references to Claude or any other AI tool to commit messages
 - Do not add co-authors such as "Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>" to commit messages
+
+## Terminology
+
+- **Property Inspector** - Stream Deck's settings panel for configuring an action
+- **Key Icon** - The icon displayed on a Stream Deck button
+- **Encoder** - Rotary dial on Stream Deck+ devices
+- **Action ID** - Unique identifier in format `com.iracedeck.sd.{plugin}.{action-name}`
 
 ## References
 

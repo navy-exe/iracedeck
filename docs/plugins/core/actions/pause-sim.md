@@ -1,0 +1,40 @@
+# Pause Sim
+
+Pauses the simulation (single-player/replay only).
+
+## Properties
+
+| Property | Value |
+|----------|-------|
+| Action ID | `com.iracedeck.sd.core.pause-sim` |
+| Type | Toggle |
+| SDK Support | No |
+| Encoder Support | No |
+
+## Behavior
+
+### Button Press
+- Toggles pause on/off
+
+## Settings
+
+None.
+
+## Keyboard Simulation
+
+| Action | Key | iRacing Setting |
+|--------|-----|-----------------|
+| Toggle | Shift+P | Pause Sim |
+
+## Icon States
+
+| State | Description |
+|-------|-------------|
+| Off | Simulation running |
+| On | Simulation paused |
+
+## Notes
+
+- Only works in single-player practice sessions or replays
+- Cannot pause online/multiplayer sessions
+- Useful for taking breaks or analyzing moments
