@@ -41,6 +41,9 @@ importers:
       globals:
         specifier: ^17.0.0
         version: 17.0.0
+      node-gyp:
+        specifier: ^12.1.0
+        version: 12.1.0
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
@@ -214,6 +217,67 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.0.15)(terser@5.44.1)(yaml@2.8.2)
 
+  packages/stream-deck-plugin-hotkeys:
+    dependencies:
+      '@elgato/streamdeck':
+        specifier: ^2.0.0
+        version: 2.0.0
+      '@iracedeck/iracing-sdk':
+        specifier: workspace:*
+        version: link:../iracing-sdk
+      '@iracedeck/stream-deck-shared':
+        specifier: workspace:*
+        version: link:../stream-deck-shared
+      keysender:
+        specifier: ^2.3.1
+        version: 2.4.0
+      node-gyp:
+        specifier: ^12.1.0
+        version: 12.1.0
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@elgato/cli':
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@24.0.15)
+      '@elgato/utils':
+        specifier: ^0.4.1
+        version: 0.4.1
+      '@rollup/plugin-commonjs':
+        specifier: ^28.0.0
+        version: 28.0.9(rollup@4.54.0)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.2
+        version: 15.3.1(rollup@4.54.0)
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.54.0)
+      '@rollup/plugin-typescript':
+        specifier: ^12.1.0
+        version: 12.3.0(rollup@4.54.0)(tslib@2.8.1)(typescript@5.9.3)
+      '@tsconfig/node22':
+        specifier: ^22.0.0
+        version: 22.0.5
+      '@types/node':
+        specifier: ~24.0.0
+        version: 24.0.15
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      rollup:
+        specifier: ^4.0.2
+        version: 4.54.0
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
+      typescript:
+        specifier: ^5.2.2
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.0.15)(terser@5.44.1)(yaml@2.8.2)
+
   packages/stream-deck-plugin-pit:
     dependencies:
       '@elgato/streamdeck':
@@ -277,6 +341,9 @@ importers:
       '@iracedeck/logger':
         specifier: workspace:*
         version: link:../logger
+      keysender:
+        specifier: ^2.3.1
+        version: 2.4.0
       zod:
         specifier: ^3.24.0
         version: 3.25.76
@@ -2711,6 +2778,9 @@ packages:
 
   jws@4.0.1:
     resolution: {integrity: sha512-EKI/M/yqPncGUUh44xz0PxSidXFr/+r0pA70+gIYhjv+et7yxM+s29Y+VGDkovRofQem0fs7Uvf4+YmAdyRduA==}
+
+  keysender@2.4.0:
+    resolution: {integrity: sha512-t6umrC8Itaw+fCGjMvwYOSA9mY8KFgNmMM+qinjYLjn2EQeoz+NLuLCL0IsAiBxucDFp9fkYaHuVeh1E/DcH8g==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -6959,6 +7029,10 @@ snapshots:
     dependencies:
       jwa: 2.0.1
       safe-buffer: 5.2.1
+
+  keysender@2.4.0:
+    dependencies:
+      node-addon-api: 8.5.0
 
   keyv@4.5.4:
     dependencies:

@@ -68,3 +68,24 @@ export {
   formatFuelAmountWithPrefix,
   formatFuelSettingWithUnit,
 } from "./unit-conversion.js";
+
+// Keyboard types
+export {
+  KEYBOARD_KEYS,
+  type KeyboardKey,
+  type KeyboardModifier,
+  type KeyCombination,
+  type IRacingHotkeyPreset,
+} from "./keyboard-types.js";
+
+// iRacing hotkey presets
+export { IRACING_HOTKEY_PRESETS, getHotkeyPreset, getHotkeysByCategory } from "./iracing-hotkeys.js";
+
+// Keyboard service singleton
+export {
+  initializeKeyboard,
+  getKeyboard,
+  isKeyboardInitialized,
+  _resetKeyboard,
+  type IKeyboardService,
+} from "./keyboard-service.js";
