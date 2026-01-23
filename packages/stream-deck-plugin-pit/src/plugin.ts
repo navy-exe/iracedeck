@@ -1,5 +1,5 @@
 import streamDeck from "@elgato/streamdeck";
-import { createSDLogger, initGlobalSettings, initializeSDK } from "@iracedeck/stream-deck-shared";
+import { createSDLogger, initAppMonitor, initGlobalSettings, initializeSDK } from "@iracedeck/stream-deck-shared";
 
 // Pit actions
 import { DisplayFuelToAdd } from "./actions/display-fuel-to-add.js";
@@ -26,6 +26,9 @@ streamDeck.actions.registerAction(new DoFastRepair());
 // Initialize global settings listener BEFORE connect - handlers must be registered first
 // Pass the SDK instance to ensure we use the same instance as the plugin
 initGlobalSettings(streamDeck);
+
+// Initialize app monitor for iRacing process detection
+initAppMonitor(streamDeck);
 
 // Connect to the Stream Deck
 streamDeck.connect();

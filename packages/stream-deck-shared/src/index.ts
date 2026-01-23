@@ -91,3 +91,6 @@ export {
   _resetKeyboard,
   type IKeyboardService,
 } from "./keyboard-service.js";
+
+// App monitor for iRacing process detection
+export { initAppMonitor, isIRacingRunning, isAppMonitorInitialized, _resetAppMonitor } from "./app-monitor.js";

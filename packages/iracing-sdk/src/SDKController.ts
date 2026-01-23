@@ -17,6 +17,7 @@ export class SDKController {
   private reconnectInterval: NodeJS.Timeout | null = null;
   private isConnected = false;
   private lastValidTelemetry: TelemetryData | null = null;
+  private reconnectEnabled = true;
 
   constructor(sdk: IRacingSDK, logger: ILogger = silentLogger) {
     this.sdk = sdk;
@@ -60,6 +61,11 @@ export class SDKController {
 
     // Start reconnect polling (every 2 seconds when offline)
     this.reconnectInterval = setInterval(() => {
+      // Skip reconnection attempts if disabled (iRacing not running)
+      if (!this.reconnectEnabled) {
+        return;
+      }
+
       const sdkConnected = this.sdk.isConnected();
 
       // Reconnect if SDK disconnected, or if SDK reconnected but we haven't updated our state
@@ -170,6 +176,24 @@ export class SDKController {
    */
   getConnectionStatus(): boolean {
     return this.isConnected;
+  }
+
+  /**
+   * Enable or disable reconnection attempts.
+   * Used by app monitor to pause reconnection when iRacing is not running.
+   */
+  setReconnectEnabled(enabled: boolean): void {
+    this.reconnectEnabled = enabled;
+    this.logger.info(`[SDKController] Reconnect ${enabled ? "enabled" : "disabled"}`);
+
+    // If re-enabling and we have subscribers, try to connect immediately
+    if (enabled && this.subscribers.size > 0 && !this.isConnected) {
+      try {
+        this.tryConnect();
+      } catch (error) {
+        this.logger.error(`[SDKController] Failed to connect on re-enable: ${error}`);
+      }
+    }
   }
 
   /**

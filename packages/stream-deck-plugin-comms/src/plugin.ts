@@ -1,5 +1,5 @@
 import streamDeck from "@elgato/streamdeck";
-import { createSDLogger, initializeSDK } from "@iracedeck/stream-deck-shared";
+import { createSDLogger, initAppMonitor, initializeSDK } from "@iracedeck/stream-deck-shared";
 
 // Comms actions
 import { DoChatMacro } from "./actions/do-chat-macro.js";
@@ -14,6 +14,9 @@ initializeSDK(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));
 // Register iRacing actions
 streamDeck.actions.registerAction(new DoChatMacro());
 streamDeck.actions.registerAction(new DoChatMessage());
+
+// Initialize app monitor for iRacing process detection
+initAppMonitor(streamDeck);
 
 // Connect to the Stream Deck
 streamDeck.connect();

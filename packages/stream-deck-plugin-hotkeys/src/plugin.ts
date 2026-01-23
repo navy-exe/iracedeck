@@ -1,5 +1,5 @@
 import streamDeck from "@elgato/streamdeck";
-import { createSDLogger, initializeKeyboard, initializeSDK } from "@iracedeck/stream-deck-shared";
+import { createSDLogger, initAppMonitor, initializeKeyboard, initializeSDK } from "@iracedeck/stream-deck-shared";
 
 import { DoHotkey } from "./actions/do-hotkey.js";
 import { DoIRacingHotkey } from "./actions/do-iracing-hotkey.js";
@@ -16,6 +16,9 @@ initializeKeyboard(createSDLogger(streamDeck.logger.createScope("Keyboard")));
 // Register hotkey actions
 streamDeck.actions.registerAction(new DoHotkey());
 streamDeck.actions.registerAction(new DoIRacingHotkey());
+
+// Initialize app monitor for iRacing process detection
+initAppMonitor(streamDeck);
 
 // Connect to the Stream Deck
 streamDeck.connect();

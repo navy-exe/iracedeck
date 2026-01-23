@@ -1,5 +1,11 @@
 import streamDeck from "@elgato/streamdeck";
-import { createSDLogger, initGlobalSettings, initializeKeyboard, initializeSDK } from "@iracedeck/stream-deck-shared";
+import {
+  createSDLogger,
+  initAppMonitor,
+  initGlobalSettings,
+  initializeKeyboard,
+  initializeSDK,
+} from "@iracedeck/stream-deck-shared";
 
 import { BlackBoxSelector } from "./actions/black-box-selector.js";
 
@@ -18,6 +24,9 @@ streamDeck.actions.registerAction(new BlackBoxSelector());
 // Initialize global settings listener BEFORE connect - handlers must be registered first
 // Pass the SDK instance to ensure we use the same instance as the plugin
 initGlobalSettings(streamDeck);
+
+// Initialize app monitor for iRacing process detection
+initAppMonitor(streamDeck);
 
 // Connect to the Stream Deck
 streamDeck.connect();

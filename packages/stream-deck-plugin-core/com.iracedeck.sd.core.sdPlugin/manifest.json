@@ -46,5 +46,8 @@
     "Version": "24",
     "Debug": "enabled"
   },
+  "ApplicationsToMonitor": {
+    "windows": ["iRacingSim64DX11.exe"]
+  },
   "UUID": "com.iracedeck.sd.core"
 }
