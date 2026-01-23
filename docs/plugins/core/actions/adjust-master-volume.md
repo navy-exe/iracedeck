@@ -14,28 +14,35 @@ Adjusts the iRacing master audio volume.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (louder or quieter).
+Triggers the direction configured in Settings (louder or quieter).
 
 ### Encoder
 - **Rotate clockwise**: Increase volume
 - **Rotate counter-clockwise**: Decrease volume
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Louder | `Louder` or `Quieter` |
+| Direction | Dropdown | Louder | Adjustment direction |
+
+### Direction Options
+- **Louder** - Increase volume
+- **Quieter** - Decrease volume
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Louder | Shift+Alt+NUMPAD + | Master Volume Louder |
 | Quieter | Shift+Alt+NUMPAD - | Master Volume Quieter |
 
-## Icon
+## Icon States
 
-Icon reflects the configured direction (volume up or volume down icon).
+| State | Icon |
+|-------|------|
+| Louder | Speaker with plus/waves |
+| Quieter | Speaker with minus |
 
 ## Notes
 

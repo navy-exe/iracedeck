@@ -14,7 +14,7 @@ Adjusts the maximum force feedback force.
 ## Behavior
 
 ### Button Press
-- Opens adjustment dialog or cycles through presets
+Sets or adjusts FFB max force based on configured mode.
 
 ### Encoder
 - **Rotate clockwise**: Increase max force
@@ -24,18 +24,22 @@ Adjusts the maximum force feedback force.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Value | Number | - | Target max force value (Nm) |
-| Mode | Dropdown | Adjust | `Set` (specific value) or `Adjust` (+/-) |
+| Mode | Dropdown | Adjust | Operation mode |
+| Value | Number | - | Target max force value in Nm (Set mode only) |
 
-## SDK Integration
+### Mode Options
+- **Set** - Set to a specific value
+- **Adjust** - Increment/decrement current value
 
-Uses iRacing SDK to set FFB max force value directly.
+## Telemetry Integration
+
+Uses iRacing SDK to set FFB max force value directly and read current value for display.
 
 ## Icon States
 
-| State | Description |
-|-------|-------------|
-| Default | FFB icon with current value |
+| State | Icon |
+|-------|------|
+| Default | FFB/steering wheel icon with current value |
 
 ## Notes
 

@@ -33,7 +33,9 @@ You help plan and document features for the iRaceDeck project by creating clear,
 
 ## Documentation Structure
 
-Create feature documents in `docs/` with this structure:
+### Feature Planning Documents
+
+Create feature planning documents in `docs/` with this structure:
 
 ```markdown
 # Feature: [Feature Name]
@@ -47,16 +49,8 @@ Brief description of what this feature enables for users.
 ## Plugin: [Plugin Name]
 Which plugin this belongs to and why.
 
-## Actions
-
-### [Action Name]
-- **Action ID**: `com.iracedeck.sd.[plugin].[action-name]`
-- **Type**: Button / Encoder / Both
-- **Purpose**: What the action does
-- **Settings**:
-  - `settingName` (type): Description [default: value]
-- **Icon States**: Description of visual feedback
-- **iRacing Dependencies**: Required telemetry/commands
+## Actions Summary
+Brief overview of actions this feature includes.
 
 ## Global Key Bindings
 List any iRacing keybinds this feature needs.
@@ -69,6 +63,19 @@ List any iRacing keybinds this feature needs.
 ## Out of Scope
 What this feature explicitly does NOT include.
 ```
+
+### Action Documentation
+
+Individual action docs go in `docs/plugins/{plugin}/actions/{action-name}.md`.
+
+**IMPORTANT**: Follow the standard in `.claude/rules/action-documentation.md` and use `docs/plugins/core/actions/black-box-selector.md` as the canonical template.
+
+Key requirements:
+- **Section order**: Properties → Behavior → Settings → Keyboard Simulation → Icon States → Notes
+- **Settings options**: Use bullet point lists (not inline backtick lists like `` `A` or `B` ``)
+- **Keyboard table columns**: Action | **Default Key** | iRacing Setting (always "Default Key", never just "Key")
+- **No default keybind**: Use `*(none)*` in the Default Key column
+- **Icon distinctiveness**: Icons must be visually distinguishable from similar icons used elsewhere; use labels/badges to differentiate action categories
 
 ## Your Process
 

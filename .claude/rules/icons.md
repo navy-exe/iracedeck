@@ -27,3 +27,9 @@ Text and variants
 
 - Use `generateIconText()` helper to insert user text safely (escape XML).
 - For directional actions provide icon variants that reflect the chosen direction.
+
+Distinctiveness
+
+- Icons must be visually distinguishable from similar icons used by other actions.
+- Use labels/badges (e.g., "BB" for black box actions) to differentiate action categories.
+- When an icon concept is shared across actions (e.g., fuel), vary the icon style or add a category label.

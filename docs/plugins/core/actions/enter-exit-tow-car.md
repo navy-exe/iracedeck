@@ -25,8 +25,8 @@ None.
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Enter/Exit/Tow | Shift+R | Enter / Exit / Tow Car |
 
 ## Icon States

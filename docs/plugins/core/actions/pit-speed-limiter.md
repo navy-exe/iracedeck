@@ -22,8 +22,8 @@ None.
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Toggle | A | Pit Speed Limiter |
 
 ## Icon States

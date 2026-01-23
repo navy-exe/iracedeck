@@ -14,28 +14,35 @@ Adjusts the virtual driver's seating height.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (increase or decrease).
+Triggers the direction configured in Settings (increase or decrease).
 
 ### Encoder
 - **Rotate clockwise**: Increase height
 - **Rotate counter-clockwise**: Decrease height
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Increase | `Increase` or `Decrease` |
+| Direction | Dropdown | Increase | Adjustment direction |
+
+### Direction Options
+- **Increase** - Raise driver height
+- **Decrease** - Lower driver height
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Increase | Ctrl+] | Increase Driver Height |
 | Decrease | Ctrl+[ | Decrease Driver Height |
 
-## Icon
+## Icon States
 
-Icon reflects the configured direction (up arrow for increase, down arrow for decrease).
+| State | Icon |
+|-------|------|
+| Increase | Seat icon with up arrow |
+| Decrease | Seat icon with down arrow |
 
 ## Notes
 

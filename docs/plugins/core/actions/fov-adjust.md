@@ -14,28 +14,35 @@ Adjusts the driver's field of view.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (increase or decrease).
+Triggers the direction configured in Settings (increase or decrease).
 
 ### Encoder
 - **Rotate clockwise**: Increase FOV
 - **Rotate counter-clockwise**: Decrease FOV
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Increase | `Increase` or `Decrease` |
+| Direction | Dropdown | Increase | Adjustment direction |
+
+### Direction Options
+- **Increase** - Widen field of view
+- **Decrease** - Narrow field of view
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Increase | ] | Increase Driver Field of View |
 | Decrease | [ | Decrease Driver Field of View |
 
-## Icon
+## Icon States
 
-Icon reflects the configured direction (wider FOV icon for increase, narrower for decrease).
+| State | Icon |
+|-------|------|
+| Increase | Wider FOV icon (expanding lines) |
+| Decrease | Narrower FOV icon (converging lines) |
 
 ## Notes
 

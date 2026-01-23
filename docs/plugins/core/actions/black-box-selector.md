@@ -14,77 +14,83 @@ Cycles through or directly selects iRacing black box screens.
 ## Behavior
 
 ### Button Press
-Opens the specific black box (Direct mode) or cycles to next/previous (Next/Previous mode).
+- **Direct mode**: Opens the selected black box immediately
+- **Next/Previous mode**: Cycles to the next or previous black box
 
 ### Encoder
 - **Rotate clockwise**: Next black box
 - **Rotate counter-clockwise**: Previous black box
-- **Press**: Open currently displayed black box
+- **Press**: Opens the currently selected black box
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Mode | Dropdown | Direct | `Direct`, `Next`, or `Previous` |
+| Mode | Dropdown | Direct | Selection mode |
 | Black Box | Dropdown | Lap Timing | Target black box (Direct mode only) |
 
+### Mode Options
+- **Direct** - Opens a specific black box immediately
+- **Next** - Cycles to the next black box
+- **Previous** - Cycles to the previous black box
+
 ### Black Box Options
+- Lap Timing
+- Standings
+- Relative
+- Fuel
+- Tires
+- Tire Info
+- Pit-stop Adjustments
+- In-car Adjustments
+- Mirror Adjustments
+- Radio Adjustments
+- Weather
 
-| Option | iRacing Setting |
-|--------|-----------------|
-| Lap Timing | Lap Timing Black Box |
-| Standings | Standings Black Box |
-| Relative | Relative Black Box |
-| Fuel | Fuel Black Box |
-| Tires | Tires Black Box |
-| Tire Info | Tire Info Black Box |
-| Pit-stop Adjustments | Pit-stop Adjustments Black Box |
-| In-car Adjustments | In-car Adjustments Black Box |
-| Mirror Adjustments | Mirror Adjustments Black Box |
-| Radio Adjustments | Radio Adjustments Black Box |
-| Weather | Weather Black Box |
-
-## Icon
-
-### Next/Previous Mode
-Shows "BB" with arrow indicating direction (up for next, down for previous).
+## Keyboard Simulation
 
 ### Direct Mode
-Each black box selection has a unique icon:
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
+| Lap Timing | F1 | Lap Timing Black Box |
+| Standings | F2 | Standings Black Box |
+| Relative | F3 | Relative Black Box |
+| Fuel | F4 | Fuel Black Box |
+| Tires | F5 | Tires Black Box |
+| Tire Info | F6 | Tire Info Black Box |
+| Pit-stop Adjustments | F7 | Pit-stop Adjustments Black Box |
+| In-car Adjustments | F8 | In-car Adjustments Black Box |
+| Mirror Adjustments | F9 | Mirror Adjustments Black Box |
+| Radio Adjustments | F10 | Radio Adjustments Black Box |
+| Weather | F11 | Weather Black Box |
 
-| Black Box | Icon Description |
-|-----------|------------------|
-| Lap Timing | Stopwatch/timer icon |
-| Standings | Podium/ranking icon |
-| Relative | Cars with gap indicator |
-| Fuel | Fuel pump icon |
-| Tires | Tire icon |
-| Tire Info | Tire with temperature/wear indicator |
-| Pit-stop Adjustments | Pit crew/wrench icon |
-| In-car Adjustments | Steering wheel/cockpit icon |
-| Mirror Adjustments | Mirror icon |
-| Radio Adjustments | Microphone/headset icon |
-| Weather | Cloud/weather icon |
+### Next/Previous Mode
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
+| Next | *(none)* | Next Black Box |
+| Previous | *(none)* | Prev Black Box |
 
-## Global Key Bindings Used
+## Icon States
 
-| Binding ID | iRacing Setting | Default Key |
-|------------|-----------------|-------------|
-| `blackBoxLapTiming` | Lap Timing Black Box | F1 |
-| `blackBoxStandings` | Standings Black Box | F2 |
-| `blackBoxRelative` | Relative Black Box | F3 |
-| `blackBoxFuel` | Fuel Black Box | F4 |
-| `blackBoxTires` | Tires Black Box | F5 |
-| `blackBoxTireInfo` | Tire Info Black Box | F6 |
-| `blackBoxPitstop` | Pit-stop Adjustments Black Box | F7 |
-| `blackBoxIncar` | In-car Adjustments Black Box | F8 |
-| `blackBoxMirror` | Mirror Adjustments Black Box | F9 |
-| `blackBoxRadio` | Radio Adjustments Black Box | F10 |
-| `blackBoxWeather` | Weather Black Box | F11 |
-| `nextBlackBox` | Next Black Box | (no default) |
-| `prevBlackBox` | Prev Black Box | (no default) |
+All Direct mode icons include a small "BB" label in the corner to distinguish them from similar icons used elsewhere.
+
+| Mode | Icon |
+|------|------|
+| Next | "BB" with up arrow |
+| Previous | "BB" with down arrow |
+| Direct: Lap Timing | Stopwatch + BB label |
+| Direct: Standings | Podium + BB label |
+| Direct: Relative | Gap indicator (±) + BB label |
+| Direct: Fuel | Fuel gauge + BB label |
+| Direct: Tires | Tire + BB label |
+| Direct: Tire Info | Tire with temperature bars + BB label |
+| Direct: Pit-stop | Pit board + BB label |
+| Direct: In-car | Sliders/adjustments + BB label |
+| Direct: Mirror | Mirror + BB label |
+| Direct: Radio | Headset + BB label |
+| Direct: Weather | Cloud + BB label |
 
 ## Notes
 
-- Next/Previous mode requires user to configure `nextBlackBox` and `prevBlackBox` bindings (iRacing has no defaults)
-- Direct mode uses individual black box bindings (F1–F11 by default in iRacing)
+- Next/Previous mode requires configuring custom keybindings in iRacing (no defaults set)
+- Direct mode uses iRacing's default F1–F11 bindings

@@ -14,28 +14,35 @@ Adjusts the lap margin for automatic fuel calculation.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (increase or decrease).
+Triggers the direction configured in Settings (increase or decrease).
 
 ### Encoder
 - **Rotate clockwise**: Increase lap margin
 - **Rotate counter-clockwise**: Decrease lap margin
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Increase | `Increase` or `Decrease` |
+| Direction | Dropdown | Increase | Adjustment direction |
+
+### Direction Options
+- **Increase** - Add more lap margin
+- **Decrease** - Reduce lap margin
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Increase | Shift+Alt+X | Autofuel Lap Margin Inc |
 | Decrease | Shift+Alt+S | Autofuel Lap Margin Dec |
 
-## Icon
+## Icon States
 
-Icon reflects the configured direction (up arrow for increase, down arrow for decrease).
+| State | Icon |
+|-------|------|
+| Increase | Fuel icon with up arrow |
+| Decrease | Fuel icon with down arrow |
 
 ## Notes
 

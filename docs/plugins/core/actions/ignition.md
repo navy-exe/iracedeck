@@ -22,8 +22,8 @@ None.
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Ignition | I | Ignition |
 
 ## Icon States

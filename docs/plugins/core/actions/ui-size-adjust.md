@@ -14,28 +14,35 @@ Adjusts the overall UI scale.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (up or down).
+Triggers the direction configured in Settings (up or down).
 
 ### Encoder
 - **Rotate clockwise**: Scale UI up
 - **Rotate counter-clockwise**: Scale UI down
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Up | `Up` or `Down` |
+| Direction | Dropdown | Up | Adjustment direction |
+
+### Direction Options
+- **Up** - Increase UI scale
+- **Down** - Decrease UI scale
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Up | Ctrl+PageUp | Scale UI Up |
 | Down | Ctrl+PageDown | Scale UI Down |
 
-## Icon
+## Icon States
 
-Icon reflects the configured direction (larger icon for up, smaller for down).
+| State | Icon |
+|-------|------|
+| Up | Larger UI element icon |
+| Down | Smaller UI element icon |
 
 ## Notes
 

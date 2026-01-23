@@ -14,7 +14,7 @@ Changes the driver's view direction.
 ## Behavior
 
 ### Button Press
-- Looks in the configured direction while held
+Looks in the configured direction while held (momentary).
 
 ## Settings
 
@@ -23,23 +23,28 @@ Changes the driver's view direction.
 | Direction | Dropdown | Left | Look direction |
 
 ### Direction Options
-
-| Option | Key | iRacing Setting |
-|--------|-----|-----------------|
-| Left | Z | Look Left |
-| Right | X | Look Right |
-| Up | - | Look Up |
-| Down | - | Look Down |
+- **Left** - Look left
+- **Right** - Look right
+- **Up** - Look up
+- **Down** - Look down
 
 ## Keyboard Simulation
 
-Sends configured direction key while button is held.
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
+| Left | Z | Look Left |
+| Right | X | Look Right |
+| Up | *(none)* | Look Up |
+| Down | *(none)* | Look Down |
 
 ## Icon States
 
-| State | Description |
-|-------|-------------|
-| Default | Arrow icon indicating configured direction |
+| State | Icon |
+|-------|------|
+| Left | Left arrow |
+| Right | Right arrow |
+| Up | Up arrow |
+| Down | Down arrow |
 
 ## Notes
 

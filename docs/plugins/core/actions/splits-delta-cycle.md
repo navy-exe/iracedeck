@@ -14,30 +14,35 @@ Cycles through split-time delta display modes.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (next or previous).
+Triggers the direction configured in Settings (next or previous).
 
 ### Encoder
 - **Rotate clockwise**: Next splits delta display
 - **Rotate counter-clockwise**: Previous splits delta display
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Next | `Next` or `Previous` |
+| Direction | Dropdown | Next | Cycle direction |
+
+### Direction Options
+- **Next** - Cycle to next display mode
+- **Previous** - Cycle to previous display mode
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Next | TAB | Next Splits Delta Display |
 | Previous | Shift+TAB | Prev Splits Delta Display |
 
 ## Icon States
 
-| State | Description |
-|-------|-------------|
-| Default | Shows delta icon |
+| State | Icon |
+|-------|------|
+| Next | Delta icon with up arrow |
+| Previous | Delta icon with down arrow |
 
 ## Notes
 

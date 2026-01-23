@@ -14,28 +14,35 @@ Adjusts the vertical horizon position in the driver's view.
 ## Behavior
 
 ### Button Press
-Triggers the direction configured in Property Inspector (up or down).
+Triggers the direction configured in Settings (up or down).
 
 ### Encoder
 - **Rotate clockwise**: Shift horizon up
 - **Rotate counter-clockwise**: Shift horizon down
 
-## Property Inspector
+## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Direction | Dropdown | Up | `Up` or `Down` |
+| Direction | Dropdown | Up | Adjustment direction |
+
+### Direction Options
+- **Up** - Shift horizon up
+- **Down** - Shift horizon down
 
 ## Keyboard Simulation
 
-| Action | Key | iRacing Setting |
-|--------|-----|-----------------|
+| Action | Default Key | iRacing Setting |
+|--------|-------------|-----------------|
 | Up | Shift+] | Shift Horizon Up |
 | Down | Shift+[ | Shift Horizon Down |
 
-## Icon
+## Icon States
 
-Icon reflects the configured direction (up arrow or down arrow).
+| State | Icon |
+|-------|------|
+| Up | Horizon line with up arrow |
+| Down | Horizon line with down arrow |
 
 ## Notes
 
