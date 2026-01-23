@@ -37,6 +37,23 @@ Requirements
 - All actions must extend `ConnectionStateAwareAction` from `stream-deck-shared`.
 - Action settings should use Zod schemas when the action has settings.
 - Actions must not implement their own global offline handling; offline behavior is handled centrally.
+- Actions should implement `onDidReceiveSettings()` to handle settings updates from the Property Inspector.
+
+### Settings Update Handler Pattern
+
+Always implement `onDidReceiveSettings()` to respond to Property Inspector changes:
+
+```typescript
+override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<MySettings>): Promise<void> {
+  await this.updateDisplay(ev);
+}
+
+private async updateDisplay(
+  ev: WillAppearEvent<MySettings> | DidReceiveSettingsEvent<MySettings>,
+): Promise<void> {
+  // Update icon, state, etc.
+}
+```
 
 Directional Actions (increase/decrease, cycle)
 
@@ -201,18 +218,34 @@ streamDeck.connect();
 
 ### Accessing Global Settings in Actions
 
+Use the shared `parseKeyBinding` and `formatKeyBinding` utilities:
+
 ```typescript
-import { getGlobalSettings, type KeyBindingValue, KeyBindingValueSchema } from "@iracedeck/stream-deck-shared";
+import {
+  getGlobalSettings,
+  getKeyboard,
+  parseKeyBinding,
+  formatKeyBinding,
+  type KeyboardKey,
+  type KeyboardModifier,
+} from "@iracedeck/stream-deck-shared";
 
-// Global settings stores key bindings as JSON strings
+// Parse key binding from global settings (handles JSON strings automatically)
 const globalSettings = getGlobalSettings() as Record<string, unknown>;
-const rawValue = globalSettings["blackBoxLapTiming"];
+const binding = parseKeyBinding(globalSettings["blackBoxLapTiming"]);
 
-// Parse the JSON string
-if (typeof rawValue === "string" && rawValue) {
-  const parsed = KeyBindingValueSchema.safeParse(JSON.parse(rawValue));
-  if (parsed.success) {
-    // Use parsed.data.key and parsed.data.modifiers
+if (binding?.key) {
+  const success = await getKeyboard().sendKeyCombination({
+    key: binding.key as KeyboardKey,
+    modifiers: binding.modifiers.length > 0
+      ? binding.modifiers as KeyboardModifier[]
+      : undefined,
+  });
+
+  // Use formatKeyBinding for logging
+  if (success) {
+    this.logger.info("Key sent successfully");
+    this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
   }
 }
 ```

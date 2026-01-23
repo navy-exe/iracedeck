@@ -118,31 +118,50 @@ streamDeck.connect();
 ```
 
 ### Reading Global Key Bindings
+
+Use the shared `parseKeyBinding` utility to handle JSON strings from global settings:
+
 ```typescript
-import { getGlobalSettings, KeyBindingValueSchema } from "@iracedeck/stream-deck-shared";
+import {
+  getGlobalSettings,
+  getKeyboard,
+  parseKeyBinding,
+  type KeyboardKey,
+  type KeyboardModifier,
+} from "@iracedeck/stream-deck-shared";
 
 const globalSettings = getGlobalSettings() as Record<string, unknown>;
-const rawValue = globalSettings["blackBoxLapTiming"];
+const binding = parseKeyBinding(globalSettings["blackBoxLapTiming"]);
 
-// Parse JSON string from global settings
-if (typeof rawValue === "string" && rawValue) {
-  try {
-    const parsed = KeyBindingValueSchema.safeParse(JSON.parse(rawValue));
-    if (parsed.success) {
-      await getKeyboard().sendKeyCombination({
-        key: parsed.data.key as KeyboardKey,
-        modifiers: parsed.data.modifiers.length > 0
-          ? parsed.data.modifiers as KeyboardModifier[]
-          : undefined,
-      });
-    }
-  } catch { /* handle error */ }
+if (binding?.key) {
+  await getKeyboard().sendKeyCombination({
+    key: binding.key as KeyboardKey,
+    modifiers: binding.modifiers.length > 0
+      ? binding.modifiers as KeyboardModifier[]
+      : undefined,
+  });
+}
+```
+
+### Logging Key Bindings
+
+Use the shared `formatKeyBinding` utility for human-readable log output:
+
+```typescript
+import { formatKeyBinding, parseKeyBinding } from "@iracedeck/stream-deck-shared";
+
+const binding = parseKeyBinding(globalSettings["blackBoxLapTiming"]);
+if (binding?.key) {
+  this.logger.info("Key sent successfully");
+  this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
+  // Output: "Key combination: Ctrl+Shift+F1" or "Key combination: F3"
 }
 ```
 
 ## Reference Implementation
 - Per-action key bindings: `packages/stream-deck-plugin-hotkeys/src/actions/do-iracing-hotkey.ts`
 - Global key bindings: `packages/stream-deck-plugin-core/src/actions/black-box-selector.ts`
+- FPS/Network display: `packages/stream-deck-plugin-core/src/actions/fps-network-display.ts`
 
 ## Do NOT Use
 - `iracing-hotkeys.ts` presets (test plugin only)
