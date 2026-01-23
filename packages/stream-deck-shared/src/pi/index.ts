@@ -15,5 +15,6 @@ export {
   KeyBindingInput,
   formatKeyBinding,
   parseKeyBinding,
+  parseSimpleDefault,
   type KeyBindingValue,
 } from "./key-binding-input.js";

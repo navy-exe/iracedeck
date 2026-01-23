@@ -15,177 +15,31 @@
  * The stored value is a JSON string with format:
  * { "key": "f1", "modifiers": ["ctrl", "shift"] }
  */
+import {
+  formatKeyBinding,
+  type KeyBindingValue,
+  parseKeyBinding,
+  parseSimpleDefault,
+  SDPI_THEME,
+  UI_TEXT,
+} from "./key-binding-utils.js";
+import { KEY_CODE_MAP, type Modifier } from "./key-maps.js";
 
-export interface KeyBindingValue {
-  key: string;
-  modifiers: string[];
-}
+// Re-export for backwards compatibility and public API
+export { formatKeyBinding, parseKeyBinding, parseSimpleDefault, type KeyBindingValue };
 
-// Map browser key codes to our internal key format
-const KEY_CODE_MAP: Record<string, string> = {
-  // Letters
-  KeyA: "a",
-  KeyB: "b",
-  KeyC: "c",
-  KeyD: "d",
-  KeyE: "e",
-  KeyF: "f",
-  KeyG: "g",
-  KeyH: "h",
-  KeyI: "i",
-  KeyJ: "j",
-  KeyK: "k",
-  KeyL: "l",
-  KeyM: "m",
-  KeyN: "n",
-  KeyO: "o",
-  KeyP: "p",
-  KeyQ: "q",
-  KeyR: "r",
-  KeyS: "s",
-  KeyT: "t",
-  KeyU: "u",
-  KeyV: "v",
-  KeyW: "w",
-  KeyX: "x",
-  KeyY: "y",
-  KeyZ: "z",
-  // Numbers
-  Digit0: "0",
-  Digit1: "1",
-  Digit2: "2",
-  Digit3: "3",
-  Digit4: "4",
-  Digit5: "5",
-  Digit6: "6",
-  Digit7: "7",
-  Digit8: "8",
-  Digit9: "9",
-  // Numpad
-  Numpad0: "numpad0",
-  Numpad1: "numpad1",
-  Numpad2: "numpad2",
-  Numpad3: "numpad3",
-  Numpad4: "numpad4",
-  Numpad5: "numpad5",
-  Numpad6: "numpad6",
-  Numpad7: "numpad7",
-  Numpad8: "numpad8",
-  Numpad9: "numpad9",
-  NumpadAdd: "numpad_add",
-  NumpadSubtract: "numpad_subtract",
-  NumpadMultiply: "numpad_multiply",
-  NumpadDivide: "numpad_divide",
-  NumpadDecimal: "numpad_decimal",
-  NumpadEnter: "numpad_enter",
-  // Function keys
-  F1: "f1",
-  F2: "f2",
-  F3: "f3",
-  F4: "f4",
-  F5: "f5",
-  F6: "f6",
-  F7: "f7",
-  F8: "f8",
-  F9: "f9",
-  F10: "f10",
-  F11: "f11",
-  F12: "f12",
-  // Navigation
-  ArrowUp: "up",
-  ArrowDown: "down",
-  ArrowLeft: "left",
-  ArrowRight: "right",
-  Home: "home",
-  End: "end",
-  PageUp: "pageup",
-  PageDown: "pagedown",
-  // Special keys
-  Tab: "tab",
-  Space: "space",
-  Enter: "enter",
-  Escape: "escape",
-  Backspace: "backspace",
-  Delete: "delete",
-  Insert: "insert",
-  // Symbols
-  Minus: "-",
-  Equal: "=",
-  BracketLeft: "[",
-  BracketRight: "]",
-  Backslash: "\\",
-  Semicolon: ";",
-  Quote: "'",
-  Backquote: "`",
-  Comma: ",",
-  Period: ".",
-  Slash: "/",
-};
-
-// Display names for keys
-const KEY_DISPLAY_NAMES: Record<string, string> = {
-  up: "Up",
-  down: "Down",
-  left: "Left",
-  right: "Right",
-  pageup: "Page Up",
-  pagedown: "Page Down",
-  space: "Space",
-  enter: "Enter",
-  escape: "Esc",
-  backspace: "Backspace",
-  delete: "Delete",
-  insert: "Insert",
-  tab: "Tab",
-  home: "Home",
-  end: "End",
-  numpad0: "Num 0",
-  numpad1: "Num 1",
-  numpad2: "Num 2",
-  numpad3: "Num 3",
-  numpad4: "Num 4",
-  numpad5: "Num 5",
-  numpad6: "Num 6",
-  numpad7: "Num 7",
-  numpad8: "Num 8",
-  numpad9: "Num 9",
-  numpad_add: "Num +",
-  numpad_subtract: "Num -",
-  numpad_multiply: "Num *",
-  numpad_divide: "Num /",
-  numpad_decimal: "Num .",
-  numpad_enter: "Num Enter",
-};
-
-export function formatKeyBinding(value: KeyBindingValue | null): string {
-  if (!value || !value.key) {
-    return "Not set";
-  }
-
-  const parts: string[] = [];
-
-  if (value.modifiers?.includes("ctrl")) parts.push("Ctrl");
-  if (value.modifiers?.includes("shift")) parts.push("Shift");
-  if (value.modifiers?.includes("alt")) parts.push("Alt");
-
-  // Format the key for display
-  const keyDisplay =
-    KEY_DISPLAY_NAMES[value.key] || value.key.toUpperCase();
-  parts.push(keyDisplay);
-
-  return parts.join(" + ");
-}
-
-export function parseKeyBinding(json: string | null): KeyBindingValue | null {
-  if (!json) return null;
-  try {
-    return JSON.parse(json) as KeyBindingValue;
-  } catch {
-    return null;
-  }
-}
-
-// Declare SDPIComponents global type
+/**
+ * SDPIComponents global type declaration.
+ *
+ * This component integrates with Elgato's sdpi-components library (sdpi-components.js)
+ * which exposes window.SDPIComponents as its public API. The useSettings hook provides:
+ * - Automatic settings loading when PI connects to Stream Deck
+ * - Settings persistence via Stream Deck's setSettings API
+ * - Change notifications when settings update externally
+ *
+ * This global dependency is intentional - it's the standard integration pattern
+ * for custom PI components that need to persist settings to Stream Deck.
+ */
 declare global {
   interface Window {
     SDPIComponents?: {
@@ -233,6 +87,7 @@ class KeyBindingInput extends HTMLElement {
     } else {
       this.currentValue = null;
     }
+
     this.updateDisplay();
   }
 
@@ -241,16 +96,16 @@ class KeyBindingInput extends HTMLElement {
     this.displayInput = document.createElement("input");
     this.displayInput.type = "text";
     this.displayInput.readOnly = true;
-    this.displayInput.placeholder = "Click to set...";
+    this.displayInput.placeholder = UI_TEXT.PLACEHOLDER;
 
     // Apply SDPI-matching styles directly (SDPI uses Shadow DOM so CSS vars aren't inherited)
     Object.assign(this.displayInput.style, {
-      backgroundColor: "#3d3d3d",
-      color: "#d8d8d8",
-      fontFamily: '"Segoe UI", Arial, sans-serif',
-      fontSize: "9pt",
-      height: "30px",
-      padding: "7px 4px",
+      backgroundColor: SDPI_THEME.background,
+      color: SDPI_THEME.text,
+      fontFamily: SDPI_THEME.fontFamily,
+      fontSize: SDPI_THEME.fontSize,
+      height: SDPI_THEME.height,
+      padding: SDPI_THEME.padding,
       border: "none",
       borderRadius: "0",
       boxSizing: "border-box",
@@ -262,6 +117,7 @@ class KeyBindingInput extends HTMLElement {
 
     // Get setting name and integrate with SDPIComponents
     const settingName = this.getAttribute("setting");
+
     if (settingName && window.SDPIComponents) {
       // Use SDPIComponents.useSettings to get/save settings
       const [, save] = window.SDPIComponents.useSettings(
@@ -277,9 +133,10 @@ class KeyBindingInput extends HTMLElement {
 
     // Get default value if specified and no value is set yet
     const defaultValue = this.getAttribute("default");
+
     if (defaultValue && !this.currentValue) {
       // Parse simple default like "F1" or "Ctrl+Shift+A"
-      this.currentValue = this.parseSimpleDefault(defaultValue);
+      this.currentValue = parseSimpleDefault(defaultValue);
     }
 
     this.updateDisplay();
@@ -297,33 +154,19 @@ class KeyBindingInput extends HTMLElement {
     }
   }
 
-  private parseSimpleDefault(value: string): KeyBindingValue {
-    const parts = value.split("+").map((p) => p.trim().toLowerCase());
-    const modifiers: string[] = [];
-    let key = "";
-
-    for (const part of parts) {
-      if (part === "ctrl" || part === "control") {
-        modifiers.push("ctrl");
-      } else if (part === "shift") {
-        modifiers.push("shift");
-      } else if (part === "alt") {
-        modifiers.push("alt");
-      } else {
-        key = part;
-      }
-    }
-
-    return { key, modifiers };
-  }
-
-  // Called by external code to set the value
+  /**
+   * Programmatically set the key binding value.
+   * Part of the custom element public API for external/programmatic access.
+   */
   setValue(value: KeyBindingValue | null): void {
     this.currentValue = value;
     this.updateDisplay();
   }
 
-  // Called by external code to get the value
+  /**
+   * Programmatically get the current key binding value.
+   * Part of the custom element public API for external/programmatic access.
+   */
   getValue(): KeyBindingValue | null {
     return this.currentValue;
   }
@@ -336,18 +179,20 @@ class KeyBindingInput extends HTMLElement {
 
   private startRecording(): void {
     if (!this.displayInput) return;
+
     this.isRecording = true;
-    this.displayInput.value = "Press keys...";
-    this.displayInput.style.backgroundColor = "rgba(0, 132, 255, 0.2)";
-    this.displayInput.style.borderColor = "#0084ff";
+    this.displayInput.value = UI_TEXT.RECORDING;
+    this.displayInput.style.backgroundColor = SDPI_THEME.recordingBackground;
+    this.displayInput.style.borderColor = SDPI_THEME.recordingBorder;
     this.displayInput.focus();
   }
 
   private stopRecording(): void {
     if (!this.displayInput) return;
+
     this.isRecording = false;
     // Restore SDPI theme colors
-    this.displayInput.style.backgroundColor = "#3d3d3d";
+    this.displayInput.style.backgroundColor = SDPI_THEME.background;
     this.displayInput.style.borderColor = "";
     this.displayInput.blur();
     this.updateDisplay();
@@ -362,6 +207,7 @@ class KeyBindingInput extends HTMLElement {
     // Escape cancels recording
     if (e.code === "Escape") {
       this.stopRecording();
+
       return;
     }
 
@@ -381,15 +227,19 @@ class KeyBindingInput extends HTMLElement {
 
     // Get the key from our map
     const key = KEY_CODE_MAP[e.code];
+
     if (!key) {
       // Unknown key, ignore
       return;
     }
 
     // Build modifiers array
-    const modifiers: string[] = [];
+    const modifiers: Modifier[] = [];
+
     if (e.ctrlKey) modifiers.push("ctrl");
+
     if (e.shiftKey) modifiers.push("shift");
+
     if (e.altKey) modifiers.push("alt");
 
     // Set the new value
@@ -421,7 +271,12 @@ class KeyBindingInput extends HTMLElement {
     }
   }
 
-  // Attribute change handling for dynamic updates
+  /**
+   * Observed attributes for the custom element.
+   * - "value": Allows setting the key binding via HTML attribute (JSON string format).
+   *   Part of the standard custom element API contract.
+   * - "default": Initial default value if no setting exists.
+   */
   static get observedAttributes(): string[] {
     return ["value", "default"];
   }
