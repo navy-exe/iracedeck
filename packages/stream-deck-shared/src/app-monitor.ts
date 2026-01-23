@@ -17,7 +17,6 @@
  * streamDeck.connect();
  */
 import type StreamDeck from "@elgato/streamdeck";
-
 import type { ILogger } from "@iracedeck/logger";
 
 import { getController } from "./sdk-singleton.js";

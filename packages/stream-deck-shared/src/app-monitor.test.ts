@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import type { ILogger } from "@iracedeck/logger";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { _resetAppMonitor, initAppMonitor, isAppMonitorInitialized, isIRacingRunning } from "./app-monitor.js";
 import { getController } from "./sdk-singleton.js";
@@ -166,7 +165,9 @@ describe("App Monitor", () => {
         throw new Error("SDK not initialized");
       });
 
-      expect(() => initAppMonitor(mockSD as never, createMockLogger())).toThrow("initAppMonitor requires SDK to be initialized first");
+      expect(() => initAppMonitor(mockSD as never, createMockLogger())).toThrow(
+        "initAppMonitor requires SDK to be initialized first",
+      );
 
       // Reset mock for subsequent tests (also done in beforeEach, but be explicit)
       resetGetControllerMock();

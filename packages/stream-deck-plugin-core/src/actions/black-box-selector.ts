@@ -8,15 +8,16 @@ import streamDeck, {
 import {
   ConnectionStateAwareAction,
   createSDLogger,
+  formatKeyBinding,
   generateIconText,
   getGlobalSettings,
   getKeyboard,
   type KeyBindingValue,
-  KeyBindingValueSchema,
   type KeyboardKey,
   type KeyboardModifier,
   type KeyCombination,
   LogLevel,
+  parseKeyBinding,
   renderIconTemplate,
   svgToDataUri,
 } from "@iracedeck/stream-deck-shared";
@@ -88,43 +89,6 @@ const GLOBAL_KEYS = {
   CYCLE_NEXT: "blackBoxCycleNext",
   CYCLE_PREVIOUS: "blackBoxCyclePrevious",
 } as const;
-
-/**
- * Format a key binding for display in logs
- */
-function formatKeyBinding(binding: KeyBindingValue | undefined): string {
-  if (!binding?.key) return "";
-
-  const modifiers = (binding.modifiers || [])
-    .filter((m) => ["ctrl", "shift", "alt"].includes(m))
-    .map((m) => m.charAt(0).toUpperCase() + m.slice(1));
-
-  return [...modifiers, binding.key.toUpperCase()].join("+");
-}
-
-/**
- * Parse a key binding from global settings.
- * Handles both JSON strings and already-parsed objects.
- */
-function parseKeyBinding(rawValue: unknown): KeyBindingValue | undefined {
-  if (typeof rawValue === "string" && rawValue) {
-    try {
-      const parsed = KeyBindingValueSchema.safeParse(JSON.parse(rawValue));
-
-      return parsed.success ? parsed.data : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  if (rawValue && typeof rawValue === "object") {
-    const parsed = KeyBindingValueSchema.safeParse(rawValue);
-
-    return parsed.success ? parsed.data : undefined;
-  }
-
-  return undefined;
-}
 
 /**
  * Generate mode-specific content for the icon
@@ -290,9 +254,11 @@ export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelecto
     const success = await keyboard.sendKeyCombination(combination);
 
     if (success) {
-      this.logger.info(`Key (${formatKeyBinding(binding)}) sent successfully`);
+      this.logger.info("Key sent successfully");
+      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
     } else {
-      this.logger.warn(`Failed to send key (${formatKeyBinding(binding)})`);
+      this.logger.warn("Failed to send key");
+      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
     }
   }
 

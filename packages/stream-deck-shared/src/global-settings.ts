@@ -21,9 +21,8 @@
  * if (settings.disableWhenDisconnected) { ... }
  */
 import type StreamDeck from "@elgato/streamdeck";
-import { z } from "zod";
-
 import type { ILogger } from "@iracedeck/logger";
+import { z } from "zod";
 
 /**
  * Schema for key binding values stored in global settings.
