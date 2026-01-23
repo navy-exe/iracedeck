@@ -1,7 +1,22 @@
 ---
-# Stream Deck Actions
+# Stream Deck Plugins and Actions
 
-Locations
+## Plugin Package Structure
+
+Each Stream Deck plugin package must have a `.gitignore` file at the package root with:
+
+```gitignore
+# Node.js
+node_modules/
+
+# Stream Deck files
+*.sdPlugin/bin
+*.sdPlugin/logs
+```
+
+The `bin/` folder contains build output and must not be committed to git.
+
+## Action Locations
 
 - Stream Deck actions live under each plugin: `{package}/src/actions/**`.
 
