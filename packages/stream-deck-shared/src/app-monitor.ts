@@ -7,16 +7,18 @@
  * Usage:
  * 1. Add ApplicationsToMonitor to manifest.json:
  *    "ApplicationsToMonitor": { "windows": ["iRacingSim64DX11.exe"] }
- * 2. Call initAppMonitor(streamDeck) at plugin startup, before streamDeck.connect()
+ * 2. Call initAppMonitor(streamDeck, logger) at plugin startup, before streamDeck.connect()
  *
  * @example
  * // In plugin.ts
  * import streamDeck from "@elgato/streamdeck";
- * import { initAppMonitor } from "@iracedeck/stream-deck-shared";
- * initAppMonitor(streamDeck);
+ * import { createSDLogger, initAppMonitor } from "@iracedeck/stream-deck-shared";
+ * initAppMonitor(streamDeck, createSDLogger(streamDeck.logger.createScope("AppMonitor")));
  * streamDeck.connect();
  */
 import type StreamDeck from "@elgato/streamdeck";
+
+import type { ILogger } from "@iracedeck/logger";
 
 import { getController } from "./sdk-singleton.js";
 
@@ -29,6 +31,9 @@ let initialized = false;
 /** Tracks whether iRacing is currently running */
 let iRacingRunning = false;
 
+/** Logger instance for this module */
+let logger: ILogger | null = null;
+
 /**
  * Initialize the app monitor.
  * Sets up listeners for iRacing launch/terminate events.
@@ -39,16 +44,19 @@ let iRacingRunning = false;
  * - The SDK controller must be available via getController()
  *
  * @param sd - The Stream Deck SDK instance from the plugin
+ * @param log - Logger instance for this module
  * @throws Error if SDK hasn't been initialized
  */
-export function initAppMonitor(sd: typeof StreamDeck): void {
+export function initAppMonitor(sd: typeof StreamDeck, log: ILogger): void {
+  logger = log;
+
   if (initialized) {
-    sd.logger.warn("[AppMonitor] Already initialized");
+    logger.debug("Already initialized");
 
     return;
   }
 
-  sd.logger.info("[AppMonitor] Initializing iRacing app monitor");
+  logger.info("Initializing");
 
   // Validate SDK is initialized before proceeding
   let controller;
@@ -56,14 +64,14 @@ export function initAppMonitor(sd: typeof StreamDeck): void {
   try {
     controller = getController();
   } catch {
-    sd.logger.error("[AppMonitor] Cannot initialize: SDK not initialized");
+    logger.error("Cannot initialize: SDK not initialized");
     throw new Error("initAppMonitor requires SDK to be initialized first (call initializeSDK())");
   }
 
   // Listen for iRacing launch
   sd.system.onApplicationDidLaunch((ev) => {
     if (ev.application.toLowerCase() === IRACING_EXE.toLowerCase()) {
-      sd.logger.info("[AppMonitor] iRacing was launched");
+      logger?.info("iRacing launched");
       iRacingRunning = true;
       getController().setReconnectEnabled(true);
     }
@@ -72,7 +80,7 @@ export function initAppMonitor(sd: typeof StreamDeck): void {
   // Listen for iRacing termination
   sd.system.onApplicationDidTerminate((ev) => {
     if (ev.application.toLowerCase() === IRACING_EXE.toLowerCase()) {
-      sd.logger.info("[AppMonitor] iRacing was terminated");
+      logger?.info("iRacing terminated");
       iRacingRunning = false;
       getController().setReconnectEnabled(false);
     }
@@ -84,12 +92,12 @@ export function initAppMonitor(sd: typeof StreamDeck): void {
   // If so, assume iRacing is running and keep reconnect enabled
   if (controller.getConnectionStatus()) {
     iRacingRunning = true;
-    sd.logger.info("[AppMonitor] App monitor initialized (already connected, assuming iRacing is running)");
+    logger.info("Initialized (already connected)");
   } else {
     // Not connected - disable reconnection until iRacing launches
     // Stream Deck will fire applicationDidLaunch immediately if iRacing is already running
     controller.setReconnectEnabled(false);
-    sd.logger.info("[AppMonitor] App monitor initialized (reconnect disabled until iRacing launches)");
+    logger.info("Initialized (reconnect paused)");
   }
 }
 

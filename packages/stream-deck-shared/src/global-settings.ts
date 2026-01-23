@@ -5,15 +5,15 @@
  * Uses the Stream Deck SDK's global settings API for persistence.
  *
  * Usage:
- * 1. Call initGlobalSettings(streamDeck) once at plugin startup, passing the SDK instance
+ * 1. Call initGlobalSettings(streamDeck, logger) once at plugin startup
  * 2. Use getGlobalSettings() to access current settings
  * 3. Settings are automatically updated when changed in Property Inspector
  *
  * @example
  * // In plugin.ts
  * import streamDeck from "@elgato/streamdeck";
- * import { initGlobalSettings } from "@iracedeck/stream-deck-shared";
- * initGlobalSettings(streamDeck);
+ * import { createSDLogger, initGlobalSettings } from "@iracedeck/stream-deck-shared";
+ * initGlobalSettings(streamDeck, createSDLogger(streamDeck.logger.createScope("GlobalSettings")));
  *
  * // In actions
  * import { getGlobalSettings } from "@iracedeck/stream-deck-shared";
@@ -22,6 +22,8 @@
  */
 import type StreamDeck from "@elgato/streamdeck";
 import { z } from "zod";
+
+import type { ILogger } from "@iracedeck/logger";
 
 /**
  * Schema for key binding values stored in global settings.
@@ -68,29 +70,36 @@ const listeners: Set<GlobalSettingsListener> = new Set();
 let initialized = false;
 
 /**
+ * Logger instance for this module
+ */
+let logger: ILogger | null = null;
+
+/**
  * Initialize global settings manager.
  * Sets up the listener for global settings changes.
  * The SDK will send current settings via the onDidReceiveGlobalSettings event.
  * Should be called once at plugin startup, before streamDeck.connect().
  *
  * @param sd - The Stream Deck SDK instance from the plugin
+ * @param log - Logger instance for this module
  * @returns Current global settings (may be defaults until SDK sends actual values)
  */
-export function initGlobalSettings(sd: typeof StreamDeck): GlobalSettings {
-  sd.logger.info("[GlobalSettings] initGlobalSettings called");
+export function initGlobalSettings(sd: typeof StreamDeck, log: ILogger): GlobalSettings {
+  logger = log;
+  logger.info("Initializing");
 
   if (initialized) {
-    sd.logger.info("[GlobalSettings] Already initialized, returning cached");
+    logger.debug("Already initialized, returning cached");
 
     return currentSettings;
   }
 
   // Listen for changes from Property Inspector
   sd.settings.onDidReceiveGlobalSettings((ev: { settings: unknown }) => {
-    sd.logger.info(`[GlobalSettings] onDidReceiveGlobalSettings: ${JSON.stringify(ev.settings)}`);
+    logger?.info("Settings received");
+    logger?.debug(`Settings data: ${JSON.stringify(ev.settings)}`);
     const newSettings = GlobalSettingsSchema.parse(ev.settings);
     currentSettings = newSettings;
-    sd.logger.info(`[GlobalSettings] Updated cache: ${JSON.stringify(currentSettings)}`);
 
     // Notify all listeners
     for (const listener of listeners) {
@@ -102,7 +111,7 @@ export function initGlobalSettings(sd: typeof StreamDeck): GlobalSettings {
 
   // Request current global settings - this triggers the onDidReceiveGlobalSettings callback
   sd.settings.getGlobalSettings();
-  sd.logger.info("[GlobalSettings] Requested current global settings");
+  logger.info("Initialized");
 
   return currentSettings;
 }

@@ -23,10 +23,10 @@ streamDeck.actions.registerAction(new BlackBoxSelector());
 
 // Initialize global settings listener BEFORE connect - handlers must be registered first
 // Pass the SDK instance to ensure we use the same instance as the plugin
-initGlobalSettings(streamDeck);
+initGlobalSettings(streamDeck, createSDLogger(streamDeck.logger.createScope("GlobalSettings")));
 
 // Initialize app monitor for iRacing process detection
-initAppMonitor(streamDeck);
+initAppMonitor(streamDeck, createSDLogger(streamDeck.logger.createScope("AppMonitor")));
 
 // Connect to the Stream Deck
 streamDeck.connect();

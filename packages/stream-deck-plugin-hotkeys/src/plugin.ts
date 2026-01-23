@@ -18,7 +18,7 @@ streamDeck.actions.registerAction(new DoHotkey());
 streamDeck.actions.registerAction(new DoIRacingHotkey());
 
 // Initialize app monitor for iRacing process detection
-initAppMonitor(streamDeck);
+initAppMonitor(streamDeck, createSDLogger(streamDeck.logger.createScope("AppMonitor")));
 
 // Connect to the Stream Deck
 streamDeck.connect();
