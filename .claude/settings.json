@@ -19,12 +19,14 @@
       "Bash(cd:*)",
       "Bash(dir:*)",
       "Bash(find:*)",
+      "Bash(head:*)",
       "Bash(git check-ignore:*)",
       "Bash(git diff:*)",
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(grep:*)",
       "Bash(pnpm build:*)",
+      "Bash(tree:*)",
       "Bash(wc:*)",
       "Bash(* --version)"
     ]
