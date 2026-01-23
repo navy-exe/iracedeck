@@ -1,11 +1,105 @@
 ---
 # Keyboard Shortcuts & Hotkey Actions
 
-## Reference
-`docs/keyboard-shortcuts.md` is the authoritative source for iRacing keyboard defaults.
+## SDK-First Principle
 
-## Implementation
-- Define binding IDs in action settings
-- Use defaults from docs/keyboard-shortcuts.md
-- Use `getKeyboard().sendKeyCombination()` from stream-deck-shared
-- Do NOT use `iracing-hotkeys.ts` (test plugin only)
+**ALWAYS prefer iRacing SDK commands over keyboard shortcuts** when both options exist:
+- SDK commands are more reliable (no key binding mismatches)
+- SDK commands work regardless of user's iRacing key configuration
+- Check `docs/keyboard-shortcuts.md` "Available via SDK" column before implementing
+
+Only use keyboard shortcuts when:
+- The feature has no SDK support (e.g., black box selection, camera controls)
+- The SDK command doesn't provide the needed functionality
+
+## Reference
+`docs/keyboard-shortcuts.md` is the authoritative source for iRacing keyboard defaults and SDK availability.
+
+## Key Binding Architecture
+
+**Key bindings are ALWAYS configured via Property Inspector**, not hardcoded in action code:
+- Users must be able to customize key bindings to match their iRacing configuration
+- Defaults are set in the PI HTML via the `default` attribute
+- The action code reads whatever binding the user has configured
+
+## Property Inspector Setup
+
+Always include both script files for key binding support:
+```html
+<script src="sdpi-components.js"></script>
+<script src="pi-components.js"></script>
+```
+
+Use the `ird-key-binding` component:
+```html
+<sdpi-item label="Key Binding">
+  <ird-key-binding setting="keyBinding" default="F1"></ird-key-binding>
+</sdpi-item>
+```
+
+## Zod Schema for Key Bindings
+
+The `ird-key-binding` component stores values as JSON strings. Use this pattern:
+
+```typescript
+const KeyBindingSchema = z.object({
+  key: z.string(),
+  modifiers: z.array(z.string()).default([]),
+});
+
+// Transform handles JSON string from PI or already-parsed object
+const keyBindingField = z
+  .union([z.string(), KeyBindingSchema])
+  .transform((val) => {
+    if (typeof val === "string" && val) {
+      try { return KeyBindingSchema.parse(JSON.parse(val)); }
+      catch { return { key: "", modifiers: [] }; }
+    }
+    return val as z.infer<typeof KeyBindingSchema>;
+  });
+
+// Use in settings schema
+const MyActionSettings = z.object({
+  keyBinding: keyBindingField,
+});
+```
+
+## Sending Key Combinations
+
+```typescript
+import { getKeyboard, type KeyboardKey, type KeyboardModifier, type KeyCombination } from "@iracedeck/stream-deck-shared";
+
+// In action handler
+if (settings.keyBinding?.key) {
+  const combination: KeyCombination = {
+    key: settings.keyBinding.key as KeyboardKey,
+    modifiers: settings.keyBinding.modifiers?.length
+      ? settings.keyBinding.modifiers as KeyboardModifier[]
+      : undefined,
+  };
+  await getKeyboard().sendKeyCombination(combination);
+}
+```
+
+## Plugin Setup for Keyboard Support
+
+When using `getKeyboard()` in a plugin, you MUST:
+1. Import `initializeKeyboard` in your plugin.ts
+2. Call `initializeKeyboard()` before registering actions
+
+```typescript
+// plugin.ts
+import { initializeKeyboard } from "@iracedeck/stream-deck-shared";
+
+// Initialize keyboard for hotkey actions
+initializeKeyboard();
+
+// Then register actions...
+```
+
+## Reference Implementation
+See `packages/stream-deck-plugin-hotkeys/src/actions/do-iracing-hotkey.ts` for complete example.
+
+## Do NOT Use
+- `iracing-hotkeys.ts` presets (test plugin only)
+- Hardcoded key mappings in action code

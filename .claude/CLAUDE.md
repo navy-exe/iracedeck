@@ -10,6 +10,7 @@ Packages
 - `@iracedeck/stream-deck-shared`
 - `@iracedeck/stream-deck-plugin`
 - `@iracedeck/stream-deck-plugin-comms`
+- `@iracedeck/stream-deck-plugin-core`
 - `@iracedeck/stream-deck-plugin-pit`
 - `@iracedeck/website`
 

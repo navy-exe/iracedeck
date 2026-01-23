@@ -52,7 +52,10 @@ None.
 
 ## Keyboard Simulation Table
 
-**IMPORTANT**: Always use "Default Key" (not just "Key") as the column header.
+**IMPORTANT**:
+- Always use "Default Key" (not just "Key") as the column header
+- All key bindings are user-configurable via Property Inspector; defaults are just starting values
+- Users may have different iRacing key bindings configured
 
 ```markdown
 | Action | Default Key | iRacing Setting |
@@ -60,7 +63,7 @@ None.
 | Increase | ] | Increase Setting Name |
 ```
 
-- Use `*(none)*` for actions without a default iRacing keybind
+- Use `*(none)*` for actions without a default iRacing keybind (user must configure both iRacing and the action)
 
 ## Icon States
 

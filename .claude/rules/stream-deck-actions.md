@@ -1,6 +1,18 @@
 ---
 # Stream Deck Plugins and Actions
 
+## SDK-First Principle
+
+**ALWAYS use iRacing SDK commands when available** instead of keyboard shortcuts:
+- Use `getCommands()` from `@iracedeck/stream-deck-shared` for SDK operations
+- Check `docs/keyboard-shortcuts.md` "Available via SDK" column before implementing
+- Only fall back to `getKeyboard().sendKeyCombination()` when SDK doesn't support the feature
+
+Examples:
+- Pit service commands → Use `getCommands().pit.*` (SDK supported)
+- Chat macros → Use `getCommands().chat.macro()` (SDK supported)
+- Black box selection → Use keyboard shortcuts (no SDK support)
+
 ## Plugin Package Structure
 
 Each Stream Deck plugin package must have a `.gitignore` file at the package root with:
@@ -32,19 +44,157 @@ Directional Actions (increase/decrease, cycle)
 - For +/- actions use values like `Increase`/`Decrease` or `Up`/`Down` depending on context.
 - For cycle actions use `Next`/`Previous`.
 
-Global Key Bindings
+## Property Inspector Components
 
-- Global key bindings are stored at the plugin level (Property Inspector) and referenced by actions via identifiers.
-- Defaults should match iRacing where applicable.
+Shared PI components are in `packages/stream-deck-shared/src/pi/` and compiled to `dist/pi-components.js`.
 
-Property Inspector Components
+### Required Files in UI Folder
+Each plugin's `ui/` folder MUST contain these files:
+- `sdpi-components.js` - Stream Deck Property Inspector components
+- `pi-components.js` - iRaceDeck custom components (for `ird-key-binding`)
 
-- Shared PI components are in `packages/stream-deck-shared/src/pi/` and compiled to `dist/pi-components.js`.
-- To use components in PI HTML include: `sdpi-components.js` and `pi-components.js`.
-- Build PI components:
+**IMPORTANT**: These files must be copied from an existing plugin (e.g., `stream-deck-plugin-hotkeys`) when creating a new plugin. The Property Inspector will fail silently if these files are missing.
 
+### Required Scripts in HTML
+Always include both scripts in PI HTML files:
+```html
+<script src="sdpi-components.js"></script>
+<script src="pi-components.js"></script>
+```
+
+### Custom Components
+
+**`ird-key-binding`** - Keyboard shortcut picker for configurable hotkeys:
+```html
+<sdpi-item label="Key Binding">
+  <ird-key-binding setting="keyBinding" default="F1"></ird-key-binding>
+</sdpi-item>
+```
+- `setting` - The settings key name
+- `default` - Default key (e.g., "F1", "Ctrl+Shift+A")
+- Stores value as JSON string: `{"key":"f1","modifiers":[]}`
+
+### sdpi-select Event Handling
+
+**IMPORTANT**: `sdpi-select` fires `input` events, NOT standard `change` events. For reliable value change detection, use this pattern:
+
+```javascript
+// Listen to both events for maximum compatibility
+select.addEventListener("change", handleChange);
+select.addEventListener("input", handleChange);
+
+// Polling fallback - sdpi-select events can be unreliable
+let lastValue = select.value || "default";
+setInterval(() => {
+  const currentValue = select.value;
+  if (currentValue && currentValue !== lastValue) {
+    lastValue = currentValue;
+    handleChange();
+  }
+}, 100);
+```
+
+### Conditional Visibility in Property Inspector
+
+sdpi-components are web components. To show/hide elements based on select values:
+
+```html
+<sdpi-select id="mode-select" setting="mode" default="direct">
+  <option value="direct">Direct</option>
+  <option value="next">Next</option>
+</sdpi-select>
+
+<sdpi-item id="conditional-item" class="hidden">...</sdpi-item>
+
+<script>
+async function initialize() {
+  // Wait for web components to be defined
+  await customElements.whenDefined("sdpi-select");
+
+  const modeSelect = document.getElementById("mode-select");
+  if (modeSelect) {
+    // Initial update
+    updateVisibility(modeSelect.value || "direct");
+
+    // sdpi-select fires 'input' events (not 'change'), listen to both for safety
+    modeSelect.addEventListener("change", (ev) => {
+      updateVisibility(ev.target.value);
+    });
+    modeSelect.addEventListener("input", (ev) => {
+      updateVisibility(ev.target.value);
+    });
+
+    // Polling fallback for reliable detection
+    let lastMode = modeSelect.value || "direct";
+    setInterval(() => {
+      const currentMode = modeSelect.value;
+      if (currentMode && currentMode !== lastMode) {
+        lastMode = currentMode;
+        updateVisibility(currentMode);
+      }
+    }, 100);
+  }
+}
+
+function updateVisibility(mode) {
+  const item = document.getElementById("conditional-item");
+  if (mode === "direct") {
+    item?.classList.add("hidden");
+  } else {
+    item?.classList.remove("hidden");
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initialize);
+} else {
+  initialize();
+}
+</script>
+
+<style>
+.hidden { display: none !important; }
+</style>
+```
+
+### Building PI Components
 ```bash
 cd packages/stream-deck-shared
 pnpm build:pi
 pnpm build
+```
+
+## Encoder Support
+
+For Stream Deck+ encoder (dial) support:
+
+### Manifest Configuration
+```json
+{
+  "Controllers": ["Keypad", "Encoder"],
+  "Encoder": {
+    "layout": "$B1",
+    "TriggerDescription": {
+      "Rotate": "Description for rotation"
+    }
+  }
+}
+```
+
+### Action Handlers
+- `onDialRotate(ev)` - Handle rotation. Use `ev.payload.ticks` (positive = clockwise, negative = counter-clockwise)
+- `onDialDown(ev)` - Handle press (only if needed)
+
+### Rotation Pattern
+```typescript
+override async onDialRotate(ev: DialRotateEvent<Settings>): Promise<void> {
+  const settings = MySettings.parse(ev.payload.settings);
+  // Clockwise (ticks > 0) = next/increase
+  // Counter-clockwise (ticks < 0) = previous/decrease
+  const keyData = ev.payload.ticks > 0 ? settings.keyNext : settings.keyPrevious;
+  if (keyData?.key) {
+    await getKeyboard().sendKeyCombination({ key: keyData.key, modifiers: keyData.modifiers });
+  }
+}
 ```

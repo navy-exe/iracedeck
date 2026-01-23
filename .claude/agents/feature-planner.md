@@ -28,8 +28,15 @@ You help plan and document features for the iRaceDeck project by creating clear,
 ### Plugin Architecture
 - Actions must extend `ConnectionStateAwareAction` - offline state is handled globally.
 - Settings must use Zod schemas with `z.coerce` (Stream Deck sends strings).
-- Global key bindings are per-plugin, stored in global settings, not per-action.
 - Each plugin should have a focused responsibility (pit services, communications, etc.).
+
+### Key Binding Architecture
+- **Key bindings are ALWAYS configured via Property Inspector**, never hardcoded in action code.
+- Users must be able to customize key bindings to match their iRacing configuration.
+- Use the `ird-key-binding` component in Property Inspector HTML.
+- Defaults are set in the PI HTML via the `default` attribute (e.g., `default="F1"`).
+- The action code reads whatever binding the user has configured.
+- See `.claude/rules/keyboard-shortcuts.md` for implementation details.
 
 ## Documentation Structure
 
@@ -52,8 +59,9 @@ Which plugin this belongs to and why.
 ## Actions Summary
 Brief overview of actions this feature includes.
 
-## Global Key Bindings
-List any iRacing keybinds this feature needs.
+## Key Bindings
+List keyboard shortcuts this feature sends and their iRacing defaults.
+Note: All key bindings must be user-configurable via Property Inspector.
 
 ## Technical Considerations
 - Edge cases
@@ -88,8 +96,17 @@ Key requirements:
 
 ## iRacing Context
 
+### SDK-First Principle
+**ALWAYS prefer iRacing SDK commands over keyboard shortcuts** when both options exist:
+- SDK commands are more reliable (no key binding mismatches)
+- SDK commands work regardless of user's iRacing key configuration
+- Check `docs/keyboard-shortcuts.md` "Available via SDK" column before planning
+
+Only use keyboard shortcuts when the feature has no SDK support (e.g., black box selection, camera controls, in-car adjustments).
+
+### General Context
 - iRacing provides telemetry data (read-only) and commands (write via SDK or key simulation).
-- Some features require specific iRacing keybinds to be configured.
+- Some features require specific iRacing keybinds to be configured (only when SDK not available).
 - Session state matters: some actions only make sense during specific session types (practice, race, etc.).
 - Pit service commands have specific timing requirements (pit road, pit stall, etc.).
 
@@ -97,10 +114,13 @@ Key requirements:
 
 Before finalizing documentation, verify:
 - [ ] Feature is achievable within Stream Deck limitations
+- [ ] **SDK commands used when available** (check docs/keyboard-shortcuts.md)
 - [ ] Action IDs follow naming convention
 - [ ] Settings use appropriate direction patterns for bidirectional actions
+- [ ] Key bindings are user-configurable via Property Inspector (only when SDK not available)
+- [ ] Default key bindings match iRacing defaults where applicable
 - [ ] Icon requirements are specified
-- [ ] Required iRacing keybinds are documented
+- [ ] Required iRacing keybinds are documented (only for non-SDK features)
 - [ ] Edge cases and error states are addressed
 - [ ] Feature fits logically within the target plugin's scope
 
