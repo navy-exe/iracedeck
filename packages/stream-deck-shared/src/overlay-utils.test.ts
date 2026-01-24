@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   applyInactiveOverlay,
@@ -6,6 +6,7 @@ import {
   hexToGrayscale,
   isDataUri,
   isRawSvg,
+  overlayConfig,
   svgToDataUri,
 } from "./overlay-utils.js";
 
@@ -128,6 +129,14 @@ describe("overlay-utils", () => {
   });
 
   describe("applyInactiveOverlay", () => {
+    beforeEach(() => {
+      overlayConfig.inactiveOverlayEnabled = true;
+    });
+
+    afterEach(() => {
+      overlayConfig.inactiveOverlayEnabled = false;
+    });
+
     it("should add grayscale filter to raw SVG", () => {
       const result = applyInactiveOverlay(simpleSvg);
 

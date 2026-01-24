@@ -99,7 +99,20 @@ export function hexToGrayscale(hex: string): string {
  * @param svg - Raw SVG string or base64 data URI
  * @returns SVG with colors converted to grayscale, in the same format as input
  */
+/**
+ * Configuration for overlay utilities.
+ * @internal Exported for testing - allows tests to enable the overlay
+ */
+export const overlayConfig = {
+  /** Set to true to enable inactive overlay. Currently disabled. */
+  inactiveOverlayEnabled: false,
+};
+
 export function applyInactiveOverlay(svg: string): string {
+  if (!overlayConfig.inactiveOverlayEnabled) {
+    return svg;
+  }
+
   const wasDataUri = isDataUri(svg);
 
   // Convert to raw SVG for manipulation

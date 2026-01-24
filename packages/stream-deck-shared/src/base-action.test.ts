@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BaseAction } from "./base-action.js";
-import { applyInactiveOverlay } from "./overlay-utils.js";
+import { applyInactiveOverlay, overlayConfig } from "./overlay-utils.js";
 
 // Mock KeyAction
 function createMockKeyAction(id: string) {
@@ -42,6 +42,12 @@ describe("BaseAction", () => {
 
   beforeEach(() => {
     testAction = new TestAction();
+    // Enable overlay for tests (disabled by default in production)
+    overlayConfig.inactiveOverlayEnabled = true;
+  });
+
+  afterEach(() => {
+    overlayConfig.inactiveOverlayEnabled = false;
   });
 
   describe("setKeyImage", () => {

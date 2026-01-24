@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ConnectionStateAwareAction } from "./connection-state-aware-action.js";
+import { overlayConfig } from "./overlay-utils.js";
 import * as sdkSingleton from "./sdk-singleton.js";
 
 // Mock the SDK singleton module
@@ -67,10 +68,13 @@ describe("ConnectionStateAwareAction", () => {
     mockController = createMockSDKController(false);
     vi.mocked(sdkSingleton.getController).mockReturnValue(mockController as any);
     testAction = new TestConnectionAction();
+    // Enable overlay for tests (disabled by default in production)
+    overlayConfig.inactiveOverlayEnabled = true;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    overlayConfig.inactiveOverlayEnabled = false;
   });
 
   describe("sdkController getter", () => {
