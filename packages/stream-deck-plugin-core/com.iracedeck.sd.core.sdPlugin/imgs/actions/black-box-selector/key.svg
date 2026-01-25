@@ -1,29 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-  <!-- Black box display frame -->
-  <rect x="10" y="8" width="52" height="36" rx="3" ry="3"
-        fill="none"
-        stroke="#ffffff"
-        stroke-width="2.5"
-        stroke-linejoin="round"/>
+  <!-- Main background -->
+  <rect x="0" y="0" width="72" height="72" rx="8" fill="#2a2a2a"/>
 
-  <!-- Inner screen area -->
-  <rect x="14" y="12" width="44" height="28" rx="2" ry="2"
-        fill="none"
-        stroke="#ffffff"
-        stroke-width="1.5"
-        stroke-linejoin="round"/>
+  <!-- Inner black box frame -->
+  <rect x="8" y="8" width="56" height="28" rx="3" fill="#2d2510" stroke="#4a3728" stroke-width="2"/>
 
-  <!-- BB label badge in top-right corner -->
-  <rect x="46" y="4" width="20" height="14" rx="3" fill="#ffffff"/>
-  <text x="56" y="14" text-anchor="middle" dominant-baseline="central"
-        fill="#000000" font-family="sans-serif" font-size="9" font-weight="bold">BB</text>
+  <!-- Generic list content (representing black box data) -->
+  <circle cx="14" cy="14" r="1.5" fill="#f39c12"/>
+  <rect x="18" y="13" width="42" height="2" rx="0.5" fill="#ffffff"/>
+  <circle cx="14" cy="20" r="1.5" fill="#f39c12" opacity="0.7"/>
+  <rect x="18" y="19" width="36" height="2" rx="0.5" fill="#ffffff"/>
+  <circle cx="14" cy="26" r="1.5" fill="#f39c12" opacity="0.4"/>
+  <rect x="18" y="25" width="40" height="2" rx="0.5" fill="#ffffff"/>
+  <circle cx="14" cy="32" r="1.5" fill="#f39c12" opacity="0.2"/>
+  <rect x="18" y="31" width="32" height="2" rx="0.5" fill="#ffffff"/>
 
-  <!-- Display lines (representing black box content) -->
-  <line x1="18" y1="20" x2="54" y2="20" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="18" y1="26" x2="48" y2="26" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="18" y1="32" x2="52" y2="32" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-
-  <!-- Black Box label -->
-  <text x="36" y="58" text-anchor="middle" dominant-baseline="central"
-        fill="#ffffff" font-family="sans-serif" font-size="11" font-weight="normal">Black Box</text>
+  <!-- Two-line label -->
+  <text x="36" y="52" text-anchor="middle" dominant-baseline="central"
+        fill="#ffffff" font-family="Arial, sans-serif" font-size="10" font-weight="bold">BLACK BOX</text>
+  <text x="36" y="63" text-anchor="middle" dominant-baseline="central"
+        fill="#aaaaaa" font-family="Arial, sans-serif" font-size="8">SELECTOR</text>
 </svg>
