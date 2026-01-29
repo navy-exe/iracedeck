@@ -13,5 +13,9 @@
     { "id": "weather", "label": "Weather", "default": "F11", "setting": "blackBoxWeather" },
     { "id": "cycleNext", "label": "Cycle Next", "default": "", "setting": "blackBoxCycleNext" },
     { "id": "cyclePrevious", "label": "Cycle Previous", "default": "", "setting": "blackBoxCyclePrevious" }
+  ],
+  "splitsDelta": [
+    { "id": "next", "label": "Next", "default": "Tab", "setting": "splitsDeltaNext" },
+    { "id": "previous", "label": "Previous", "default": "Shift+Tab", "setting": "splitsDeltaPrevious" }
   ]
 }

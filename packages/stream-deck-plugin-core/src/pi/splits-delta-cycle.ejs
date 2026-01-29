@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<%- include('head-common') %>
+	</head>
+	<body>
+		<sdpi-item label="Direction">
+			<sdpi-select setting="direction" default="next">
+				<option value="next">Next</option>
+				<option value="previous">Previous</option>
+			</sdpi-select>
+		</sdpi-item>
+
+		<!-- Global Key Bindings section -->
+		<%- include('global-key-bindings', {
+			subtitle: 'Splits Delta Key Bindings',
+			keyBindings: require('./data/key-bindings.json').splitsDelta
+		}) %>
+	</body>
+</html>

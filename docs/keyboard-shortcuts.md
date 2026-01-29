@@ -125,7 +125,7 @@
 
 | Action | Shortcut(s) | Available via SDK | iRacing Setting |
 |--------|-------------|-------------------|-----------------|
-| Cycle Splits Delta Display | Shift+TAB / TAB | No | Next Splits Delta Display / Prev Splits Delta Display |
+| Cycle Splits Delta Display | TAB / Shift+TAB | No | Next Splits Delta Display / Prev Splits Delta Display |
 | Toggle Display Reference Car | Ctrl+C | No | Toggle Display Reference Car |
 
 ### Spotter

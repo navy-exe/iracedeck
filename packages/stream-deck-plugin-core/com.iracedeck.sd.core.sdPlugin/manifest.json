@@ -24,6 +24,27 @@
           "FontSize": 14
         }
       ]
+    },
+    {
+      "Name": "Splits Delta Cycle",
+      "UUID": "com.iracedeck.sd.core.splits-delta-cycle",
+      "Icon": "imgs/actions/splits-delta-cycle/icon",
+      "Tooltip": "Cycle through iRacing split-time delta display modes",
+      "PropertyInspectorPath": "ui/splits-delta-cycle.html",
+      "Controllers": ["Keypad", "Encoder"],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Next/Previous splits delta"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/splits-delta-cycle/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 14
+        }
+      ]
     }
   ],
   "Category": "iRaceDeck Core",

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="#ffffff">
+  <!-- Delta triangle -->
+  <path d="M10 3 L17 15 H3 Z" stroke-width="1.2" fill="none"/>
+
+  <!-- Split time bars -->
+  <rect x="5" y="16" width="4" height="1.2" rx="0.3" fill="#ffffff" stroke="none"/>
+  <rect x="11" y="16" width="4" height="1.2" rx="0.3" fill="#ffffff" stroke="none"/>
+</svg>
