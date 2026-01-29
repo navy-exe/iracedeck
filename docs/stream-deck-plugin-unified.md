@@ -1,8 +1,8 @@
-# Stream Deck Unified Plugin Planning
+# Stream Deck Plugin Core — Action Planning
 
-Alternative to multi-plugin architecture: a single plugin with max 32 main actions, each containing multiple sub-actions selectable via Property Inspector dropdown.
+All planned actions will be built into the existing `@iracedeck/stream-deck-plugin-core` package (`com.iracedeck.sd.core`). The plugin supports up to 32 main actions, each containing multiple sub-actions selectable via Property Inspector dropdown.
 
-**Benefits:**
+**Benefits of consolidating into one plugin:**
 
 - Single plugin to install/maintain
 - Simpler user experience
@@ -609,4 +609,4 @@ Hybrid/ERS system adjustments.
 - For +/- actions, direction is set via a second dropdown (Increase/Decrease or Next/Previous)
 - Actions marked "SDK" use iRacing SDK commands (preferred over keyboard shortcuts)
 - Camera Editor actions are specialized for broadcasters/content creators
-- The unified plugin UUID would be `com.iracedeck.sd`
+- All actions use the plugin UUID `com.iracedeck.sd.core`
