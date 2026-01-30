@@ -20,11 +20,11 @@
   ],
   "toggleUi": [
     { "id": "dashBox", "label": "Dash Box", "default": "D", "setting": "toggleUiDashBox" },
-    { "id": "speedGearPedals", "label": "Speed/Gear/Pedals", "default": "P", "setting": "toggleUiSpeedGearPedals" },
+    { "id": "speedGearPedals", "label": "Inputs Toggle", "default": "P", "setting": "toggleUiSpeedGearPedals" },
     { "id": "radioDisplay", "label": "Radio Display", "default": "O", "setting": "toggleUiRadioDisplay" },
     {
       "id": "fpsNetworkDisplay",
-      "label": "FPS/Network Display",
+      "label": "System Meters",
       "default": "F",
       "setting": "toggleUiFpsNetworkDisplay"
     },
