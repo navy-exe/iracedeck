@@ -1,5 +1,6 @@
 import streamDeck, {
   action,
+  DialDownEvent,
   DidReceiveSettingsEvent,
   KeyDownEvent,
   WillAppearEvent,
@@ -208,9 +209,7 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
   protected override logger = createSDLogger(streamDeck.logger.createScope("ToggleUiElements"), LogLevel.Info);
 
   override async onWillAppear(ev: WillAppearEvent<ToggleUiElementsSettings>): Promise<void> {
-    const parsed = ToggleUiElementsSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : ToggleUiElementsSettings.parse({});
-
+    const settings = this.parseSettings(ev.payload.settings);
     await this.updateDisplay(ev, settings);
 
     this.sdkController.subscribe(ev.action.id, () => {
@@ -224,19 +223,26 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<ToggleUiElementsSettings>): Promise<void> {
-    const parsed = ToggleUiElementsSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : ToggleUiElementsSettings.parse({});
-
+    const settings = this.parseSettings(ev.payload.settings);
     await this.updateDisplay(ev, settings);
   }
 
   override async onKeyDown(ev: KeyDownEvent<ToggleUiElementsSettings>): Promise<void> {
     this.logger.info("Key down received");
-
-    const parsed = ToggleUiElementsSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : ToggleUiElementsSettings.parse({});
-
+    const settings = this.parseSettings(ev.payload.settings);
     await this.executeToggle(settings.element);
+  }
+
+  override async onDialDown(ev: DialDownEvent<ToggleUiElementsSettings>): Promise<void> {
+    this.logger.info("Dial down received");
+    const settings = this.parseSettings(ev.payload.settings);
+    await this.executeToggle(settings.element);
+  }
+
+  private parseSettings(settings: unknown): ToggleUiElementsSettings {
+    const parsed = ToggleUiElementsSettings.safeParse(settings);
+
+    return parsed.success ? parsed.data : ToggleUiElementsSettings.parse({});
   }
 
   private async executeToggle(element: UiElement): Promise<void> {
@@ -249,15 +255,30 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
 
   private async toggleReplayUi(): Promise<void> {
     const telemetry = this.sdkController.getCurrentTelemetry();
-    const cameraState = telemetry?.CamCameraState;
+
+    if (!telemetry) {
+      this.logger.warn("Cannot toggle replay UI: no telemetry data available");
+
+      return;
+    }
+
+    const cameraState = telemetry.CamCameraState;
     const camera = getCommands().camera;
 
     if (hasFlag(cameraState, CameraState.UIHidden)) {
       this.logger.info("Showing replay UI");
-      camera.showUI(cameraState);
+      const success = camera.showUI(cameraState);
+
+      if (!success) {
+        this.logger.warn("Failed to show replay UI");
+      }
     } else {
       this.logger.info("Hiding replay UI");
-      camera.hideUI(cameraState);
+      const success = camera.hideUI(cameraState);
+
+      if (!success) {
+        this.logger.warn("Failed to hide replay UI");
+      }
     }
   }
 
@@ -288,17 +309,7 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
       modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
     };
 
-    this.logger.debug(`Sending key combination: ${JSON.stringify(combination)}`);
-
-    const keyboard = getKeyboard();
-
-    if (!keyboard) {
-      this.logger.error("Keyboard interface not available");
-
-      return;
-    }
-
-    const success = await keyboard.sendKeyCombination(combination);
+    const success = await getKeyboard().sendKeyCombination(combination);
 
     if (success) {
       this.logger.info("Key sent successfully");
