@@ -33,6 +33,12 @@
     { "id": "uiEditMode", "label": "UI Edit Mode", "default": "Alt+K", "setting": "toggleUiEditMode" },
     { "id": "displayRefCar", "label": "Display Reference Car", "default": "Ctrl+C", "setting": "toggleUiDisplayRefCar" }
   ],
+  "lookDirection": [
+    { "id": "left", "label": "Look Left", "default": "Z", "setting": "lookDirectionLeft" },
+    { "id": "right", "label": "Look Right", "default": "X", "setting": "lookDirectionRight" },
+    { "id": "up", "label": "Look Up", "default": "", "setting": "lookDirectionUp" },
+    { "id": "down", "label": "Look Down", "default": "", "setting": "lookDirectionDown" }
+  ],
   "viewAdjustment": [
     { "id": "fovIncrease", "label": "FOV Increase", "default": "]", "setting": "viewAdjustFovIncrease" },
     { "id": "fovDecrease", "label": "FOV Decrease", "default": "[", "setting": "viewAdjustFovDecrease" },
