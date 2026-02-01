@@ -8,7 +8,7 @@ Packages
 - `@iracedeck/iracing-native` — has its own `CLAUDE.md` documenting native keyboard functions
 - `@iracedeck/iracing-sdk`
 - `@iracedeck/stream-deck-shared`
-- `@iracedeck/stream-deck-plugin-core`
+- `@iracedeck/stream-deck-plugin-core` — has its own `CLAUDE.md` with step-by-step instructions for adding new actions
 - `@iracedeck/stream-deck-plugin-comms` *(deprecated)*
 - `@iracedeck/stream-deck-plugin-pit` *(deprecated)*
 - `@iracedeck/website`
@@ -18,6 +18,7 @@ High-level guidance
 - Follow rule files in `.claude/rules/` for granular conventions.
 - Keep rules focused: one topic per markdown file.
 - Use `paths` frontmatter in rules when a rule applies only to certain files.
+- **Keep documentation in sync with reality.** When code changes alter conventions, patterns, APIs, or workflows described in any `CLAUDE.md` or `.claude/rules/` file, update those files in the same change. Stale instructions cause repeated mistakes.
 
 How to import or reference
 
