@@ -51,5 +51,8 @@ Python/
 # Local scripts
 scripts/local/
 
+# Git worktrees (parallel implementation)
+.worktrees/
+
 # Claude Code
 .claude/settings.local.json
