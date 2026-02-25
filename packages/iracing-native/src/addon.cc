@@ -271,13 +271,86 @@ Napi::Value BroadcastMsg(const Napi::CallbackInfo &info)
 // ============================================================================
 
 /**
- * Send a complete chat message to iRacing
+ * Copy a UTF-16 string to the Windows clipboard.
+ *
+ * @param text - The text to place on the clipboard
+ * @returns true if successful
+ */
+static bool copyToClipboard(const std::u16string &text)
+{
+    if (!OpenClipboard(NULL))
+    {
+        return false;
+    }
+
+    EmptyClipboard();
+
+    // Allocate global memory for the text (including null terminator)
+    size_t bytes = (text.size() + 1) * sizeof(wchar_t);
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, bytes);
+
+    if (!hMem)
+    {
+        CloseClipboard();
+        return false;
+    }
+
+    void *pMem = GlobalLock(hMem);
+
+    if (!pMem)
+    {
+        GlobalFree(hMem);
+        CloseClipboard();
+        return false;
+    }
+
+    memcpy(pMem, text.c_str(), bytes);
+    GlobalUnlock(hMem);
+
+    // CF_UNICODETEXT takes ownership of hMem
+    SetClipboardData(CF_UNICODETEXT, hMem);
+    CloseClipboard();
+
+    return true;
+}
+
+/**
+ * Send a Ctrl+V keystroke to paste clipboard content.
+ */
+static void sendPaste()
+{
+    INPUT inputs[4] = {};
+
+    // Ctrl down
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_CONTROL;
+
+    // V down
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = 0x56; // 'V'
+
+    // V up
+    inputs[2].type = INPUT_KEYBOARD;
+    inputs[2].ki.wVk = 0x56;
+    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Ctrl up
+    inputs[3].type = INPUT_KEYBOARD;
+    inputs[3].ki.wVk = VK_CONTROL;
+    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(4, inputs, sizeof(INPUT));
+}
+
+/**
+ * Send a complete chat message to iRacing using clipboard paste.
  * This function handles the entire chat flow:
- * 1. Opens chat window via broadcast message
- * 2. Waits for chat window to open
- * 3. Types the message using WM_CHAR
- * 4. Presses Enter to send
- * 5. Closes the chat window
+ * 1. Saves the current clipboard content
+ * 2. Copies the message to the clipboard
+ * 3. Opens chat window via broadcast message
+ * 4. Pastes the message with Ctrl+V
+ * 5. Presses Enter to send (this also closes the chat window)
+ * 6. Restores the original clipboard content
  *
  * @param message - The message to send
  * @returns Success boolean
@@ -299,39 +372,61 @@ Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
         return Napi::Boolean::New(env, false);
     }
 
-    // 1. Open chat window via broadcast
-    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_BeginChat, 0);
+    // 1. Save the current clipboard content (text only)
+    std::u16string savedClipboard;
+    bool hadClipboardText = false;
 
-    // 2. Wait for chat window to open
-    Sleep(1);
-
-    // 3. Find the iRacing sim window to send characters to
-    HWND hwnd = FindWindowA("SimWinClass", nullptr);
-    if (hwnd == NULL)
+    if (OpenClipboard(NULL))
     {
-        // Try alternate window class
-        hwnd = FindWindowA("obsimwin", nullptr);
+        HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+
+        if (hData)
+        {
+            const wchar_t *pText = static_cast<const wchar_t *>(GlobalLock(hData));
+
+            if (pText)
+            {
+                savedClipboard = reinterpret_cast<const char16_t *>(pText);
+                hadClipboardText = true;
+                GlobalUnlock(hData);
+            }
+        }
+
+        CloseClipboard();
     }
 
-    if (hwnd == NULL)
+    // 2. Copy the message to the clipboard
+    if (!copyToClipboard(message))
     {
-        // Cancel the chat if we can't find the window
-        irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
         return Napi::Boolean::New(env, false);
     }
 
-    // 4. Type the message using WM_CHAR
-    for (char16_t ch : message)
+    // 3. Open chat window via broadcast
+    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_BeginChat, 0);
+
+    // 4. Wait for chat window to open
+    Sleep(50);
+
+    // 5. Paste the message with Ctrl+V
+    sendPaste();
+
+    // 6. Wait for paste to complete
+    Sleep(50);
+
+    // 7. Press Enter to send
+    INPUT enterInputs[2] = {};
+    enterInputs[0].type = INPUT_KEYBOARD;
+    enterInputs[0].ki.wVk = VK_RETURN;
+    enterInputs[1].type = INPUT_KEYBOARD;
+    enterInputs[1].ki.wVk = VK_RETURN;
+    enterInputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, enterInputs, sizeof(INPUT));
+
+    // 8. Restore the original clipboard content
+    if (hadClipboardText)
     {
-        SendMessageW(hwnd, WM_CHAR, static_cast<WPARAM>(ch), 0);
+        copyToClipboard(savedClipboard);
     }
-
-    // 5. Press Enter to send
-    SendMessageW(hwnd, WM_KEYDOWN, VK_RETURN, 0);
-    SendMessageW(hwnd, WM_KEYUP, VK_RETURN, 0);
-
-    // 6. Close chat window
-    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
 
     return Napi::Boolean::New(env, true);
 }
