@@ -6,9 +6,11 @@ import streamDeck, {
   WillAppearEvent,
   WillDisappearEvent,
 } from "@elgato/streamdeck";
+import { hasFlag, PitSvFlags, TelemetryData } from "@iracedeck/iracing-sdk";
 import {
   ConnectionStateAwareAction,
   createSDLogger,
+  generateIconText,
   getCommands,
   LogLevel,
   renderIconTemplate,
@@ -18,127 +20,99 @@ import z from "zod";
 
 import tireServiceTemplate from "../../icons/tire-service.svg";
 
-const WHITE = "#ffffff";
-const GREEN = "#2ecc71";
-const RED = "#e74c3c";
-const YELLOW = "#f1c40f";
-const GRAY = "#888888";
-
-type TireServiceAction =
-  | "request-lf"
-  | "request-rf"
-  | "request-lr"
-  | "request-rr"
-  | "request-all"
-  | "change-compound"
-  | "clear-tires";
-
-/**
- * Label configuration for each tire service action (line1 bold, line2 subdued)
- */
-const TIRE_SERVICE_LABELS: Record<TireServiceAction, { line1: string; line2: string }> = {
-  "request-lf": { line1: "LEFT", line2: "FRONT" },
-  "request-rf": { line1: "RIGHT", line2: "FRONT" },
-  "request-lr": { line1: "LEFT", line2: "REAR" },
-  "request-rr": { line1: "RIGHT", line2: "REAR" },
-  "request-all": { line1: "ALL", line2: "TIRES" },
-  "change-compound": { line1: "TIRE", line2: "COMPOUND" },
-  "clear-tires": { line1: "CLEAR", line2: "TIRES" },
-};
-
-/**
- * SVG icon content for each tire service action.
- * Uses a bird's-eye car outline with tire positions to distinguish from fuel service icons.
- */
-const TIRE_SERVICE_ICONS: Record<TireServiceAction, string> = {
-  // Request Left Front: car body with LF tire highlighted
-  "request-lf": `
-    <rect x="26" y="12" width="20" height="28" rx="3" fill="none" stroke="${GRAY}" stroke-width="1.2"/>
-    <circle cx="23" cy="16" r="4" fill="none" stroke="${WHITE}" stroke-width="2"/>
-    <circle cx="49" cy="16" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="23" cy="36" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="49" cy="36" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>`,
-
-  // Request Right Front: car body with RF tire highlighted
-  "request-rf": `
-    <rect x="26" y="12" width="20" height="28" rx="3" fill="none" stroke="${GRAY}" stroke-width="1.2"/>
-    <circle cx="23" cy="16" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="49" cy="16" r="4" fill="none" stroke="${WHITE}" stroke-width="2"/>
-    <circle cx="23" cy="36" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="49" cy="36" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>`,
-
-  // Request Left Rear: car body with LR tire highlighted
-  "request-lr": `
-    <rect x="26" y="12" width="20" height="28" rx="3" fill="none" stroke="${GRAY}" stroke-width="1.2"/>
-    <circle cx="23" cy="16" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="49" cy="16" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="23" cy="36" r="4" fill="none" stroke="${WHITE}" stroke-width="2"/>
-    <circle cx="49" cy="36" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>`,
-
-  // Request Right Rear: car body with RR tire highlighted
-  "request-rr": `
-    <rect x="26" y="12" width="20" height="28" rx="3" fill="none" stroke="${GRAY}" stroke-width="1.2"/>
-    <circle cx="23" cy="16" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="49" cy="16" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="23" cy="36" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <circle cx="49" cy="36" r="4" fill="none" stroke="${WHITE}" stroke-width="2"/>`,
-
-  // Request All Tires: car body with all tires highlighted in green
-  "request-all": `
-    <rect x="26" y="12" width="20" height="28" rx="3" fill="none" stroke="${GRAY}" stroke-width="1.2"/>
-    <circle cx="23" cy="16" r="4" fill="none" stroke="${GREEN}" stroke-width="2"/>
-    <circle cx="49" cy="16" r="4" fill="none" stroke="${GREEN}" stroke-width="2"/>
-    <circle cx="23" cy="36" r="4" fill="none" stroke="${GREEN}" stroke-width="2"/>
-    <circle cx="49" cy="36" r="4" fill="none" stroke="${GREEN}" stroke-width="2"/>`,
-
-  // Change Compound: tire circle with swap arrows in yellow
-  "change-compound": `
-    <circle cx="36" cy="24" r="10" fill="none" stroke="${WHITE}" stroke-width="1.5"/>
-    <circle cx="36" cy="24" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <path d="M28 36 L24 40 L28 44" fill="none" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="24" y1="40" x2="48" y2="40" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round"/>
-    <path d="M44 36 L48 32 L44 28" fill="none" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="48" y1="32" x2="24" y2="32" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round"/>`,
-
-  // Clear Tires: tire circle with X overlay in red
-  "clear-tires": `
-    <circle cx="36" cy="26" r="10" fill="none" stroke="${WHITE}" stroke-width="1.5"/>
-    <circle cx="36" cy="26" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <line x1="29" y1="19" x2="43" y2="33" stroke="${RED}" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="43" y1="19" x2="29" y2="33" stroke="${RED}" stroke-width="2.5" stroke-linecap="round"/>`,
-};
-
 const TireServiceSettings = z.object({
-  action: z
-    .enum([
-      "request-lf",
-      "request-rf",
-      "request-lr",
-      "request-rr",
-      "request-all",
-      "change-compound",
-      "clear-tires",
-    ])
-    .default("request-all"),
+  lf: z.coerce.boolean().default(true),
+  rf: z.coerce.boolean().default(true),
+  lr: z.coerce.boolean().default(true),
+  rr: z.coerce.boolean().default(true),
 });
 
 type TireServiceSettings = z.infer<typeof TireServiceSettings>;
 
 /**
+ * Get tire fill color based on settings and current state.
+ * Black: not configured (nothing happens on press).
+ * Red: configured and currently OFF (will turn ON on press).
+ * Green: configured and currently ON (will turn OFF on press).
+ */
+function getTireColor(isConfigured: boolean, isCurrentlyOn: boolean): string {
+  if (!isConfigured) return "#000000ff";
+
+  if (isCurrentlyOn) return "#44FF44";
+
+  return "#FF4444";
+}
+
+/**
+ * Get current tire change state from telemetry flags.
+ */
+function getTireState(telemetry: TelemetryData | null): {
+  lf: boolean;
+  rf: boolean;
+  lr: boolean;
+  rr: boolean;
+} {
+  if (!telemetry || telemetry.PitSvFlags === undefined) {
+    return { lf: false, rf: false, lr: false, rr: false };
+  }
+
+  const flags = telemetry.PitSvFlags;
+
+  return {
+    lf: hasFlag(flags, PitSvFlags.LFTireChange),
+    rf: hasFlag(flags, PitSvFlags.RFTireChange),
+    lr: hasFlag(flags, PitSvFlags.LRTireChange),
+    rr: hasFlag(flags, PitSvFlags.RRTireChange),
+  };
+}
+
+/**
  * @internal Exported for testing
  *
- * Generates an SVG data URI icon for the tire service action.
+ * Builds a pit macro string to toggle the configured tires.
+ * Returns null if no tires are configured.
  */
-export function generateTireServiceSvg(settings: TireServiceSettings): string {
-  const { action: actionType } = settings;
+export function buildTireToggleMacro(settings: TireServiceSettings): string | null {
+  const parts: string[] = [];
 
-  const iconContent = TIRE_SERVICE_ICONS[actionType] || TIRE_SERVICE_ICONS["request-all"];
-  const labels = TIRE_SERVICE_LABELS[actionType] || TIRE_SERVICE_LABELS["request-all"];
+  if (settings.lf) parts.push("!lf");
+  if (settings.rf) parts.push("!rf");
+  if (settings.lr) parts.push("!lr");
+  if (settings.rr) parts.push("!rr");
 
+  return parts.length > 0 ? `#${parts.join(" ")}` : null;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Generates an SVG data URI icon for the tire service based on settings and current tire state.
+ */
+export function generateTireServiceSvg(
+  settings: TireServiceSettings,
+  currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
+): string {
+  const lfColor = getTireColor(settings.lf ?? false, currentState.lf);
+  const rfColor = getTireColor(settings.rf ?? false, currentState.rf);
+  const lrColor = getTireColor(settings.lr ?? false, currentState.lr);
+  const rrColor = getTireColor(settings.rr ?? false, currentState.rr);
+
+  const anyTireOn =
+    (settings.lf && currentState.lf) ||
+    (settings.rf && currentState.rf) ||
+    (settings.lr && currentState.lr) ||
+    (settings.rr && currentState.rr);
+
+  const titleText = anyTireOn ? "Change" : "No Change";
+  const titleColor = anyTireOn ? "#FFFFFF" : "#FF4444";
+
+  const textElement = generateIconText({ text: titleText, fontSize: 12, fill: titleColor });
   const svg = renderIconTemplate(tireServiceTemplate, {
-    iconContent,
-    labelLine1: labels.line1,
-    labelLine2: labels.line2,
+    lfColor,
+    rfColor,
+    lrColor,
+    rrColor,
+    textElement,
   });
 
   return svgToDataUri(svg);
@@ -146,42 +120,67 @@ export function generateTireServiceSvg(settings: TireServiceSettings): string {
 
 /**
  * Tire Service
- * Provides tire management for pit stops (request tires, change compound, clear)
- * via iRacing SDK commands.
+ * Toggles tire change selections in pit service based on configured checkboxes.
+ * Dynamic icon shows car from above with tire colors based on current iRacing state.
+ * Green = will be changed, Red = configured but not active, Black = not configured.
+ * On press: toggles the configured tires (if currently on, turns off; if off, turns on).
  */
 @action({ UUID: "com.iracedeck.sd.core.tire-service" })
 export class TireService extends ConnectionStateAwareAction<TireServiceSettings> {
   protected override logger = createSDLogger(streamDeck.logger.createScope("TireService"), LogLevel.Info);
 
+  private activeContexts = new Map<string, TireServiceSettings>();
+  private lastState = new Map<string, string>();
+
   override async onWillAppear(ev: WillAppearEvent<TireServiceSettings>): Promise<void> {
     const settings = this.parseSettings(ev.payload.settings);
-    await this.updateDisplay(ev, settings);
+    this.activeContexts.set(ev.action.id, settings);
 
-    this.sdkController.subscribe(ev.action.id, () => {
+    await this.updateDisplayWithEvent(ev, settings);
+
+    this.sdkController.subscribe(ev.action.id, (telemetry) => {
       this.updateConnectionState();
+
+      const storedSettings = this.activeContexts.get(ev.action.id);
+
+      if (storedSettings) {
+        this.updateDisplayFromTelemetry(ev.action.id, telemetry, storedSettings);
+      }
     });
   }
 
   override async onWillDisappear(ev: WillDisappearEvent<TireServiceSettings>): Promise<void> {
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
+    this.activeContexts.delete(ev.action.id);
+    this.lastState.delete(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<TireServiceSettings>): Promise<void> {
     const settings = this.parseSettings(ev.payload.settings);
-    await this.updateDisplay(ev, settings);
+    this.activeContexts.set(ev.action.id, settings);
+
+    const telemetry = this.sdkController.getCurrentTelemetry();
+    const tireState = getTireState(telemetry);
+
+    this.updateConnectionState();
+
+    const svgDataUri = generateTireServiceSvg(settings, tireState);
+    await ev.action.setTitle("");
+    await this.setKeyImage(ev, svgDataUri);
+
+    const stateKey = this.buildStateKey(settings, tireState);
+    this.lastState.set(ev.action.id, stateKey);
   }
 
   override async onKeyDown(ev: KeyDownEvent<TireServiceSettings>): Promise<void> {
     this.logger.info("Key down received");
-    const settings = this.parseSettings(ev.payload.settings);
-    this.executeAction(settings.action);
+    this.executeTireToggle(ev.payload.settings);
   }
 
   override async onDialDown(ev: DialDownEvent<TireServiceSettings>): Promise<void> {
     this.logger.info("Dial down received");
-    const settings = this.parseSettings(ev.payload.settings);
-    this.executeAction(settings.action);
+    this.executeTireToggle(ev.payload.settings);
   }
 
   private parseSettings(settings: unknown): TireServiceSettings {
@@ -190,63 +189,69 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     return parsed.success ? parsed.data : TireServiceSettings.parse({});
   }
 
-  private executeAction(actionType: TireServiceAction): void {
-    const pit = getCommands().pit;
+  private async updateDisplayWithEvent(
+    ev: WillAppearEvent<TireServiceSettings>,
+    settings: TireServiceSettings,
+  ): Promise<void> {
+    const telemetry = this.sdkController.getCurrentTelemetry();
+    const tireState = getTireState(telemetry);
 
-    switch (actionType) {
-      case "request-lf": {
-        const success = pit.leftFront();
-        this.logger.info("Request left front tire executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
-      case "request-rf": {
-        const success = pit.rightFront();
-        this.logger.info("Request right front tire executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
-      case "request-lr": {
-        const success = pit.leftRear();
-        this.logger.info("Request left rear tire executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
-      case "request-rr": {
-        const success = pit.rightRear();
-        this.logger.info("Request right rear tire executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
-      case "request-all": {
-        const success = pit.allTires();
-        this.logger.info("Request all tires executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
-      case "change-compound": {
-        const success = pit.tireCompound(0);
-        this.logger.info("Change tire compound executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
-      case "clear-tires": {
-        const success = pit.clearTires();
-        this.logger.info("Clear tires checkbox executed");
-        this.logger.debug(`Result: ${success}`);
-        break;
-      }
+    this.updateConnectionState();
+
+    const svgDataUri = generateTireServiceSvg(settings, tireState);
+    await ev.action.setTitle("");
+    await this.setKeyImage(ev, svgDataUri);
+
+    const stateKey = this.buildStateKey(settings, tireState);
+    this.lastState.set(ev.action.id, stateKey);
+  }
+
+  private async updateDisplayFromTelemetry(
+    contextId: string,
+    telemetry: TelemetryData | null,
+    settings: TireServiceSettings,
+  ): Promise<void> {
+    const tireState = getTireState(telemetry);
+    const stateKey = this.buildStateKey(settings, tireState);
+    const lastStateKey = this.lastState.get(contextId);
+
+    if (lastStateKey !== stateKey) {
+      this.lastState.set(contextId, stateKey);
+      const svgDataUri = generateTireServiceSvg(settings, tireState);
+      await this.updateKeyImage(contextId, svgDataUri);
     }
   }
 
-  private async updateDisplay(
-    ev: WillAppearEvent<TireServiceSettings> | DidReceiveSettingsEvent<TireServiceSettings>,
+  private buildStateKey(
     settings: TireServiceSettings,
-  ): Promise<void> {
-    this.updateConnectionState();
+    tireState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
+  ): string {
+    return `${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}`;
+  }
 
-    const svgDataUri = generateTireServiceSvg(settings);
-    await ev.action.setTitle("");
-    await this.setKeyImage(ev, svgDataUri);
+  private executeTireToggle(rawSettings: unknown): void {
+    if (!this.sdkController.getConnectionStatus()) {
+      this.logger.info("Not connected to iRacing");
+
+      return;
+    }
+
+    const settings = this.parseSettings(rawSettings);
+    const macro = buildTireToggleMacro(settings);
+
+    if (!macro) {
+      this.logger.warn("No tires configured");
+
+      return;
+    }
+
+    this.logger.debug(`Sending pit macro: ${macro}`);
+    const success = getCommands().chat.sendMessage(macro);
+
+    if (success) {
+      this.logger.info("Tire toggle sent");
+    } else {
+      this.logger.warn("Failed to send tire toggle");
+    }
   }
 }

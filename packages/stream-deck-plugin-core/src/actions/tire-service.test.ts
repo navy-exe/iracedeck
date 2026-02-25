@@ -1,35 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { generateTireServiceSvg, TireService } from "./tire-service.js";
+import { buildTireToggleMacro, generateTireServiceSvg, TireService } from "./tire-service.js";
 
 const {
-  mockPitLeftFront,
-  mockPitRightFront,
-  mockPitLeftRear,
-  mockPitRightRear,
-  mockPitAllTires,
-  mockPitTireCompound,
-  mockPitClearTires,
+  mockSendMessage,
   mockGetCommands,
+  mockGetConnectionStatus,
+  mockGetCurrentTelemetry,
 } = vi.hoisted(() => ({
-  mockPitLeftFront: vi.fn(() => true),
-  mockPitRightFront: vi.fn(() => true),
-  mockPitLeftRear: vi.fn(() => true),
-  mockPitRightRear: vi.fn(() => true),
-  mockPitAllTires: vi.fn(() => true),
-  mockPitTireCompound: vi.fn(() => true),
-  mockPitClearTires: vi.fn(() => true),
+  mockSendMessage: vi.fn(() => true),
   mockGetCommands: vi.fn(() => ({
-    pit: {
-      leftFront: mockPitLeftFront,
-      rightFront: mockPitRightFront,
-      leftRear: mockPitLeftRear,
-      rightRear: mockPitRightRear,
-      allTires: mockPitAllTires,
-      tireCompound: mockPitTireCompound,
-      clearTires: mockPitClearTires,
+    chat: {
+      sendMessage: mockSendMessage,
     },
   })),
+  mockGetConnectionStatus: vi.fn(() => true),
+  mockGetCurrentTelemetry: vi.fn(() => ({ PitSvFlags: 0 })),
 }));
 
 vi.mock("@elgato/streamdeck", () => ({
@@ -47,11 +33,27 @@ vi.mock("@elgato/streamdeck", () => ({
   action: () => (target: unknown) => target,
 }));
 
+vi.mock("@iracedeck/iracing-sdk", () => ({
+  hasFlag: vi.fn((value: number, flag: number) => (value & flag) !== 0),
+  PitSvFlags: {
+    LFTireChange: 0x0001,
+    RFTireChange: 0x0002,
+    LRTireChange: 0x0004,
+    RRTireChange: 0x0008,
+  },
+}));
+
 vi.mock("@iracedeck/stream-deck-shared", () => ({
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
-    sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn() };
+    sdkController = {
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+      getConnectionStatus: mockGetConnectionStatus,
+      getCurrentTelemetry: mockGetCurrentTelemetry,
+    };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
+    updateKeyImage = vi.fn();
     async onWillDisappear() {}
   },
   createSDLogger: vi.fn(() => ({
@@ -63,16 +65,18 @@ vi.mock("@iracedeck/stream-deck-shared", () => ({
   })),
   getCommands: mockGetCommands,
   LogLevel: { Info: 2 },
+  generateIconText: vi.fn(
+    (opts: { text: string; fontSize: number; fill: string }) => `<text fill="${opts.fill}">${opts.text}</text>`,
+  ),
   renderIconTemplate: vi.fn((_template: string, data: Record<string, string>) => {
-    return `<svg>${data.iconContent || ""}${data.labelLine1 || ""}${data.labelLine2 || ""}</svg>`;
+    return `<svg>${data.lfColor || ""}|${data.rfColor || ""}|${data.lrColor || ""}|${data.rrColor || ""}|${data.textElement || ""}</svg>`;
   }),
   svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
 }));
 
-/** Create a minimal fake event with the given action ID and settings. */
 function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
   return {
-    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn() },
+    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn(), isKey: () => true },
     payload: { settings },
   };
 }
@@ -80,83 +84,87 @@ function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
 describe("TireService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetConnectionStatus.mockReturnValue(true);
+    mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+  });
+
+  describe("buildTireToggleMacro", () => {
+    it("should build macro for all tires", () => {
+      expect(buildTireToggleMacro({ lf: true, rf: true, lr: true, rr: true })).toBe("#!lf !rf !lr !rr");
+    });
+
+    it("should build macro for front tires only", () => {
+      expect(buildTireToggleMacro({ lf: true, rf: true, lr: false, rr: false })).toBe("#!lf !rf");
+    });
+
+    it("should build macro for left side only", () => {
+      expect(buildTireToggleMacro({ lf: true, rf: false, lr: true, rr: false })).toBe("#!lf !lr");
+    });
+
+    it("should build macro for single tire", () => {
+      expect(buildTireToggleMacro({ lf: false, rf: false, lr: false, rr: true })).toBe("#!rr");
+    });
+
+    it("should return null when no tires configured", () => {
+      expect(buildTireToggleMacro({ lf: false, rf: false, lr: false, rr: false })).toBeNull();
+    });
   });
 
   describe("generateTireServiceSvg", () => {
-    it("should generate a valid data URI for request-lf", () => {
-      const result = generateTireServiceSvg({ action: "request-lf" });
-
+    it("should generate a valid data URI", () => {
+      const result = generateTireServiceSvg(
+        { lf: true, rf: true, lr: true, rr: true },
+        { lf: false, rf: false, lr: false, rr: false },
+      );
       expect(result).toContain("data:image/svg+xml");
     });
 
-    it("should generate a valid data URI for request-rf", () => {
-      const result = generateTireServiceSvg({ action: "request-rf" });
-
-      expect(result).toContain("data:image/svg+xml");
+    it("should show red for configured but inactive tires", () => {
+      const result = generateTireServiceSvg(
+        { lf: true, rf: true, lr: true, rr: true },
+        { lf: false, rf: false, lr: false, rr: false },
+      );
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("#FF4444");
+      expect(decoded).toContain("No Change");
     });
 
-    it("should generate a valid data URI for request-lr", () => {
-      const result = generateTireServiceSvg({ action: "request-lr" });
-
-      expect(result).toContain("data:image/svg+xml");
+    it("should show green for configured and active tires", () => {
+      const result = generateTireServiceSvg(
+        { lf: true, rf: true, lr: true, rr: true },
+        { lf: true, rf: true, lr: true, rr: true },
+      );
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("#44FF44");
+      expect(decoded).toContain("Change");
     });
 
-    it("should generate a valid data URI for request-rr", () => {
-      const result = generateTireServiceSvg({ action: "request-rr" });
-
-      expect(result).toContain("data:image/svg+xml");
+    it("should show black for unconfigured tires", () => {
+      const result = generateTireServiceSvg(
+        { lf: false, rf: false, lr: false, rr: false },
+        { lf: true, rf: true, lr: true, rr: true },
+      );
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("#000000ff");
     });
 
-    it("should generate a valid data URI for request-all", () => {
-      const result = generateTireServiceSvg({ action: "request-all" });
-
-      expect(result).toContain("data:image/svg+xml");
+    it("should show Change when any configured tire is on", () => {
+      const result = generateTireServiceSvg(
+        { lf: true, rf: false, lr: false, rr: false },
+        { lf: true, rf: false, lr: false, rr: false },
+      );
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("Change");
+      expect(decoded).not.toContain("No Change");
     });
 
-    it("should generate a valid data URI for change-compound", () => {
-      const result = generateTireServiceSvg({ action: "change-compound" });
-
-      expect(result).toContain("data:image/svg+xml");
-    });
-
-    it("should generate a valid data URI for clear-tires", () => {
-      const result = generateTireServiceSvg({ action: "clear-tires" });
-
-      expect(result).toContain("data:image/svg+xml");
-    });
-
-    it("should produce different icons for different action types", () => {
-      const lf = generateTireServiceSvg({ action: "request-lf" });
-      const rf = generateTireServiceSvg({ action: "request-rf" });
-      const lr = generateTireServiceSvg({ action: "request-lr" });
-      const rr = generateTireServiceSvg({ action: "request-rr" });
-      const all = generateTireServiceSvg({ action: "request-all" });
-      const compound = generateTireServiceSvg({ action: "change-compound" });
-      const clear = generateTireServiceSvg({ action: "clear-tires" });
-
-      const icons = [lf, rf, lr, rr, all, compound, clear];
-      const unique = new Set(icons);
-      expect(unique.size).toBe(icons.length);
-    });
-
-    it("should include correct labels for all action types", () => {
-      const expectedLabels: Record<string, { line1: string; line2: string }> = {
-        "request-lf": { line1: "LEFT", line2: "FRONT" },
-        "request-rf": { line1: "RIGHT", line2: "FRONT" },
-        "request-lr": { line1: "LEFT", line2: "REAR" },
-        "request-rr": { line1: "RIGHT", line2: "REAR" },
-        "request-all": { line1: "ALL", line2: "TIRES" },
-        "change-compound": { line1: "TIRE", line2: "COMPOUND" },
-        "clear-tires": { line1: "CLEAR", line2: "TIRES" },
-      };
-
-      for (const [actionType, labels] of Object.entries(expectedLabels)) {
-        const result = generateTireServiceSvg({ action: actionType as any });
-        const decoded = decodeURIComponent(result);
-
-        expect(decoded).toContain(labels.line1);
-        expect(decoded).toContain(labels.line2);
-      }
+    it("should show No Change when no configured tire is on", () => {
+      const result = generateTireServiceSvg(
+        { lf: true, rf: true, lr: true, rr: true },
+        { lf: false, rf: false, lr: false, rr: false },
+      );
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("No Change");
     });
   });
 
@@ -167,95 +175,39 @@ describe("TireService", () => {
       action = new TireService();
     });
 
-    it("should call pit.leftFront() on keyDown for request-lf", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-lf" }) as any);
+    it("should send toggle macro for all configured tires", async () => {
+      await action.onKeyDown(fakeEvent("a1", { lf: true, rf: true, lr: true, rr: true }) as any);
 
-      expect(mockPitLeftFront).toHaveBeenCalledOnce();
-      expect(mockPitRightFront).not.toHaveBeenCalled();
-      expect(mockPitLeftRear).not.toHaveBeenCalled();
-      expect(mockPitRightRear).not.toHaveBeenCalled();
-      expect(mockPitAllTires).not.toHaveBeenCalled();
-      expect(mockPitTireCompound).not.toHaveBeenCalled();
-      expect(mockPitClearTires).not.toHaveBeenCalled();
+      expect(mockSendMessage).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
     });
 
-    it("should call pit.rightFront() on keyDown for request-rf", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-rf" }) as any);
+    it("should send toggle macro for only configured tires", async () => {
+      await action.onKeyDown(fakeEvent("a1", { lf: true, rf: false, lr: true, rr: false }) as any);
 
-      expect(mockPitRightFront).toHaveBeenCalledOnce();
-      expect(mockPitLeftFront).not.toHaveBeenCalled();
-      expect(mockPitLeftRear).not.toHaveBeenCalled();
-      expect(mockPitRightRear).not.toHaveBeenCalled();
-      expect(mockPitAllTires).not.toHaveBeenCalled();
-      expect(mockPitTireCompound).not.toHaveBeenCalled();
-      expect(mockPitClearTires).not.toHaveBeenCalled();
+      expect(mockSendMessage).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !lr");
     });
 
-    it("should call pit.leftRear() on keyDown for request-lr", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-lr" }) as any);
+    it("should not send message when not connected", async () => {
+      mockGetConnectionStatus.mockReturnValue(false);
 
-      expect(mockPitLeftRear).toHaveBeenCalledOnce();
-      expect(mockPitLeftFront).not.toHaveBeenCalled();
-      expect(mockPitRightFront).not.toHaveBeenCalled();
-      expect(mockPitRightRear).not.toHaveBeenCalled();
-      expect(mockPitAllTires).not.toHaveBeenCalled();
-      expect(mockPitTireCompound).not.toHaveBeenCalled();
-      expect(mockPitClearTires).not.toHaveBeenCalled();
+      await action.onKeyDown(fakeEvent("a1", { lf: true, rf: true, lr: true, rr: true }) as any);
+
+      expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it("should call pit.rightRear() on keyDown for request-rr", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-rr" }) as any);
+    it("should not send message when no tires configured", async () => {
+      await action.onKeyDown(fakeEvent("a1", { lf: false, rf: false, lr: false, rr: false }) as any);
 
-      expect(mockPitRightRear).toHaveBeenCalledOnce();
-      expect(mockPitLeftFront).not.toHaveBeenCalled();
-      expect(mockPitRightFront).not.toHaveBeenCalled();
-      expect(mockPitLeftRear).not.toHaveBeenCalled();
-      expect(mockPitAllTires).not.toHaveBeenCalled();
-      expect(mockPitTireCompound).not.toHaveBeenCalled();
-      expect(mockPitClearTires).not.toHaveBeenCalled();
+      expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it("should call pit.allTires() on keyDown for request-all", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-all" }) as any);
+    it("should default to all tires when settings are empty", async () => {
+      await action.onKeyDown(fakeEvent("a1", {}) as any);
 
-      expect(mockPitAllTires).toHaveBeenCalledOnce();
-      expect(mockPitLeftFront).not.toHaveBeenCalled();
-      expect(mockPitRightFront).not.toHaveBeenCalled();
-      expect(mockPitLeftRear).not.toHaveBeenCalled();
-      expect(mockPitRightRear).not.toHaveBeenCalled();
-      expect(mockPitTireCompound).not.toHaveBeenCalled();
-      expect(mockPitClearTires).not.toHaveBeenCalled();
-    });
-
-    it("should call pit.tireCompound(0) on keyDown for change-compound", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "change-compound" }) as any);
-
-      expect(mockPitTireCompound).toHaveBeenCalledOnce();
-      expect(mockPitTireCompound).toHaveBeenCalledWith(0);
-      expect(mockPitLeftFront).not.toHaveBeenCalled();
-      expect(mockPitRightFront).not.toHaveBeenCalled();
-      expect(mockPitLeftRear).not.toHaveBeenCalled();
-      expect(mockPitRightRear).not.toHaveBeenCalled();
-      expect(mockPitAllTires).not.toHaveBeenCalled();
-      expect(mockPitClearTires).not.toHaveBeenCalled();
-    });
-
-    it("should call pit.clearTires() on keyDown for clear-tires", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "clear-tires" }) as any);
-
-      expect(mockPitClearTires).toHaveBeenCalledOnce();
-      expect(mockPitLeftFront).not.toHaveBeenCalled();
-      expect(mockPitRightFront).not.toHaveBeenCalled();
-      expect(mockPitLeftRear).not.toHaveBeenCalled();
-      expect(mockPitRightRear).not.toHaveBeenCalled();
-      expect(mockPitAllTires).not.toHaveBeenCalled();
-      expect(mockPitTireCompound).not.toHaveBeenCalled();
-    });
-
-    it("should default to request-all when no action is specified", async () => {
-      await action.onKeyDown(fakeEvent("action-1", {}) as any);
-
-      expect(mockPitAllTires).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
     });
   });
 
@@ -266,47 +218,11 @@ describe("TireService", () => {
       action = new TireService();
     });
 
-    it("should call pit.leftFront() on dialDown for request-lf", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "request-lf" }) as any);
+    it("should send toggle macro on dial down same as key press", async () => {
+      await action.onDialDown(fakeEvent("a1", { lf: true, rf: true, lr: true, rr: true }) as any);
 
-      expect(mockPitLeftFront).toHaveBeenCalledOnce();
-    });
-
-    it("should call pit.rightFront() on dialDown for request-rf", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "request-rf" }) as any);
-
-      expect(mockPitRightFront).toHaveBeenCalledOnce();
-    });
-
-    it("should call pit.leftRear() on dialDown for request-lr", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "request-lr" }) as any);
-
-      expect(mockPitLeftRear).toHaveBeenCalledOnce();
-    });
-
-    it("should call pit.rightRear() on dialDown for request-rr", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "request-rr" }) as any);
-
-      expect(mockPitRightRear).toHaveBeenCalledOnce();
-    });
-
-    it("should call pit.allTires() on dialDown for request-all", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "request-all" }) as any);
-
-      expect(mockPitAllTires).toHaveBeenCalledOnce();
-    });
-
-    it("should call pit.tireCompound(0) on dialDown for change-compound", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "change-compound" }) as any);
-
-      expect(mockPitTireCompound).toHaveBeenCalledOnce();
-      expect(mockPitTireCompound).toHaveBeenCalledWith(0);
-    });
-
-    it("should call pit.clearTires() on dialDown for clear-tires", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "clear-tires" }) as any);
-
-      expect(mockPitClearTires).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
     });
   });
 });
