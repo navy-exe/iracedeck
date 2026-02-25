@@ -11,6 +11,7 @@ import {
   ConnectionStateAwareAction,
   createSDLogger,
   formatKeyBinding,
+  generateIconText,
   getCommands,
   getGlobalSettings,
   getKeyboard,
@@ -27,10 +28,34 @@ import z from "zod";
 import chatTemplate from "../../icons/chat.svg";
 
 const WHITE = "#ffffff";
-const GREEN = "#2ecc71";
-const RED = "#e74c3c";
-const YELLOW = "#f1c40f";
-const PURPLE = "#9b59b6";
+const COLOR_PLACEHOLDER = "{{color}}";
+
+/**
+ * SVG template for send-message mode: large chat bubble with text inside.
+ * Has the same background as other chat modes, with a black-filled bubble for contrast.
+ */
+const SEND_MESSAGE_TEMPLATE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g filter="url(#activity-state)">
+    <!-- Main background (matches other chat modes) -->
+    <rect x="0" y="0" width="72" height="72" rx="8" fill="#2a3a4a"/>
+    <!-- Chat bubble with black fill for text contrast -->
+    <path d="M14 14 h45 a6 6 0 0 1 6 6 v34 a6 6 0 0 1-6 6 H29 l-4 8 l-4 -8 H13 a6 6 0 0 1-6-6 V20 a6 6 0 0 1 6-6 z"
+          fill="#000000" stroke="{{color}}" stroke-width="2.5" stroke-linejoin="round"/>
+    {{textElement}}
+  </g>
+</svg>`;
+
+/**
+ * SVG template for macro mode: large chat bubble with text inside (no background).
+ * Matches the old do-chat-macro.svg style.
+ */
+const MACRO_TEMPLATE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g filter="url(#activity-state)">
+    <path d="M14 14 h45 a6 6 0 0 1 6 6 v34 a6 6 0 0 1-6 6 H29 l-4 8 l-4 -8 H13 a6 6 0 0 1-6-6 V20 a6 6 0 0 1 6-6 z"
+          fill="none" stroke="{{color}}" stroke-width="2.5" stroke-linejoin="round"/>
+    {{textElement}}
+  </g>
+</svg>`;
 
 type ChatMode = "open-chat" | "reply" | "whisper" | "respond-pm" | "cancel" | "send-message" | "macro";
 
@@ -49,57 +74,58 @@ const CHAT_LABELS: Record<ChatMode, { line1: string; line2: string }> = {
 
 /**
  * SVG icon content for each chat mode
+ * Uses {{color}} placeholder for user-configurable accent color
  */
 const CHAT_ICONS: Record<ChatMode, string> = {
   // Open Chat: Chat bubble with pencil icon
   "open-chat": `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
-    <line x1="28" y1="28" x2="40" y2="18" stroke="${WHITE}" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="28" y1="28" x2="30" y2="26" stroke="${WHITE}" stroke-width="3" stroke-linecap="round"/>`,
+    <line x1="28" y1="28" x2="40" y2="18" stroke="${COLOR_PLACEHOLDER}" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="28" y1="28" x2="30" y2="26" stroke="${COLOR_PLACEHOLDER}" stroke-width="3" stroke-linecap="round"/>`,
 
   // Reply: Chat bubble with curved reply arrow
   reply: `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M30 18 L24 23 L30 28" fill="none" stroke="${GREEN}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M24 23 H38 A4 4 0 0 1 42 27" fill="none" stroke="${GREEN}" stroke-width="2" stroke-linecap="round"/>`,
+    <path d="M30 18 L24 23 L30 28" fill="none" stroke="${COLOR_PLACEHOLDER}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M24 23 H38 A4 4 0 0 1 42 27" fill="none" stroke="${COLOR_PLACEHOLDER}" stroke-width="2" stroke-linecap="round"/>`,
 
   // Whisper: Chat bubble with ear/wave icon
   whisper: `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M30 18 A4 4 0 0 1 30 28" fill="none" stroke="${PURPLE}" stroke-width="2" stroke-linecap="round"/>
-    <path d="M34 15 A8 8 0 0 1 34 31" fill="none" stroke="${PURPLE}" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M38 12 A12 12 0 0 1 38 34" fill="none" stroke="${PURPLE}" stroke-width="1" stroke-linecap="round"/>`,
+    <path d="M30 18 A4 4 0 0 1 30 28" fill="none" stroke="${COLOR_PLACEHOLDER}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M34 15 A8 8 0 0 1 34 31" fill="none" stroke="${COLOR_PLACEHOLDER}" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M38 12 A12 12 0 0 1 38 34" fill="none" stroke="${COLOR_PLACEHOLDER}" stroke-width="1" stroke-linecap="round"/>`,
 
   // Respond to Last PM: Chat bubble with "/r" text
   "respond-pm": `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
     <text x="36" y="24" text-anchor="middle" dominant-baseline="central"
-          fill="${GREEN}" font-family="Arial, sans-serif" font-size="14" font-weight="bold">/r</text>`,
+          fill="${COLOR_PLACEHOLDER}" font-family="Arial, sans-serif" font-size="14" font-weight="bold">/r</text>`,
 
   // Cancel: Chat bubble with X overlay
   cancel: `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
-    <line x1="28" y1="17" x2="44" y2="29" stroke="${RED}" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="44" y1="17" x2="28" y2="29" stroke="${RED}" stroke-width="2.5" stroke-linecap="round"/>`,
+    <line x1="28" y1="17" x2="44" y2="29" stroke="${COLOR_PLACEHOLDER}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="44" y1="17" x2="28" y2="29" stroke="${COLOR_PLACEHOLDER}" stroke-width="2.5" stroke-linecap="round"/>`,
 
   // Send Message: Chat bubble with right-pointing arrow
   "send-message": `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
-    <line x1="24" y1="23" x2="42" y2="23" stroke="${GREEN}" stroke-width="2" stroke-linecap="round"/>
-    <polyline points="38,18 44,23 38,28" fill="none" stroke="${GREEN}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
+    <line x1="24" y1="23" x2="42" y2="23" stroke="${COLOR_PLACEHOLDER}" stroke-width="2" stroke-linecap="round"/>
+    <polyline points="38,18 44,23 38,28" fill="none" stroke="${COLOR_PLACEHOLDER}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
 
   // Macro: Chat bubble with # symbol
   macro: `
     <path d="M16 10 h40 a4 4 0 0 1 4 4 v20 a4 4 0 0 1-4 4 H38 l-3 5 l-3-5 H16 a4 4 0 0 1-4-4 V14 a4 4 0 0 1 4-4 z"
           fill="none" stroke="${WHITE}" stroke-width="2" stroke-linejoin="round"/>
     <text x="36" y="24" text-anchor="middle" dominant-baseline="central"
-          fill="${YELLOW}" font-family="Arial, sans-serif" font-size="16" font-weight="bold">#</text>`,
+          fill="${COLOR_PLACEHOLDER}" font-family="Arial, sans-serif" font-size="16" font-weight="bold">#</text>`,
 };
 
 /**
@@ -116,6 +142,8 @@ const ChatSettings = z.object({
   mode: z.enum(["open-chat", "reply", "whisper", "respond-pm", "cancel", "send-message", "macro"]).default("open-chat"),
   message: z.string().default(""),
   macroNumber: z.coerce.number().min(1).max(15).default(1),
+  iconColor: z.string().default("#4a90d9"),
+  keyText: z.string().default(""),
 });
 
 type ChatSettings = z.infer<typeof ChatSettings>;
@@ -124,18 +152,115 @@ type ChatSettings = z.infer<typeof ChatSettings>;
  * @internal Exported for testing
  *
  * Generates an SVG data URI icon for the chat action.
+ * Supports user-configurable icon color and key text.
+ *
+ * For "send-message" mode: renders a large chat bubble with message text inside.
+ * For other modes: renders icon with accent color and labels below.
  */
 export function generateChatSvg(settings: ChatSettings): string {
-  const { mode } = settings;
+  const { mode, iconColor, keyText, message } = settings;
 
-  const iconContent = CHAT_ICONS[mode] || CHAT_ICONS["open-chat"];
-  const labels = CHAT_LABELS[mode] || CHAT_LABELS["open-chat"];
+  // Special handling for send-message mode: render text inside the bubble
+  if (mode === "send-message") {
+    return generateSendMessageSvg(iconColor, keyText, message);
+  }
+
+  // Special handling for macro mode: bubble with "Macro" + number or custom text
+  if (mode === "macro") {
+    return generateMacroSvg(iconColor, keyText, settings.macroNumber);
+  }
+
+  // For other modes: standard icon + labels approach
+  const baseIconContent = CHAT_ICONS[mode] || CHAT_ICONS["open-chat"];
+  const iconContent = baseIconContent.replace(/\{\{color\}\}/g, iconColor);
+
+  // Determine labels: use custom key text or default labels
+  const trimmedKeyText = keyText?.trim();
+  let labelLine1: string;
+  let labelLine2: string;
+
+  if (trimmedKeyText) {
+    // Parse custom key text (supports newlines for two-line display)
+    const lines = trimmedKeyText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    if (lines.length >= 2) {
+      labelLine1 = lines[0];
+      labelLine2 = lines[1];
+    } else {
+      labelLine1 = lines[0] || "";
+      labelLine2 = "";
+    }
+  } else {
+    // Use default labels for the mode
+    const labels = CHAT_LABELS[mode] || CHAT_LABELS["open-chat"];
+    labelLine1 = labels.line1;
+    labelLine2 = labels.line2;
+  }
 
   const svg = renderIconTemplate(chatTemplate, {
     iconContent,
-    labelLine1: labels.line1,
-    labelLine2: labels.line2,
+    labelLine1,
+    labelLine2,
   });
+
+  return svgToDataUri(svg);
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Generates SVG for send-message mode: large chat bubble with text inside.
+ */
+export function generateSendMessageSvg(iconColor: string, keyText: string, message: string): string {
+  // Prefer keyText, fall back to message
+  const displayText = keyText?.trim() || message?.trim() || "";
+
+  // Normalize line endings and filter empty lines
+  const normalizedText = displayText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .join("\n");
+
+  // Generate text element positioned inside the bubble (centered around y=40)
+  const textElement = normalizedText
+    ? generateIconText({ text: normalizedText, fontSize: 11, baseY: 40, lineHeightMultiplier: 1.2 })
+    : "";
+
+  const svg = renderIconTemplate(SEND_MESSAGE_TEMPLATE, { color: iconColor, textElement });
+
+  return svgToDataUri(svg);
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Generates SVG for macro mode: chat bubble with "Macro" + number or custom text.
+ * Matches the old do-chat-macro style.
+ */
+export function generateMacroSvg(iconColor: string, keyText: string, macroNumber: number): string {
+  const trimmedText = keyText?.trim();
+  let textElement: string;
+
+  if (trimmedText) {
+    // Custom text: normalize line endings and filter empty lines
+    const normalizedText = trimmedText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join("\n");
+
+    textElement = generateIconText({ text: normalizedText, fontSize: 10, baseY: 40, lineHeightMultiplier: 1.2 });
+  } else {
+    // Default: "Macro" text on top, large number below
+    textElement = generateIconText({ text: "Macro", fontSize: 10, baseY: 30, lineHeightMultiplier: 1.2 });
+    textElement += generateIconText({ text: String(macroNumber), fontSize: 25, baseY: 52, lineHeightMultiplier: 1.2 });
+  }
+
+  const svg = renderIconTemplate(MACRO_TEMPLATE, { color: iconColor, textElement });
 
   return svgToDataUri(svg);
 }

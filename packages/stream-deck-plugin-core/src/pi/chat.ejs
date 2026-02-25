@@ -28,6 +28,14 @@
 			</sdpi-select>
 		</sdpi-item>
 
+		<sdpi-item label="Icon Color">
+			<sdpi-color setting="iconColor" default="#4a90d9"></sdpi-color>
+		</sdpi-item>
+
+		<sdpi-item label="Key Text">
+			<sdpi-textarea setting="keyText" rows="2" placeholder="Leave empty for default"></sdpi-textarea>
+		</sdpi-item>
+
 		<%- include('global-key-bindings', {
 			subtitle: 'Chat Key Bindings',
 			keyBindings: require('./data/key-bindings.json').chat
