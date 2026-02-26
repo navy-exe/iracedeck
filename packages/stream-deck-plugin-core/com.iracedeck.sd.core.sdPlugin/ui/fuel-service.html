@@ -82,7 +82,7 @@
 	</head>
 	<body>
 		<sdpi-item label="Mode">
-			<sdpi-select setting="mode" default="add-fuel">
+			<sdpi-select id="mode-select" setting="mode" default="add-fuel">
 				<option value="add-fuel">Add Fuel</option>
 				<option value="reduce-fuel">Reduce Fuel</option>
 				<option value="set-fuel-amount">Set Fuel Amount</option>
@@ -93,7 +93,30 @@
 			</sdpi-select>
 		</sdpi-item>
 
-		<!--
+		<div id="fuel-settings" class="hidden">
+			<sdpi-item label="Amount">
+				<sdpi-textfield
+					id="amount"
+					setting="amount"
+					placeholder="1"
+					type="number"
+					min="0.1"
+					max="999"
+					step="0.1"
+				></sdpi-textfield>
+			</sdpi-item>
+
+			<sdpi-item label="Unit">
+				<sdpi-select setting="unit" default="l">
+					<option value="l">Liters</option>
+					<option value="g">Gallons</option>
+					<option value="k">Kilograms</option>
+				</sdpi-select>
+			</sdpi-item>
+		</div>
+
+		<div id="key-bindings-section" class="hidden">
+			<!--
   Global Key Bindings Component
 
   Displays key binding inputs in a "Related Key Bindings" section.
@@ -119,5 +142,70 @@
   
 </div>
 
+		</div>
+
+		<script>
+			const FUEL_MACRO_MODES = ["add-fuel", "reduce-fuel", "set-fuel-amount"];
+			const KEYBOARD_MODES = ["toggle-autofuel", "lap-margin-increase", "lap-margin-decrease"];
+
+			async function initialize() {
+				await customElements.whenDefined("sdpi-select");
+
+				const modeSelect = document.getElementById("mode-select");
+				const amountInput = document.getElementById("amount");
+
+				if (amountInput) {
+					amountInput.addEventListener("input", (e) => {
+						e.target.value = e.target.value.replace(",", ".");
+					});
+				}
+
+				if (modeSelect) {
+					modeSelect.addEventListener("change", (ev) => {
+						updateVisibility(ev.target.value);
+					});
+					modeSelect.addEventListener("input", (ev) => {
+						updateVisibility(ev.target.value);
+					});
+
+					// Poll until value is populated, then keep polling for changes
+					let lastMode = "";
+					setInterval(() => {
+						const currentMode = modeSelect.value;
+						if (currentMode && currentMode !== lastMode) {
+							lastMode = currentMode;
+							updateVisibility(currentMode);
+						}
+					}, 100);
+				}
+			}
+
+			function updateVisibility(mode) {
+				const fuelSettings = document.getElementById("fuel-settings");
+				const keyBindings = document.getElementById("key-bindings-section");
+
+				if (FUEL_MACRO_MODES.includes(mode)) {
+					fuelSettings?.classList.remove("hidden");
+				} else {
+					fuelSettings?.classList.add("hidden");
+				}
+
+				if (KEYBOARD_MODES.includes(mode)) {
+					keyBindings?.classList.remove("hidden");
+				} else {
+					keyBindings?.classList.add("hidden");
+				}
+			}
+
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", initialize);
+			} else {
+				initialize();
+			}
+		</script>
+
+		<style>
+			.hidden { display: none !important; }
+		</style>
 	</body>
 </html>

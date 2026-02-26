@@ -41,16 +41,27 @@ type FuelServiceMode =
   | "lap-margin-decrease";
 
 /**
- * Label configuration for each fuel service mode (line1 bold, line2 subdued)
+ * Display labels for fuel unit setting values
+ */
+const UNIT_DISPLAY: Record<FuelUnit, string> = {
+  l: "L",
+  g: "GAL",
+  k: "KG",
+};
+
+/**
+ * Label configuration for each fuel service mode.
+ * Uses inverted layout: line1 = bold/bottom (primary), line2 = subdued/top (secondary).
+ * Fuel macro modes (add-fuel, reduce-fuel, set-fuel-amount) use dynamic labels computed in getFuelServiceLabels().
  */
 const FUEL_SERVICE_LABELS: Record<FuelServiceMode, { line1: string; line2: string }> = {
-  "add-fuel": { line1: "ADD FUEL", line2: "PIT" },
-  "reduce-fuel": { line1: "REDUCE", line2: "FUEL" },
-  "set-fuel-amount": { line1: "SET FUEL", line2: "AMOUNT" },
+  "add-fuel": { line1: "+1 L", line2: "ADD FUEL" },
+  "reduce-fuel": { line1: "-1 L", line2: "REDUCE FUEL" },
+  "set-fuel-amount": { line1: "1 L", line2: "SET FUEL" },
   "clear-fuel": { line1: "CLEAR", line2: "FUEL" },
-  "toggle-autofuel": { line1: "AUTOFUEL", line2: "TOGGLE" },
-  "lap-margin-increase": { line1: "LAP MARGIN", line2: "INCREASE" },
-  "lap-margin-decrease": { line1: "LAP MARGIN", line2: "DECREASE" },
+  "toggle-autofuel": { line1: "TOGGLE", line2: "AUTOFUEL" },
+  "lap-margin-increase": { line1: "INCREASE", line2: "LAP MARGIN" },
+  "lap-margin-decrease": { line1: "DECREASE", line2: "LAP MARGIN" },
 };
 
 /**
@@ -121,13 +132,16 @@ const FUEL_SERVICE_ICONS: Record<FuelServiceMode, string> = {
  * @internal Exported for testing
  *
  * Mapping from keyboard-based fuel service modes to global settings keys.
- * SDK-based modes (add-fuel, reduce-fuel, set-fuel-amount, clear-fuel) are NOT included.
+ * Chat macro modes (add-fuel, reduce-fuel, set-fuel-amount) and SDK mode (clear-fuel) are NOT included.
  */
 export const FUEL_SERVICE_GLOBAL_KEYS: Record<string, string> = {
   "toggle-autofuel": "fuelServiceToggleAutofuel",
   "lap-margin-increase": "fuelServiceLapMarginIncrease",
   "lap-margin-decrease": "fuelServiceLapMarginDecrease",
 };
+
+const FuelUnit = z.enum(["l", "g", "k"]);
+type FuelUnit = z.infer<typeof FuelUnit>;
 
 const FuelServiceSettings = z.object({
   mode: z
@@ -141,12 +155,39 @@ const FuelServiceSettings = z.object({
       "lap-margin-decrease",
     ])
     .default("add-fuel"),
+  amount: z.preprocess(
+    (val) => (typeof val === "string" ? val.replace(",", ".") : val),
+    z.coerce.number().min(0).default(1),
+  ),
+  unit: FuelUnit.default("l"),
 });
 
 type FuelServiceSettings = z.infer<typeof FuelServiceSettings>;
 
+/**
+ * @internal Exported for testing
+ *
+ * Builds a pit macro string for fuel operations.
+ * Uses iRacing pit macro syntax: #fuel [[+|-]<amount>[l|g|k]]$
+ * The $ suffix auto-executes without showing the chat window.
+ */
+export function buildFuelMacro(mode: FuelServiceMode, amount: number, unit: FuelUnit): string | null {
+  const rounded = Math.round(amount * 10) / 10;
+
+  switch (mode) {
+    case "add-fuel":
+      return `#fuel +${rounded}${unit}$`;
+    case "reduce-fuel":
+      return `#fuel -${rounded}${unit}$`;
+    case "set-fuel-amount":
+      return `#fuel ${rounded}${unit}$`;
+    default:
+      return null;
+  }
+}
+
 /** Modes that support encoder rotation for +/- adjustments */
-const ROTATABLE_SDK_MODES = new Set<FuelServiceMode>(["add-fuel", "reduce-fuel"]);
+const ROTATABLE_MACRO_MODES = new Set<FuelServiceMode>(["add-fuel", "reduce-fuel"]);
 const ROTATABLE_KEYBOARD_MODES = new Set<FuelServiceMode>(["lap-margin-increase", "lap-margin-decrease"]);
 
 /** Determine the opposite mode for encoder rotation */
@@ -160,13 +201,36 @@ const ROTATION_PAIRS: Partial<Record<FuelServiceMode, FuelServiceMode>> = {
 /**
  * @internal Exported for testing
  *
+ * Returns display labels for a fuel service mode.
+ * Fuel macro modes compute dynamic labels from amount/unit settings.
+ */
+export function getFuelServiceLabels(settings: FuelServiceSettings): { line1: string; line2: string } {
+  const { mode, amount, unit } = settings;
+  const rounded = Math.round(amount * 10) / 10;
+  const unitLabel = UNIT_DISPLAY[unit];
+
+  switch (mode) {
+    case "add-fuel":
+      return { line1: `+${rounded} ${unitLabel}`, line2: "ADD FUEL" };
+    case "reduce-fuel":
+      return { line1: `-${rounded} ${unitLabel}`, line2: "REDUCE FUEL" };
+    case "set-fuel-amount":
+      return { line1: `${rounded} ${unitLabel}`, line2: "SET FUEL" };
+    default:
+      return FUEL_SERVICE_LABELS[mode] || FUEL_SERVICE_LABELS["add-fuel"];
+  }
+}
+
+/**
+ * @internal Exported for testing
+ *
  * Generates an SVG data URI icon for the fuel service action.
  */
 export function generateFuelServiceSvg(settings: FuelServiceSettings): string {
   const { mode } = settings;
 
   const iconContent = FUEL_SERVICE_ICONS[mode] || FUEL_SERVICE_ICONS["add-fuel"];
-  const labels = FUEL_SERVICE_LABELS[mode] || FUEL_SERVICE_LABELS["add-fuel"];
+  const labels = getFuelServiceLabels(settings);
 
   const svg = renderIconTemplate(fuelServiceTemplate, {
     iconContent,
@@ -181,7 +245,7 @@ export function generateFuelServiceSvg(settings: FuelServiceSettings): string {
  * Fuel Service Action
  * Provides fuel management for pit stops (add/reduce fuel, set amount, clear,
  * autofuel toggle, lap margin adjustments).
- * SDK-based modes use pit commands; keyboard-based modes use global key bindings.
+ * Fuel modes use pit macro chat commands; clear-fuel uses SDK; keyboard-based modes use global key bindings.
  */
 @action({ UUID: "com.iracedeck.sd.core.fuel-service" })
 export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings> {
@@ -209,20 +273,20 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   override async onKeyDown(ev: KeyDownEvent<FuelServiceSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeMode(settings.mode);
+    await this.executeMode(settings.mode, settings);
   }
 
   override async onDialDown(ev: DialDownEvent<FuelServiceSettings>): Promise<void> {
     this.logger.info("Dial down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeMode(settings.mode);
+    await this.executeMode(settings.mode, settings);
   }
 
   override async onDialRotate(ev: DialRotateEvent<FuelServiceSettings>): Promise<void> {
     this.logger.info("Dial rotated");
     const settings = this.parseSettings(ev.payload.settings);
 
-    if (!ROTATABLE_SDK_MODES.has(settings.mode) && !ROTATABLE_KEYBOARD_MODES.has(settings.mode)) {
+    if (!ROTATABLE_MACRO_MODES.has(settings.mode) && !ROTATABLE_KEYBOARD_MODES.has(settings.mode)) {
       this.logger.debug(`Rotation ignored for ${settings.mode}`);
 
       return;
@@ -231,7 +295,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     // Clockwise (ticks > 0) = current mode, counter-clockwise = opposite mode
     const effectiveMode = ev.payload.ticks > 0 ? settings.mode : (ROTATION_PAIRS[settings.mode] ?? settings.mode);
 
-    await this.executeMode(effectiveMode);
+    await this.executeMode(effectiveMode, settings);
   }
 
   private parseSettings(settings: unknown): FuelServiceSettings {
@@ -240,18 +304,16 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     return parsed.success ? parsed.data : FuelServiceSettings.parse({});
   }
 
-  private async executeMode(mode: FuelServiceMode): Promise<void> {
+  private async executeMode(mode: FuelServiceMode, settings: FuelServiceSettings): Promise<void> {
     switch (mode) {
-      // SDK-based modes
+      // Chat macro-based modes
       case "add-fuel":
-        this.executeSdkFuel("add");
-        break;
       case "reduce-fuel":
-        this.executeSdkFuel("reduce");
-        break;
       case "set-fuel-amount":
-        this.executeSdkSetFuel();
+        this.executeFuelMacro(mode, settings);
         break;
+
+      // SDK-based mode
       case "clear-fuel":
         this.executeSdkClearFuel();
         break;
@@ -265,18 +327,25 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     }
   }
 
-  private executeSdkFuel(direction: "add" | "reduce"): void {
-    const pit = getCommands().pit;
-    const success = pit.fuel(0);
-    this.logger.info(direction === "add" ? "Add fuel executed" : "Reduce fuel executed");
-    this.logger.debug(`Result: ${success}`);
-  }
+  private executeFuelMacro(mode: FuelServiceMode, settings: FuelServiceSettings): void {
+    const macro = buildFuelMacro(mode, settings.amount, settings.unit);
 
-  private executeSdkSetFuel(): void {
-    const pit = getCommands().pit;
-    const success = pit.fuel(0);
-    this.logger.info("Set fuel amount executed");
-    this.logger.debug(`Result: ${success}`);
+    if (!macro) {
+      this.logger.warn(`No macro for mode: ${mode}`);
+
+      return;
+    }
+
+    this.logger.debug(`Sending fuel macro: ${macro}`);
+    const success = getCommands().chat.sendMessage(macro);
+
+    if (success) {
+      this.logger.info("Fuel macro sent");
+      this.logger.debug(`Macro: ${macro}`);
+    } else {
+      this.logger.warn("Failed to send fuel macro");
+      this.logger.debug(`Failed macro: ${macro}`);
+    }
   }
 
   private executeSdkClearFuel(): void {
