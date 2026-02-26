@@ -24,6 +24,11 @@ const GRAY = "#888888";
 const WHITE = "#ffffff";
 const YELLOW = "#f1c40f";
 const RED = "#e74c3c";
+const BLUE = "#3498db";
+
+/** Tire compound index: 0 = dry, 1 = wet */
+const COMPOUND_DRY = 0;
+const COMPOUND_WET = 1;
 
 const TireServiceSettings = z.object({
   action: z.enum(["toggle-tires", "change-compound", "clear-tires"]).default("toggle-tires"),
@@ -36,15 +41,37 @@ const TireServiceSettings = z.object({
 type TireServiceSettings = z.infer<typeof TireServiceSettings>;
 
 /**
- * SVG icon content for change-compound and clear-tires actions.
+ * @internal Exported for testing
+ *
+ * Get compound name from telemetry value. Defaults to "DRY" for unknown values.
  */
-const COMPOUND_ICON_CONTENT = `
-    <circle cx="36" cy="24" r="10" fill="none" stroke="${WHITE}" stroke-width="1.5"/>
-    <circle cx="36" cy="24" r="4" fill="none" stroke="${GRAY}" stroke-width="1"/>
-    <path d="M28 36 L24 40 L28 44" fill="none" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="24" y1="40" x2="48" y2="40" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round"/>
-    <path d="M44 36 L48 32 L44 28" fill="none" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="48" y1="32" x2="24" y2="32" stroke="${YELLOW}" stroke-width="2" stroke-linecap="round"/>`;
+export function getCompoundName(compound: number): string {
+  return compound === COMPOUND_WET ? "WET" : "DRY";
+}
+
+/** Dry tire: circle with straight block tread pattern */
+const DRY_TIRE_ICON = `
+    <circle cx="36" cy="22" r="12" fill="none" stroke="${WHITE}" stroke-width="1.5"/>
+    <circle cx="36" cy="22" r="5" fill="none" stroke="${GRAY}" stroke-width="1"/>
+    <line x1="36" y1="10" x2="36" y2="15" stroke="${WHITE}" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="29" x2="36" y2="34" stroke="${WHITE}" stroke-width="2" stroke-linecap="round"/>
+    <line x1="24" y1="22" x2="29" y2="22" stroke="${WHITE}" stroke-width="2" stroke-linecap="round"/>
+    <line x1="43" y1="22" x2="48" y2="22" stroke="${WHITE}" stroke-width="2" stroke-linecap="round"/>
+    <line x1="27.5" y1="13.5" x2="31" y2="17" stroke="${WHITE}" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="41" y1="27" x2="44.5" y2="30.5" stroke="${WHITE}" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="44.5" y1="13.5" x2="41" y2="17" stroke="${WHITE}" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="31" y1="27" x2="27.5" y2="30.5" stroke="${WHITE}" stroke-width="1.5" stroke-linecap="round"/>`;
+
+/** Wet tire: circle with diagonal rain grooves and water drops */
+const WET_TIRE_ICON = `
+    <circle cx="36" cy="22" r="12" fill="none" stroke="${BLUE}" stroke-width="1.5"/>
+    <circle cx="36" cy="22" r="5" fill="none" stroke="${GRAY}" stroke-width="1"/>
+    <path d="M30 14 Q36 18 30 22" fill="none" stroke="${BLUE}" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M36 12 Q42 16 36 20" fill="none" stroke="${BLUE}" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M42 14 Q48 18 42 22" fill="none" stroke="${BLUE}" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M30 24 Q36 28 30 32" fill="none" stroke="${BLUE}" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M36 24 Q42 28 36 32" fill="none" stroke="${BLUE}" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M42 24 Q48 28 42 32" fill="none" stroke="${BLUE}" stroke-width="1.5" stroke-linecap="round"/>`;
 
 const CLEAR_TIRES_ICON_CONTENT = `
     <circle cx="36" cy="26" r="10" fill="none" stroke="${WHITE}" stroke-width="1.5"/>
@@ -86,6 +113,18 @@ function getTireState(telemetry: TelemetryData | null): {
     rf: hasFlag(flags, PitSvFlags.RFTireChange),
     lr: hasFlag(flags, PitSvFlags.LRTireChange),
     rr: hasFlag(flags, PitSvFlags.RRTireChange),
+  };
+}
+
+/**
+ * Get tire compound info from telemetry.
+ * playerCompound: tires currently on the car.
+ * pitSvCompound: compound selected for the next pit stop.
+ */
+function getCompoundState(telemetry: TelemetryData | null): { player: number; pitSv: number } {
+  return {
+    player: telemetry?.PlayerTireCompound ?? COMPOUND_DRY,
+    pitSv: telemetry?.PitSvTireCompound ?? COMPOUND_DRY,
   };
 }
 
@@ -139,17 +178,30 @@ function generateToggleTiresIconContent(
 export function generateTireServiceSvg(
   settings: TireServiceSettings,
   currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
+  compoundState: { player: number; pitSv: number } = { player: COMPOUND_DRY, pitSv: COMPOUND_DRY },
 ): string {
   let iconContent: string;
   let textElement: string;
 
   switch (settings.action) {
     case "change-compound": {
-      iconContent = COMPOUND_ICON_CONTENT;
-      textElement = [
-        generateIconText({ text: "TIRE", fontSize: 10, fill: "#ffffff", baseY: 52 }),
-        generateIconText({ text: "COMPOUND", fontSize: 8, fill: "#aaaaaa", baseY: 63 }),
-      ].join("\n");
+      const pitSvName = getCompoundName(compoundState.pitSv);
+      const isChanging = compoundState.player !== compoundState.pitSv;
+
+      iconContent = compoundState.pitSv === COMPOUND_WET ? WET_TIRE_ICON : DRY_TIRE_ICON;
+
+      if (isChanging) {
+        textElement = [
+          generateIconText({ text: `Change to`, fontSize: 9, fill: YELLOW, baseY: 50 }),
+          generateIconText({ text: pitSvName, fontSize: 12, fill: YELLOW, baseY: 63 }),
+        ].join("\n");
+      } else {
+        textElement = [
+          generateIconText({ text: `Stay on`, fontSize: 9, fill: "#ffffff", baseY: 50 }),
+          generateIconText({ text: pitSvName, fontSize: 12, fill: "#ffffff", baseY: 63 }),
+        ].join("\n");
+      }
+
       break;
     }
     case "clear-tires": {
@@ -228,14 +280,15 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
     const telemetry = this.sdkController.getCurrentTelemetry();
     const tireState = getTireState(telemetry);
+    const compound = getCompoundState(telemetry);
 
     this.updateConnectionState();
 
-    const svgDataUri = generateTireServiceSvg(settings, tireState);
+    const svgDataUri = generateTireServiceSvg(settings, tireState, compound);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
 
-    const stateKey = this.buildStateKey(settings, tireState);
+    const stateKey = this.buildStateKey(settings, tireState, compound);
     this.lastState.set(ev.action.id, stateKey);
   }
 
@@ -261,14 +314,15 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
   ): Promise<void> {
     const telemetry = this.sdkController.getCurrentTelemetry();
     const tireState = getTireState(telemetry);
+    const compound = getCompoundState(telemetry);
 
     this.updateConnectionState();
 
-    const svgDataUri = generateTireServiceSvg(settings, tireState);
+    const svgDataUri = generateTireServiceSvg(settings, tireState, compound);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
 
-    const stateKey = this.buildStateKey(settings, tireState);
+    const stateKey = this.buildStateKey(settings, tireState, compound);
     this.lastState.set(ev.action.id, stateKey);
   }
 
@@ -278,12 +332,13 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     settings: TireServiceSettings,
   ): Promise<void> {
     const tireState = getTireState(telemetry);
-    const stateKey = this.buildStateKey(settings, tireState);
+    const compound = getCompoundState(telemetry);
+    const stateKey = this.buildStateKey(settings, tireState, compound);
     const lastStateKey = this.lastState.get(contextId);
 
     if (lastStateKey !== stateKey) {
       this.lastState.set(contextId, stateKey);
-      const svgDataUri = generateTireServiceSvg(settings, tireState);
+      const svgDataUri = generateTireServiceSvg(settings, tireState, compound);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }
@@ -291,8 +346,9 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
   private buildStateKey(
     settings: TireServiceSettings,
     tireState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
+    compound: { player: number; pitSv: number },
   ): string {
-    return `${settings.action}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}`;
+    return `${settings.action}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}`;
   }
 
   private executeAction(rawSettings: unknown): void {
@@ -306,8 +362,12 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
     switch (settings.action) {
       case "change-compound": {
-        this.logger.debug("Sending tire compound change");
-        const success = getCommands().pit.tireCompound(0);
+        const telemetry = this.sdkController.getCurrentTelemetry();
+        const { pitSv } = getCompoundState(telemetry);
+        const targetCompound = pitSv === COMPOUND_WET ? COMPOUND_DRY : COMPOUND_WET;
+
+        this.logger.debug(`Changing compound from ${getCompoundName(pitSv)} to ${getCompoundName(targetCompound)}`);
+        const success = getCommands().pit.tireCompound(targetCompound);
 
         if (success) {
           this.logger.info("Tire compound change sent");

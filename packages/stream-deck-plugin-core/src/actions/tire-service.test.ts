@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { buildTireToggleMacro, generateTireServiceSvg, TireService } from "./tire-service.js";
+import { buildTireToggleMacro, generateTireServiceSvg, getCompoundName, TireService } from "./tire-service.js";
 
 const {
   mockSendMessage,
@@ -23,7 +23,7 @@ const {
     },
   })),
   mockGetConnectionStatus: vi.fn(() => true),
-  mockGetCurrentTelemetry: vi.fn(() => ({ PitSvFlags: 0 })),
+  mockGetCurrentTelemetry: vi.fn(() => ({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 })),
 }));
 
 vi.mock("@elgato/streamdeck", () => ({
@@ -93,7 +93,21 @@ describe("TireService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetConnectionStatus.mockReturnValue(true);
-    mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+    mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+  });
+
+  describe("getCompoundName", () => {
+    it("should return DRY for compound 0", () => {
+      expect(getCompoundName(0)).toBe("DRY");
+    });
+
+    it("should return WET for compound 1", () => {
+      expect(getCompoundName(1)).toBe("WET");
+    });
+
+    it("should default to DRY for unknown values", () => {
+      expect(getCompoundName(99)).toBe("DRY");
+    });
   });
 
   describe("buildTireToggleMacro", () => {
@@ -187,22 +201,46 @@ describe("TireService", () => {
     });
 
     describe("change-compound mode", () => {
+      const compoundSettings = { action: "change-compound" as const, lf: true, rf: true, lr: true, rr: true };
+
       it("should generate a valid data URI", () => {
-        const result = generateTireServiceSvg(
-          { action: "change-compound", lf: true, rf: true, lr: true, rr: true },
-          noTires,
-        );
+        const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 0 });
         expect(result).toContain("data:image/svg+xml");
       });
 
-      it("should include TIRE and COMPOUND labels", () => {
-        const result = generateTireServiceSvg(
-          { action: "change-compound", lf: true, rf: true, lr: true, rr: true },
-          noTires,
-        );
+      it("should show Stay on DRY when player and pit service are both dry", () => {
+        const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 0 });
         const decoded = decodeURIComponent(result);
-        expect(decoded).toContain("TIRE");
-        expect(decoded).toContain("COMPOUND");
+        expect(decoded).toContain("Stay on");
+        expect(decoded).toContain("DRY");
+      });
+
+      it("should show Change to WET when player is dry but pit service is wet", () => {
+        const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 1 });
+        const decoded = decodeURIComponent(result);
+        expect(decoded).toContain("Change to");
+        expect(decoded).toContain("WET");
+      });
+
+      it("should show Stay on WET when player and pit service are both wet", () => {
+        const result = generateTireServiceSvg(compoundSettings, noTires, { player: 1, pitSv: 1 });
+        const decoded = decodeURIComponent(result);
+        expect(decoded).toContain("Stay on");
+        expect(decoded).toContain("WET");
+      });
+
+      it("should show Change to DRY when player is wet but pit service is dry", () => {
+        const result = generateTireServiceSvg(compoundSettings, noTires, { player: 1, pitSv: 0 });
+        const decoded = decodeURIComponent(result);
+        expect(decoded).toContain("Change to");
+        expect(decoded).toContain("DRY");
+      });
+
+      it("should default to Stay on DRY when compound is not provided", () => {
+        const result = generateTireServiceSvg(compoundSettings, noTires);
+        const decoded = decodeURIComponent(result);
+        expect(decoded).toContain("Stay on");
+        expect(decoded).toContain("DRY");
       });
     });
 
@@ -270,12 +308,32 @@ describe("TireService", () => {
     });
 
     describe("change-compound mode", () => {
-      it("should call pit.tireCompound", async () => {
+      it("should toggle from dry to wet when pit service is dry", async () => {
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
+
+        expect(mockPitTireCompound).toHaveBeenCalledOnce();
+        expect(mockPitTireCompound).toHaveBeenCalledWith(1);
+        expect(mockSendMessage).not.toHaveBeenCalled();
+      });
+
+      it("should toggle from wet to dry when pit service is wet", async () => {
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 1 });
+
         await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
 
         expect(mockPitTireCompound).toHaveBeenCalledOnce();
         expect(mockPitTireCompound).toHaveBeenCalledWith(0);
-        expect(mockSendMessage).not.toHaveBeenCalled();
+      });
+
+      it("should default to switching to wet when compound is unknown", async () => {
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 } as any);
+
+        await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
+
+        expect(mockPitTireCompound).toHaveBeenCalledOnce();
+        expect(mockPitTireCompound).toHaveBeenCalledWith(1);
       });
     });
 
@@ -317,10 +375,13 @@ describe("TireService", () => {
       expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
     });
 
-    it("should call pit.tireCompound on dial down for change-compound", async () => {
+    it("should toggle compound on dial down for change-compound", async () => {
+      mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
       await action.onDialDown(fakeEvent("a1", { action: "change-compound" }) as any);
 
       expect(mockPitTireCompound).toHaveBeenCalledOnce();
+      expect(mockPitTireCompound).toHaveBeenCalledWith(1);
     });
 
     it("should call pit.clearTires on dial down for clear-tires", async () => {
