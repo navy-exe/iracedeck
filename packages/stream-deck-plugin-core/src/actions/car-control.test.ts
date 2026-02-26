@@ -156,7 +156,7 @@ describe("CarControl", () => {
     it("should include correct labels for all controls", () => {
       const expectedLabels: Record<string, { line1: string; line2: string }> = {
         starter: { line1: "START", line2: "ENGINE" },
-        ignition: { line1: "IGNITION", line2: "TOGGLE" },
+        ignition: { line1: "IGNITION", line2: "ON/OFF" },
         "pit-speed-limiter": { line1: "PIT", line2: "LIMITER" },
         "enter-exit-tow": { line1: "ENTER/EXIT", line2: "TOW" },
         "pause-sim": { line1: "PAUSE", line2: "SIM" },

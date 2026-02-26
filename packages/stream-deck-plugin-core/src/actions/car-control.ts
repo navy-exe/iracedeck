@@ -40,7 +40,7 @@ type CarControlType = "starter" | "ignition" | "pit-speed-limiter" | "enter-exit
  */
 const CAR_CONTROL_LABELS: Record<CarControlType, { line1: string; line2: string }> = {
   starter: { line1: "START", line2: "ENGINE" },
-  ignition: { line1: "IGNITION", line2: "TOGGLE" },
+  ignition: { line1: "IGNITION", line2: "ON/OFF" },
   "pit-speed-limiter": { line1: "PIT", line2: "LIMITER" },
   "enter-exit-tow": { line1: "ENTER/EXIT", line2: "TOW" },
   "pause-sim": { line1: "PAUSE", line2: "SIM" },
@@ -81,11 +81,10 @@ const CAR_CONTROL_ICONS: Record<CarControlType, string> = {
     <text x="36" y="26" text-anchor="middle" dominant-baseline="central"
           fill="${WHITE}" font-family="Arial, sans-serif" font-size="7" font-weight="bold">START</text>`,
 
-  // Ignition: Power symbol
+  // Ignition: Bold power symbol (arc + stem)
   ignition: `
-    <circle cx="36" cy="24" r="11" fill="none" stroke="${WHITE}" stroke-width="2"/>
-    <rect x="33" y="10" width="6" height="6" fill="#2a3a2a"/>
-    <line x1="36" y1="12" x2="36" y2="26" stroke="${WHITE}" stroke-width="2.5" stroke-linecap="round"/>`,
+    <path d="M30 17 A11 11 0 1 0 42 17" fill="none" stroke="${WHITE}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="36" y1="12" x2="36" y2="24" stroke="${WHITE}" stroke-width="4" stroke-linecap="round"/>`,
 
   // Pit Speed Limiter: Concentric circle "LIM" disc (default: inactive/gray)
   "pit-speed-limiter": PIT_LIMITER_INACTIVE_ICON,
