@@ -1,0 +1,264 @@
+import streamDeck, { action, DidReceiveSettingsEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import type { TelemetryData } from "@iracedeck/iracing-sdk";
+import {
+  ConnectionStateAwareAction,
+  createSDLogger,
+  LogLevel,
+  renderIconTemplate,
+  svgToDataUri,
+} from "@iracedeck/stream-deck-shared";
+import z from "zod";
+
+import sessionInfoTemplate from "../../icons/session-info.svg";
+
+const BACKGROUND_DEFAULT = "#2a3444";
+const BACKGROUND_FLASH = "#e74c3c";
+
+const FLASH_INTERVAL_MS = 250;
+const FLASH_STEPS = 12; // on-off x6 (6 red flashes)
+
+/** iRacing uses 604800s (7 days) as the sentinel for unlimited session time */
+const UNLIMITED_TIME_THRESHOLD = 604800;
+
+const SessionInfoSettings = z.object({
+  mode: z.enum(["incidents", "time-remaining"]).default("incidents"),
+});
+
+type SessionInfoSettings = z.infer<typeof SessionInfoSettings>;
+
+/**
+ * @internal Exported for testing
+ *
+ * Formats a time in seconds to a human-readable string.
+ * Auto-adapts: H:MM:SS / MM:SS / 0:SS
+ */
+export function formatSessionTime(seconds: number): string {
+  if (!isFinite(seconds) || seconds < 0) return "0:00";
+
+  const totalSeconds = Math.floor(seconds);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  if (h > 0) {
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Generates an SVG data URI for the session info display.
+ */
+export function generateSessionInfoSvg(settings: SessionInfoSettings, value: string, isFlashing: boolean): string {
+  const titleLabel = settings.mode === "incidents" ? "INCIDENTS" : "TIME LEFT";
+  const valueFontSize = settings.mode === "incidents" ? "24" : value.length > 5 ? "14" : "18";
+  const valueY = settings.mode === "incidents" ? "52" : "50";
+  const backgroundColor = isFlashing ? BACKGROUND_FLASH : BACKGROUND_DEFAULT;
+
+  const svg = renderIconTemplate(sessionInfoTemplate, {
+    backgroundColor,
+    titleLabel,
+    value,
+    valueFontSize,
+    valueY,
+  });
+
+  return svgToDataUri(svg);
+}
+
+/**
+ * Session Info Action
+ * Displays live telemetry data: incident points or session time remaining.
+ * Incident count increase triggers a red flash effect.
+ */
+@action({ UUID: "com.iracedeck.sd.core.session-info" })
+export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings> {
+  protected override logger = createSDLogger(streamDeck.logger.createScope("SessionInfo"), LogLevel.Info);
+
+  /** Settings per action context for telemetry-driven updates */
+  private activeContexts = new Map<string, SessionInfoSettings>();
+
+  /** State hash cache to prevent re-rendering every telemetry tick */
+  private lastState = new Map<string, string>();
+
+  /** Last known incident count per context for flash detection */
+  private lastIncidentCount = new Map<string, number>();
+
+  /** Active flash timer IDs per context for cancellation */
+  private flashTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  /** Whether a context is currently in flash state */
+  private flashStates = new Map<string, boolean>();
+
+  override async onWillAppear(ev: WillAppearEvent<SessionInfoSettings>): Promise<void> {
+    const settings = this.parseSettings(ev.payload.settings);
+    this.activeContexts.set(ev.action.id, settings);
+    await this.updateDisplay(ev, settings);
+
+    this.sdkController.subscribe(ev.action.id, (telemetry) => {
+      this.updateConnectionState();
+
+      const storedSettings = this.activeContexts.get(ev.action.id);
+
+      if (storedSettings) {
+        this.updateDisplayFromTelemetry(ev.action.id, telemetry, storedSettings);
+      }
+    });
+  }
+
+  override async onWillDisappear(ev: WillDisappearEvent<SessionInfoSettings>): Promise<void> {
+    this.cancelFlash(ev.action.id);
+    await super.onWillDisappear(ev);
+    this.sdkController.unsubscribe(ev.action.id);
+    this.activeContexts.delete(ev.action.id);
+    this.lastState.delete(ev.action.id);
+    this.lastIncidentCount.delete(ev.action.id);
+    this.flashStates.delete(ev.action.id);
+  }
+
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<SessionInfoSettings>): Promise<void> {
+    const settings = this.parseSettings(ev.payload.settings);
+    this.activeContexts.set(ev.action.id, settings);
+    this.cancelFlash(ev.action.id);
+    this.lastIncidentCount.delete(ev.action.id);
+    this.lastState.delete(ev.action.id);
+    await this.updateDisplay(ev, settings);
+  }
+
+  private parseSettings(settings: unknown): SessionInfoSettings {
+    const parsed = SessionInfoSettings.safeParse(settings);
+
+    return parsed.success ? parsed.data : SessionInfoSettings.parse({});
+  }
+
+  private async updateDisplay(
+    ev: WillAppearEvent<SessionInfoSettings> | DidReceiveSettingsEvent<SessionInfoSettings>,
+    settings: SessionInfoSettings,
+  ): Promise<void> {
+    this.updateConnectionState();
+
+    const telemetry = this.sdkController.getCurrentTelemetry();
+    const value = this.extractDisplayValue(settings, telemetry);
+    const isFlashing = this.flashStates.get(ev.action.id) ?? false;
+
+    const svgDataUri = generateSessionInfoSvg(settings, value, isFlashing);
+    await ev.action.setTitle("");
+    await this.setKeyImage(ev, svgDataUri);
+
+    const stateKey = this.buildStateKey(settings, value, isFlashing);
+    this.lastState.set(ev.action.id, stateKey);
+
+    // Initialize incident count baseline
+    if (settings.mode === "incidents" && telemetry?.PlayerCarMyIncidentCount !== undefined) {
+      this.lastIncidentCount.set(ev.action.id, telemetry.PlayerCarMyIncidentCount);
+    }
+  }
+
+  private extractDisplayValue(settings: SessionInfoSettings, telemetry: TelemetryData | null): string {
+    if (!telemetry) {
+      return settings.mode === "incidents" ? "--" : "--:--";
+    }
+
+    if (settings.mode === "incidents") {
+      const count = telemetry.PlayerCarMyIncidentCount;
+
+      return count !== undefined ? `${count}x` : "--";
+    }
+
+    const remain = telemetry.SessionTimeRemain;
+
+    if (remain === undefined) return "--:--";
+
+    if (remain >= UNLIMITED_TIME_THRESHOLD) return "UNLIM";
+
+    return formatSessionTime(remain);
+  }
+
+  private buildStateKey(settings: SessionInfoSettings, value: string, isFlashing: boolean): string {
+    return `${settings.mode}|${value}|${isFlashing}`;
+  }
+
+  private async updateDisplayFromTelemetry(
+    contextId: string,
+    telemetry: TelemetryData | null,
+    settings: SessionInfoSettings,
+  ): Promise<void> {
+    // Check for incident increase to trigger flash
+    if (settings.mode === "incidents" && telemetry?.PlayerCarMyIncidentCount !== undefined) {
+      const prevCount = this.lastIncidentCount.get(contextId);
+      const currentCount = telemetry.PlayerCarMyIncidentCount;
+
+      if (prevCount !== undefined && currentCount > prevCount) {
+        this.logger.info("Incident count increased");
+        this.logger.debug(`Incidents: ${prevCount} -> ${currentCount}`);
+        this.startFlash(contextId, settings, telemetry);
+      }
+
+      this.lastIncidentCount.set(contextId, currentCount);
+    }
+
+    const value = this.extractDisplayValue(settings, telemetry);
+    const isFlashing = this.flashStates.get(contextId) ?? false;
+    const stateKey = this.buildStateKey(settings, value, isFlashing);
+    const lastStateKey = this.lastState.get(contextId);
+
+    if (lastStateKey !== stateKey) {
+      this.lastState.set(contextId, stateKey);
+      const svgDataUri = generateSessionInfoSvg(settings, value, isFlashing);
+      await this.updateKeyImage(contextId, svgDataUri);
+    }
+  }
+
+  private startFlash(contextId: string, settings: SessionInfoSettings, telemetry: TelemetryData | null): void {
+    this.cancelFlash(contextId);
+
+    let step = 0;
+
+    const doStep = () => {
+      if (!this.activeContexts.has(contextId)) return;
+
+      const isRed = step % 2 === 0;
+      this.flashStates.set(contextId, isRed);
+
+      const value = this.extractDisplayValue(settings, telemetry);
+      const stateKey = this.buildStateKey(settings, value, isRed);
+      this.lastState.set(contextId, stateKey);
+
+      const svgDataUri = generateSessionInfoSvg(settings, value, isRed);
+      this.updateKeyImage(contextId, svgDataUri);
+
+      step++;
+
+      if (step < FLASH_STEPS) {
+        this.flashTimers.set(contextId, setTimeout(doStep, FLASH_INTERVAL_MS));
+      } else {
+        // Flash sequence complete — reset to normal
+        this.flashStates.set(contextId, false);
+        this.flashTimers.delete(contextId);
+
+        const finalValue = this.extractDisplayValue(settings, telemetry);
+        const finalStateKey = this.buildStateKey(settings, finalValue, false);
+        this.lastState.set(contextId, finalStateKey);
+
+        const finalSvg = generateSessionInfoSvg(settings, finalValue, false);
+        this.updateKeyImage(contextId, finalSvg);
+      }
+    };
+
+    doStep();
+  }
+
+  private cancelFlash(contextId: string): void {
+    const timer = this.flashTimers.get(contextId);
+
+    if (timer) {
+      clearTimeout(timer);
+      this.flashTimers.delete(contextId);
+    }
+
+    this.flashStates.set(contextId, false);
+  }
+}

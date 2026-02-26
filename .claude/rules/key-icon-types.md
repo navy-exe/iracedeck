@@ -65,6 +65,7 @@ Different actions can use different background colors to help distinguish them v
 |----------|-------|-------|
 | Default | #2a2a2a | General actions (e.g., black box selector) |
 | Dark Purple | #412244 | Splits/delta timing actions |
+| Dark Blue-Gray | #2a3444 | Data display actions (e.g., session info) |
 
 Choose a background color that fits the action's theme. New colors can be added as needed — they should be dark enough for white text readability.
 
@@ -170,3 +171,27 @@ Uses the Inverted label layout where the action word is prominent (bottom, bold)
 - Category/context label on top (secondary), action word on bottom (primary)
 - Background color varies per action
 - Reference: `packages/stream-deck-plugin-core/src/actions/splits-delta-cycle.ts`
+
+### Data Display Type
+
+Optimized for showing live telemetry values. Small title at top, large centered value. No icon content area — the value IS the content.
+
+- **Title**: Small gray label at y=16 (#aaaaaa, 9px)
+- **Value**: Large bold centered text at y=50 (#ffffff, dynamic font size)
+- **Background**: Dynamic — can change color for alert effects (e.g., flash red on incident)
+- **Placeholders**: `{{backgroundColor}}`, `{{titleLabel}}`, `{{value}}`, `{{valueFontSize}}`
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <g filter="url(#activity-state)">
+    <rect x="0" y="0" width="72" height="72" rx="8" fill="{{backgroundColor}}"/>
+    <text x="36" y="16" text-anchor="middle" dominant-baseline="central"
+          fill="#aaaaaa" font-family="Arial, sans-serif" font-size="9">{{titleLabel}}</text>
+    <text x="36" y="50" text-anchor="middle" dominant-baseline="central"
+          fill="#ffffff" font-family="Arial, sans-serif" font-size="{{valueFontSize}}" font-weight="bold">{{value}}</text>
+  </g>
+</svg>
+```
+
+- Background: #2a3444 (dark blue-gray)
+- Reference: `packages/stream-deck-plugin-core/src/actions/session-info.ts`

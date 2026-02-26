@@ -585,6 +585,21 @@
           "FontSize": 14
         }
       ]
+    },
+    {
+      "Name": "Session Info",
+      "UUID": "com.iracedeck.sd.core.session-info",
+      "Icon": "imgs/actions/session-info/icon",
+      "Tooltip": "Display live session data (incident points, time remaining)",
+      "PropertyInspectorPath": "ui/session-info.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/session-info/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 14
+        }
+      ]
     }
   ],
   "Category": "iRaceDeck Core",
