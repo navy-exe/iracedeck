@@ -260,6 +260,10 @@ pnpm test        # All tests pass
 pnpm build       # Build succeeds (skip if watch mode is running)
 ```
 
+**Also update the actions reference** when adding, removing, or modifying actions:
+- `docs/reference/actions.json` — add/update the action entry with all modes
+- `.claude/skills/iracedeck-actions/SKILL.md` — update category overview and per-category tables
+
 ## Telemetry-Aware Icons
 
 Some actions update their icon based on live iRacing telemetry (4Hz updates via `sdkController`). Use this pattern when an action's visual state depends on telemetry data.

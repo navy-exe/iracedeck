@@ -125,6 +125,14 @@ When asked about actions or controls:
 | Hold | Key held while button pressed | Look direction, HYS boost/regen |
 | Telemetry-aware | Icon updates from live data | Session info, car control (pit limiter), tire service |
 
+## Keeping in Sync
+
+When actions are added, removed, or modified (new modes, renamed settings, changed categories), update these files in the same change:
+
+1. **`docs/reference/actions.json`** — add/update the action entry with all modes
+2. **This skill file** (`SKILL.md`) — update the category overview table (counts) and the per-category action tables
+3. **`packages/website/public_html/index.html`** — update category cards and stats if counts changed
+
 ## Key Project Files
 
 | File | Role |
