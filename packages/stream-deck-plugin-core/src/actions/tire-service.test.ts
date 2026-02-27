@@ -131,13 +131,13 @@ describe("TireService", () => {
     it("should return fallback when session info is null", () => {
       mockGetSessionInfo.mockReturnValue(null);
 
-      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Hard" }]);
+      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Dry" }]);
     });
 
     it("should return fallback when DriverTires is missing", () => {
       mockGetSessionInfo.mockReturnValue({ DriverInfo: { Drivers: [{}] } });
 
-      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Hard" }]);
+      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Dry" }]);
     });
 
     it("should return fallback when DriverTires is empty", () => {
@@ -145,7 +145,7 @@ describe("TireService", () => {
         DriverInfo: { Drivers: [{ DriverTires: [] }] },
       });
 
-      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Hard" }]);
+      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Dry" }]);
     });
   });
 
@@ -181,7 +181,7 @@ describe("TireService", () => {
   });
 
   describe("getCompoundName", () => {
-    it("should return compound type from session info by index", () => {
+    it("should return DRY/WET for 2 compounds when one is Wet", () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
           Drivers: [
@@ -195,24 +195,44 @@ describe("TireService", () => {
         },
       });
 
-      expect(getCompoundName(0)).toBe("Hard");
-      expect(getCompoundName(1)).toBe("Wet");
+      expect(getCompoundName(0)).toBe("DRY");
+      expect(getCompoundName(1)).toBe("WET");
     });
 
-    it("should return Hard for unknown index", () => {
+    it("should uppercase single compound name", () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
           Drivers: [{ DriverTires: [{ TireIndex: 0, TireCompoundType: "Soft" }] }],
         },
       });
 
-      expect(getCompoundName(99)).toBe("Hard");
+      expect(getCompoundName(0)).toBe("SOFT");
     });
 
-    it("should return Hard when session info unavailable", () => {
+    it("should use actual names for 3+ compounds", () => {
+      mockGetSessionInfo.mockReturnValue({
+        DriverInfo: {
+          Drivers: [
+            {
+              DriverTires: [
+                { TireIndex: 0, TireCompoundType: "Soft" },
+                { TireIndex: 1, TireCompoundType: "Medium" },
+                { TireIndex: 2, TireCompoundType: "Hard" },
+              ],
+            },
+          ],
+        },
+      });
+
+      expect(getCompoundName(0)).toBe("Soft");
+      expect(getCompoundName(1)).toBe("Medium");
+      expect(getCompoundName(2)).toBe("Hard");
+    });
+
+    it("should return DRY when session info unavailable (single fallback)", () => {
       mockGetSessionInfo.mockReturnValue(null);
 
-      expect(getCompoundName(0)).toBe("Hard");
+      expect(getCompoundName(0)).toBe("DRY");
     });
   });
 
@@ -346,39 +366,39 @@ describe("TireService", () => {
         expect(result).toContain("data:image/svg+xml");
       });
 
-      it("should show Stay on Hard when player and pit service are both Hard", () => {
+      it("should show Stay on DRY when player and pit service are both dry", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 0 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Stay on");
-        expect(decoded).toContain("Hard");
+        expect(decoded).toContain("DRY");
       });
 
-      it("should show Change to Wet when player is Hard but pit service is Wet", () => {
+      it("should show Change to WET when player is dry but pit service is wet", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 1 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Change to");
-        expect(decoded).toContain("Wet");
+        expect(decoded).toContain("WET");
       });
 
-      it("should show Stay on Wet when player and pit service are both Wet", () => {
+      it("should show Stay on WET when player and pit service are both wet", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 1, pitSv: 1 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Stay on");
-        expect(decoded).toContain("Wet");
+        expect(decoded).toContain("WET");
       });
 
-      it("should show Change to Hard when player is Wet but pit service is Hard", () => {
+      it("should show Change to DRY when player is wet but pit service is dry", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 1, pitSv: 0 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Change to");
-        expect(decoded).toContain("Hard");
+        expect(decoded).toContain("DRY");
       });
 
-      it("should default to Stay on Hard when compound is not provided", () => {
+      it("should default to Stay on DRY when compound is not provided", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires);
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Stay on");
-        expect(decoded).toContain("Hard");
+        expect(decoded).toContain("DRY");
       });
 
       it("should use compound color in tire icon", () => {

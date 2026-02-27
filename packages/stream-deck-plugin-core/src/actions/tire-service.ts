@@ -37,7 +37,7 @@ const COMPOUND_COLORS: Record<string, string> = {
   wet: BLUE,
 };
 
-const DEFAULT_TIRES: DriverTire[] = [{ TireIndex: 0, TireCompoundType: "Hard" }];
+const DEFAULT_TIRES: DriverTire[] = [{ TireIndex: 0, TireCompoundType: "Dry" }];
 
 type DriverTire = { TireIndex: number; TireCompoundType: string };
 
@@ -82,14 +82,25 @@ export function getCompoundColor(compoundType: string): string {
 /**
  * @internal Exported for testing
  *
- * Get compound name from tire index using session info.
- * Falls back to "Hard" if index not found.
+ * Get display name for a compound index.
+ * - 1 compound: use its actual name, uppercased
+ * - 2 compounds with one "Wet": the non-wet compound is "DRY", the wet is "WET"
+ * - 3+ compounds: use the actual compound type name
  */
 export function getCompoundName(compound: number): string {
   const tires = getDriverTires();
   const tire = tires.find((t) => t.TireIndex === compound);
+  const typeName = tire?.TireCompoundType ?? "Dry";
 
-  return tire?.TireCompoundType ?? "Hard";
+  if (tires.length === 1) {
+    return typeName.toUpperCase();
+  }
+
+  if (tires.length === 2 && tires.some((t) => t.TireCompoundType.toLowerCase() === "wet")) {
+    return typeName.toLowerCase() === "wet" ? "WET" : "DRY";
+  }
+
+  return typeName;
 }
 
 /**
