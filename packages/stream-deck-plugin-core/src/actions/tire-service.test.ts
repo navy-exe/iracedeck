@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { buildTireToggleMacro, generateTireServiceSvg, getCompoundName, TireService } from "./tire-service.js";
+import {
+  buildTireToggleMacro,
+  generateTireIcon,
+  generateTireServiceSvg,
+  getCompoundColor,
+  getCompoundName,
+  getDriverTires,
+  TireService,
+} from "./tire-service.js";
 
 const {
   mockSendMessage,
@@ -9,6 +17,7 @@ const {
   mockGetCommands,
   mockGetConnectionStatus,
   mockGetCurrentTelemetry,
+  mockGetSessionInfo,
 } = vi.hoisted(() => ({
   mockSendMessage: vi.fn(() => true),
   mockPitTireCompound: vi.fn(() => true),
@@ -24,6 +33,7 @@ const {
   })),
   mockGetConnectionStatus: vi.fn(() => true),
   mockGetCurrentTelemetry: vi.fn(() => ({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 })),
+  mockGetSessionInfo: vi.fn(() => null),
 }));
 
 vi.mock("@elgato/streamdeck", () => ({
@@ -72,6 +82,7 @@ vi.mock("@iracedeck/stream-deck-shared", () => ({
     trace: vi.fn(),
   })),
   getCommands: mockGetCommands,
+  getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
   LogLevel: { Info: 2 },
   generateIconText: vi.fn(
     (opts: { text: string; fontSize: number; fill: string }) => `<text fill="${opts.fill}">${opts.text}</text>`,
@@ -96,17 +107,129 @@ describe("TireService", () => {
     mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
   });
 
+  describe("getDriverTires", () => {
+    it("should return tires from session info", () => {
+      mockGetSessionInfo.mockReturnValue({
+        DriverInfo: {
+          Drivers: [
+            {
+              DriverTires: [
+                { TireIndex: 0, TireCompoundType: "Hard" },
+                { TireIndex: 1, TireCompoundType: "Wet" },
+              ],
+            },
+          ],
+        },
+      });
+
+      expect(getDriverTires()).toEqual([
+        { TireIndex: 0, TireCompoundType: "Hard" },
+        { TireIndex: 1, TireCompoundType: "Wet" },
+      ]);
+    });
+
+    it("should return fallback when session info is null", () => {
+      mockGetSessionInfo.mockReturnValue(null);
+
+      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Hard" }]);
+    });
+
+    it("should return fallback when DriverTires is missing", () => {
+      mockGetSessionInfo.mockReturnValue({ DriverInfo: { Drivers: [{}] } });
+
+      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Hard" }]);
+    });
+
+    it("should return fallback when DriverTires is empty", () => {
+      mockGetSessionInfo.mockReturnValue({
+        DriverInfo: { Drivers: [{ DriverTires: [] }] },
+      });
+
+      expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Hard" }]);
+    });
+  });
+
+  describe("getCompoundColor", () => {
+    it("should return white for Hard", () => {
+      expect(getCompoundColor("Hard")).toBe("#ffffff");
+    });
+
+    it("should return yellow for Medium", () => {
+      expect(getCompoundColor("Medium")).toBe("#f1c40f");
+    });
+
+    it("should return red for Soft", () => {
+      expect(getCompoundColor("Soft")).toBe("#e74c3c");
+    });
+
+    it("should return green for Intermediate", () => {
+      expect(getCompoundColor("Intermediate")).toBe("#2ecc71");
+    });
+
+    it("should return blue for Wet", () => {
+      expect(getCompoundColor("Wet")).toBe("#3498db");
+    });
+
+    it("should be case-insensitive", () => {
+      expect(getCompoundColor("HARD")).toBe("#ffffff");
+      expect(getCompoundColor("wet")).toBe("#3498db");
+    });
+
+    it("should return gray for unknown types", () => {
+      expect(getCompoundColor("Unknown")).toBe("#888888");
+    });
+  });
+
   describe("getCompoundName", () => {
-    it("should return DRY for compound 0", () => {
-      expect(getCompoundName(0)).toBe("DRY");
+    it("should return compound type from session info by index", () => {
+      mockGetSessionInfo.mockReturnValue({
+        DriverInfo: {
+          Drivers: [
+            {
+              DriverTires: [
+                { TireIndex: 0, TireCompoundType: "Hard" },
+                { TireIndex: 1, TireCompoundType: "Wet" },
+              ],
+            },
+          ],
+        },
+      });
+
+      expect(getCompoundName(0)).toBe("Hard");
+      expect(getCompoundName(1)).toBe("Wet");
     });
 
-    it("should return WET for compound 1", () => {
-      expect(getCompoundName(1)).toBe("WET");
+    it("should return Hard for unknown index", () => {
+      mockGetSessionInfo.mockReturnValue({
+        DriverInfo: {
+          Drivers: [{ DriverTires: [{ TireIndex: 0, TireCompoundType: "Soft" }] }],
+        },
+      });
+
+      expect(getCompoundName(99)).toBe("Hard");
     });
 
-    it("should default to DRY for unknown values", () => {
-      expect(getCompoundName(99)).toBe("DRY");
+    it("should return Hard when session info unavailable", () => {
+      mockGetSessionInfo.mockReturnValue(null);
+
+      expect(getCompoundName(0)).toBe("Hard");
+    });
+  });
+
+  describe("generateTireIcon", () => {
+    it("should include compound color in SVG", () => {
+      const icon = generateTireIcon("Hard");
+      expect(icon).toContain("#ffffff");
+    });
+
+    it("should use blue for Wet compound", () => {
+      const icon = generateTireIcon("Wet");
+      expect(icon).toContain("#3498db");
+    });
+
+    it("should use gray for unknown compound", () => {
+      const icon = generateTireIcon("Unknown");
+      expect(icon).toContain("#888888");
     });
   });
 
@@ -203,44 +326,66 @@ describe("TireService", () => {
     describe("change-compound mode", () => {
       const compoundSettings = { action: "change-compound" as const, lf: true, rf: true, lr: true, rr: true };
 
+      beforeEach(() => {
+        mockGetSessionInfo.mockReturnValue({
+          DriverInfo: {
+            Drivers: [
+              {
+                DriverTires: [
+                  { TireIndex: 0, TireCompoundType: "Hard" },
+                  { TireIndex: 1, TireCompoundType: "Wet" },
+                ],
+              },
+            ],
+          },
+        });
+      });
+
       it("should generate a valid data URI", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 0 });
         expect(result).toContain("data:image/svg+xml");
       });
 
-      it("should show Stay on DRY when player and pit service are both dry", () => {
+      it("should show Stay on Hard when player and pit service are both Hard", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 0 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Stay on");
-        expect(decoded).toContain("DRY");
+        expect(decoded).toContain("Hard");
       });
 
-      it("should show Change to WET when player is dry but pit service is wet", () => {
+      it("should show Change to Wet when player is Hard but pit service is Wet", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 1 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Change to");
-        expect(decoded).toContain("WET");
+        expect(decoded).toContain("Wet");
       });
 
-      it("should show Stay on WET when player and pit service are both wet", () => {
+      it("should show Stay on Wet when player and pit service are both Wet", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 1, pitSv: 1 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Stay on");
-        expect(decoded).toContain("WET");
+        expect(decoded).toContain("Wet");
       });
 
-      it("should show Change to DRY when player is wet but pit service is dry", () => {
+      it("should show Change to Hard when player is Wet but pit service is Hard", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires, { player: 1, pitSv: 0 });
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Change to");
-        expect(decoded).toContain("DRY");
+        expect(decoded).toContain("Hard");
       });
 
-      it("should default to Stay on DRY when compound is not provided", () => {
+      it("should default to Stay on Hard when compound is not provided", () => {
         const result = generateTireServiceSvg(compoundSettings, noTires);
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("Stay on");
-        expect(decoded).toContain("DRY");
+        expect(decoded).toContain("Hard");
+      });
+
+      it("should use compound color in tire icon", () => {
+        const result = generateTireServiceSvg(compoundSettings, noTires, { player: 0, pitSv: 1 });
+        const decoded = decodeURIComponent(result);
+        // Wet compound uses blue
+        expect(decoded).toContain("#3498db");
       });
     });
 
@@ -308,7 +453,19 @@ describe("TireService", () => {
     });
 
     describe("change-compound mode", () => {
-      it("should toggle from dry to wet when pit service is dry", async () => {
+      it("should cycle from 0 to 1 with 2 compounds", async () => {
+        mockGetSessionInfo.mockReturnValue({
+          DriverInfo: {
+            Drivers: [
+              {
+                DriverTires: [
+                  { TireIndex: 0, TireCompoundType: "Hard" },
+                  { TireIndex: 1, TireCompoundType: "Wet" },
+                ],
+              },
+            ],
+          },
+        });
         mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
         await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
@@ -318,7 +475,19 @@ describe("TireService", () => {
         expect(mockSendMessage).not.toHaveBeenCalled();
       });
 
-      it("should toggle from wet to dry when pit service is wet", async () => {
+      it("should wrap from 1 to 0 with 2 compounds", async () => {
+        mockGetSessionInfo.mockReturnValue({
+          DriverInfo: {
+            Drivers: [
+              {
+                DriverTires: [
+                  { TireIndex: 0, TireCompoundType: "Hard" },
+                  { TireIndex: 1, TireCompoundType: "Wet" },
+                ],
+              },
+            ],
+          },
+        });
         mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 1 });
 
         await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
@@ -327,13 +496,59 @@ describe("TireService", () => {
         expect(mockPitTireCompound).toHaveBeenCalledWith(0);
       });
 
-      it("should default to switching to wet when compound is unknown", async () => {
+      it("should cycle through 3+ compounds", async () => {
+        mockGetSessionInfo.mockReturnValue({
+          DriverInfo: {
+            Drivers: [
+              {
+                DriverTires: [
+                  { TireIndex: 0, TireCompoundType: "Soft" },
+                  { TireIndex: 1, TireCompoundType: "Medium" },
+                  { TireIndex: 2, TireCompoundType: "Hard" },
+                ],
+              },
+            ],
+          },
+        });
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 1 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
+
+        expect(mockPitTireCompound).toHaveBeenCalledOnce();
+        expect(mockPitTireCompound).toHaveBeenCalledWith(2);
+      });
+
+      it("should wrap around with 3+ compounds", async () => {
+        mockGetSessionInfo.mockReturnValue({
+          DriverInfo: {
+            Drivers: [
+              {
+                DriverTires: [
+                  { TireIndex: 0, TireCompoundType: "Soft" },
+                  { TireIndex: 1, TireCompoundType: "Medium" },
+                  { TireIndex: 2, TireCompoundType: "Hard" },
+                ],
+              },
+            ],
+          },
+        });
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 2 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
+
+        expect(mockPitTireCompound).toHaveBeenCalledOnce();
+        expect(mockPitTireCompound).toHaveBeenCalledWith(0);
+      });
+
+      it("should default to cycling with fallback when session info unavailable", async () => {
+        mockGetSessionInfo.mockReturnValue(null);
         mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 } as any);
 
         await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
 
         expect(mockPitTireCompound).toHaveBeenCalledOnce();
-        expect(mockPitTireCompound).toHaveBeenCalledWith(1);
+        // Fallback has 1 compound, (0+1) % 1 = 0
+        expect(mockPitTireCompound).toHaveBeenCalledWith(0);
       });
     });
 
@@ -375,7 +590,19 @@ describe("TireService", () => {
       expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
     });
 
-    it("should toggle compound on dial down for change-compound", async () => {
+    it("should cycle compound on dial down for change-compound", async () => {
+      mockGetSessionInfo.mockReturnValue({
+        DriverInfo: {
+          Drivers: [
+            {
+              DriverTires: [
+                { TireIndex: 0, TireCompoundType: "Hard" },
+                { TireIndex: 1, TireCompoundType: "Wet" },
+              ],
+            },
+          ],
+        },
+      });
       mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
       await action.onDialDown(fakeEvent("a1", { action: "change-compound" }) as any);

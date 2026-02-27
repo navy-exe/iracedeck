@@ -168,6 +168,7 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
   private extractDisplayValue(settings: SessionInfoSettings, telemetry: TelemetryData | null): string {
     if (!telemetry) {
       if (settings.mode === "incidents") return "--";
+
       if (settings.mode === "laps") return "-/-";
 
       return "--:--";
@@ -184,6 +185,7 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
       const total = telemetry.SessionLapsTotal;
 
       if (lap === undefined || total === undefined) return "-/-";
+
       if (total >= UNLIMITED_LAPS) return `${lap}/\u221E`;
 
       return `${lap}/${total}`;
