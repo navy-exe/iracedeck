@@ -82,11 +82,70 @@
 	</head>
 	<body>
 		<sdpi-item label="Display Mode">
-			<sdpi-select setting="mode" default="incidents">
+			<sdpi-select id="mode-select" setting="mode" default="incidents">
 				<option value="incidents">Incident Points</option>
 				<option value="time-remaining">Time Remaining</option>
 				<option value="laps">Laps</option>
+				<option value="position">Position</option>
+				<option value="fuel">Fuel</option>
+				<option value="flags">Race Flags</option>
 			</sdpi-select>
 		</sdpi-item>
+
+		<sdpi-item id="position-settings" label="Show Total Cars" class="hidden">
+			<sdpi-checkbox setting="positionShowTotal"></sdpi-checkbox>
+		</sdpi-item>
+
+		<sdpi-item id="fuel-settings" label="Fuel Display" class="hidden">
+			<sdpi-select setting="fuelFormat" default="amount">
+				<option value="amount">Amount (L / gal)</option>
+				<option value="percentage">Percentage</option>
+			</sdpi-select>
+		</sdpi-item>
+
+		<script>
+			async function initialize() {
+				await customElements.whenDefined("sdpi-select");
+
+				const modeSelect = document.getElementById("mode-select");
+				if (!modeSelect) return;
+
+				updateVisibility(modeSelect.value || "incidents");
+
+				modeSelect.addEventListener("change", (ev) => updateVisibility(ev.target.value));
+				modeSelect.addEventListener("input", (ev) => updateVisibility(ev.target.value));
+
+				let lastMode = modeSelect.value || "incidents";
+				setInterval(() => {
+					const current = modeSelect.value;
+					if (current && current !== lastMode) {
+						lastMode = current;
+						updateVisibility(current);
+					}
+				}, 100);
+			}
+
+			function updateVisibility(mode) {
+				const positionSettings = document.getElementById("position-settings");
+				const fuelSettings = document.getElementById("fuel-settings");
+
+				if (positionSettings) {
+					positionSettings.classList.toggle("hidden", mode !== "position");
+				}
+				if (fuelSettings) {
+					fuelSettings.classList.toggle("hidden", mode !== "fuel");
+				}
+			}
+
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", initialize);
+			} else {
+				initialize();
+			}
+		</script>
+
+		<style>
+			.hidden { display: none !important; }
+		</style>
 	</body>
 </html>

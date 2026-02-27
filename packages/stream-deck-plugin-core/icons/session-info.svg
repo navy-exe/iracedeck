@@ -9,6 +9,6 @@
 
     <!-- Large centered value -->
     <text x="36" y="{{valueY}}" text-anchor="middle" dominant-baseline="central"
-          fill="#ffffff" font-family="Arial, sans-serif" font-size="{{valueFontSize}}" font-weight="bold">{{value}}</text>
+          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="{{valueFontSize}}" font-weight="bold">{{value}}</text>
   </g>
 </svg>

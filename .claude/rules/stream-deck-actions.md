@@ -91,6 +91,31 @@ Always include both scripts in PI HTML files:
 - `default` - Default key (e.g., "F1", "Ctrl+Shift+A")
 - Stores value as JSON string: `{"key":"f1","modifiers":[]}`
 
+### sdpi-checkbox Pitfalls
+
+**NEVER use `default="false"`** on `sdpi-checkbox`. HTML attributes are always strings, so `"false"` is truthy and the checkbox will render as checked:
+
+```html
+<!-- BAD: checkbox starts checked because "false" is a truthy string -->
+<sdpi-checkbox setting="myBool" default="false"></sdpi-checkbox>
+
+<!-- GOOD: omit default entirely — checkbox starts unchecked -->
+<sdpi-checkbox setting="myBool"></sdpi-checkbox>
+```
+
+**Zod boolean schema**: `z.coerce.boolean()` uses `Boolean(value)`, so `Boolean("false")` === `true`. Use a union+transform instead:
+
+```typescript
+// BAD: z.coerce.boolean() — "false" string becomes true
+positionShowTotal: z.coerce.boolean().default(false),
+
+// GOOD: explicit string-to-boolean transform
+positionShowTotal: z
+  .union([z.boolean(), z.string()])
+  .transform((val) => val === true || val === "true")
+  .default(false),
+```
+
 ### sdpi-select Event Handling
 
 **IMPORTANT**: `sdpi-select` fires `input` events, NOT standard `change` events. For reliable value change detection, use this pattern:
@@ -112,6 +137,10 @@ setInterval(() => {
 ```
 
 ### Conditional Visibility in Property Inspector
+
+Use this pattern to show/hide sub-settings based on a mode dropdown. Start hidden with `class="hidden"` and toggle via JavaScript.
+
+Reference implementation: `stream-deck-plugin-core/src/pi/session-info.ejs` (shows position/fuel sub-settings only when their mode is selected).
 
 sdpi-components are web components. To show/hide elements based on select values:
 

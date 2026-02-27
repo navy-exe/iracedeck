@@ -1,5 +1,5 @@
 import streamDeck, { action, DidReceiveSettingsEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import type { TelemetryData } from "@iracedeck/iracing-sdk";
+import { DisplayUnits, Flags, hasFlag, type TelemetryData } from "@iracedeck/iracing-sdk";
 import {
   ConnectionStateAwareAction,
   createSDLogger,
@@ -17,17 +17,92 @@ const BACKGROUND_FLASH = "#e74c3c";
 const FLASH_INTERVAL_MS = 250;
 const FLASH_STEPS = 12; // on-off x6 (6 red flashes)
 
+const PULSE_INTERVAL_MS = 500;
+
 /** iRacing uses 604800s (7 days) as the sentinel for unlimited session time */
 const UNLIMITED_TIME_THRESHOLD = 604800;
 
 /** iRacing uses 32767 as the sentinel for unlimited laps */
 const UNLIMITED_LAPS = 32767;
 
+const LITERS_PER_GALLON = 3.78541;
+
 const SessionInfoSettings = z.object({
-  mode: z.enum(["incidents", "time-remaining", "laps"]).default("incidents"),
+  mode: z.enum(["incidents", "time-remaining", "laps", "position", "fuel", "flags"]).default("incidents"),
+  positionShowTotal: z
+    .union([z.boolean(), z.string()])
+    .transform((val) => val === true || val === "true")
+    .default(false),
+  fuelFormat: z.enum(["amount", "percentage"]).default("amount"),
 });
 
 type SessionInfoSettings = z.infer<typeof SessionInfoSettings>;
+
+/**
+ * @internal Exported for testing
+ *
+ * Describes a resolved race flag with its visual properties.
+ */
+export interface FlagInfo {
+  label: string;
+  color: string;
+  textColor: string;
+  /** Whether this flag should pulse continuously (black, meatball) */
+  pulse: boolean;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Flag definitions in priority order (highest priority first).
+ * When multiple flags are active, the first match wins.
+ */
+export const FLAG_DEFINITIONS: ReadonlyArray<{ check: (flags: number) => boolean; info: FlagInfo }> = [
+  { check: (f) => hasFlag(f, Flags.Red), info: { label: "RED", color: "#e74c3c", textColor: "#ffffff", pulse: false } },
+  {
+    check: (f) => hasFlag(f, Flags.Black) || hasFlag(f, Flags.Disqualify),
+    info: { label: "BLACK", color: "#1a1a1a", textColor: "#ffffff", pulse: true },
+  },
+  {
+    check: (f) => hasFlag(f, Flags.Repair),
+    info: { label: "REPAIR", color: "#e67e22", textColor: "#ffffff", pulse: true },
+  },
+  {
+    check: (f) => hasFlag(f, Flags.Yellow) || hasFlag(f, Flags.Caution) || hasFlag(f, Flags.CautionWaving),
+    info: { label: "YELLOW", color: "#f1c40f", textColor: "#1a1a1a", pulse: false },
+  },
+  {
+    check: (f) => hasFlag(f, Flags.Blue),
+    info: { label: "BLUE", color: "#3498db", textColor: "#ffffff", pulse: false },
+  },
+  {
+    check: (f) => hasFlag(f, Flags.White),
+    info: { label: "WHITE", color: "#e8e8e8", textColor: "#1a1a1a", pulse: false },
+  },
+  {
+    check: (f) => hasFlag(f, Flags.Checkered),
+    info: { label: "FINISH", color: "#1a1a1a", textColor: "#ffffff", pulse: false },
+  },
+  {
+    check: (f) => hasFlag(f, Flags.Green),
+    info: { label: "GREEN", color: "#2ecc71", textColor: "#ffffff", pulse: false },
+  },
+];
+
+/**
+ * @internal Exported for testing
+ *
+ * Resolves the highest-priority active flag from the session flags bitfield.
+ */
+export function resolveActiveFlag(sessionFlags: number | undefined): FlagInfo | null {
+  if (sessionFlags === undefined) return null;
+
+  for (const def of FLAG_DEFINITIONS) {
+    if (def.check(sessionFlags)) return def.info;
+  }
+
+  return null;
+}
 
 /**
  * @internal Exported for testing
@@ -53,18 +128,51 @@ export function formatSessionTime(seconds: number): string {
 /**
  * @internal Exported for testing
  *
+ * Formats a fuel amount for display. Respects the player's DisplayUnits setting.
+ */
+export function formatFuelAmount(fuelLevel: number, displayUnits: number | undefined): string {
+  if (displayUnits === DisplayUnits.English) {
+    const gallons = fuelLevel / LITERS_PER_GALLON;
+
+    return `${gallons.toFixed(1)} gal`;
+  }
+
+  return `${fuelLevel.toFixed(1)} L`;
+}
+
+/**
+ * @internal Exported for testing
+ *
  * Generates an SVG data URI for the session info display.
  */
-export function generateSessionInfoSvg(settings: SessionInfoSettings, value: string, isFlashing: boolean): string {
+export function generateSessionInfoSvg(
+  settings: SessionInfoSettings,
+  value: string,
+  isFlashing: boolean,
+  colorOverride?: { background: string; text: string },
+): string {
   const titleLabels: Record<string, string> = {
     incidents: "INCIDENTS",
     "time-remaining": "TIME LEFT",
     laps: "LAPS",
+    position: "POSITION",
+    fuel: "FUEL",
+    flags: "FLAGS",
   };
   const titleLabel = titleLabels[settings.mode] ?? "INCIDENTS";
   const valueFontSize = settings.mode === "incidents" ? "24" : value.length > 5 ? "14" : "18";
   const valueY = settings.mode === "incidents" ? "52" : "50";
-  const backgroundColor = isFlashing ? BACKGROUND_FLASH : BACKGROUND_DEFAULT;
+
+  let backgroundColor: string;
+  let textColor: string;
+
+  if (colorOverride) {
+    backgroundColor = colorOverride.background;
+    textColor = colorOverride.text;
+  } else {
+    backgroundColor = isFlashing ? BACKGROUND_FLASH : BACKGROUND_DEFAULT;
+    textColor = "#ffffff";
+  }
 
   const svg = renderIconTemplate(sessionInfoTemplate, {
     backgroundColor,
@@ -72,6 +180,7 @@ export function generateSessionInfoSvg(settings: SessionInfoSettings, value: str
     value,
     valueFontSize,
     valueY,
+    textColor,
   });
 
   return svgToDataUri(svg);
@@ -79,8 +188,10 @@ export function generateSessionInfoSvg(settings: SessionInfoSettings, value: str
 
 /**
  * Session Info Action
- * Displays live telemetry data: incident points or session time remaining.
+ * Displays live telemetry data: incident points, session time remaining,
+ * laps, position, fuel level, or race flags.
  * Incident count increase triggers a red flash effect.
+ * Black and meatball flags trigger a continuous pulse effect.
  */
 @action({ UUID: "com.iracedeck.sd.core.session-info" })
 export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings> {
@@ -101,6 +212,12 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
   /** Whether a context is currently in flash state */
   private flashStates = new Map<string, boolean>();
 
+  /** Last resolved flag key per context for change detection */
+  private lastFlagKey = new Map<string, string>();
+
+  /** Active flag pulse interval IDs per context */
+  private flagPulseTimers = new Map<string, ReturnType<typeof setInterval>>();
+
   override async onWillAppear(ev: WillAppearEvent<SessionInfoSettings>): Promise<void> {
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
@@ -119,19 +236,23 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
 
   override async onWillDisappear(ev: WillDisappearEvent<SessionInfoSettings>): Promise<void> {
     this.cancelFlash(ev.action.id);
+    this.cancelFlagPulse(ev.action.id);
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.activeContexts.delete(ev.action.id);
     this.lastState.delete(ev.action.id);
     this.lastIncidentCount.delete(ev.action.id);
     this.flashStates.delete(ev.action.id);
+    this.lastFlagKey.delete(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<SessionInfoSettings>): Promise<void> {
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
     this.cancelFlash(ev.action.id);
+    this.cancelFlagPulse(ev.action.id);
     this.lastIncidentCount.delete(ev.action.id);
+    this.lastFlagKey.delete(ev.action.id);
     this.lastState.delete(ev.action.id);
     await this.updateDisplay(ev, settings);
   }
@@ -152,16 +273,25 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     const value = this.extractDisplayValue(settings, telemetry);
     const isFlashing = this.flashStates.get(ev.action.id) ?? false;
 
-    const svgDataUri = generateSessionInfoSvg(settings, value, isFlashing);
+    // Resolve flag colors for flags mode
+    const colorOverride = this.resolveFlagColorOverride(settings, telemetry);
+
+    const svgDataUri = generateSessionInfoSvg(settings, value, isFlashing, colorOverride);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
 
-    const stateKey = this.buildStateKey(settings, value, isFlashing);
+    const stateKey = this.buildStateKey(settings, value, isFlashing, colorOverride?.background);
     this.lastState.set(ev.action.id, stateKey);
 
     // Initialize incident count baseline
     if (settings.mode === "incidents" && telemetry?.PlayerCarMyIncidentCount !== undefined) {
       this.lastIncidentCount.set(ev.action.id, telemetry.PlayerCarMyIncidentCount);
+    }
+
+    // Initialize flag baseline
+    if (settings.mode === "flags") {
+      const flagInfo = resolveActiveFlag(telemetry?.SessionFlags);
+      this.lastFlagKey.set(ev.action.id, flagInfo?.label ?? "none");
     }
   }
 
@@ -170,6 +300,12 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
       if (settings.mode === "incidents") return "--";
 
       if (settings.mode === "laps") return "-/-";
+
+      if (settings.mode === "position") return settings.positionShowTotal ? "P-/-" : "P-";
+
+      if (settings.mode === "fuel") return settings.fuelFormat === "percentage" ? "--%" : "-- L";
+
+      if (settings.mode === "flags") return "--";
 
       return "--:--";
     }
@@ -191,6 +327,43 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
       return `${lap}/${total}`;
     }
 
+    if (settings.mode === "position") {
+      const pos = telemetry.PlayerCarPosition;
+
+      if (pos === undefined) return settings.positionShowTotal ? "P-/-" : "P-";
+
+      if (settings.positionShowTotal) {
+        const totalCars = this.countActiveCars(telemetry);
+
+        return totalCars > 0 ? `P${pos}/${totalCars}` : `P${pos}`;
+      }
+
+      return `P${pos}`;
+    }
+
+    if (settings.mode === "fuel") {
+      if (settings.fuelFormat === "percentage") {
+        const pct = telemetry.FuelLevelPct;
+
+        if (pct === undefined) return "--%";
+
+        return `${Math.round(pct * 100)}%`;
+      }
+
+      const level = telemetry.FuelLevel;
+
+      if (level === undefined) return "-- L";
+
+      return formatFuelAmount(level, telemetry.DisplayUnits);
+    }
+
+    if (settings.mode === "flags") {
+      const flagInfo = resolveActiveFlag(telemetry.SessionFlags);
+
+      return flagInfo ? flagInfo.label : "--";
+    }
+
+    // time-remaining (default)
     const remain = telemetry.SessionTimeRemain;
 
     if (remain === undefined) return "--:--";
@@ -200,8 +373,34 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     return formatSessionTime(remain);
   }
 
-  private buildStateKey(settings: SessionInfoSettings, value: string, isFlashing: boolean): string {
-    return `${settings.mode}|${value}|${isFlashing}`;
+  private countActiveCars(telemetry: TelemetryData): number {
+    const positions = telemetry.CarIdxPosition;
+
+    if (!positions || !Array.isArray(positions)) return 0;
+
+    return positions.filter((p) => typeof p === "number" && p > 0).length;
+  }
+
+  private resolveFlagColorOverride(
+    settings: SessionInfoSettings,
+    telemetry: TelemetryData | null,
+  ): { background: string; text: string } | undefined {
+    if (settings.mode !== "flags") return undefined;
+
+    const flagInfo = resolveActiveFlag(telemetry?.SessionFlags);
+
+    if (!flagInfo) return undefined;
+
+    return { background: flagInfo.color, text: flagInfo.textColor };
+  }
+
+  private buildStateKey(
+    settings: SessionInfoSettings,
+    value: string,
+    isFlashing: boolean,
+    bgOverride?: string,
+  ): string {
+    return `${settings.mode}|${value}|${isFlashing}|${bgOverride || ""}`;
   }
 
   private async updateDisplayFromTelemetry(
@@ -223,14 +422,43 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
       this.lastIncidentCount.set(contextId, currentCount);
     }
 
+    // Check for flag changes
+    if (settings.mode === "flags") {
+      const flagInfo = resolveActiveFlag(telemetry?.SessionFlags);
+      const flagKey = flagInfo?.label ?? "none";
+      const lastKey = this.lastFlagKey.get(contextId);
+
+      if (flagKey !== lastKey) {
+        this.logger.info("Flag changed");
+        this.logger.debug(`Flag: ${lastKey} -> ${flagKey}`);
+        this.lastFlagKey.set(contextId, flagKey);
+        this.cancelFlagPulse(contextId);
+        this.cancelFlash(contextId);
+
+        if (flagInfo?.pulse) {
+          this.startFlagPulse(contextId, settings, flagInfo);
+
+          return;
+        } else if (lastKey !== undefined && flagInfo) {
+          this.startFlagFlash(contextId, settings, flagInfo);
+
+          return;
+        }
+      }
+
+      // If pulse or flash is active, let the timer handle rendering
+      if (this.flagPulseTimers.has(contextId) || this.flashTimers.has(contextId)) return;
+    }
+
     const value = this.extractDisplayValue(settings, telemetry);
     const isFlashing = this.flashStates.get(contextId) ?? false;
-    const stateKey = this.buildStateKey(settings, value, isFlashing);
+    const colorOverride = this.resolveFlagColorOverride(settings, telemetry);
+    const stateKey = this.buildStateKey(settings, value, isFlashing, colorOverride?.background);
     const lastStateKey = this.lastState.get(contextId);
 
     if (lastStateKey !== stateKey) {
       this.lastState.set(contextId, stateKey);
-      const svgDataUri = generateSessionInfoSvg(settings, value, isFlashing);
+      const svgDataUri = generateSessionInfoSvg(settings, value, isFlashing, colorOverride);
       await this.updateKeyImage(contextId, svgDataUri);
     }
   }
@@ -274,6 +502,85 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     doStep();
   }
 
+  private startFlagFlash(contextId: string, settings: SessionInfoSettings, flagInfo: FlagInfo): void {
+    this.cancelFlash(contextId);
+
+    let step = 0;
+
+    const doStep = () => {
+      if (!this.activeContexts.has(contextId)) return;
+
+      const showFlagColor = step % 2 === 0;
+      this.flashStates.set(contextId, showFlagColor);
+
+      const telemetry = this.sdkController.getCurrentTelemetry();
+      const value = this.extractDisplayValue(settings, telemetry);
+      const colorOverride = showFlagColor ? { background: flagInfo.color, text: flagInfo.textColor } : undefined;
+      const stateKey = this.buildStateKey(settings, value, showFlagColor, colorOverride?.background);
+      this.lastState.set(contextId, stateKey);
+
+      const svgDataUri = generateSessionInfoSvg(settings, value, showFlagColor, colorOverride);
+      this.updateKeyImage(contextId, svgDataUri);
+
+      step++;
+
+      if (step < FLASH_STEPS) {
+        this.flashTimers.set(contextId, setTimeout(doStep, FLASH_INTERVAL_MS));
+      } else {
+        // Flash complete — settle on flag color
+        this.flashStates.set(contextId, false);
+        this.flashTimers.delete(contextId);
+
+        const finalTelemetry = this.sdkController.getCurrentTelemetry();
+        const finalValue = this.extractDisplayValue(settings, finalTelemetry);
+        const finalOverride = { background: flagInfo.color, text: flagInfo.textColor };
+        const finalStateKey = this.buildStateKey(settings, finalValue, false, finalOverride.background);
+        this.lastState.set(contextId, finalStateKey);
+
+        const finalSvg = generateSessionInfoSvg(settings, finalValue, false, finalOverride);
+        this.updateKeyImage(contextId, finalSvg);
+      }
+    };
+
+    doStep();
+  }
+
+  private startFlagPulse(contextId: string, settings: SessionInfoSettings, flagInfo: FlagInfo): void {
+    this.cancelFlagPulse(contextId);
+
+    // Show flag color immediately
+    const telemetry = this.sdkController.getCurrentTelemetry();
+    const value = this.extractDisplayValue(settings, telemetry);
+    const colorOverride = { background: flagInfo.color, text: flagInfo.textColor };
+    const stateKey = this.buildStateKey(settings, value, true, colorOverride.background);
+    this.lastState.set(contextId, stateKey);
+    const svgDataUri = generateSessionInfoSvg(settings, value, false, colorOverride);
+    this.updateKeyImage(contextId, svgDataUri);
+
+    let pulseOn = true;
+
+    const timer = setInterval(() => {
+      if (!this.activeContexts.has(contextId)) {
+        this.cancelFlagPulse(contextId);
+
+        return;
+      }
+
+      pulseOn = !pulseOn;
+
+      const currentTelemetry = this.sdkController.getCurrentTelemetry();
+      const currentValue = this.extractDisplayValue(settings, currentTelemetry);
+      const override = pulseOn ? { background: flagInfo.color, text: flagInfo.textColor } : undefined;
+      const key = this.buildStateKey(settings, currentValue, pulseOn, override?.background);
+      this.lastState.set(contextId, key);
+
+      const svg = generateSessionInfoSvg(settings, currentValue, pulseOn, override);
+      this.updateKeyImage(contextId, svg);
+    }, PULSE_INTERVAL_MS);
+
+    this.flagPulseTimers.set(contextId, timer);
+  }
+
   private cancelFlash(contextId: string): void {
     const timer = this.flashTimers.get(contextId);
 
@@ -283,5 +590,14 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     }
 
     this.flashStates.set(contextId, false);
+  }
+
+  private cancelFlagPulse(contextId: string): void {
+    const timer = this.flagPulseTimers.get(contextId);
+
+    if (timer) {
+      clearInterval(timer);
+      this.flagPulseTimers.delete(contextId);
+    }
   }
 }

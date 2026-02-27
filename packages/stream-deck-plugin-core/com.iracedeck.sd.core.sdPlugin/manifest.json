@@ -590,7 +590,7 @@
       "Name": "Session Info",
       "UUID": "com.iracedeck.sd.core.session-info",
       "Icon": "imgs/actions/session-info/icon",
-      "Tooltip": "Display live session data (incident points, time remaining)",
+      "Tooltip": "Display live session data (incidents, time, laps, position, fuel, flags)",
       "PropertyInspectorPath": "ui/session-info.html",
       "Controllers": ["Keypad"],
       "States": [
