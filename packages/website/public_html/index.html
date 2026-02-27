@@ -22,11 +22,10 @@
       iRaceDeck
     </a>
     <ul class="nav-links">
-      <li><a href="#plugins">Plugins</a></li>
       <li><a href="#features">Features</a></li>
       <li><a href="#support">Support</a></li>
       <li><a href="#contributing">Contribute</a></li>
-      <li><a href="#download">Download</a></li>
+      <li><a href="#install">Install</a></li>
       <li><a href="https://github.com/niklam/iracedeck" target="_blank">GitHub</a></li>
     </ul>
   </nav>
@@ -37,15 +36,15 @@
         <span class="hero-badge">Stream Deck Plugin</span>
         <h1>Control <span>iRacing</span><br>From Your Deck</h1>
         <p class="hero-description">
-          Put essential race controls at your fingertips. Pit commands, telemetry,
-          chat macros — one tap away without leaving the cockpit.
+          Pit stops, car setup, cameras, replay, telemetry, chat — hundreds
+          of controls, all one tap away without leaving the cockpit.
         </p>
         <div class="hero-buttons">
-          <a href="#download" class="btn btn-primary">
+          <a href="#install" class="btn btn-primary">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
             </svg>
-            Download
+            Install for Stream Deck
           </a>
           <a href="https://github.com/niklam/iracedeck" class="btn btn-secondary" target="_blank">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -56,357 +55,122 @@
           </a>
         </div>
       </div>
-
-      <div class="hero-visual">
-        <div class="deck-glow"></div>
-        <div class="deck-container">
-          <div class="deck-frame">
-            <div class="deck-buttons">
-              <!-- Row 1: Telemetry & Display -->
-              <div class="deck-btn svg-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-                  <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#00d4ff" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
-                  <line x1="36" y1="12" x2="36" y2="17" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                  <line x1="16" y1="32" x2="21" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                  <line x1="56" y1="32" x2="51" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                  <line x1="36" y1="32" x2="50" y2="20" stroke="#ff4757" stroke-width="2.5" stroke-linecap="round"/>
-                  <circle cx="36" cy="32" r="4" fill="#ff4757"/>
-                  <circle cx="36" cy="32" r="2.5" fill="#fff"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#fff">187</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn green-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#2ecc71" stroke-width="2.5"/>
-                  <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="#2ecc71" stroke-width="1.5"/>
-                  <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-                  <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="#2ecc71"/>
-                  <line x1="28" y1="22" x2="28" y2="32" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-                  <line x1="23" y1="27" x2="33" y2="27" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2ecc71">+5 L</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn red-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#e74c3c" stroke-width="2.5"/>
-                  <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="#e74c3c" stroke-width="1.5"/>
-                  <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
-                  <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="#e74c3c"/>
-                  <line x1="23" y1="27" x2="33" y2="27" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#e74c3c">-5 L</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn orange-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <circle cx="36" cy="21" r="13" fill="none" stroke="#FF8C00" stroke-width="3"/>
-                  <circle cx="36" cy="21" r="6" fill="none" stroke="#FF8C00" stroke-width="2"/>
-                  <line x1="36" y1="8" x2="36" y2="11" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="36" y1="31" x2="36" y2="34" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="23" y1="21" x2="26" y2="21" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="46" y1="21" x2="49" y2="21" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#FF8C00">DRY</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn blue-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linejoin="round"/>
-                  <text x="36" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#4a90d9">Sorry!</text>
-                </svg>
-              </div>
-
-              <!-- Row 2: Pit Controls -->
-              <div class="deck-btn svg-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <rect x="26" y="6" width="20" height="32" rx="3" fill="none" stroke="#2ecc71" stroke-width="2"/>
-                  <rect x="14" y="8" width="8" height="10" rx="1.5" fill="#2ecc71" stroke="#2ecc71" stroke-width="1"/>
-                  <rect x="50" y="8" width="8" height="10" rx="1.5" fill="#2ecc71" stroke="#2ecc71" stroke-width="1"/>
-                  <rect x="14" y="26" width="8" height="10" rx="1.5" fill="#2ecc71" stroke="#2ecc71" stroke-width="1"/>
-                  <rect x="50" y="26" width="8" height="10" rx="1.5" fill="#2ecc71" stroke="#2ecc71" stroke-width="1"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2ecc71">ALL</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <rect x="10" y="25" width="40" height="5" rx="2" transform="rotate(-45 28 22)" fill="#ffcc00"/>
-                  <path d="M48,8 L50,14 L52,8 L50,2 Z M44,8 L50,10 L56,8 L50,6 Z" fill="#ffcc00"/>
-                  <path d="M56,24 L57.5,28 L59,24 L57.5,20 Z M53.5,24 L57.5,25.5 L61.5,24 L57.5,22.5 Z" fill="#ffcc00"/>
-                  <path d="M38,18 L39,21 L40,18 L39,15 Z M36,18 L39,19 L42,18 L39,17 Z" fill="#ffcc00"/>
-                  <circle cx="28" cy="6" r="2" fill="#ffcc00"/>
-                  <circle cx="60" cy="34" r="1.5" fill="#ffcc00"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#ffcc00">REPAIR</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#2ecc71" stroke-width="2.5"/>
-                  <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="#2ecc71" stroke-width="1.5"/>
-                  <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-                  <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="#2ecc71"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2ecc71">42.5 L</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn blue-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <circle cx="36" cy="21" r="13" fill="none" stroke="#3498db" stroke-width="3"/>
-                  <circle cx="36" cy="21" r="6" fill="none" stroke="#3498db" stroke-width="2"/>
-                  <line x1="36" y1="8" x2="36" y2="11" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="36" y1="31" x2="36" y2="34" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="23" y1="21" x2="26" y2="21" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="46" y1="21" x2="49" y2="21" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="27" y1="12" x2="29" y2="14" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="43" y1="28" x2="45" y2="30" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="45" y1="12" x2="43" y2="14" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="29" y1="28" x2="27" y2="30" stroke="#3498db" stroke-width="2" stroke-linecap="round"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3498db">WET</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn blue-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linejoin="round"/>
-                  <text x="36" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#4a90d9">P1 IN</text>
-                </svg>
-              </div>
-
-              <!-- Row 3: Gear & Chat -->
-              <div class="deck-btn svg-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <line x1="18" y1="6" x2="18" y2="21" stroke="#4a90d9" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="30" y1="6" x2="30" y2="36" stroke="#4a90d9" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="42" y1="6" x2="42" y2="36" stroke="#4a90d9" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="54" y1="6" x2="54" y2="36" stroke="#4a90d9" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="18" y1="21" x2="54" y2="21" stroke="#4a90d9" stroke-width="3" stroke-linecap="round"/>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#4a90d9">4</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn blue-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linejoin="round"/>
-                  <text x="36" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#4a90d9">GG!</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn blue-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linejoin="round"/>
-                  <text x="36" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#4a90d9">GL HF</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <circle cx="36" cy="21" r="10" fill="none" stroke="#FFD700" stroke-width="2.5"/>
-                  <g stroke="#FFD700" stroke-width="2" stroke-linecap="round">
-                    <line x1="36" y1="5" x2="36" y2="8"/>
-                    <line x1="36" y1="34" x2="36" y2="37"/>
-                    <line x1="20" y1="21" x2="23" y2="21"/>
-                    <line x1="49" y1="21" x2="52" y2="21"/>
-                    <line x1="24.7" y1="9.7" x2="26.8" y2="11.8"/>
-                    <line x1="45.2" y1="30.2" x2="47.3" y2="32.3"/>
-                    <line x1="47.3" y1="9.7" x2="45.2" y2="11.8"/>
-                    <line x1="26.8" y1="30.2" x2="24.7" y2="32.3"/>
-                  </g>
-                  <text x="36" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#FFD700">CLEAR</text>
-                </svg>
-              </div>
-              <div class="deck-btn svg-btn blue-glow">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-                  <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linejoin="round"/>
-                  <text x="36" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#4a90d9">Thanks!</text>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
-  <section class="plugins" id="plugins">
-    <div class="features-header">
-      <p class="section-label">Three Plugins, One Suite</p>
-      <h2 class="section-title">Modular Design</h2>
+  <section class="actions" id="features">
+    <div class="section-header">
+      <p class="section-label">8 Categories, Hundreds of Controls</p>
+      <h2 class="section-title">Everything You Need</h2>
     </div>
 
-    <div class="plugins-grid">
-      <div class="plugin-card">
-        <div class="plugin-header">
-          <div class="plugin-icon pit-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-              <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="#2ecc71" stroke-width="2.5"/>
-              <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="#2ecc71" stroke-width="1.5"/>
-              <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="#2ecc71"/>
-              <line x1="28" y1="22" x2="28" y2="32" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="23" y1="27" x2="33" y2="27" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="plugin-badge pit-badge">Pit Service</div>
-        </div>
-        <h3 class="plugin-title">Pit Plugin</h3>
-        <p class="plugin-description">
-          Complete pit stop control at your fingertips. Add or reduce fuel with precision,
-          change tires, switch compounds between dry and wet, and request fast repairs.
-        </p>
-        <ul class="plugin-features">
-          <li>Fuel adjustment (+/- with configurable amounts)</li>
-          <li>Tire change with individual wheel control</li>
-          <li>Dry/Wet compound switching</li>
-          <li>Fast repair request</li>
-          <li>Live fuel-to-add display</li>
-        </ul>
-      </div>
-
-      <div class="plugin-card">
-        <div class="plugin-header">
-          <div class="plugin-icon comms-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-              <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="plugin-badge comms-badge">Communication</div>
-        </div>
-        <h3 class="plugin-title">Comms Plugin</h3>
-        <p class="plugin-description">
-          Quick chat macros for rapid race communication. Send pre-configured messages
-          with a single tap — apologize, congratulate, or coordinate with your team.
-        </p>
-        <ul class="plugin-features">
-          <li>Customizable chat messages</li>
-          <li>One-tap message sending</li>
-          <li>"Sorry!", "GG!", "GL HF" and more</li>
-          <li>Team radio integration</li>
-          <li>No typing required mid-race</li>
-        </ul>
-      </div>
-
-      <div class="plugin-card">
-        <div class="plugin-header">
-          <div class="plugin-icon main-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-              <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#333" stroke-width="5" stroke-linecap="round"/>
-              <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="#00d4ff" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
-              <line x1="36" y1="12" x2="36" y2="17" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="16" y1="32" x2="21" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="56" y1="32" x2="51" y2="32" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="36" y1="32" x2="50" y2="20" stroke="#ff4757" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="36" cy="32" r="4" fill="#ff4757"/>
-              <circle cx="36" cy="32" r="2.5" fill="#fff"/>
-            </svg>
-          </div>
-          <div class="plugin-badge main-badge">Core</div>
-        </div>
-        <h3 class="plugin-title">Main Plugin</h3>
-        <p class="plugin-description">
-          Essential telemetry displays and vehicle information. See your speed, gear,
-          weather conditions, and more — all updating in real-time on your Stream Deck.
-        </p>
-        <ul class="plugin-features">
-          <li>Speed display (km/h or mph)</li>
-          <li>Current gear indicator</li>
-          <li>Weather/sky conditions</li>
-          <li>Real-time telemetry updates</li>
-          <li>Direct SDK integration</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section class="features" id="features">
-    <div class="features-header">
-      <p class="section-label">Why iRaceDeck</p>
-      <h2 class="section-title">Built for Racers</h2>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon svg-feature-icon green-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-            <rect x="18" y="6" width="20" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
-            <rect x="22" y="10" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M38 14 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M48 32 l6 -2 v8 l-6 -2 z" fill="currentColor"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">Pit Service Control</h3>
-        <p class="feature-description">
-          Request fuel, tires, fast repair, or tow with a single tap.
-          No fumbling with black boxes mid-race.
-        </p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon svg-feature-icon cyan-icon">
+    <div class="actions-grid">
+      <div class="action-category-card">
+        <div class="category-icon cyan-bg">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
             <path d="M16 32 A20 20 0 1 1 56 32" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
             <line x1="36" y1="32" x2="50" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
             <circle cx="36" cy="32" r="4" fill="currentColor"/>
           </svg>
         </div>
-        <h3 class="feature-title">Live Telemetry</h3>
-        <p class="feature-description">
-          Display speed, gear, fuel remaining, and more
-          directly on your Stream Deck buttons.
-        </p>
+        <h3 class="category-title">Display & Session</h3>
+        <p class="category-description">Live session data — incidents, laps, position, fuel, flags</p>
+        <span class="category-count">1 action</span>
       </div>
 
-      <div class="feature-card">
-        <div class="feature-icon svg-feature-icon blue-icon">
+      <div class="action-category-card">
+        <div class="category-icon orange-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="14" y="14" width="44" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+            <line x1="14" y1="26" x2="58" y2="26" stroke="currentColor" stroke-width="2"/>
+            <circle cx="24" cy="38" r="4" fill="currentColor"/>
+            <circle cx="48" cy="38" r="4" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="category-title">Driving Controls</h3>
+        <p class="category-description">Audio, black boxes, look direction, car control</p>
+        <span class="category-count">4 actions</span>
+      </div>
+
+      <div class="action-category-card">
+        <div class="category-icon blue-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <circle cx="36" cy="26" r="16" fill="none" stroke="currentColor" stroke-width="3"/>
+            <line x1="36" y1="10" x2="36" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="36" y1="26" x2="36" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="36" y1="26" x2="44" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="36" cy="26" r="2.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="category-title">Cockpit & Interface</h3>
+        <p class="category-description">Wipers, FFB, delta splits, telemetry, UI toggles</p>
+        <span class="category-count">4 actions</span>
+      </div>
+
+      <div class="action-category-card">
+        <div class="category-icon red-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <circle cx="36" cy="24" r="12" fill="none" stroke="currentColor" stroke-width="3"/>
+            <circle cx="36" cy="24" r="5" fill="currentColor"/>
+            <path d="M22 40 L16 48 L16 52 L56 52 L56 48 L50 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="category-title">View & Camera</h3>
+        <p class="category-description">FOV, replay, camera cycle/focus, broadcast tools</p>
+        <span class="category-count">8 actions</span>
+      </div>
+
+      <div class="action-category-card">
+        <div class="category-icon yellow-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <circle cx="36" cy="26" r="14" fill="none" stroke="currentColor" stroke-width="3"/>
+            <circle cx="36" cy="26" r="6" fill="currentColor"/>
+            <rect x="26" y="44" width="20" height="6" rx="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="category-title">Media</h3>
+        <p class="category-description">Video recording, screenshots, texture management</p>
+        <span class="category-count">1 action</span>
+      </div>
+
+      <div class="action-category-card">
+        <div class="category-icon green-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="10" width="20" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <rect x="22" y="14" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M38 18 h6 a4 4 0 0 1 4 4 v14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M48 36 l6 -2 v8 l-6 -2 z" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="category-title">Pit Service</h3>
+        <p class="category-description">Fuel, tires, compounds, tearoff, fast repair</p>
+        <span class="category-count">3 actions</span>
+      </div>
+
+      <div class="action-category-card">
+        <div class="category-icon purple-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <path d="M18 44 L36 12 L54 44" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <line x1="24" y1="36" x2="48" y2="36" stroke="currentColor" stroke-width="2"/>
+            <line x1="28" y1="28" x2="44" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/>
+          </svg>
+        </div>
+        <h3 class="category-title">Car Setup</h3>
+        <p class="category-description">Brakes, chassis, aero, engine, fuel mix, hybrid/ERS</p>
+        <span class="category-count">6 actions</span>
+      </div>
+
+      <div class="action-category-card">
+        <div class="category-icon white-bg">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
             <path d="M14 18 h44 a6 6 0 0 1 6 6 v24 a6 6 0 0 1-6 6 H26 l-4 8 l-4 -8 H14 a6 6 0 0 1-6-6 V24 a6 6 0 0 1 6-6 z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+            <line x1="18" y1="30" x2="42" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="18" y1="38" x2="34" y2="38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
-        <h3 class="feature-title">Chat Macros</h3>
-        <p class="feature-description">
-          Pre-programmed messages for quick communication.
-          Apologize for punts faster than ever.
-        </p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon svg-feature-icon orange-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-            <circle cx="36" cy="28" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
-            <circle cx="36" cy="28" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
-            <line x1="36" y1="15" x2="36" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="36" y1="38" x2="36" y2="41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="23" y1="28" x2="26" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="46" y1="28" x2="49" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">Tire Management</h3>
-        <p class="feature-description">
-          Change tires, switch compounds between dry and wet,
-          and control each wheel individually.
-        </p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon svg-feature-icon yellow-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-            <rect x="10" y="25" width="40" height="5" rx="2" transform="rotate(-45 28 22)" fill="currentColor"/>
-            <path d="M48,8 L50,14 L52,8 L50,2 Z M44,8 L50,10 L56,8 L50,6 Z" fill="currentColor"/>
-            <path d="M56,24 L57.5,28 L59,24 L57.5,20 Z M53.5,24 L57.5,25.5 L61.5,24 L57.5,22.5 Z" fill="currentColor"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">Fast Repair</h3>
-        <p class="feature-description">
-          One-tap fast repair when you need it most.
-          Get back on track without menu diving.
-        </p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon svg-feature-icon red-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
-            <path d="M36 10 L60 55 H12 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
-            <line x1="36" y1="25" x2="36" y2="40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="36" cy="48" r="2" fill="currentColor"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">Zero Latency</h3>
-        <p class="feature-description">
-          Direct iRacing SDK integration. No middleware, no delay.
-          Commands execute instantly.
-        </p>
+        <h3 class="category-title">Chat</h3>
+        <p class="category-description">Open chat, macros, whisper, reply</p>
+        <span class="category-count">1 action</span>
       </div>
     </div>
   </section>
@@ -414,12 +178,12 @@
   <section class="stats">
     <div class="stats-grid">
       <div class="stat-item">
-        <div class="stat-value">3</div>
-        <div class="stat-label">Plugins</div>
+        <div class="stat-value">200+</div>
+        <div class="stat-label">Controls</div>
       </div>
       <div class="stat-item">
-        <div class="stat-value">10+</div>
-        <div class="stat-label">Actions</div>
+        <div class="stat-value">8</div>
+        <div class="stat-label">Categories</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">100 %</div>
@@ -433,7 +197,7 @@
   </section>
 
   <section class="support" id="support">
-    <div class="features-header">
+    <div class="section-header">
       <p class="section-label">Need Help?</p>
       <h2 class="section-title">Support</h2>
     </div>
@@ -456,7 +220,7 @@
   </section>
 
   <section class="contributing" id="contributing">
-    <div class="features-header">
+    <div class="section-header">
       <p class="section-label">Open Source</p>
       <h2 class="section-title">Contribute</h2>
     </div>
@@ -485,19 +249,19 @@
     </div>
   </section>
 
-  <section class="cta" id="download">
+  <section class="cta" id="install">
     <div class="cta-box">
       <h2 class="cta-title">Ready to Upgrade Your Cockpit?</h2>
       <p class="cta-description">
         Free, open-source, and ready to install. Works with Stream Deck, Stream Deck Mini,
-        Stream Deck XL, and Stream Deck Mobile.
+        Stream Deck XL, and Stream Deck+.
       </p>
       <div class="hero-buttons" style="justify-content: center;">
         <a href="#" class="btn btn-primary">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
           </svg>
-          Download for Windows
+          Install for Stream Deck
         </a>
         <a href="https://github.com/niklam/iracedeck" class="btn btn-secondary" target="_blank">
           Documentation
