@@ -243,6 +243,12 @@ Add a new category with binding entries:
 - `default`: Default key combination (use `""` if no default)
 - `setting`: Flat global setting key — **must match** what the action reads via `getGlobalSettings()`
 
+### Watch mode
+
+Before running a manual build, ask the user if they have `pnpm watch:stream-deck` running. When watch mode is active it monitors file changes and automatically rebuilds and applies them to Stream Deck, so no manual build step is needed.
+
+If the user is not running watch mode, suggest they start it in a separate terminal with `pnpm watch:stream-deck`.
+
 ### Verification checklist
 
 After implementation, verify all pass before committing:
@@ -251,7 +257,7 @@ After implementation, verify all pass before committing:
 pnpm lint:fix    # Auto-fix lint issues
 pnpm format:fix  # Auto-fix formatting
 pnpm test        # All tests pass
-pnpm build       # Build succeeds
+pnpm build       # Build succeeds (skip if watch mode is running)
 ```
 
 ## Telemetry-Aware Icons
