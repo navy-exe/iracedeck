@@ -1,0 +1,582 @@
+{
+  "description": "All Stream Deck actions in @iracedeck/stream-deck-plugin-core with their modes and sub-actions.",
+  "categories": [
+    {
+      "name": "Display & Session",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.session-info",
+          "name": "Session Info",
+          "file": "session-info.ts",
+          "encoder": true,
+          "settingsKey": "mode",
+          "modes": [
+            {
+              "value": "incidents",
+              "label": "Incidents",
+              "description": "Live incident count, flashes on new incident"
+            },
+            {
+              "value": "time-remaining",
+              "label": "Time Remaining",
+              "description": "Session time left, flashes when < 5 min"
+            },
+            { "value": "laps", "label": "Laps", "description": "Current lap number" },
+            { "value": "position", "label": "Position", "description": "Race position, optionally shows total cars" },
+            { "value": "fuel", "label": "Fuel", "description": "Fuel level as amount or percentage" },
+            { "value": "flags", "label": "Flags", "description": "Active race flags with colors and pulsing" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Driving Controls",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.audio-controls",
+          "name": "Audio Controls",
+          "file": "audio-controls.ts",
+          "encoder": true,
+          "settingsKeys": ["category", "action"],
+          "modes": [
+            { "category": "spotter", "action": "volume-up", "label": "Spotter Volume Up" },
+            { "category": "spotter", "action": "volume-down", "label": "Spotter Volume Down" },
+            { "category": "spotter", "action": "mute", "label": "Spotter Silence" },
+            { "category": "voice-chat", "action": "volume-up", "label": "Voice Chat Volume Up" },
+            { "category": "voice-chat", "action": "volume-down", "label": "Voice Chat Volume Down" },
+            { "category": "voice-chat", "action": "mute", "label": "Voice Chat Mute" },
+            { "category": "master", "action": "volume-up", "label": "Master Volume Up" },
+            { "category": "master", "action": "volume-down", "label": "Master Volume Down" },
+            { "category": "master", "action": "mute", "label": "Master Mute" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.black-box-selector",
+          "name": "Black Box Selector",
+          "file": "black-box-selector.ts",
+          "encoder": true,
+          "settingsKeys": ["mode", "blackBox"],
+          "modes": [
+            { "mode": "direct", "blackBox": "lap-timing", "label": "Select Lap Timing" },
+            { "mode": "direct", "blackBox": "standings", "label": "Select Standings" },
+            { "mode": "direct", "blackBox": "relative", "label": "Select Relative" },
+            { "mode": "direct", "blackBox": "fuel", "label": "Select Fuel" },
+            { "mode": "direct", "blackBox": "tires", "label": "Select Tires" },
+            { "mode": "direct", "blackBox": "tire-info", "label": "Select Tire Info" },
+            { "mode": "direct", "blackBox": "pit-stop", "label": "Select Pit Stop" },
+            { "mode": "direct", "blackBox": "in-car", "label": "Select In-Car" },
+            { "mode": "direct", "blackBox": "mirror", "label": "Select Mirror/Graphics" },
+            { "mode": "direct", "blackBox": "radio", "label": "Select Radio" },
+            { "mode": "direct", "blackBox": "weather", "label": "Select Weather" },
+            { "mode": "next", "label": "Next Black Box" },
+            { "mode": "previous", "label": "Previous Black Box" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.look-direction",
+          "name": "Look Direction",
+          "file": "look-direction.ts",
+          "encoder": false,
+          "settingsKey": "direction",
+          "controlType": "hold",
+          "modes": [
+            { "value": "look-left", "label": "Look Left" },
+            { "value": "look-right", "label": "Look Right" },
+            { "value": "look-up", "label": "Look Up" },
+            { "value": "look-down", "label": "Look Down" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.car-control",
+          "name": "Car Control",
+          "file": "car-control.ts",
+          "encoder": true,
+          "settingsKey": "control",
+          "modes": [
+            { "value": "starter", "label": "Starter" },
+            { "value": "ignition", "label": "Ignition" },
+            { "value": "pit-speed-limiter", "label": "Pit Speed Limiter", "telemetryAware": true },
+            { "value": "enter-exit-tow", "label": "Enter/Exit/Tow" },
+            { "value": "pause-sim", "label": "Pause Sim" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cockpit & Interface",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.cockpit-misc",
+          "name": "Cockpit Misc",
+          "file": "cockpit-misc.ts",
+          "encoder": true,
+          "settingsKeys": ["control", "direction"],
+          "modes": [
+            { "control": "trigger-wipers", "label": "Trigger Wipers" },
+            { "control": "ffb-max-force", "direction": "increase", "label": "FFB Max Force Up" },
+            { "control": "ffb-max-force", "direction": "decrease", "label": "FFB Max Force Down" },
+            { "control": "report-latency", "label": "Report Latency" },
+            { "control": "dash-page-1", "direction": "increase", "label": "Dash Page 1 Next" },
+            { "control": "dash-page-1", "direction": "decrease", "label": "Dash Page 1 Previous" },
+            { "control": "dash-page-2", "direction": "increase", "label": "Dash Page 2 Next" },
+            { "control": "dash-page-2", "direction": "decrease", "label": "Dash Page 2 Previous" },
+            { "control": "in-lap-mode", "label": "In-Lap Mode" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.splits-delta-cycle",
+          "name": "Splits Delta Cycle",
+          "file": "splits-delta-cycle.ts",
+          "encoder": true,
+          "settingsKey": "direction",
+          "modes": [
+            { "value": "next", "label": "Next Delta Mode" },
+            { "value": "previous", "label": "Previous Delta Mode" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.telemetry-control",
+          "name": "Telemetry Control",
+          "file": "telemetry-control.ts",
+          "encoder": true,
+          "settingsKey": "action",
+          "modes": [
+            { "value": "toggle-logging", "label": "Toggle Logging" },
+            { "value": "mark-event", "label": "Mark Event" },
+            { "value": "start-recording", "label": "Start Recording" },
+            { "value": "stop-recording", "label": "Stop Recording" },
+            { "value": "restart-recording", "label": "Restart Recording" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.toggle-ui-elements",
+          "name": "Toggle UI Elements",
+          "file": "toggle-ui-elements.ts",
+          "encoder": true,
+          "settingsKey": "element",
+          "modes": [
+            { "value": "dash-box", "label": "Dash Box" },
+            { "value": "speed-gear-pedals", "label": "Speed/Gear/Pedals" },
+            { "value": "radio-display", "label": "Radio Display" },
+            { "value": "fps-network-display", "label": "FPS/Network Display" },
+            { "value": "weather-radar", "label": "Weather Radar" },
+            { "value": "virtual-mirror", "label": "Virtual Mirror" },
+            { "value": "ui-edit-mode", "label": "UI Edit Mode" },
+            { "value": "display-ref-car", "label": "Display Reference Car" },
+            { "value": "replay-ui", "label": "Replay UI" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View & Camera",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.view-adjustment",
+          "name": "View Adjustment",
+          "file": "view-adjustment.ts",
+          "encoder": true,
+          "settingsKeys": ["adjustment", "direction"],
+          "modes": [
+            { "adjustment": "fov", "direction": "increase", "label": "FOV Increase" },
+            { "adjustment": "fov", "direction": "decrease", "label": "FOV Decrease" },
+            { "adjustment": "horizon", "direction": "increase", "label": "Horizon Up" },
+            { "adjustment": "horizon", "direction": "decrease", "label": "Horizon Down" },
+            { "adjustment": "driver-height", "direction": "increase", "label": "Driver Height Up" },
+            { "adjustment": "driver-height", "direction": "decrease", "label": "Driver Height Down" },
+            { "adjustment": "recenter-vr", "label": "Recenter VR" },
+            { "adjustment": "ui-size", "direction": "increase", "label": "UI Size Increase" },
+            { "adjustment": "ui-size", "direction": "decrease", "label": "UI Size Decrease" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.replay-transport",
+          "name": "Replay Transport",
+          "file": "replay-transport.ts",
+          "encoder": true,
+          "settingsKey": "transport",
+          "modes": [
+            { "value": "play", "label": "Play" },
+            { "value": "pause", "label": "Pause" },
+            { "value": "stop", "label": "Stop" },
+            { "value": "fast-forward", "label": "Fast Forward" },
+            { "value": "rewind", "label": "Rewind" },
+            { "value": "slow-motion", "label": "Slow Motion" },
+            { "value": "frame-forward", "label": "Frame Forward" },
+            { "value": "frame-backward", "label": "Frame Backward" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.replay-speed",
+          "name": "Replay Speed",
+          "file": "replay-speed.ts",
+          "encoder": true,
+          "settingsKey": "direction",
+          "modes": [
+            { "value": "increase", "label": "Speed Up" },
+            { "value": "decrease", "label": "Slow Down" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.replay-navigation",
+          "name": "Replay Navigation",
+          "file": "replay-navigation.ts",
+          "encoder": true,
+          "settingsKey": "navigation",
+          "modes": [
+            { "value": "next-session", "label": "Next Session" },
+            { "value": "prev-session", "label": "Previous Session" },
+            { "value": "next-lap", "label": "Next Lap" },
+            { "value": "prev-lap", "label": "Previous Lap" },
+            { "value": "next-incident", "label": "Next Incident" },
+            { "value": "prev-incident", "label": "Previous Incident" },
+            { "value": "jump-to-start", "label": "Jump to Start" },
+            { "value": "jump-to-end", "label": "Jump to End" },
+            { "value": "set-play-position", "label": "Set Play Position" },
+            { "value": "search-session-time", "label": "Search Session Time" },
+            { "value": "erase-tape", "label": "Erase Tape" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.camera-cycle",
+          "name": "Camera Cycle",
+          "file": "camera-cycle.ts",
+          "encoder": true,
+          "settingsKeys": ["cameraType", "direction"],
+          "modes": [
+            { "cameraType": "camera", "direction": "next", "label": "Next Camera" },
+            { "cameraType": "camera", "direction": "previous", "label": "Previous Camera" },
+            { "cameraType": "sub-camera", "direction": "next", "label": "Next Sub-Camera" },
+            { "cameraType": "sub-camera", "direction": "previous", "label": "Previous Sub-Camera" },
+            { "cameraType": "car", "direction": "next", "label": "Next Car" },
+            { "cameraType": "car", "direction": "previous", "label": "Previous Car" },
+            { "cameraType": "driving", "direction": "next", "label": "Next Driving Camera" },
+            { "cameraType": "driving", "direction": "previous", "label": "Previous Driving Camera" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.camera-editor-adjustments",
+          "name": "Camera Editor Adjustments",
+          "file": "camera-editor-adjustments.ts",
+          "encoder": true,
+          "settingsKeys": ["adjustment", "direction"],
+          "modes": [
+            { "adjustment": "latitude", "direction": "increase", "label": "Latitude +" },
+            { "adjustment": "latitude", "direction": "decrease", "label": "Latitude -" },
+            { "adjustment": "longitude", "direction": "increase", "label": "Longitude +" },
+            { "adjustment": "longitude", "direction": "decrease", "label": "Longitude -" },
+            { "adjustment": "altitude", "direction": "increase", "label": "Altitude +" },
+            { "adjustment": "altitude", "direction": "decrease", "label": "Altitude -" },
+            { "adjustment": "yaw", "direction": "increase", "label": "Yaw +" },
+            { "adjustment": "yaw", "direction": "decrease", "label": "Yaw -" },
+            { "adjustment": "pitch", "direction": "increase", "label": "Pitch +" },
+            { "adjustment": "pitch", "direction": "decrease", "label": "Pitch -" },
+            { "adjustment": "fov-zoom", "direction": "increase", "label": "FOV Zoom +" },
+            { "adjustment": "fov-zoom", "direction": "decrease", "label": "FOV Zoom -" },
+            { "adjustment": "key-step", "direction": "increase", "label": "Key Step +" },
+            { "adjustment": "key-step", "direction": "decrease", "label": "Key Step -" },
+            { "adjustment": "vanish-x", "direction": "increase", "label": "Vanish X +" },
+            { "adjustment": "vanish-x", "direction": "decrease", "label": "Vanish X -" },
+            { "adjustment": "vanish-y", "direction": "increase", "label": "Vanish Y +" },
+            { "adjustment": "vanish-y", "direction": "decrease", "label": "Vanish Y -" },
+            { "adjustment": "blimp-radius", "direction": "increase", "label": "Blimp Radius +" },
+            { "adjustment": "blimp-radius", "direction": "decrease", "label": "Blimp Radius -" },
+            { "adjustment": "blimp-velocity", "direction": "increase", "label": "Blimp Velocity +" },
+            { "adjustment": "blimp-velocity", "direction": "decrease", "label": "Blimp Velocity -" },
+            { "adjustment": "mic-gain", "direction": "increase", "label": "Mic Gain +" },
+            { "adjustment": "mic-gain", "direction": "decrease", "label": "Mic Gain -" },
+            { "adjustment": "auto-set-mic-gain", "label": "Auto Set Mic Gain" },
+            { "adjustment": "f-number", "direction": "increase", "label": "F-Number +" },
+            { "adjustment": "f-number", "direction": "decrease", "label": "F-Number -" },
+            { "adjustment": "focus-depth", "direction": "increase", "label": "Focus Depth +" },
+            { "adjustment": "focus-depth", "direction": "decrease", "label": "Focus Depth -" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.camera-editor-controls",
+          "name": "Camera Editor Controls",
+          "file": "camera-editor-controls.ts",
+          "encoder": true,
+          "settingsKey": "control",
+          "modes": [
+            { "value": "open-camera-tool", "label": "Open Camera Tool" },
+            { "value": "key-acceleration-toggle", "label": "Key Acceleration Toggle" },
+            { "value": "set-origin-to-player-car", "label": "Set Origin to Player Car" },
+            { "value": "set-origin-to-incident-point", "label": "Set Origin to Incident Point" },
+            { "value": "lock-camera-to-player", "label": "Lock Camera to Player" },
+            { "value": "lock-camera-to-object", "label": "Lock Camera to Object" },
+            { "value": "park-camera", "label": "Park Camera" },
+            { "value": "set-camera-state-saved", "label": "Set Camera State (Saved)" },
+            { "value": "load-camera-state-saved", "label": "Load Camera State (Saved)" },
+            { "value": "delete-camera-state-saved", "label": "Delete Camera State (Saved)" },
+            { "value": "set-camera-state-unsaved", "label": "Set Camera State (Unsaved)" },
+            { "value": "load-camera-state-unsaved", "label": "Load Camera State (Unsaved)" },
+            { "value": "revert-to-saved", "label": "Revert to Saved" },
+            { "value": "export-camera-state", "label": "Export Camera State" },
+            { "value": "import-camera-state", "label": "Import Camera State" },
+            { "value": "undo-editor-action", "label": "Undo" },
+            { "value": "redo-editor-action", "label": "Redo" },
+            { "value": "reset-adjustment-to-default", "label": "Reset Adjustment to Default" },
+            { "value": "clear-all-adjustments", "label": "Clear All Adjustments" },
+            { "value": "show-grid", "label": "Show Grid" },
+            { "value": "show-grid-numbers", "label": "Show Grid Numbers" },
+            { "value": "toggle-replay-timescale", "label": "Toggle Replay Timescale" },
+            { "value": "toggle-slow-motion", "label": "Toggle Slow Motion" },
+            { "value": "toggle-frame-stepping", "label": "Toggle Frame Stepping" },
+            { "value": "use-playhead-time", "label": "Use Playhead Time" },
+            { "value": "use-current-time", "label": "Use Current Time" },
+            { "value": "bookmark-editor-action", "label": "Bookmark Editor Action" },
+            { "value": "goto-bookmarked-action", "label": "Go to Bookmarked Action" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.camera-focus",
+          "name": "Camera Focus",
+          "file": "camera-focus.ts",
+          "encoder": true,
+          "settingsKey": "target",
+          "modes": [
+            { "value": "focus-your-car", "label": "Focus Your Car" },
+            { "value": "focus-on-leader", "label": "Focus on Leader" },
+            { "value": "focus-on-incident", "label": "Focus on Incident" },
+            { "value": "focus-on-exiting", "label": "Focus on Exiting" },
+            { "value": "switch-by-position", "label": "Switch by Position" },
+            { "value": "switch-by-car-number", "label": "Switch by Car Number" },
+            { "value": "set-camera-state", "label": "Set Camera State" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.media-capture",
+          "name": "Media Capture",
+          "file": "media-capture.ts",
+          "encoder": true,
+          "settingsKey": "action",
+          "modes": [
+            { "value": "start-stop-video", "label": "Start/Stop Video" },
+            { "value": "video-timer", "label": "Video Timer" },
+            { "value": "toggle-video-capture", "label": "Toggle Video Capture" },
+            { "value": "take-screenshot", "label": "Take Screenshot" },
+            { "value": "take-giant-screenshot", "label": "Take Giant Screenshot" },
+            { "value": "reload-all-textures", "label": "Reload All Textures" },
+            { "value": "reload-car-textures", "label": "Reload Car Textures" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pit Service",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.pit-quick-actions",
+          "name": "Pit Quick Actions",
+          "file": "pit-quick-actions.ts",
+          "encoder": true,
+          "settingsKey": "action",
+          "modes": [
+            { "value": "clear-all-checkboxes", "label": "Clear All Checkboxes" },
+            { "value": "windshield-tearoff", "label": "Windshield Tearoff" },
+            { "value": "request-fast-repair", "label": "Request Fast Repair" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.fuel-service",
+          "name": "Fuel Service",
+          "file": "fuel-service.ts",
+          "encoder": true,
+          "settingsKey": "mode",
+          "modes": [
+            { "value": "add-fuel", "label": "Add Fuel" },
+            { "value": "reduce-fuel", "label": "Reduce Fuel" },
+            { "value": "set-fuel-amount", "label": "Set Fuel Amount" },
+            { "value": "clear-fuel", "label": "Clear Fuel" },
+            { "value": "toggle-autofuel", "label": "Toggle Autofuel" },
+            { "value": "lap-margin-increase", "label": "Lap Margin Increase" },
+            { "value": "lap-margin-decrease", "label": "Lap Margin Decrease" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.tire-service",
+          "name": "Tire Service",
+          "file": "tire-service.ts",
+          "encoder": true,
+          "settingsKey": "action",
+          "telemetryAware": true,
+          "modes": [
+            { "value": "toggle-tires", "label": "Toggle Tires", "description": "Per-wheel selection: LF, RF, LR, RR" },
+            { "value": "change-compound", "label": "Change Compound", "description": "Cycle tire compounds (DRY/WET)" },
+            { "value": "clear-tires", "label": "Clear Tires" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Car Setup",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.setup-brakes",
+          "name": "Setup Brakes",
+          "file": "setup-brakes.ts",
+          "encoder": true,
+          "settingsKeys": ["setting", "direction"],
+          "modes": [
+            { "setting": "abs-toggle", "label": "ABS Toggle" },
+            { "setting": "abs-adjust", "direction": "increase", "label": "ABS Increase" },
+            { "setting": "abs-adjust", "direction": "decrease", "label": "ABS Decrease" },
+            { "setting": "brake-bias", "direction": "increase", "label": "Brake Bias Forward" },
+            { "setting": "brake-bias", "direction": "decrease", "label": "Brake Bias Rearward" },
+            { "setting": "brake-bias-fine", "direction": "increase", "label": "Brake Bias Fine Forward" },
+            { "setting": "brake-bias-fine", "direction": "decrease", "label": "Brake Bias Fine Rearward" },
+            { "setting": "peak-brake-bias", "direction": "increase", "label": "Peak Brake Bias Increase" },
+            { "setting": "peak-brake-bias", "direction": "decrease", "label": "Peak Brake Bias Decrease" },
+            { "setting": "brake-misc", "direction": "increase", "label": "Brake Misc Increase" },
+            { "setting": "brake-misc", "direction": "decrease", "label": "Brake Misc Decrease" },
+            { "setting": "engine-braking", "direction": "increase", "label": "Engine Braking Increase" },
+            { "setting": "engine-braking", "direction": "decrease", "label": "Engine Braking Decrease" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.setup-chassis",
+          "name": "Setup Chassis",
+          "file": "setup-chassis.ts",
+          "encoder": true,
+          "settingsKeys": ["setting", "direction"],
+          "modes": [
+            { "setting": "front-anti-roll-bar", "direction": "increase", "label": "Front ARB Stiffer" },
+            { "setting": "front-anti-roll-bar", "direction": "decrease", "label": "Front ARB Softer" },
+            { "setting": "rear-anti-roll-bar", "direction": "increase", "label": "Rear ARB Stiffer" },
+            { "setting": "rear-anti-roll-bar", "direction": "decrease", "label": "Rear ARB Softer" },
+            { "setting": "front-spring-rate", "direction": "increase", "label": "Front Spring Rate Stiffer" },
+            { "setting": "front-spring-rate", "direction": "decrease", "label": "Front Spring Rate Softer" },
+            { "setting": "rear-spring-rate", "direction": "increase", "label": "Rear Spring Rate Stiffer" },
+            { "setting": "rear-spring-rate", "direction": "decrease", "label": "Rear Spring Rate Softer" },
+            { "setting": "front-spring-height", "direction": "increase", "label": "Front Ride Height Up" },
+            { "setting": "front-spring-height", "direction": "decrease", "label": "Front Ride Height Down" },
+            { "setting": "rear-spring-height", "direction": "increase", "label": "Rear Ride Height Up" },
+            { "setting": "rear-spring-height", "direction": "decrease", "label": "Rear Ride Height Down" },
+            { "setting": "front-bump-stiffness", "direction": "increase", "label": "Front Bump Stiffer" },
+            { "setting": "front-bump-stiffness", "direction": "decrease", "label": "Front Bump Softer" },
+            { "setting": "rear-bump-stiffness", "direction": "increase", "label": "Rear Bump Stiffer" },
+            { "setting": "rear-bump-stiffness", "direction": "decrease", "label": "Rear Bump Softer" },
+            { "setting": "front-rebound-stiffness", "direction": "increase", "label": "Front Rebound Stiffer" },
+            { "setting": "front-rebound-stiffness", "direction": "decrease", "label": "Front Rebound Softer" },
+            { "setting": "rear-rebound-stiffness", "direction": "increase", "label": "Rear Rebound Stiffer" },
+            { "setting": "rear-rebound-stiffness", "direction": "decrease", "label": "Rear Rebound Softer" },
+            { "setting": "front-tire-pressure", "direction": "increase", "label": "Front Tire Pressure Up" },
+            { "setting": "front-tire-pressure", "direction": "decrease", "label": "Front Tire Pressure Down" },
+            { "setting": "rear-tire-pressure", "direction": "increase", "label": "Rear Tire Pressure Up" },
+            { "setting": "rear-tire-pressure", "direction": "decrease", "label": "Rear Tire Pressure Down" },
+            { "setting": "power-steering", "direction": "increase", "label": "Power Steering Increase" },
+            { "setting": "power-steering", "direction": "decrease", "label": "Power Steering Decrease" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.setup-aero",
+          "name": "Setup Aero",
+          "file": "setup-aero.ts",
+          "encoder": true,
+          "settingsKeys": ["setting", "direction"],
+          "modes": [
+            { "setting": "front-wing", "direction": "increase", "label": "Front Wing More" },
+            { "setting": "front-wing", "direction": "decrease", "label": "Front Wing Less" },
+            { "setting": "rear-wing", "direction": "increase", "label": "Rear Wing More" },
+            { "setting": "rear-wing", "direction": "decrease", "label": "Rear Wing Less" },
+            { "setting": "qualifying-tape", "direction": "increase", "label": "Qualifying Tape More" },
+            { "setting": "qualifying-tape", "direction": "decrease", "label": "Qualifying Tape Less" },
+            { "setting": "rf-brake-attached", "label": "RF Brake Attached Toggle" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.setup-engine",
+          "name": "Setup Engine",
+          "file": "setup-engine.ts",
+          "encoder": true,
+          "settingsKeys": ["setting", "direction"],
+          "modes": [
+            { "setting": "engine-power", "direction": "increase", "label": "Engine Power Increase" },
+            { "setting": "engine-power", "direction": "decrease", "label": "Engine Power Decrease" },
+            { "setting": "throttle-shaping", "direction": "increase", "label": "Throttle Shaping Increase" },
+            { "setting": "throttle-shaping", "direction": "decrease", "label": "Throttle Shaping Decrease" },
+            { "setting": "boost-level", "direction": "increase", "label": "Boost Level Increase" },
+            { "setting": "boost-level", "direction": "decrease", "label": "Boost Level Decrease" },
+            { "setting": "launch-rpm", "direction": "increase", "label": "Launch RPM Increase" },
+            { "setting": "launch-rpm", "direction": "decrease", "label": "Launch RPM Decrease" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.setup-fuel",
+          "name": "Setup Fuel",
+          "file": "setup-fuel.ts",
+          "encoder": true,
+          "settingsKeys": ["setting", "direction"],
+          "modes": [
+            { "setting": "fuel-mixture", "direction": "increase", "label": "Fuel Mixture Richer" },
+            { "setting": "fuel-mixture", "direction": "decrease", "label": "Fuel Mixture Leaner" },
+            { "setting": "fuel-cut-position", "direction": "increase", "label": "Fuel Cut Position Increase" },
+            { "setting": "fuel-cut-position", "direction": "decrease", "label": "Fuel Cut Position Decrease" },
+            { "setting": "disable-fuel-cut", "label": "Disable Fuel Cut Toggle" },
+            { "setting": "low-fuel-accept", "label": "Low Fuel Accept Toggle" },
+            { "setting": "fcy-mode-toggle", "label": "FCY Mode Toggle" }
+          ]
+        },
+        {
+          "id": "com.iracedeck.sd.core.setup-hybrid",
+          "name": "Setup Hybrid",
+          "file": "setup-hybrid.ts",
+          "encoder": true,
+          "settingsKeys": ["setting", "direction"],
+          "modes": [
+            { "setting": "mguk-regen-gain", "direction": "increase", "label": "MGU-K Regen Gain Increase" },
+            { "setting": "mguk-regen-gain", "direction": "decrease", "label": "MGU-K Regen Gain Decrease" },
+            { "setting": "mguk-deploy-mode", "direction": "increase", "label": "MGU-K Deploy Mode Up" },
+            { "setting": "mguk-deploy-mode", "direction": "decrease", "label": "MGU-K Deploy Mode Down" },
+            { "setting": "mguk-fixed-deploy", "direction": "increase", "label": "MGU-K Fixed Deploy Increase" },
+            { "setting": "mguk-fixed-deploy", "direction": "decrease", "label": "MGU-K Fixed Deploy Decrease" },
+            { "setting": "hys-boost", "label": "HYS Boost", "controlType": "hold" },
+            { "setting": "hys-regen", "label": "HYS Regen", "controlType": "hold" },
+            { "setting": "hys-no-boost", "label": "HYS No Boost Toggle" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "actions": [
+        {
+          "id": "com.iracedeck.sd.core.chat",
+          "name": "Chat",
+          "file": "chat.ts",
+          "encoder": true,
+          "settingsKey": "mode",
+          "modes": [
+            { "value": "open-chat", "label": "Open Chat" },
+            { "value": "reply", "label": "Reply" },
+            { "value": "whisper", "label": "Whisper" },
+            { "value": "respond-pm", "label": "Respond to Last PM" },
+            { "value": "cancel", "label": "Cancel" },
+            { "value": "send-message", "label": "Send Custom Message" },
+            { "value": "macro", "macroNumber": 1, "label": "Chat Macro 1" },
+            { "value": "macro", "macroNumber": 2, "label": "Chat Macro 2" },
+            { "value": "macro", "macroNumber": 3, "label": "Chat Macro 3" },
+            { "value": "macro", "macroNumber": 4, "label": "Chat Macro 4" },
+            { "value": "macro", "macroNumber": 5, "label": "Chat Macro 5" },
+            { "value": "macro", "macroNumber": 6, "label": "Chat Macro 6" },
+            { "value": "macro", "macroNumber": 7, "label": "Chat Macro 7" },
+            { "value": "macro", "macroNumber": 8, "label": "Chat Macro 8" },
+            { "value": "macro", "macroNumber": 9, "label": "Chat Macro 9" },
+            { "value": "macro", "macroNumber": 10, "label": "Chat Macro 10" },
+            { "value": "macro", "macroNumber": 11, "label": "Chat Macro 11" },
+            { "value": "macro", "macroNumber": 12, "label": "Chat Macro 12" },
+            { "value": "macro", "macroNumber": 13, "label": "Chat Macro 13" },
+            { "value": "macro", "macroNumber": 14, "label": "Chat Macro 14" },
+            { "value": "macro", "macroNumber": 15, "label": "Chat Macro 15" }
+          ]
+        }
+      ]
+    }
+  ]
+}

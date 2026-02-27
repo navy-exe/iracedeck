@@ -1,0 +1,137 @@
+---
+name: iracedeck-actions
+description: Use when looking up Stream Deck actions, sub-actions, modes, categories, or control counts, or when updating documentation and website content about available features
+---
+
+# iRaceDeck Actions Reference
+
+## Data File
+
+Complete action definitions (28 actions, 275 controls): `docs/reference/actions.json`
+
+Each action entry:
+```json
+{
+  "id": "com.iracedeck.sd.core.session-info",
+  "name": "Session Info",
+  "file": "session-info.ts",
+  "encoder": true,
+  "settingsKey": "mode",
+  "modes": [
+    { "value": "incidents", "label": "Incidents", "description": "..." }
+  ]
+}
+```
+
+## How to Use
+
+When asked about actions or controls:
+1. Read `docs/reference/actions.json` and search by action name, mode value, or category
+2. Report: action name, ID, file, modes with labels
+3. For implementation details, check the source at `packages/stream-deck-plugin-core/src/actions/{file}`
+4. For PI templates, check `packages/stream-deck-plugin-core/src/pi/{action-name}.ejs`
+
+## Category Overview
+
+| Category | Actions | Controls | Description |
+|----------|---------|----------|-------------|
+| Display & Session | 1 | 6 | Live session data: incidents, laps, position, fuel, flags |
+| Driving Controls | 4 | 31 | Audio, black boxes, look direction, car control |
+| Cockpit & Interface | 4 | 25 | Wipers, FFB, delta splits, telemetry, UI toggles |
+| View & Camera | 8 | 102 | FOV, replay, camera cycle/focus, broadcast tools |
+| Media | 1 | 7 | Video recording, screenshots, texture management |
+| Pit Service | 3 | 13 | Fuel, tires, compounds, tearoff, fast repair |
+| Car Setup | 6 | 70 | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS |
+| Chat | 1 | 21 | Open chat, macros (15), whisper, reply |
+| **Total** | **28** | **275** | |
+
+## Actions by Category
+
+### Display & Session
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Session Info | 6 | incidents, time-remaining, laps, position, fuel, flags |
+
+### Driving Controls
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Audio Controls | 9 | 3 categories (spotter, voice-chat, master) x 3 actions (volume-up, volume-down, mute) |
+| Black Box Selector | 13 | 11 direct selections + next/previous cycle |
+| Look Direction | 4 | look-left, look-right, look-up, look-down (hold pattern) |
+| Car Control | 5 | starter, ignition, pit-speed-limiter (telemetry-aware), enter-exit-tow, pause-sim |
+
+### Cockpit & Interface
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Cockpit Misc | 9 | wipers, FFB +/-, latency, dash pages +/-, in-lap mode |
+| Splits Delta Cycle | 2 | next, previous |
+| Telemetry Control | 5 | toggle-logging, mark-event, start/stop/restart recording |
+| Toggle UI Elements | 9 | dash-box, speed/gear, radio, FPS, weather, mirror, edit mode, ref car, replay UI |
+
+### View & Camera
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| View Adjustment | 9 | FOV +/-, horizon +/-, driver height +/-, recenter VR, UI size +/- |
+| Replay Transport | 8 | play, pause, stop, FF, rewind, slow-mo, frame +/- |
+| Replay Speed | 2 | increase, decrease |
+| Replay Navigation | 11 | session/lap/incident next/prev, jump start/end, set position, search time, erase |
+| Camera Cycle | 8 | 4 types (camera, sub-camera, car, driving) x 2 directions |
+| Camera Editor Adjustments | 29 | 14 parameters +/- plus auto-set mic gain |
+| Camera Editor Controls | 28 | Camera tool, origins, locks, states, undo/redo, grid, bookmarks |
+| Camera Focus | 7 | your car, leader, incident, exiting, by position, by car number, camera state |
+
+### Media
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Media Capture | 7 | start/stop video, timer, toggle capture, screenshot, giant screenshot, reload textures |
+
+### Pit Service
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Pit Quick Actions | 3 | clear all, tearoff, fast repair |
+| Fuel Service | 7 | add/reduce/set/clear fuel, toggle autofuel, lap margin +/- |
+| Tire Service | 3 | toggle tires (per-wheel), change compound, clear (telemetry-aware) |
+
+### Car Setup
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Setup Brakes | 13 | ABS toggle/adjust, brake bias +/-, fine +/-, peak +/-, misc +/-, engine braking +/- |
+| Setup Chassis | 26 | Front/rear ARB, spring rate, ride height, bump, rebound, tire pressure +/-, power steering +/- |
+| Setup Aero | 7 | Front/rear wing +/-, qualifying tape +/-, RF brake attached toggle |
+| Setup Engine | 8 | Engine power, throttle shaping, boost, launch RPM +/- |
+| Setup Fuel | 7 | Fuel mixture +/-, fuel cut position +/-, disable fuel cut, low fuel accept, FCY mode |
+| Setup Hybrid | 9 | MGU-K regen/deploy/fixed +/-, HYS boost (hold), HYS regen (hold), HYS no boost |
+
+### Chat
+
+| Action | Controls | Modes |
+|--------|----------|-------|
+| Chat | 21 | open, reply, whisper, respond PM, cancel, send message, 15 macros |
+
+## Control Patterns
+
+| Pattern | Description | Examples |
+|---------|-------------|----------|
+| Directional (+/-) | Setting key + direction enum | Setup actions, view adjustments |
+| Enumerated | Single dropdown selects the control | Camera focus targets, UI elements |
+| Composite | Multiple dropdowns combine | Audio (category + action), black box (mode + box) |
+| Hold | Key held while button pressed | Look direction, HYS boost/regen |
+| Telemetry-aware | Icon updates from live data | Session info, car control (pit limiter), tire service |
+
+## Key Project Files
+
+| File | Role |
+|------|------|
+| `packages/stream-deck-plugin-core/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
+| `packages/stream-deck-plugin-core/src/actions/` | Action source files (28 .ts files) |
+| `packages/stream-deck-plugin-core/src/pi/` | Property Inspector EJS templates |
+| `packages/stream-deck-plugin-core/src/pi/data/key-bindings.json` | Global key binding definitions |
+| `packages/stream-deck-plugin-core/icons/` | SVG icon Mustache templates |
+| `packages/stream-deck-plugin-core/src/plugin.ts` | Action registration and initialization |
