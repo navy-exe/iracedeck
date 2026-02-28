@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  countActiveDrivers,
   FLAG_DEFINITIONS,
   formatFuelAmount,
   formatSessionTime,
@@ -32,7 +33,7 @@ vi.mock("@iracedeck/iracing-sdk", async () => {
 
 vi.mock("@iracedeck/stream-deck-shared", () => ({
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
-    sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn() };
+    sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn(), getSessionInfo: vi.fn() };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
@@ -137,6 +138,84 @@ describe("SessionInfo", () => {
 
     it("should round to one decimal place", () => {
       expect(formatFuelAmount(10.789, 1)).toBe("10.8 L");
+    });
+  });
+
+  describe("countActiveDrivers", () => {
+    it("should return 0 for null session info", () => {
+      expect(countActiveDrivers(null)).toBe(0);
+    });
+
+    it("should return 0 when DriverInfo is missing", () => {
+      expect(countActiveDrivers({ WeekendInfo: {} })).toBe(0);
+    });
+
+    it("should return 0 when Drivers array is missing", () => {
+      expect(countActiveDrivers({ DriverInfo: {} })).toBe(0);
+    });
+
+    it("should return 0 when Drivers is not an array", () => {
+      expect(countActiveDrivers({ DriverInfo: { Drivers: "invalid" } })).toBe(0);
+    });
+
+    it("should filter out pace car", () => {
+      const sessionInfo = {
+        DriverInfo: {
+          Drivers: [
+            { CarIdx: 0, UserName: "Pace Car", CarIsPaceCar: 1, IsSpectator: 0 },
+            { CarIdx: 1, UserName: "Driver 1", CarIsPaceCar: 0, IsSpectator: 0 },
+          ],
+        },
+      };
+
+      expect(countActiveDrivers(sessionInfo)).toBe(1);
+    });
+
+    it("should filter out spectators", () => {
+      const sessionInfo = {
+        DriverInfo: {
+          Drivers: [
+            { CarIdx: 1, UserName: "Driver 1", CarIsPaceCar: 0, IsSpectator: 0 },
+            { CarIdx: 2, UserName: "Spectator", CarIsPaceCar: 0, IsSpectator: 1 },
+          ],
+        },
+      };
+
+      expect(countActiveDrivers(sessionInfo)).toBe(1);
+    });
+
+    it("should count real drivers correctly", () => {
+      const sessionInfo = {
+        DriverInfo: {
+          Drivers: [
+            { CarIdx: 1, UserName: "Driver 1", CarIsPaceCar: 0, IsSpectator: 0 },
+            { CarIdx: 2, UserName: "Driver 2", CarIsPaceCar: 0, IsSpectator: 0 },
+            { CarIdx: 3, UserName: "Driver 3", CarIsPaceCar: 0, IsSpectator: 0 },
+          ],
+        },
+      };
+
+      expect(countActiveDrivers(sessionInfo)).toBe(3);
+    });
+
+    it("should handle mixed pace car, spectators, and real drivers", () => {
+      const sessionInfo = {
+        DriverInfo: {
+          Drivers: [
+            { CarIdx: 0, UserName: "Pace Car", CarIsPaceCar: 1, IsSpectator: 0 },
+            { CarIdx: 1, UserName: "Driver 1", CarIsPaceCar: 0, IsSpectator: 0 },
+            { CarIdx: 2, UserName: "Driver 2", CarIsPaceCar: 0, IsSpectator: 0 },
+            { CarIdx: 3, UserName: "Spectator", CarIsPaceCar: 0, IsSpectator: 1 },
+            { CarIdx: 4, UserName: "Driver 3", CarIsPaceCar: 0, IsSpectator: 0 },
+          ],
+        },
+      };
+
+      expect(countActiveDrivers(sessionInfo)).toBe(3);
+    });
+
+    it("should return 0 for empty Drivers array", () => {
+      expect(countActiveDrivers({ DriverInfo: { Drivers: [] } })).toBe(0);
     });
   });
 

@@ -5,7 +5,7 @@
 import { ILogger, silentLogger } from "@iracedeck/logger";
 
 import { IRacingSDK } from "./IRacingSDK.js";
-import { TelemetryData } from "./types.js";
+import { SessionInfo, TelemetryData } from "./types.js";
 
 export type TelemetryCallback = (telemetry: TelemetryData | null, isConnected: boolean) => void;
 
@@ -221,6 +221,13 @@ export class SDKController {
 
     // Return cached telemetry if available
     return this.lastValidTelemetry;
+  }
+
+  /**
+   * Get session info (YAML data parsed to object)
+   */
+  getSessionInfo(): SessionInfo | null {
+    return this.sdk.getSessionInfo();
   }
 
   /**

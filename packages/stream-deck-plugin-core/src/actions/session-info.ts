@@ -1,5 +1,11 @@
 import streamDeck, { action, DidReceiveSettingsEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { DisplayUnits, Flags, hasFlag, type TelemetryData } from "@iracedeck/iracing-sdk";
+import {
+  DisplayUnits,
+  Flags,
+  hasFlag,
+  type SessionInfo as IRacingSessionInfo,
+  type TelemetryData,
+} from "@iracedeck/iracing-sdk";
 import {
   ConnectionStateAwareAction,
   createSDLogger,
@@ -138,6 +144,26 @@ export function formatFuelAmount(fuelLevel: number, displayUnits: number | undef
   }
 
   return `${fuelLevel.toFixed(1)} L`;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Counts the number of active drivers in the session using the DriverInfo.Drivers
+ * array from session info. Filters out the pace car and spectators.
+ *
+ * This is more reliable than counting CarIdxPosition entries from telemetry,
+ * which retains stale values for disconnected cars.
+ */
+export function countActiveDrivers(sessionInfo: IRacingSessionInfo | null): number {
+  if (!sessionInfo) return 0;
+
+  const driverInfo = sessionInfo.DriverInfo as { Drivers?: Array<Record<string, unknown>> } | undefined;
+  const drivers = driverInfo?.Drivers;
+
+  if (!Array.isArray(drivers)) return 0;
+
+  return drivers.filter((d) => d.CarIsPaceCar !== 1 && d.IsSpectator !== 1).length;
 }
 
 /**
@@ -333,7 +359,7 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
       if (pos === undefined) return settings.positionShowTotal ? "P-/-" : "P-";
 
       if (settings.positionShowTotal) {
-        const totalCars = this.countActiveCars(telemetry);
+        const totalCars = this.countActiveCars();
 
         return totalCars > 0 ? `P${pos}/${totalCars}` : `P${pos}`;
       }
@@ -373,12 +399,8 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     return formatSessionTime(remain);
   }
 
-  private countActiveCars(telemetry: TelemetryData): number {
-    const positions = telemetry.CarIdxPosition;
-
-    if (!positions || !Array.isArray(positions)) return 0;
-
-    return positions.filter((p) => typeof p === "number" && p > 0).length;
+  private countActiveCars(): number {
+    return countActiveDrivers(this.sdkController.getSessionInfo());
   }
 
   private resolveFlagColorOverride(
