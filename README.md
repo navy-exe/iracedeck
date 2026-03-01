@@ -1,6 +1,10 @@
-# iRaceDeck
+<p align="center">
+  <img src="assets/iracedeck-logo-full-white.png" alt="iRaceDeck" width="400">
+</p>
 
-Open-source [Elgato Stream Deck](https://www.elgato.com/stream-deck) plugin for [iRacing](https://www.iracing.com/). Turn your Stream Deck into a fully-featured button box with live telemetry, pit controls, camera management, and more.
+<p align="center">
+  Open-source <a href="https://www.elgato.com/stream-deck">Elgato Stream Deck</a> plugin for <a href="https://www.iracing.com/">iRacing</a>. Turn your Stream Deck into a fully-featured button box with live telemetry, pit controls, camera management, and more.
+</p>
 
 ## Features
 
