@@ -602,10 +602,10 @@
       ]
     }
   ],
-  "Category": "iRaceDeck Core",
+  "Category": "iRaceDeck",
   "CategoryIcon": "imgs/plugin/category-icon",
   "CodePath": "bin/plugin.js",
-  "Description": "iRacing core driving and interface controls.",
+  "Description": "Complete iRacing controls for Elgato Stream Deck.",
   "PropertyInspectorPath": "ui/settings.html",
   "Icon": "imgs/plugin/marketplace",
   "SDKVersion": 3,
