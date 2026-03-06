@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.1](https://github.com/niklam/iracedeck/compare/v0.10.0...v0.10.1) (2026-03-06)
+
+### Bug Fixes
+
+* **stream-deck-plugin:** show default sub-options on initial PI load ([#82](https://github.com/niklam/iracedeck/issues/82)) ([8043a28](https://github.com/niklam/iracedeck/commit/8043a285b05ca4e861bc9b337bdf0bad341bb680)), closes [#81](https://github.com/niklam/iracedeck/issues/81)
+
 ## [0.10.0](https://github.com/niklam/iracedeck/compare/v0.9.2...v0.10.0) (2026-03-06)
 
 ### Features
