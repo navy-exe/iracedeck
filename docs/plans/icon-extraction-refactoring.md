@@ -131,29 +131,29 @@ When an action is fully migrated:
 - [x] `replay-speed` — 2 variants (increase, decrease)
 - [x] `look-direction` — 4 variants (look-left, look-right, look-up, look-down)
 - [x] `media-capture` — 7 variants per capture mode
-- [ ] `pit-quick-actions` — variants per pit action
-- [ ] `telemetry-control` — variants per control mode
-- [ ] `toggle-ui-elements` — variants per UI element
-- [ ] `camera-focus` — variants per focus mode
-- [ ] `camera-editor-controls` — variants per control
-- [ ] `cockpit-misc` — variants per cockpit action
-- [ ] `replay-navigation` — variants per nav action
-- [ ] `replay-transport` — variants per transport action
+- [x] `pit-quick-actions` — 3 variants (clear-all-checkboxes, windshield-tearoff, request-fast-repair)
+- [x] `telemetry-control` — 5 variants (toggle-logging, mark-event, start/stop/restart-recording)
+- [x] `toggle-ui-elements` — 9 variants (dash-box, speed-gear-pedals, radio-display, etc.)
+- [x] `camera-focus` — 7 variants (focus-your-car, focus-on-leader, etc.)
+- [x] `camera-editor-controls` — 30 variants per control
+- [x] `cockpit-misc` — 9 variants per cockpit action
+- [x] `replay-navigation` — 11 variants per nav action
+- [x] `replay-transport` — 8 variants per transport action
 
 ### Actions with many variants
 
-- [ ] `black-box-selector` — 11 direct icons + 2 cycle icons = 13 variants
-- [ ] `audio-controls` — variants per category × action
-- [ ] `camera-cycle` — variants per camera × direction
-- [ ] `camera-editor-adjustments` — variants per adjustment × direction
-- [ ] `view-adjustment` — variants per view × direction
-- [ ] `setup-aero` — variants per setting × direction
-- [ ] `setup-brakes` — variants per setting × direction
-- [ ] `setup-chassis` — variants per setting × direction
-- [ ] `setup-engine` — variants per setting × direction
-- [ ] `setup-fuel` — variants per setting × direction
-- [ ] `setup-hybrid` — variants per setting × direction
-- [ ] `setup-traction` — variants per setting × direction
+- [x] `black-box-selector` — 11 direct icons + 2 cycle icons = 13 variants
+- [x] `audio-controls` — 9 variants (3 categories × 3 actions)
+- [x] `camera-cycle` — 8 variants (4 types × 2 directions)
+- [x] `camera-editor-adjustments` — 30 variants (15 adjustments × 2 directions)
+- [x] `view-adjustment` — 9 variants (4 directional + 1 non-directional)
+- [x] `setup-aero` — 7 variants (3 directional + 1 non-directional)
+- [x] `setup-brakes` — 13 variants (6 directional + 1 toggle)
+- [x] `setup-chassis` — 26 variants (13 settings × 2 directions)
+- [x] `setup-engine` — 8 variants (4 settings × 2 directions)
+- [x] `setup-fuel` — 7 variants (2 directional + 3 toggles)
+- [x] `setup-hybrid` — 9 variants (3 directional + 3 non-directional)
+- [x] `setup-traction` — 9 variants (4 directional + 1 toggle)
 
 ### Actions with dynamic content (partial extraction)
 
