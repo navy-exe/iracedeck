@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.11.0](https://github.com/niklam/iracedeck/compare/v0.10.1...v0.11.0) (2026-03-08)
+
+### Features
+
+* **iracing-sdk:** add template variable system for dynamic string resolution ([#96](https://github.com/niklam/iracedeck/issues/96)) ([700879d](https://github.com/niklam/iracedeck/commit/700879d93eba5108bcdb6c04482140978896f169))
+
+### Bug Fixes
+
+* **icons:** update fuel-service icon designs ([#88](https://github.com/niklam/iracedeck/issues/88)) ([ffc343f](https://github.com/niklam/iracedeck/commit/ffc343f0e9e7006fe161ba6aed610e1e4ccccd1d))
+
+### Refactoring
+
+* **icons:** complete icon extraction and cleanup unused utilities ([#87](https://github.com/niklam/iracedeck/issues/87)) ([31b5c7c](https://github.com/niklam/iracedeck/commit/31b5c7c4d11fb9e6c7d624bcf660c745039631d8))
+* **icons:** extract dynamic action icons to @iracedeck/icons ([#86](https://github.com/niklam/iracedeck/issues/86)) ([f14acd7](https://github.com/niklam/iracedeck/commit/f14acd7e33f1fe40fd13cd9b6e7bf78cae9eb4f8))
+* **icons:** extract icons to shared @iracedeck/icons package ([#84](https://github.com/niklam/iracedeck/issues/84)) ([3dc4f52](https://github.com/niklam/iracedeck/commit/3dc4f521b46cf4e35b79b6ae00d92c197c6d2047))
+* **icons:** extract remaining static action icons to @iracedeck/icons ([#85](https://github.com/niklam/iracedeck/issues/85)) ([7d482b2](https://github.com/niklam/iracedeck/commit/7d482b2af5d1b011c5af0ca637b65824df7e3363))
+
+### Documentation
+
+* **website:** add download links, version requirement, and troubleshooting ([#83](https://github.com/niklam/iracedeck/issues/83)) ([d488cc0](https://github.com/niklam/iracedeck/commit/d488cc0b57a10de4afec16a956e24b0dbf9c188d))
+
+### Maintenance
+
+* **deps-dev:** bump @types/node from 24.0.15 to 25.3.3 ([#69](https://github.com/niklam/iracedeck/issues/69)) ([a9f47ae](https://github.com/niklam/iracedeck/commit/a9f47ae45d6649afaef781146c9d16fea7845a7b))
+* **deps:** bump the minor-and-patch group across 1 directory with 6 updates ([#79](https://github.com/niklam/iracedeck/issues/79)) ([aaa253a](https://github.com/niklam/iracedeck/commit/aaa253a0c47e18ddb220e5450e1a6aa8c2280e2f))
+
 ## [0.10.1](https://github.com/niklam/iracedeck/compare/v0.10.0...v0.10.1) (2026-03-06)
 
 ### Bug Fixes
