@@ -1,5 +1,5 @@
 import streamDeck, { action, DidReceiveSettingsEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { buildTemplateContext, DisplayUnits, resolveTemplate, type TelemetryData } from "@iracedeck/iracing-sdk";
+import { resolveTemplate } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
 import sessionInfoTemplate from "../../icons/session-info.svg";
@@ -12,67 +12,14 @@ import {
 } from "../shared/index.js";
 
 const TelemetryDisplaySettings = z.object({
-  mode: z.enum(["speed", "oil-temp", "water-temp", "brake-bias", "gear", "custom"]).default("speed"),
-  customTemplate: z.string().default("{{telemetry.Speed}}"),
-  customTitle: z.string().default("CUSTOM"),
+  template: z.string().default("{{telemetry.Speed}}"),
+  title: z.string().default("TELEMETRY"),
   backgroundColor: z.string().default("#2a3444"),
   textColor: z.string().default("#ffffff"),
   fontSize: z.coerce.number().default(18),
 });
 
 type TelemetryDisplaySettings = z.infer<typeof TelemetryDisplaySettings>;
-
-interface PresetMode {
-  title: string;
-  field: string;
-  format: (value: number, telemetry: TelemetryData) => string;
-}
-
-const KMH_PER_MS = 3.6;
-const MPH_PER_MS = 2.23694;
-
-/**
- * @internal Exported for testing
- */
-export const PRESET_MODES: Record<string, PresetMode> = {
-  speed: {
-    title: "SPEED",
-    field: "Speed",
-    format: (val, telemetry) => {
-      if (telemetry.DisplayUnits === DisplayUnits.English) {
-        return `${Math.round(val * MPH_PER_MS)} mph`;
-      }
-
-      return `${Math.round(val * KMH_PER_MS)} km/h`;
-    },
-  },
-  "oil-temp": {
-    title: "OIL TEMP",
-    field: "OilTemp",
-    format: (val) => `${Math.round(val)}°C`,
-  },
-  "water-temp": {
-    title: "WATER TEMP",
-    field: "WaterTemp",
-    format: (val) => `${Math.round(val)}°C`,
-  },
-  "brake-bias": {
-    title: "BRAKE BIAS",
-    field: "dcBrakeBias",
-    format: (val) => `${val.toFixed(1)}%`,
-  },
-  gear: {
-    title: "GEAR",
-    field: "Gear",
-    format: (val) => {
-      if (val === -1) return "R";
-
-      if (val === 0) return "N";
-
-      return String(val);
-    },
-  },
-};
 
 /**
  * @internal Exported for testing
@@ -91,29 +38,8 @@ export function generateTelemetryDisplaySvg(title: string, value: string, settin
 }
 
 /**
- * @internal Exported for testing
- */
-export function extractPresetValue(mode: string, telemetry: TelemetryData | null): { title: string; value: string } {
-  const preset = PRESET_MODES[mode];
-
-  if (!preset) return { title: "---", value: "---" };
-
-  if (!telemetry) return { title: preset.title, value: "---" };
-
-  const raw = (telemetry as unknown as Record<string, unknown>)[preset.field];
-
-  if (raw === undefined || raw === null || typeof raw !== "number") {
-    return { title: preset.title, value: "---" };
-  }
-
-  return { title: preset.title, value: preset.format(raw, telemetry) };
-}
-
-/**
  * Telemetry Display Action
- * Displays live telemetry values on the Stream Deck key.
- * Supports preset modes (speed, oil temp, water temp, brake bias, gear)
- * and a custom mode with mustache template support.
+ * Displays live telemetry values on the Stream Deck key using mustache templates.
  */
 @action({ UUID: "com.iracedeck.sd.core.telemetry-display" })
 export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDisplaySettings> {
@@ -127,13 +53,13 @@ export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDispla
     this.activeContexts.set(ev.action.id, settings);
     await this.updateDisplay(ev, settings);
 
-    this.sdkController.subscribe(ev.action.id, (telemetry) => {
+    this.sdkController.subscribe(ev.action.id, () => {
       this.updateConnectionState();
 
       const storedSettings = this.activeContexts.get(ev.action.id);
 
       if (storedSettings) {
-        this.updateDisplayFromTelemetry(ev.action.id, telemetry, storedSettings);
+        this.updateDisplayFromTelemetry(ev.action.id, storedSettings);
       }
     });
   }
@@ -164,8 +90,7 @@ export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDispla
   ): Promise<void> {
     this.updateConnectionState();
 
-    const telemetry = this.sdkController.getCurrentTelemetry();
-    const { title, value } = this.resolveDisplay(settings, telemetry);
+    const { title, value } = this.resolveDisplay(settings);
 
     const svgDataUri = generateTelemetryDisplaySvg(title, value, settings);
     await ev.action.setTitle("");
@@ -175,32 +100,22 @@ export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDispla
     this.lastState.set(ev.action.id, stateKey);
   }
 
-  private resolveDisplay(
-    settings: TelemetryDisplaySettings,
-    telemetry: TelemetryData | null,
-  ): { title: string; value: string } {
-    if (settings.mode === "custom") {
-      if (!telemetry) return { title: settings.customTitle, value: "---" };
+  private resolveDisplay(settings: TelemetryDisplaySettings): { title: string; value: string } {
+    const context = this.sdkController.getCurrentTemplateContext();
 
-      const context = buildTemplateContext(this.sdkController);
-      const value = resolveTemplate(settings.customTemplate, context);
+    if (!context) return { title: settings.title, value: "---" };
 
-      return { title: settings.customTitle, value: value || "---" };
-    }
+    const value = resolveTemplate(settings.template, context);
 
-    return extractPresetValue(settings.mode, telemetry);
+    return { title: settings.title, value: value || "---" };
   }
 
   private buildStateKey(title: string, value: string, settings: TelemetryDisplaySettings): string {
     return `${title}|${value}|${settings.backgroundColor}|${settings.textColor}|${settings.fontSize}`;
   }
 
-  private async updateDisplayFromTelemetry(
-    contextId: string,
-    telemetry: TelemetryData | null,
-    settings: TelemetryDisplaySettings,
-  ): Promise<void> {
-    const { title, value } = this.resolveDisplay(settings, telemetry);
+  private async updateDisplayFromTelemetry(contextId: string, settings: TelemetryDisplaySettings): Promise<void> {
+    const { title, value } = this.resolveDisplay(settings);
     const stateKey = this.buildStateKey(title, value, settings);
     const lastStateKey = this.lastState.get(contextId);
 

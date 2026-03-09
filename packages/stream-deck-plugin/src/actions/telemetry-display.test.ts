@@ -1,7 +1,6 @@
-import type { TelemetryData } from "@iracedeck/iracing-sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { extractPresetValue, generateTelemetryDisplaySvg, PRESET_MODES } from "./telemetry-display.js";
+import { generateTelemetryDisplaySvg } from "./telemetry-display.js";
 
 vi.mock("@elgato/streamdeck", () => ({
   default: {
@@ -24,12 +23,7 @@ vi.mock("../../icons/session-info.svg", () => ({
 }));
 
 vi.mock("@iracedeck/iracing-sdk", () => ({
-  buildTemplateContext: vi.fn(() => ({
-    telemetry: { Speed: "156.79", OilTemp: "95" },
-    sessionInfo: {},
-  })),
   resolveTemplate: vi.fn((template: string) => template.replace("{{telemetry.Speed}}", "156.79")),
-  DisplayUnits: { English: 0, Metric: 1 },
 }));
 
 vi.mock("../shared/index.js", () => ({
@@ -38,6 +32,7 @@ vi.mock("../shared/index.js", () => ({
       subscribe: vi.fn(),
       unsubscribe: vi.fn(),
       getCurrentTelemetry: vi.fn(() => null),
+      getCurrentTemplateContext: vi.fn(() => null),
     };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
@@ -68,99 +63,11 @@ describe("TelemetryDisplay", () => {
     vi.clearAllMocks();
   });
 
-  describe("PRESET_MODES", () => {
-    it("should have all expected modes", () => {
-      expect(Object.keys(PRESET_MODES).sort()).toEqual(
-        ["brake-bias", "gear", "oil-temp", "speed", "water-temp"].sort(),
-      );
-    });
-  });
-
-  describe("extractPresetValue", () => {
-    it("should return placeholder when no telemetry", () => {
-      const result = extractPresetValue("speed", null);
-
-      expect(result).toEqual({ title: "SPEED", value: "---" });
-    });
-
-    it("should return placeholder for unknown mode", () => {
-      const result = extractPresetValue("unknown", null);
-
-      expect(result).toEqual({ title: "---", value: "---" });
-    });
-
-    it("should format speed in metric", () => {
-      const telemetry = { Speed: 10, DisplayUnits: 1 } as unknown as TelemetryData;
-      const result = extractPresetValue("speed", telemetry);
-
-      expect(result.title).toBe("SPEED");
-      expect(result.value).toBe("36 km/h");
-    });
-
-    it("should format speed in imperial", () => {
-      const telemetry = { Speed: 10, DisplayUnits: 0 } as unknown as TelemetryData;
-      const result = extractPresetValue("speed", telemetry);
-
-      expect(result.title).toBe("SPEED");
-      expect(result.value).toBe("22 mph");
-    });
-
-    it("should format oil temperature", () => {
-      const telemetry = { OilTemp: 95.7 } as unknown as TelemetryData;
-      const result = extractPresetValue("oil-temp", telemetry);
-
-      expect(result).toEqual({ title: "OIL TEMP", value: "96°C" });
-    });
-
-    it("should format water temperature", () => {
-      const telemetry = { WaterTemp: 78.3 } as unknown as TelemetryData;
-      const result = extractPresetValue("water-temp", telemetry);
-
-      expect(result).toEqual({ title: "WATER TEMP", value: "78°C" });
-    });
-
-    it("should format brake bias", () => {
-      const telemetry = { dcBrakeBias: 52.35 } as unknown as TelemetryData;
-      const result = extractPresetValue("brake-bias", telemetry);
-
-      expect(result).toEqual({ title: "BRAKE BIAS", value: "52.4%" });
-    });
-
-    it("should format gear as number", () => {
-      const telemetry = { Gear: 4 } as unknown as TelemetryData;
-      const result = extractPresetValue("gear", telemetry);
-
-      expect(result).toEqual({ title: "GEAR", value: "4" });
-    });
-
-    it("should format gear 0 as N", () => {
-      const telemetry = { Gear: 0 } as unknown as TelemetryData;
-      const result = extractPresetValue("gear", telemetry);
-
-      expect(result).toEqual({ title: "GEAR", value: "N" });
-    });
-
-    it("should format gear -1 as R", () => {
-      const telemetry = { Gear: -1 } as unknown as TelemetryData;
-      const result = extractPresetValue("gear", telemetry);
-
-      expect(result).toEqual({ title: "GEAR", value: "R" });
-    });
-
-    it("should return placeholder when field is missing", () => {
-      const telemetry = {} as unknown as TelemetryData;
-      const result = extractPresetValue("speed", telemetry);
-
-      expect(result).toEqual({ title: "SPEED", value: "---" });
-    });
-  });
-
   describe("generateTelemetryDisplaySvg", () => {
     it("should produce a data URI", () => {
-      const result = generateTelemetryDisplaySvg("SPEED", "100 km/h", {
-        mode: "speed",
-        customTemplate: "",
-        customTitle: "",
+      const result = generateTelemetryDisplaySvg("TELEMETRY", "100", {
+        template: "{{telemetry.Speed}}",
+        title: "TELEMETRY",
         backgroundColor: "#2a3444",
         textColor: "#ffffff",
         fontSize: 18,
@@ -171,9 +78,8 @@ describe("TelemetryDisplay", () => {
 
     it("should use custom colors", () => {
       const result = generateTelemetryDisplaySvg("TEST", "42", {
-        mode: "custom",
-        customTemplate: "42",
-        customTitle: "TEST",
+        template: "42",
+        title: "TEST",
         backgroundColor: "#ff0000",
         textColor: "#00ff00",
         fontSize: 24,
@@ -182,6 +88,19 @@ describe("TelemetryDisplay", () => {
       expect(result).toContain(encodeURIComponent("#ff0000"));
       expect(result).toContain(encodeURIComponent("#00ff00"));
       expect(result).toContain(encodeURIComponent("24"));
+    });
+
+    it("should encode title and value", () => {
+      const result = generateTelemetryDisplaySvg("SPEED", "150", {
+        template: "",
+        title: "SPEED",
+        backgroundColor: "#2a3444",
+        textColor: "#ffffff",
+        fontSize: 18,
+      });
+
+      expect(result).toContain(encodeURIComponent("SPEED"));
+      expect(result).toContain(encodeURIComponent("150"));
     });
   });
 });
