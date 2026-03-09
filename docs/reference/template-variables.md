@@ -152,6 +152,33 @@ Not all variables have meaningful values in every session type. The **Availabili
 | `track.name` | All |
 | `track.short_name` | All |
 
+### Raw Telemetry (`telemetry.*`)
+
+Access any iRacing telemetry field directly. Fields are formatted for display: decimals rounded to 2 places, booleans shown as "Yes"/"No". `CarIdx*` arrays are excluded.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `telemetry.Speed` | Vehicle speed (m/s) | `44.17` |
+| `telemetry.Gear` | Current gear | `4` |
+| `telemetry.OilTemp` | Oil temperature (°C) | `95.23` |
+| `telemetry.WaterTemp` | Water temperature (°C) | `78.00` |
+| `telemetry.FuelLevel` | Fuel level (liters) | `12.50` |
+| `telemetry.dcBrakeBias` | Brake bias (%) | `52.30` |
+| `telemetry.IsOnTrack` | Whether car is on track | `Yes` |
+| `telemetry.SessionTimeRemain` | Session time remaining (seconds) | `193.50` |
+
+See `packages/iracing-sdk/full-snapshot.json` for a complete list of available fields.
+
+### Raw Session Info (`sessionInfo.*`)
+
+Access nested session info using dot notation. Arrays (like `DriverInfo.Drivers`) are excluded.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `sessionInfo.WeekendInfo.TrackDisplayName` | Full track name | `Spa-Francorchamps` |
+| `sessionInfo.WeekendInfo.TrackLength` | Track length | `7.004 km` |
+| `sessionInfo.DriverInfo.DriverCarIdx` | Player's car index | `63` |
+
 ## Edge Cases
 
 - **Leading the race**: `race_ahead` fields are empty
