@@ -4,27 +4,17 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
-		<sdpi-item label="Display Mode">
-			<sdpi-select id="mode-select" setting="mode" default="speed">
-				<option value="speed">Speed</option>
-				<option value="oil-temp">Oil Temperature</option>
-				<option value="water-temp">Water Temperature</option>
-				<option value="brake-bias">Brake Bias</option>
-				<option value="gear">Gear</option>
-				<option value="custom">Custom Template</option>
-			</sdpi-select>
+		<sdpi-item label="Title">
+			<sdpi-textfield setting="title" default="TELEMETRY"></sdpi-textfield>
 		</sdpi-item>
 
-		<sdpi-item id="custom-title-item" label="Title" class="hidden">
-			<sdpi-textfield setting="customTitle" default="CUSTOM"></sdpi-textfield>
+		<sdpi-item label="Template">
+			<sdpi-textfield setting="template" default="{{telemetry.Speed}}"></sdpi-textfield>
 		</sdpi-item>
 
-		<sdpi-item id="custom-template-item" label="Template" class="hidden">
-			<sdpi-textfield setting="customTemplate" default="{{telemetry.Speed}}"></sdpi-textfield>
-		</sdpi-item>
-
-		<div id="template-help" class="hidden" style="padding: 0 16px 8px; font-size: 11px; color: #9e9e9e; line-height: 1.5;">
-			Use <b>{{telemetry.FieldName}}</b> or <b>{{sessionInfo.Path.To.Field}}</b> placeholders.
+		<div style="padding: 0 16px 8px; font-size: 11px; color: #9e9e9e; line-height: 1.5;">
+			Use <b>{{telemetry.FieldName}}</b> placeholders.
+			<a href="https://iracedeck.com/docs/template-variables" style="color: #9e9e9e;">Variable reference</a>
 		</div>
 
 		<sdpi-item label="Background Color">
@@ -43,49 +33,5 @@
 				<option value="24">Extra Large (24)</option>
 			</sdpi-select>
 		</sdpi-item>
-
-		<script>
-			async function initialize() {
-				await customElements.whenDefined("sdpi-select");
-
-				const modeSelect = document.getElementById("mode-select");
-				if (!modeSelect) return;
-
-				updateVisibility(modeSelect.value || "speed");
-
-				modeSelect.addEventListener("change", (ev) => updateVisibility(ev.target.value));
-				modeSelect.addEventListener("input", (ev) => updateVisibility(ev.target.value));
-
-				let lastMode = modeSelect.value || "speed";
-				setInterval(() => {
-					const current = modeSelect.value;
-					if (current && current !== lastMode) {
-						lastMode = current;
-						updateVisibility(current);
-					}
-				}, 100);
-			}
-
-			function updateVisibility(mode) {
-				const customTitle = document.getElementById("custom-title-item");
-				const customTemplate = document.getElementById("custom-template-item");
-				const templateHelp = document.getElementById("template-help");
-				const isCustom = mode === "custom";
-
-				if (customTitle) customTitle.classList.toggle("hidden", !isCustom);
-				if (customTemplate) customTemplate.classList.toggle("hidden", !isCustom);
-				if (templateHelp) templateHelp.classList.toggle("hidden", !isCustom);
-			}
-
-			if (document.readyState === "loading") {
-				document.addEventListener("DOMContentLoaded", initialize);
-			} else {
-				initialize();
-			}
-		</script>
-
-		<style>
-			.hidden { display: none !important; }
-		</style>
 	</body>
 </html>
