@@ -83,6 +83,26 @@ const EMPTY_SELF_FIELDS: SelfDriverFields = {
   incidents: "",
 };
 
+/**
+ * Field names that are integers (0/1) but represent boolean values.
+ * These get converted to "Yes"/"No" instead of "0"/"1".
+ */
+const BOOLEAN_INT_FIELDS = new Set([
+  "IsOnTrack",
+  "IsOnTrackCar",
+  "IsReplayPlaying",
+  "IsInGarage",
+  "IsDiskLoggingEnabled",
+  "IsDiskLoggingActive",
+  "PlayerCarDryTireSetAvailable",
+  "DriverMarker",
+  "PushToPass",
+  "PushToTalk",
+  "OnPitRoad",
+  "PitstopActive",
+  "PlayerCarInPitStall",
+]);
+
 interface FlattenOptions {
   excludePrefix?: string;
 }
@@ -114,7 +134,13 @@ export function flattenForDisplay(obj: Record<string, unknown>, options?: Flatte
       if (typeof value === "boolean") {
         result[fullKey] = value ? "Yes" : "No";
       } else if (typeof value === "number") {
-        result[fullKey] = Number.isInteger(value) ? String(value) : value.toFixed(2);
+        const leafKey = fullKey.includes(".") ? fullKey.substring(fullKey.lastIndexOf(".") + 1) : fullKey;
+
+        if (BOOLEAN_INT_FIELDS.has(leafKey) && (value === 0 || value === 1)) {
+          result[fullKey] = value === 1 ? "Yes" : "No";
+        } else {
+          result[fullKey] = Number.isInteger(value) ? String(value) : value.toFixed(2);
+        }
       } else if (typeof value === "string") {
         result[fullKey] = value;
       } else if (value !== null && value !== undefined) {

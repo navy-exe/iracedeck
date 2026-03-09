@@ -512,6 +512,21 @@ describe("flattenForDisplay", () => {
     expect(result["CarSetup.Tires.LeftFront.TreadRemaining"]).toBe("85.50");
   });
 
+  it("should convert known boolean-semantic integer fields to Yes/No", () => {
+    const result = flattenForDisplay({ IsOnTrack: 1, IsReplayPlaying: 0, Speed: 100 });
+
+    expect(result.IsOnTrack).toBe("Yes");
+    expect(result.IsReplayPlaying).toBe("No");
+    expect(result.Speed).toBe("100");
+  });
+
+  it("should not convert unknown integer fields to Yes/No", () => {
+    const result = flattenForDisplay({ Gear: 1, Lap: 0 });
+
+    expect(result.Gear).toBe("1");
+    expect(result.Lap).toBe("0");
+  });
+
   it("should skip null and undefined values", () => {
     const result = flattenForDisplay({ a: null, b: undefined, c: "valid" } as Record<string, unknown>);
 
