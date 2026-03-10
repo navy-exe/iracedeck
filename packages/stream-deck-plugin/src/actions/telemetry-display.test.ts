@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { generateTelemetryDisplaySvg } from "./telemetry-display.js";
+import { generateTelemetryDisplaySvg, generateValueContent } from "./telemetry-display.js";
 
 vi.mock("@elgato/streamdeck", () => ({
   default: {
@@ -19,7 +19,7 @@ vi.mock("@elgato/streamdeck", () => ({
 
 vi.mock("../../icons/telemetry-display.svg", () => ({
   default:
-    '<svg xmlns="http://www.w3.org/2000/svg">{{backgroundColor}} {{titleColor}} {{titleLabel}} {{value}} {{valueFontSize}} {{textColor}}</svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg">{{backgroundColor}} {{titleColor}} {{titleLabel}} {{valueContent}}</svg>',
 }));
 
 vi.mock("@iracedeck/iracing-sdk", () => ({
@@ -45,6 +45,7 @@ vi.mock("../shared/index.js", () => ({
     error: vi.fn(),
     trace: vi.fn(),
   })),
+  escapeXml: vi.fn((str: string) => str),
   LogLevel: { Info: 2 },
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -87,7 +88,6 @@ describe("TelemetryDisplay", () => {
 
       expect(result).toContain(encodeURIComponent("#ff0000"));
       expect(result).toContain(encodeURIComponent("#00ff00"));
-      expect(result).toContain(encodeURIComponent("24"));
     });
 
     it("should use text color for title", () => {
@@ -115,6 +115,41 @@ describe("TelemetryDisplay", () => {
 
       expect(result).toContain(encodeURIComponent("SPEED"));
       expect(result).toContain(encodeURIComponent("150"));
+    });
+  });
+
+  describe("generateValueContent", () => {
+    it("should generate a single text element for single-line value", () => {
+      const result = generateValueContent("150", 18, "#ffffff");
+
+      expect(result).toContain("<text");
+      expect(result).toContain("150");
+      expect(result).toContain('y="50"');
+      expect(result).toContain('font-size="18"');
+      expect(result).toContain('fill="#ffffff"');
+      expect(result.match(/<text /g)?.length).toBe(1);
+    });
+
+    it("should generate multiple text elements for multiline value", () => {
+      const result = generateValueContent("Line1\nLine2", 14, "#00ff00");
+
+      expect(result).toContain("Line1");
+      expect(result).toContain("Line2");
+      expect(result.match(/<text /g)?.length).toBe(2);
+      expect(result).toContain('fill="#00ff00"');
+    });
+
+    it("should filter out empty lines", () => {
+      const result = generateValueContent("Line1\n\nLine2", 14, "#ffffff");
+
+      expect(result.match(/<text /g)?.length).toBe(2);
+    });
+
+    it("should handle empty value", () => {
+      const result = generateValueContent("", 18, "#ffffff");
+
+      expect(result).toContain("<text");
+      expect(result.match(/<text /g)?.length).toBe(1);
     });
   });
 });
