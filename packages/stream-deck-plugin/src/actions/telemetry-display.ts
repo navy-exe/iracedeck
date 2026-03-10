@@ -2,7 +2,7 @@ import streamDeck, { action, DidReceiveSettingsEvent, WillAppearEvent, WillDisap
 import { resolveTemplate } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
-import sessionInfoTemplate from "../../icons/session-info.svg";
+import telemetryDisplayTemplate from "../../icons/telemetry-display.svg";
 import {
   ConnectionStateAwareAction,
   createSDLogger,
@@ -25,8 +25,9 @@ type TelemetryDisplaySettings = z.infer<typeof TelemetryDisplaySettings>;
  * @internal Exported for testing
  */
 export function generateTelemetryDisplaySvg(title: string, value: string, settings: TelemetryDisplaySettings): string {
-  const svg = renderIconTemplate(sessionInfoTemplate, {
+  const svg = renderIconTemplate(telemetryDisplayTemplate, {
     backgroundColor: settings.backgroundColor,
+    titleColor: settings.textColor,
     titleLabel: title,
     value,
     valueFontSize: String(settings.fontSize),

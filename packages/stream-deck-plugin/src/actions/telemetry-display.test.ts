@@ -17,9 +17,9 @@ vi.mock("@elgato/streamdeck", () => ({
   action: () => (target: unknown) => target,
 }));
 
-vi.mock("../../icons/session-info.svg", () => ({
+vi.mock("../../icons/telemetry-display.svg", () => ({
   default:
-    '<svg xmlns="http://www.w3.org/2000/svg">{{backgroundColor}} {{titleLabel}} {{value}} {{valueFontSize}} {{textColor}}</svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg">{{backgroundColor}} {{titleColor}} {{titleLabel}} {{value}} {{valueFontSize}} {{textColor}}</svg>',
 }));
 
 vi.mock("@iracedeck/iracing-sdk", () => ({
@@ -88,6 +88,20 @@ describe("TelemetryDisplay", () => {
       expect(result).toContain(encodeURIComponent("#ff0000"));
       expect(result).toContain(encodeURIComponent("#00ff00"));
       expect(result).toContain(encodeURIComponent("24"));
+    });
+
+    it("should use text color for title", () => {
+      const result = generateTelemetryDisplaySvg("SPEED", "150", {
+        template: "",
+        title: "SPEED",
+        backgroundColor: "#2a3444",
+        textColor: "#ff0000",
+        fontSize: 18,
+      });
+
+      const decoded = decodeURIComponent(result);
+      // titleColor should match textColor
+      expect(decoded).toContain("#ff0000");
     });
 
     it("should encode title and value", () => {
