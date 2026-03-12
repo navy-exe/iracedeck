@@ -60,8 +60,7 @@ Mock data is placeholder. To update with real telemetry, capture snapshots on Wi
 
 | Script | Behavior |
 |--------|----------|
-| `pnpm build` (root) | Cross-platform: `turbo run build` |
-| `pnpm build:win` (root) | Windows: stops Stream Deck, builds, restarts Stream Deck |
+| `pnpm build` (root) | Runs `turbo run build`. On Windows, automatically stops Stream Deck before building and restarts it after (only if it was running). |
 | `iracing-native build` | Runs `node-gyp rebuild` on Windows, skips on other platforms; always runs `tsc` |
 
 ## Design doc
