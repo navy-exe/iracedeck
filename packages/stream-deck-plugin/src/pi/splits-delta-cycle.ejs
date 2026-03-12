@@ -11,10 +11,10 @@
 			</sdpi-select>
 		</sdpi-item>
 
+		<%- include('common-settings') %>
+
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').splitsDelta
 		}) %>
-
-		<%- include('common-settings') %>
 	</body>
 </html>

@@ -126,6 +126,14 @@
 			</sdpi-item>
 		</div>
 
+		<div class="ird-common-settings-section">
+  <div class="ird-section-heading">Common Settings</div>
+  <sdpi-item label="Flags Overlay">
+    <sdpi-checkbox setting="flagsOverlay" label="Flash flag colors on button"></sdpi-checkbox>
+  </sdpi-item>
+</div>
+
+
 		<div id="key-bindings-section" class="hidden">
 			<!--
   Global Key Bindings Component
@@ -220,25 +228,5 @@
 		<style>
 			.hidden { display: none !important; }
 		</style>
-
-		<!--
-  Collapsible Component - A collapsible section with divider and arrow.
-  Parameters: title (String), content (HTML String), open (Boolean, optional)
--->
-<details class="ird-collapsible" >
-  <summary class="ird-collapsible-header">
-    <span class="ird-collapsible-icon">&#9654;</span>
-    <span class="ird-collapsible-title">Common Settings</span>
-  </summary>
-  <div class="ird-collapsible-content">
-    
-    <sdpi-item label="Flags Overlay">
-      <sdpi-checkbox setting="flagsOverlay" label="Flash flag colors on button"></sdpi-checkbox>
-    </sdpi-item>
-  
-  </div>
-</details>
-
-
 	</body>
 </html>
