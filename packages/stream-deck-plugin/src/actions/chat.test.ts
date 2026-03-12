@@ -67,7 +67,6 @@ vi.mock("../shared/index.js", () => ({
   CommonSettings: {
     extend: () => {
       const defaults = {
-        flagsOverlay: false,
         mode: "open-chat",
         message: "",
         macroNumber: 1,
@@ -81,8 +80,8 @@ vi.mock("../shared/index.js", () => ({
 
       return schema;
     },
-    parse: (data: Record<string, unknown>) => ({ flagsOverlay: false, ...data }),
-    safeParse: (data: Record<string, unknown>) => ({ success: true, data: { flagsOverlay: false, ...data } }),
+    parse: (data: Record<string, unknown>) => ({ ...data }),
+    safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...data } }),
   },
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
     sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn() };
