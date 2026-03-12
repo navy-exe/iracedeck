@@ -89,6 +89,12 @@
   ],
   "cockpitMisc": [
     {
+      "id": "toggleWipers",
+      "label": "Toggle Wipers",
+      "default": "Shift+W",
+      "setting": "cockpitMiscToggleWipers"
+    },
+    {
       "id": "triggerWipers",
       "label": "Trigger Wipers",
       "default": "Ctrl+Alt+W",
