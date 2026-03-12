@@ -15,7 +15,7 @@ export const CommonSettings = z.object({
   flagsOverlay: z
     .union([z.boolean(), z.string()])
     .transform((val) => val === true || val === "true")
-    .default(false),
+    .optional(),
 });
 
 export type CommonSettings = z.infer<typeof CommonSettings>;

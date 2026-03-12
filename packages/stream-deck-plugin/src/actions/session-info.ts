@@ -399,7 +399,7 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
 
           return;
         } else if (lastKey !== undefined && flagInfo) {
-          this.startFlagFlash(contextId, settings, flagInfo);
+          this.startFlagColorFlash(contextId, settings, flagInfo);
 
           return;
         }
@@ -461,7 +461,7 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     doStep();
   }
 
-  private startFlagFlash(contextId: string, settings: SessionInfoSettings, flagInfo: FlagInfo): void {
+  private startFlagColorFlash(contextId: string, settings: SessionInfoSettings, flagInfo: FlagInfo): void {
     this.cancelFlash(contextId);
 
     let step = 0;

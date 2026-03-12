@@ -70,14 +70,14 @@ vi.mock("../shared/index.js", () => ({
     extend: () => {
       const defaults = { flagsOverlay: false, action: "toggle-tires", lf: true, rf: true, lr: true, rr: true };
       const schema = {
-        parse: (data) => ({ ...defaults, ...data }),
-        safeParse: (data) => ({ success: true, data: { ...defaults, ...data } }),
+        parse: (data: Record<string, unknown>) => ({ ...defaults, ...data }),
+        safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...defaults, ...data } }),
       };
 
       return schema;
     },
-    parse: (data) => ({ flagsOverlay: false, ...data }),
-    safeParse: (data) => ({ success: true, data: { flagsOverlay: false, ...data } }),
+    parse: (data: Record<string, unknown>) => ({ flagsOverlay: false, ...data }),
+    safeParse: (data: Record<string, unknown>) => ({ success: true, data: { flagsOverlay: false, ...data } }),
   },
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
     sdkController = {

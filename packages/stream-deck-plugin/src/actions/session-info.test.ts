@@ -36,9 +36,9 @@ vi.mock("../shared/index.js", () => ({
       const defaults = { flagsOverlay: false, mode: "incidents", positionShowTotal: false, fuelFormat: "amount" };
       const validModes = ["incidents", "time-remaining", "laps", "position", "fuel", "flags"];
       const schema = {
-        parse: (data) => ({ ...defaults, ...data }),
-        safeParse: (data) => {
-          if (data?.mode && !validModes.includes(data.mode)) {
+        parse: (data: Record<string, unknown>) => ({ ...defaults, ...data }),
+        safeParse: (data: Record<string, unknown>) => {
+          if (data?.mode && !validModes.includes(data.mode as string)) {
             return { success: false, error: new Error("Invalid mode") };
           }
 
@@ -48,8 +48,8 @@ vi.mock("../shared/index.js", () => ({
 
       return schema;
     },
-    parse: (data) => ({ flagsOverlay: false, ...data }),
-    safeParse: (data) => ({ success: true, data: { flagsOverlay: false, ...data } }),
+    parse: (data: Record<string, unknown>) => ({ flagsOverlay: false, ...data }),
+    safeParse: (data: Record<string, unknown>) => ({ success: true, data: { flagsOverlay: false, ...data } }),
   },
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
     sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn(), getSessionInfo: vi.fn() };

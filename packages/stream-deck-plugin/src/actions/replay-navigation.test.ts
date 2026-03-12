@@ -53,17 +53,17 @@ vi.mock("@iracedeck/icons/replay-navigation/erase-tape.svg", () => ({
 
 vi.mock("../shared/index.js", () => ({
   CommonSettings: {
-    extend: (_fields) => {
+    extend: (_fields: unknown) => {
       // Return a mock Zod-like schema
       const schema = {
-        parse: (data) => ({ flagsOverlay: false, ...data }),
-        safeParse: (data) => ({ success: true, data: { flagsOverlay: false, ...data } }),
+        parse: (data: Record<string, unknown>) => ({ flagsOverlay: false, ...data }),
+        safeParse: (data: Record<string, unknown>) => ({ success: true, data: { flagsOverlay: false, ...data } }),
       };
 
       return schema;
     },
-    parse: (data) => ({ flagsOverlay: false, ...data }),
-    safeParse: (data) => ({ success: true, data: { flagsOverlay: false, ...data } }),
+    parse: (data: Record<string, unknown>) => ({ flagsOverlay: false, ...data }),
+    safeParse: (data: Record<string, unknown>) => ({ success: true, data: { flagsOverlay: false, ...data } }),
   },
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
     sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn() };

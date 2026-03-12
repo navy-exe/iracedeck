@@ -4,9 +4,9 @@ import z from "zod";
 import { CommonSettings } from "./common-settings.js";
 
 describe("CommonSettings", () => {
-  it("should default flagsOverlay to false", () => {
+  it("should default flagsOverlay to undefined when omitted", () => {
     const result = CommonSettings.parse({});
-    expect(result.flagsOverlay).toBe(false);
+    expect(result.flagsOverlay).toBeUndefined();
   });
 
   it("should accept boolean true", () => {
@@ -35,7 +35,7 @@ describe("CommonSettings", () => {
     });
 
     const result = ActionSettings.parse({});
-    expect(result.flagsOverlay).toBe(false);
+    expect(result.flagsOverlay).toBeUndefined();
     expect(result.direction).toBe("next");
   });
 
