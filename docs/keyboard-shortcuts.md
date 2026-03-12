@@ -71,7 +71,7 @@
 | Autofuel Toggle | Shift+Ctrl+A | No | Autofuel Toggle |
 | Adjust Autofuel Lap Margin | Shift+Alt+X / Shift+Alt+S | No | Autofuel Lap Margin Inc / Autofuel Lap Margin Dec |
 | Tear Off Visor | - | No | Tear Off Visor |
-| Toggle Windshield Wipers | - | No | Toggle Windshield Wipers |
+| Toggle Windshield Wipers | Shift+W | No | Toggle Windshield Wipers |
 | Trigger Windshield Wipers | Ctrl+Alt+W | No | Trigger Windshield Wipers |
 | Toggle Dash Box | D | No | Toggle Dash Box |
 
