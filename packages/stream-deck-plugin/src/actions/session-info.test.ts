@@ -1,12 +1,11 @@
+import { FLAG_DEFINITIONS, resolveActiveFlag } from "@iracedeck/iracing-sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   countActiveDrivers,
-  FLAG_DEFINITIONS,
   formatFuelAmount,
   formatSessionTime,
   generateSessionInfoSvg,
-  resolveActiveFlag,
   SessionInfo,
 } from "./session-info.js";
 
