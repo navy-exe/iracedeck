@@ -338,11 +338,37 @@
       ]
     },
     {
+      "Name": "Replay Control",
+      "UUID": "com.iracedeck.sd.core.replay-control",
+      "Icon": "imgs/actions/replay-control/icon",
+      "Tooltip": "Unified replay controls: transport, speed, and navigation",
+      "PropertyInspectorPath": "ui/replay-control.html",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Context-dependent (frame step, speed, navigation)",
+          "Push": "Context-dependent (play, reset speed, navigate)"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/replay-control/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 14
+        }
+      ]
+    },
+    {
       "Name": "Replay Transport",
       "UUID": "com.iracedeck.sd.core.replay-transport",
       "Icon": "imgs/actions/replay-transport/icon",
       "Tooltip": "Replay playback controls (play, pause, fast forward, rewind, slow motion, frame step)",
       "PropertyInspectorPath": "ui/replay-transport.html",
+      "VisibleInActionsList": false,
       "Controllers": [
         "Keypad",
         "Encoder"
@@ -368,6 +394,7 @@
       "Icon": "imgs/actions/replay-speed/icon",
       "Tooltip": "Increase or decrease replay playback speed",
       "PropertyInspectorPath": "ui/replay-speed.html",
+      "VisibleInActionsList": false,
       "Controllers": [
         "Keypad",
         "Encoder"
@@ -515,6 +542,7 @@
       "Icon": "imgs/actions/replay-navigation/icon",
       "Tooltip": "Jump to sessions, laps, incidents, or specific positions in replay",
       "PropertyInspectorPath": "ui/replay-navigation.html",
+      "VisibleInActionsList": false,
       "Controllers": [
         "Keypad",
         "Encoder"

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<%- include('head-common') %>
+	</head>
+	<body>
+		<sdpi-item label="Control">
+			<sdpi-select setting="mode" default="play-pause">
+				<optgroup label="Transport">
+					<option value="play-pause">Play / Pause</option>
+					<option value="stop">Stop</option>
+					<option value="fast-forward">Fast Forward</option>
+					<option value="rewind">Rewind</option>
+					<option value="slow-motion">Slow Motion</option>
+					<option value="frame-forward">Frame Forward</option>
+					<option value="frame-backward">Frame Backward</option>
+				</optgroup>
+				<optgroup label="Speed">
+					<option value="speed-increase">Increase Speed</option>
+					<option value="speed-decrease">Decrease Speed</option>
+				</optgroup>
+				<optgroup label="Navigation">
+					<option value="next-session">Next Session</option>
+					<option value="prev-session">Previous Session</option>
+					<option value="next-lap">Next Lap</option>
+					<option value="prev-lap">Previous Lap</option>
+					<option value="next-incident">Next Incident</option>
+					<option value="prev-incident">Previous Incident</option>
+					<option value="jump-to-beginning">Jump to Beginning</option>
+					<option value="jump-to-live">Jump to Live</option>
+				</optgroup>
+			</sdpi-select>
+		</sdpi-item>
+
+		<%- include('common-settings') %>
+	</body>
+</html>
