@@ -107,6 +107,7 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
 
   private static readonly FLAG_FLASH_INTERVAL_MS = 500;
   private static readonly FLAG_SUBSCRIPTION_PREFIX = "__flag_overlay__";
+  private static flagSubscriptionCounter = 0;
 
   constructor() {
     super();
@@ -339,7 +340,7 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
 
     try {
       const controller = getController();
-      const subId = `${BaseAction.FLAG_SUBSCRIPTION_PREFIX}${Date.now()}`;
+      const subId = `${BaseAction.FLAG_SUBSCRIPTION_PREFIX}${++BaseAction.flagSubscriptionCounter}`;
 
       controller.subscribe(subId, (telemetry, isConnected) => {
         if (!isConnected) {
