@@ -116,7 +116,7 @@ On non-Windows platforms, the mock is used automatically. On Windows, you can fo
 
 Create an empty `.mock` file in your application's working directory. For Stream Deck plugins, this is the sdPlugin folder:
 
-```
+```text
 com.iracedeck.sd.core.sdPlugin/.mock
 ```
 

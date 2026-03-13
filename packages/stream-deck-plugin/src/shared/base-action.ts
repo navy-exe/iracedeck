@@ -353,8 +353,8 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
       });
 
       this.logger.debug("Flag overlay telemetry subscription started");
-    } catch {
-      this.logger.debug("Flag overlay: SDK not initialized, skipping telemetry subscription");
+    } catch (err) {
+      this.logger.debug(`Flag overlay: skipping telemetry subscription: ${err}`);
     }
   }
 
@@ -484,8 +484,8 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
     try {
       const controller = getController();
       controller.unsubscribe(this.flagTelemetrySubId);
-    } catch {
-      // SDK may not be initialized
+    } catch (err) {
+      this.logger.trace(`Flag overlay: unsubscription failed (SDK may not be initialized): ${err}`);
     }
 
     this.flagTelemetrySubId = null;
