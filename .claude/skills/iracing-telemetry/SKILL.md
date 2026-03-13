@@ -79,6 +79,56 @@ Variables with `irsdk_*` unit values map to TypeScript enums in `packages/iracin
 
 Use `hasFlag()` from `@iracedeck/iracing-sdk` to check bitfield values.
 
+## SessionFlags Breakdown
+
+`SessionFlags` is a combined bitfield containing track flags, driver black flags, and start lights. Use the `Flags` enum from `@iracedeck/iracing-native`.
+
+### Global flags (bits 0–15)
+
+| Flag | Value | When it's set |
+|------|-------|---------------|
+| Checkered | `0x01` | Race finished — client shown the checkered flag |
+| White | `0x02` | 1 lap to go — can be withdrawn if you pass the leader before the timing line |
+| Green | `0x04` | Start or restart flag |
+| Yellow | `0x08` | Local yellow — sector-specific, shown to your car only |
+| Red | `0x10` | Session stopped (rarely seen in normal racing) |
+| Blue | `0x20` | Lapping car behind — you're about to be lapped |
+| Debris | `0x40` | Debris on track — often accompanies caution on ovals |
+| Crossed | `0x80` | Crossed flags — likely indicates start of race or an invalid pass |
+| YellowWaving | `0x100` | Flashing local yellow — more severe local danger |
+| OneLapToGreen | `0x200` | One pace lap remaining before restart |
+| GreenHeld | `0x400` | Green flag is being held (restart delayed) |
+| TenToGo | `0x800` | 10 laps remaining |
+| FiveToGo | `0x1000` | 5 laps remaining |
+| RandomWaving | `0x2000` | Random flag waving (cosmetic / marshal activity) |
+| Caution | `0x4000` | Full course caution — the field is under yellow |
+| CautionWaving | `0x8000` | Full course caution being established — initial waving period |
+
+### Driver black flags (bits 16–23)
+
+| Flag | Value | When it's set |
+|------|-------|---------------|
+| Black | `0x10000` | Client has a black (penalty) flag — must pit to serve |
+| Disqualify | `0x20000` | Client has been disqualified |
+| Servicible | `0x40000` | Car is allowed pit service — not a visual flag |
+| Furled | `0x80000` | Black flag furled (penalty acknowledged but not yet active) |
+| Repair | `0x100000` | Meatball flag (black with orange circle) — mandatory damage repair |
+
+### Start lights (bits 28–31)
+
+| Flag | Value | When it's set |
+|------|-------|---------------|
+| StartHidden | `0x10000000` | Start lights not visible |
+| StartReady | `0x20000000` | Lights on, not yet set |
+| StartSet | `0x40000000` | Red lights on (set position) |
+| StartGo | `0x80000000` | Green lights — go |
+
+### Flag categories for overlay purposes
+
+- **Warning flags** (should trigger overlay): Red, Black, Disqualify, Repair, Yellow, Caution, CautionWaving, Blue, YellowWaving
+- **Informational flags** (may or may not trigger overlay): Checkered, White, TenToGo, FiveToGo
+- **Normal racing** (should NOT trigger overlay): Green, GreenHeld, OneLapToGreen, Debris, Crossed, RandomWaving, Servicible, Furled, all Start lights
+
 ## Common Units
 
 | Unit | Meaning | Count |
