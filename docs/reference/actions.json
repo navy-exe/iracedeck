@@ -198,10 +198,38 @@
           ]
         },
         {
+          "id": "com.iracedeck.sd.core.replay-control",
+          "name": "Replay Control",
+          "file": "replay-control.ts",
+          "encoder": true,
+          "settingsKey": "mode",
+          "modes": [
+            { "value": "play-pause", "label": "Play / Pause" },
+            { "value": "stop", "label": "Stop" },
+            { "value": "fast-forward", "label": "Fast Forward" },
+            { "value": "rewind", "label": "Rewind" },
+            { "value": "slow-motion", "label": "Slow Motion" },
+            { "value": "frame-forward", "label": "Frame Forward" },
+            { "value": "frame-backward", "label": "Frame Backward" },
+            { "value": "speed-increase", "label": "Increase Speed" },
+            { "value": "speed-decrease", "label": "Decrease Speed" },
+            { "value": "next-session", "label": "Next Session" },
+            { "value": "prev-session", "label": "Previous Session" },
+            { "value": "next-lap", "label": "Next Lap" },
+            { "value": "prev-lap", "label": "Previous Lap" },
+            { "value": "next-incident", "label": "Next Incident" },
+            { "value": "prev-incident", "label": "Previous Incident" },
+            { "value": "jump-to-beginning", "label": "Jump to Beginning" },
+            { "value": "jump-to-live", "label": "Jump to Live" }
+          ]
+        },
+        {
           "id": "com.iracedeck.sd.core.replay-transport",
           "name": "Replay Transport",
           "file": "replay-transport.ts",
           "encoder": true,
+          "deprecated": true,
+          "replacedBy": "com.iracedeck.sd.core.replay-control",
           "settingsKey": "transport",
           "modes": [
             { "value": "play", "label": "Play" },
@@ -219,6 +247,8 @@
           "name": "Replay Speed",
           "file": "replay-speed.ts",
           "encoder": true,
+          "deprecated": true,
+          "replacedBy": "com.iracedeck.sd.core.replay-control",
           "settingsKey": "direction",
           "modes": [
             { "value": "increase", "label": "Speed Up" },
@@ -230,6 +260,8 @@
           "name": "Replay Navigation",
           "file": "replay-navigation.ts",
           "encoder": true,
+          "deprecated": true,
+          "replacedBy": "com.iracedeck.sd.core.replay-control",
           "settingsKey": "navigation",
           "modes": [
             { "value": "next-session", "label": "Next Session" },
