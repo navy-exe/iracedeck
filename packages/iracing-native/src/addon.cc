@@ -345,12 +345,14 @@ static void sendPaste()
 /**
  * Send a complete chat message to iRacing using clipboard paste.
  * This function handles the entire chat flow:
- * 1. Saves the current clipboard content
+ * 1. Saves the current clipboard content (plain text only)
  * 2. Copies the message to the clipboard
- * 3. Opens chat window via broadcast message
- * 4. Pastes the message with Ctrl+V
- * 5. Presses Enter to send (this also closes the chat window)
- * 6. Restores the original clipboard content
+ * 3. Cancels any existing chat (ensures clean state)
+ * 4. Opens chat window via broadcast message
+ * 5. Pastes the message with Ctrl+V
+ * 6. Presses Enter to send
+ * 7. Cancels chat broadcast to explicitly close the chat window
+ * 8. Restores the original clipboard content
  *
  * @param message - The message to send
  * @returns Success boolean
@@ -401,19 +403,23 @@ Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
         return Napi::Boolean::New(env, false);
     }
 
-    // 3. Open chat window via broadcast
+    // 3. Cancel any existing chat to ensure clean state
+    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
+    Sleep(100);
+
+    // 4. Open chat window via broadcast
     irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_BeginChat, 0);
 
-    // 4. Wait for chat window to open
-    Sleep(50);
+    // 5. Wait for chat window to open
+    Sleep(100);
 
-    // 5. Paste the message with Ctrl+V
+    // 6. Paste the message with Ctrl+V
     sendPaste();
 
-    // 6. Wait for paste to complete
-    Sleep(50);
+    // 7. Wait for paste to complete
+    Sleep(100);
 
-    // 7. Press Enter to send
+    // 8. Press Enter to send
     INPUT enterInputs[2] = {};
     enterInputs[0].type = INPUT_KEYBOARD;
     enterInputs[0].ki.wVk = VK_RETURN;
@@ -422,7 +428,13 @@ Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
     enterInputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(2, enterInputs, sizeof(INPUT));
 
-    // 8. Restore the original clipboard content
+    // 9. Wait for Enter to be processed
+    Sleep(100);
+
+    // 10. Cancel chat to close the window
+    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
+
+    // 11. Restore the original clipboard content
     if (hadClipboardText)
     {
         copyToClipboard(savedClipboard);
