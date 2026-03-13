@@ -33,7 +33,6 @@ import { silentLogger } from "@iracedeck/logger";
 // Import keysender types for proper typing
 import type { Keyboard, KeyboardButton } from "keysender";
 
-import { getGlobalSettings, isGlobalSettingsInitialized } from "./global-settings.js";
 import type { KeyboardKey, KeyboardModifier, KeyCombination } from "./keyboard-types.js";
 import { getModifierScanCode, getScanCode } from "./scan-code-map.js";
 
@@ -57,12 +56,6 @@ export type ScanKeyPresser = (scanCodes: number[]) => void;
  * Releases in reverse order. Should follow a prior press call.
  */
 export type ScanKeyReleaser = (scanCodes: number[]) => void;
-
-/**
- * Function type for focusing the iRacing window before sending keys.
- * Returns true if the window was found and focused (or already focused).
- */
-export type WindowFocuser = () => boolean;
 
 /**
  * Interface for the keyboard service.
@@ -142,42 +135,17 @@ class KeyboardService implements IKeyboardService {
   private scanKeySender: ScanKeySender | null;
   private scanKeyPresser: ScanKeyPresser | null;
   private scanKeyReleaser: ScanKeyReleaser | null;
-  private windowFocuser: WindowFocuser | null;
 
   constructor(
     logger: ILogger,
     scanKeySender: ScanKeySender | null,
     scanKeyPresser: ScanKeyPresser | null,
     scanKeyReleaser: ScanKeyReleaser | null,
-    windowFocuser: WindowFocuser | null,
   ) {
     this.logger = logger;
     this.scanKeySender = scanKeySender;
     this.scanKeyPresser = scanKeyPresser;
     this.scanKeyReleaser = scanKeyReleaser;
-    this.windowFocuser = windowFocuser;
-  }
-
-  /**
-   * Focus the iRacing window if the global setting is enabled and a focuser is configured.
-   * Best-effort: logs a warning on failure but does not block key sending.
-   */
-  private focusIfEnabled(): void {
-    if (!this.windowFocuser) return;
-
-    if (!isGlobalSettingsInitialized()) return;
-
-    const settings = getGlobalSettings();
-
-    if (!settings.focusIRacingWindow) return;
-
-    const success = this.windowFocuser();
-
-    if (!success) {
-      this.logger.warn("Failed to focus iRacing window (window not found)");
-    } else {
-      this.logger.debug("Focused iRacing window before sending key");
-    }
   }
 
   /**
@@ -214,8 +182,6 @@ class KeyboardService implements IKeyboardService {
   }
 
   async sendKey(key: KeyboardKey): Promise<boolean> {
-    this.focusIfEnabled();
-
     try {
       const hw = await this.ensureInitialized();
       const mappedKey = toKeysenderKey(key);
@@ -231,8 +197,6 @@ class KeyboardService implements IKeyboardService {
   }
 
   async sendKeyCombination(combination: KeyCombination): Promise<boolean> {
-    this.focusIfEnabled();
-
     // Try scan code path first (layout-independent, preferred)
     if (combination.code && this.scanKeySender) {
       return this.sendViaScanCodes(combination);
@@ -306,8 +270,6 @@ class KeyboardService implements IKeyboardService {
   }
 
   async pressKeyCombination(combination: KeyCombination): Promise<boolean> {
-    this.focusIfEnabled();
-
     // Try scan code path first (layout-independent, preferred)
     if (combination.code && this.scanKeyPresser) {
       return this.pressViaScanCodes(combination);
@@ -466,9 +428,6 @@ let keyboardService: KeyboardService | null = null;
  * @param scanKeyReleaser - Optional function for releasing PS/2 scan codes without pressing (for key release).
  *   When scan code functions are provided, key combinations with event.code will use them for layout-independent sending.
  *   When omitted, all keys are sent via keysender (may have issues on non-US layouts).
- * @param windowFocuser - Optional function for focusing the iRacing window before sending keys.
- *   When provided and the `focusIRacingWindow` global setting is enabled, the focuser is called
- *   before each key send operation (except release).
  * @returns The initialized keyboard service
  * @throws Error if called more than once
  */
@@ -477,19 +436,12 @@ export function initializeKeyboard(
   scanKeySender?: ScanKeySender,
   scanKeyPresser?: ScanKeyPresser,
   scanKeyReleaser?: ScanKeyReleaser,
-  windowFocuser?: WindowFocuser,
 ): IKeyboardService {
   if (keyboardService) {
     throw new Error("Keyboard service already initialized. initializeKeyboard() should only be called once.");
   }
 
-  keyboardService = new KeyboardService(
-    logger,
-    scanKeySender ?? null,
-    scanKeyPresser ?? null,
-    scanKeyReleaser ?? null,
-    windowFocuser ?? null,
-  );
+  keyboardService = new KeyboardService(logger, scanKeySender ?? null, scanKeyPresser ?? null, scanKeyReleaser ?? null);
 
   return keyboardService;
 }

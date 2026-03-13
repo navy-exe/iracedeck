@@ -35,14 +35,16 @@ import { ToggleUiElements } from "./actions/toggle-ui-elements.js";
 import { ViewAdjustment } from "./actions/view-adjustment.js";
 import {
   createSDLogger,
+  focusIRacingIfEnabled,
   initAppMonitor,
   initGlobalSettings,
   initializeKeyboard,
   initializeSDK,
+  initWindowFocus,
 } from "./shared/index.js";
 
 // Enable trace logging
-streamDeck.logger.setLevel("trace");
+streamDeck.logger.setLevel("debug");
 
 // Initialize the SDK singleton
 initializeSDK(createSDLogger(streamDeck.logger.createScope("iRacingSDK")));
@@ -54,8 +56,16 @@ initializeKeyboard(
   (scanCodes) => native.sendScanKeys(scanCodes),
   (scanCodes) => native.sendScanKeyDown(scanCodes),
   (scanCodes) => native.sendScanKeyUp(scanCodes),
-  () => native.focusIRacingWindow(),
 );
+
+// Initialize window focus service for focusing iRacing before any action
+initWindowFocus(createSDLogger(streamDeck.logger.createScope("WindowFocus")), () => native.focusIRacingWindow());
+
+// Focus iRacing window before any action executes (when enabled in global settings)
+// MUST be registered BEFORE actions so the listener fires first in the EventEmitter chain.
+streamDeck.actions.onKeyDown(() => focusIRacingIfEnabled());
+streamDeck.actions.onDialDown(() => focusIRacingIfEnabled());
+streamDeck.actions.onDialRotate(() => focusIRacingIfEnabled());
 
 // Register core actions
 streamDeck.actions.registerAction(new AiSpotterControls());
