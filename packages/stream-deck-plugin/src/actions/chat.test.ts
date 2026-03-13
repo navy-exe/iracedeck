@@ -176,6 +176,28 @@ describe("Chat", () => {
     it("should return false for empty strings", () => {
       expect(hasTemplateVars({ keyText: "", message: "" })).toBe(false);
     });
+
+    it("should detect partial mustache syntax", () => {
+      expect(hasTemplateVars({ keyText: "", message: "Use {{ for templates" })).toBe(true);
+    });
+  });
+
+  describe("issue #114 regression", () => {
+    it("should display resolved message in send-message icon when keyText is empty", () => {
+      // When resolveSettingsTemplates resolves message, generateChatSvg should
+      // show the resolved value (not raw {{...}}) in the chat bubble
+      const result = generateChatSvg({
+        mode: "send-message",
+        message: "Going 95 mph",
+        keyText: "",
+        macroNumber: 1,
+        iconColor: "#4a90d9",
+      });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("Going 95 mph");
+      expect(decoded).not.toContain("{{");
+    });
   });
 
   describe("generateChatSvg", () => {

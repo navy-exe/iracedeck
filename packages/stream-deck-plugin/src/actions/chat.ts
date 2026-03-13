@@ -418,6 +418,8 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     }
   }
 
+  /** Resolves template variables for display only (icon rendering).
+   *  The send path in executeSdkSendMessage performs its own resolution at send time. */
   private resolveSettingsTemplates(settings: ChatSettings): ChatSettings {
     if (!hasTemplateVars(settings)) return settings;
 
