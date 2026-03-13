@@ -98,5 +98,8 @@ export {
 // App monitor for iRacing process detection
 export { initAppMonitor, isIRacingRunning, isAppMonitorInitialized, _resetAppMonitor } from "./app-monitor.js";
 
+// Window focus service
+export { initWindowFocus, focusIRacingIfEnabled } from "./window-focus.js";
+
 // Key binding utilities
 export { formatKeyBinding, parseKeyBinding } from "./key-binding-utils.js";
