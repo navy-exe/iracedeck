@@ -96,7 +96,7 @@ When asked about actions or controls:
 |--------|----------|-------|
 | Pit Quick Actions | 3 | clear all, tearoff, fast repair |
 | Fuel Service | 7 | add/reduce/set/clear fuel, toggle autofuel, lap margin +/- |
-| Tire Service | 3 | toggle tires (per-wheel), change compound, clear (telemetry-aware) |
+| Tire Service | 4 | change all tires, clear, toggle tires (per-wheel), change compound (telemetry-aware) |
 
 ### Car Setup
 

@@ -415,9 +415,14 @@
           "settingsKey": "action",
           "telemetryAware": true,
           "modes": [
+            {
+              "value": "change-all-tires",
+              "label": "Change All Tires",
+              "description": "Request all four tire changes using the iRacing #t pit chat macro"
+            },
+            { "value": "clear-tires", "label": "Clear Tires" },
             { "value": "toggle-tires", "label": "Toggle Tires", "description": "Per-wheel selection: LF, RF, LR, RR" },
-            { "value": "change-compound", "label": "Change Compound", "description": "Cycle tire compounds (DRY/WET)" },
-            { "value": "clear-tires", "label": "Clear Tires" }
+            { "value": "change-compound", "label": "Change Compound", "description": "Cycle tire compounds (DRY/WET)" }
           ]
         }
       ]
