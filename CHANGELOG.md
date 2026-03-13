@@ -1,5 +1,116 @@
 # Changelog
 
+## [1.0.0](https://github.com/niklam/iracedeck/compare/v0.13.0...v1.0.0) (2026-03-13)
+
+### ⚠ BREAKING CHANGES
+
+* **stream-deck-plugin:** Replay Transport, Replay Speed, and Replay Navigation actions
+are replaced by the unified Replay Control action. Existing instances continue
+to work but are hidden from the action list.
+* **stream-deck-plugin:** Spotter volume and silence controls have been moved
+from Audio Controls to the new AI Spotter Controls action. Users with
+existing Audio Controls buttons configured for spotter will need to
+reconfigure them using the new AI Spotter Controls action.
+
+The Audio Controls action now only supports voice-chat and master
+categories. The default category changes from 'spotter' to 'voice-chat'.
+
+### Features
+
+* **icons:** add Change All Tires icon for tire service ([d033a6a](https://github.com/niklam/iracedeck/commit/d033a6a60523211e363504df10d6def079198bbd))
+* **icons:** add toggle-wipers icon variant for cockpit-misc ([7d51689](https://github.com/niklam/iracedeck/commit/7d516899a0c74d068fafb39f96bf71b73a0207dd))
+* **iracing-native:** add focusIRacingWindow native function ([3a79366](https://github.com/niklam/iracedeck/commit/3a793668b4f78dfbf2e756cb6177dc7cf26e69f0)), closes [#111](https://github.com/niklam/iracedeck/issues/111)
+* **iracing-native:** add mock mode on Windows and flag test snapshots ([6361df5](https://github.com/niklam/iracedeck/commit/6361df5bf8c38f3587cd92115afdb1a60b7e4a9c))
+* **iracing-sdk:** extract flag utilities for cross-plugin reuse ([a74431f](https://github.com/niklam/iracedeck/commit/a74431fceec40f8ed1d795bf07c909c7a1243755))
+* **stream-deck-plugin:** add AI Spotter Controls action ([bd0946e](https://github.com/niklam/iracedeck/commit/bd0946eee5188a08f1897cda1f82bf586ecc3839)), closes [#117](https://github.com/niklam/iracedeck/issues/117)
+* **stream-deck-plugin:** add AI Spotter Controls icon SVGs ([8356386](https://github.com/niklam/iracedeck/commit/8356386ac797a7efeea25f5ea97894892f3a098c))
+* **stream-deck-plugin:** add Change All Tires sub-action to Tire Service ([5cf7845](https://github.com/niklam/iracedeck/commit/5cf78457219afaf96acc97d13322680d904b0afe)), closes [#t](https://github.com/niklam/iracedeck/issues/t) [#115](https://github.com/niklam/iracedeck/issues/115)
+* **stream-deck-plugin:** add common-settings include to all PI templates ([1428763](https://github.com/niklam/iracedeck/commit/14287630b9d755cc9bc6602a4857de38f4e57200))
+* **stream-deck-plugin:** add common-settings PI partial ([1eb0904](https://github.com/niklam/iracedeck/commit/1eb0904401e07931fae9fb1ba987806f47ca7093))
+* **stream-deck-plugin:** add CommonSettings schema ([36a3601](https://github.com/niklam/iracedeck/commit/36a3601ba92861bfda42d6eec58844e2258c96fc))
+* **stream-deck-plugin:** add flag overlay to BaseAction ([401a014](https://github.com/niklam/iracedeck/commit/401a014b1c5b43101310daa4725c79731b2e8487))
+* **stream-deck-plugin:** add focus setting to Property Inspector ([3a9626a](https://github.com/niklam/iracedeck/commit/3a9626a0fd304bd14c6d39f2410376f24f5515f6)), closes [#111](https://github.com/niklam/iracedeck/issues/111)
+* **stream-deck-plugin:** add focusIRacingWindow global setting ([9e03a73](https://github.com/niklam/iracedeck/commit/9e03a734425fbb28b18848683499fac9d12c50c1)), closes [#111](https://github.com/niklam/iracedeck/issues/111)
+* **stream-deck-plugin:** add Replay Control icon SVGs ([eef13e9](https://github.com/niklam/iracedeck/commit/eef13e9c99b166ec9056af37be7e54f119e4709b))
+* **stream-deck-plugin:** add Replay Control Property Inspector template ([674a537](https://github.com/niklam/iracedeck/commit/674a5374a46b422b44725d3386b8fcf8962da7bf))
+* **stream-deck-plugin:** add Toggle Wipers global key binding ([d0e2ff6](https://github.com/niklam/iracedeck/commit/d0e2ff63ac1660dd01560ee38fee7b97ea7c9192))
+* **stream-deck-plugin:** add Toggle Wipers option to cockpit-misc PI ([cdf5988](https://github.com/niklam/iracedeck/commit/cdf5988d6d1a3b8b3e1d16b71aa952ae9ea6510b))
+* **stream-deck-plugin:** add toggle-wipers control to cockpit-misc action ([64f2fbe](https://github.com/niklam/iracedeck/commit/64f2fbe2267aef4e916bcfd3b7b35d5a3950d1c3))
+* **stream-deck-plugin:** differentiate louder/quieter icons by wave count ([a001841](https://github.com/niklam/iracedeck/commit/a0018410da35b2328cab3ebfb641fd03828b1321))
+* **stream-deck-plugin:** extend CommonSettings in all action schemas ([e710985](https://github.com/niklam/iracedeck/commit/e7109854e74f14876d6357491bb21775fe0f3f1e))
+* **stream-deck-plugin:** focus iRacing window before sending keys ([a33a7e0](https://github.com/niklam/iracedeck/commit/a33a7e018f909e4a1c4126dcb74e46184eeee396)), closes [#111](https://github.com/niklam/iracedeck/issues/111)
+* **stream-deck-plugin:** implement Replay Control action ([b8efe05](https://github.com/niklam/iracedeck/commit/b8efe0539ad9c5a2ff6ed4902475e295fe79a157)), closes [#110](https://github.com/niklam/iracedeck/issues/110)
+* **stream-deck-plugin:** register Replay Control and hide legacy replay actions ([264279d](https://github.com/niklam/iracedeck/commit/264279d2c890725486a34daa7769ab749d1e8e8e)), closes [#110](https://github.com/niklam/iracedeck/issues/110)
+* **stream-deck-plugin:** remove spotter category from Audio Controls ([ada7fab](https://github.com/niklam/iracedeck/commit/ada7fab6f1d11e9d1efeac5e192051995cdb2ad3))
+* **stream-deck-plugin:** swap spotter icon labels and polish icons ([2c8406a](https://github.com/niklam/iracedeck/commit/2c8406ad1aa93bdbe8535bf15622844a1ac31df9))
+
+### Bug Fixes
+
+* add markdown language label and log swallowed catch errors ([4923227](https://github.com/niklam/iracedeck/commit/4923227481c98af2c04b5c3e58dba8fdb7a21971))
+* **docs:** move macro entries after send-message in actions.json ([97d412c](https://github.com/niklam/iracedeck/commit/97d412c2fdcfcda6041c036f557425f9bd3c9e65))
+* harden window focus with null checks, try/catch, and timeout detection ([1735650](https://github.com/niklam/iracedeck/commit/1735650d2b113e83f7763839698f36a8465680e9))
+* **icons:** make replay control icons white and solid ([ba9796d](https://github.com/niklam/iracedeck/commit/ba9796d6a8d77f926ee13243d64ce566c6f42640))
+* **iracing-native:** close chat window after sending message ([8d6f2ac](https://github.com/niklam/iracedeck/commit/8d6f2ac1fde6d7d1ababc27d5555e24e3cae85fb)), closes [#108](https://github.com/niklam/iracedeck/issues/108)
+* **iracing-native:** poll for confirmed focus after SetForegroundWindow ([d71bd55](https://github.com/niklam/iracedeck/commit/d71bd55bfc8c51d362b6c9510732ac460ed35cc4))
+* **iracing-sdk:** add YellowWaving to flag detection and improve flag debug logging ([71983ab](https://github.com/niklam/iracedeck/commit/71983ab53e045520df3a3796214123d4237ee0c8))
+* make relink:stream-deck tolerant of missing plugin ([14f80eb](https://github.com/niklam/iracedeck/commit/14f80eb29fe8a84bf273636e3f2049f12719f54c))
+* **stream-deck-plugin:** add missing replay-control PI HTML ([2c90900](https://github.com/niklam/iracedeck/commit/2c9090067da2bcb07ab91683a413d754ce9917b8))
+* **stream-deck-plugin:** add telemetry-aware play/pause icon toggle ([9cea11d](https://github.com/niklam/iracedeck/commit/9cea11d54a6da15486ce83924f31ffd397e991e6))
+* **stream-deck-plugin:** assign flagTelemetrySubId only after successful subscribe ([b3703c8](https://github.com/niklam/iracedeck/commit/b3703c8dd0cd848276dd5f1bd6194156c2a675f5))
+* **stream-deck-plugin:** fix flag overlay flashing and filter informational flags ([9179bcb](https://github.com/niklam/iracedeck/commit/9179bcbf85d6d25ee2365800fceb4021d073e6aa))
+* **stream-deck-plugin:** fix TypeScript errors from CommonSettings integration ([594340b](https://github.com/niklam/iracedeck/commit/594340b7a614bd6c9cfe336f0a646302159f95d8))
+* **stream-deck-plugin:** rebuild audio-controls PI after spotter extraction ([6996e9b](https://github.com/niklam/iracedeck/commit/6996e9b6a4e5ed3c350e37c294f2dd1591f9b1e7))
+* **stream-deck-plugin:** rebuild chat.html with reordered modes from [#116](https://github.com/niklam/iracedeck/issues/116) ([3be1a17](https://github.com/niklam/iracedeck/commit/3be1a17fd8492c3700febf4a2a16805f09d8c420))
+* **stream-deck-plugin:** reorder Chat modes with Send Message as default ([a7fe52f](https://github.com/niklam/iracedeck/commit/a7fe52f656b6731808845627ca299fa0e8a57ebc)), closes [#112](https://github.com/niklam/iracedeck/issues/112)
+* **stream-deck-plugin:** reset flag state in stopFlagFlash to prevent stale cache ([2548777](https://github.com/niklam/iracedeck/commit/2548777cc00426a5ec8cf65c884e891dc8a4f66b))
+* **stream-deck-plugin:** resolve mustache templates in message field for icon display ([dcfa902](https://github.com/niklam/iracedeck/commit/dcfa90214c316a52e716afd0daab05dd7a46fbf6)), closes [#114](https://github.com/niklam/iracedeck/issues/114)
+* **stream-deck-plugin:** skip flag overlay contexts in setActive refresh loop ([0d996b7](https://github.com/niklam/iracedeck/commit/0d996b7e3652692754a402d8d0b1ab7ddd142e13))
+* **stream-deck-plugin:** update replay action tests to match new labels ([b2a7ab0](https://github.com/niklam/iracedeck/commit/b2a7ab03dd1845221eda8dc94c7bb3a563b98cf9))
+* **stream-deck-plugin:** update replay control labels and icons ([5512b79](https://github.com/niklam/iracedeck/commit/5512b79ca74f805860b67202ac61edaf11723caf))
+* **stream-deck-plugin:** use static counter for flag subscription IDs ([3530620](https://github.com/niklam/iracedeck/commit/35306202bd8b082abf526c3fdfee5362f369b18e))
+
+### Refactoring
+
+* **iracing-native:** use named constant for chat step delays ([b25c6cc](https://github.com/niklam/iracedeck/commit/b25c6ccffe10614809a1f48d8244c0b8665976e5))
+* **stream-deck-plugin:** import flag utils from SDK ([9286171](https://github.com/niklam/iracedeck/commit/928617103da5ceade15bd643850b3df42224f454))
+* **stream-deck-plugin:** move window focus from keyboard service to plugin level ([d31b77e](https://github.com/niklam/iracedeck/commit/d31b77e87606e0152ee836cf56594fafd58352f9)), closes [#111](https://github.com/niklam/iracedeck/issues/111)
+* **stream-deck-plugin:** show common settings as visible section above key bindings ([43a13c2](https://github.com/niklam/iracedeck/commit/43a13c23c69c7ee6b9d22704ec3077ed0d826bb1))
+
+### Documentation
+
+* add Change All Tires to action references ([40b73ae](https://github.com/niklam/iracedeck/commit/40b73ae26556180f0016daa017d3593acb96fc1f))
+* add flags overlay design spec ([#106](https://github.com/niklam/iracedeck/issues/106)) ([adc7fa0](https://github.com/niklam/iracedeck/commit/adc7fa0ab71600edb5b861d9f152d35be4523434))
+* add flags overlay implementation plan ([75124e0](https://github.com/niklam/iracedeck/commit/75124e08702ecbbce28f69b87cfa06c5da8dc88e))
+* add Replay Control spec and implementation plan ([2cbb67a](https://github.com/niklam/iracedeck/commit/2cbb67a0cf94a6601e1fb892352a9f21d6764cb0)), closes [#110](https://github.com/niklam/iracedeck/issues/110)
+* add SessionFlags reference and mock mode documentation to skills ([decd2a6](https://github.com/niklam/iracedeck/commit/decd2a608680fb72ab26693d912935d085d9d006))
+* add toggle-wipers to actions reference and skill metadata ([4b6eb40](https://github.com/niklam/iracedeck/commit/4b6eb4085c699d7ccb0a09c89163b8ab9c1a7148))
+* address spec review feedback for flags overlay ([#106](https://github.com/niklam/iracedeck/issues/106)) ([ae25bd1](https://github.com/niklam/iracedeck/commit/ae25bd10f60a63ed213146c76e260a1a0eb18df8))
+* enforce worktree workflow, pre-commit checks, and post-merge cleanup ([b84960c](https://github.com/niklam/iracedeck/commit/b84960c4d68a6363561608243aea869f6fdd540c))
+* **iracing-native:** clarify .mock file path for non-plugin consumers ([ea74f24](https://github.com/niklam/iracedeck/commit/ea74f24d7eae95b24a03241d20e7247dd8e48386))
+* remove stale spotter references from Audio Controls ([a138451](https://github.com/niklam/iracedeck/commit/a138451c526a718e83ad5d51ec04a847bcc3399d))
+* **stream-deck-plugin:** update cockpit-misc tooltip to mention toggle wipers ([821fe8a](https://github.com/niklam/iracedeck/commit/821fe8a65becddd19407f25d1146917b1978882f))
+* update action conventions for CommonSettings and super calls ([fe930fa](https://github.com/niklam/iracedeck/commit/fe930fa00d4daaeb488b77a2affa172f971b6c21)), closes [#106](https://github.com/niklam/iracedeck/issues/106)
+* update rules for focusIRacingWindow feature ([adbaf1f](https://github.com/niklam/iracedeck/commit/adbaf1f015bc5dc88c7b20d80201ce2e9ad067b2))
+* update SKILL.md action counts for AI Spotter Controls ([774b2fc](https://github.com/niklam/iracedeck/commit/774b2fcef8eacf5a00ed3f03a192264500315322))
+* update spotter shortcuts and action reference for AI Spotter Controls ([d499dce](https://github.com/niklam/iracedeck/commit/d499dce48f176adeebefde6b9bc9eaf4535f734e))
+* update Toggle Windshield Wipers default key to Shift+W ([e9c571b](https://github.com/niklam/iracedeck/commit/e9c571bcf1426cf46521e392f2b98fc6dcaaf4cb))
+
+### Maintenance
+
+* add stream-deck link/unlink/relink pnpm scripts ([62f05fc](https://github.com/niklam/iracedeck/commit/62f05fc8d9d049a81527f7794408c14a19c51443)), closes [#122](https://github.com/niklam/iracedeck/issues/122)
+* **deps-dev:** bump @eslint/js from 9.39.3 to 9.39.4 ([#95](https://github.com/niklam/iracedeck/issues/95)) ([83e252e](https://github.com/niklam/iracedeck/commit/83e252e9040860466ccefc71a3db9d63554a4f72))
+* **deps-dev:** bump @rollup/plugin-node-resolve from 15.3.1 to 16.0.3 ([#92](https://github.com/niklam/iracedeck/issues/92)) ([494f955](https://github.com/niklam/iracedeck/commit/494f955a21b53a5ac0e77f20b4b1eae86902c80f))
+* **deps-dev:** bump @rollup/plugin-terser from 0.4.4 to 1.0.0 ([#93](https://github.com/niklam/iracedeck/issues/93)) ([d69a385](https://github.com/niklam/iracedeck/commit/d69a385da386e590e815f1816ed082328b778d5b))
+* **deps-dev:** bump ejs from 4.0.1 to 5.0.1 ([#94](https://github.com/niklam/iracedeck/issues/94)) ([5435e79](https://github.com/niklam/iracedeck/commit/5435e790c793a13e768ff8d3d956aa810b8aec98))
+* **deps-dev:** bump the minor-and-patch group with 3 updates ([#91](https://github.com/niklam/iracedeck/issues/91)) ([b650f2f](https://github.com/niklam/iracedeck/commit/b650f2f95e3aae6b9db06f388f5ddc31e9361406))
+* **deps:** bump actions/checkout from 4 to 6 ([#90](https://github.com/niklam/iracedeck/issues/90)) ([eb0dc83](https://github.com/niklam/iracedeck/commit/eb0dc8344ea9db5a306aa754f5037e802fab8f1e))
+* **deps:** bump actions/setup-node from 4 to 6 ([#89](https://github.com/niklam/iracedeck/issues/89)) ([4bb4889](https://github.com/niklam/iracedeck/commit/4bb4889790ac89429fef80d9f9e6e47931385179))
+* require logical commits and switch to regular merges ([3233e1d](https://github.com/niklam/iracedeck/commit/3233e1d260d4964bac1e28428035cac8b8517360))
+* **stream-deck-plugin:** improve global settings diagnostic logging ([41508ac](https://github.com/niklam/iracedeck/commit/41508ac4aff7488aba6e6c574beda8dfad136871))
+* **stream-deck-plugin:** rebuild cockpit-misc PI HTML ([58be779](https://github.com/niklam/iracedeck/commit/58be77952f6037014c62903200c3725f1ff8f79c))
+* **stream-deck-plugin:** rebuild PI HTML files with common-settings ([b07a1a1](https://github.com/niklam/iracedeck/commit/b07a1a1610caf17d40ae872f0e022a41af9ae2ad))
+* unify build scripts with smart Stream Deck stop/restart ([2adc237](https://github.com/niklam/iracedeck/commit/2adc237afdf1676c9ec50db34e82cbbba2a84ce4))
+
 ## [0.13.0](https://github.com/niklam/iracedeck/compare/v0.12.0...v0.13.0) (2026-03-11)
 
 ### Features
