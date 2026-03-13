@@ -488,6 +488,20 @@ static bool focusIRacingWindow()
         AttachThreadInput(currentThreadId, foregroundThreadId, FALSE);
     }
 
+    // Wait until Windows has actually moved focus to iRacing.
+    // SetForegroundWindow returns immediately but focus changes
+    // asynchronously. Without this, subsequent actions (e.g., chat
+    // commands) may fire before the target window has focus.
+    for (int i = 0; i < 50; i++)
+    {
+        if (GetForegroundWindow() == hwnd)
+        {
+            return true;
+        }
+        Sleep(10);
+    }
+
+    // Timed out (500ms) — focus may not have switched
     return true;
 }
 
