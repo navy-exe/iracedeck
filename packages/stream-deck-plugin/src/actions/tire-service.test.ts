@@ -66,6 +66,19 @@ vi.mock("@iracedeck/iracing-sdk", () => ({
 }));
 
 vi.mock("../shared/index.js", () => ({
+  CommonSettings: {
+    extend: () => {
+      const defaults = { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true };
+      const schema = {
+        parse: (data: Record<string, unknown>) => ({ ...defaults, ...data }),
+        safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...defaults, ...data } }),
+      };
+
+      return schema;
+    },
+    parse: (data: Record<string, unknown>) => ({ ...data }),
+    safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...data } }),
+  },
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
     sdkController = {
       subscribe: vi.fn(),
@@ -76,6 +89,8 @@ vi.mock("../shared/index.js", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     updateKeyImage = vi.fn();
+    async onWillAppear() {}
+    async onDidReceiveSettings() {}
     async onWillDisappear() {}
   },
   createSDLogger: vi.fn(() => ({

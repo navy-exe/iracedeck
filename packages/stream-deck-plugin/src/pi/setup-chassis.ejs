@@ -29,6 +29,8 @@
 			</sdpi-select>
 		</sdpi-item>
 
+		<%- include('common-settings') %>
+
 		<%- include('global-key-bindings', {
 			subtitle: 'Chassis Setup Key Bindings',
 			keyBindings: require('./data/key-bindings.json').setupChassis

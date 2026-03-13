@@ -7,6 +7,7 @@
  * On non-Windows platforms, a mock implementation is used automatically
  * to enable development and testing on macOS/Linux.
  */
+import { existsSync } from "fs";
 import { createRequire } from "module";
 import { platform } from "os";
 import { dirname, join } from "path";
@@ -19,10 +20,13 @@ import { IRacingNativeMock } from "./mock-impl.js";
 export * from "./defines.js";
 export { IRacingNativeMock } from "./mock-impl.js";
 
-// Try to load native addon (only on Windows, with safety catch)
+// Try to load native addon (only on Windows, with safety catch).
+// Force mock mode by creating a `.mock` file in the sdPlugin folder,
+// or by setting IRACEDECK_MOCK=1 in the environment.
 let addon: any = null;
+const forceMock = !!process.env.IRACEDECK_MOCK || existsSync(join(process.cwd(), ".mock"));
 
-if (platform() === "win32") {
+if (platform() === "win32" && !forceMock) {
   try {
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const require = createRequire(import.meta.url);

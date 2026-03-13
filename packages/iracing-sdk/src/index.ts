@@ -112,3 +112,6 @@ export {
   formatTimeRemaining,
   type TemplateContext,
 } from "./template-context.js";
+
+// Flag utilities
+export { type FlagInfo, FLAG_DEFINITIONS, resolveActiveFlag, resolveAllActiveFlags } from "./flag-utils.js";
