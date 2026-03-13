@@ -96,8 +96,8 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
   /** Current active flags from telemetry */
   private currentFlags: FlagInfo[] = [];
 
-  /** Rotation index for multi-flag alternation */
-  private flagFlashIndex = 0;
+  /** Flash tick counter — even ticks show flag, odd ticks show original */
+  private flagFlashTick = 0;
 
   /** Shared telemetry subscription ID */
   private flagTelemetrySubId: string | null = null;
@@ -361,9 +361,13 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
 
     if (stateKey === this.lastFlagStateKey) return;
 
+    this.logger.debug(
+      `Flag state changed: SessionFlags=0x${sessionFlags?.toString(16) ?? "undefined"}, resolved=[${stateKey || "none"}]`,
+    );
+
     this.lastFlagStateKey = stateKey;
     this.currentFlags = flags;
-    this.flagFlashIndex = 0;
+    this.flagFlashTick = 0;
 
     if (flags.length > 0) {
       this.startFlagFlash();
@@ -385,8 +389,15 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
     this.applyFlagOverlayToContexts();
 
     this.flagFlashTimer = setInterval(() => {
-      this.flagFlashIndex++;
-      this.applyFlagOverlayToContexts();
+      this.flagFlashTick++;
+
+      if (this.flagFlashTick % 2 === 0) {
+        // Even tick: show flag color
+        this.applyFlagOverlayToContexts();
+      } else {
+        // Odd tick: restore original image
+        this.restoreAllFlagOverlayImages();
+      }
     }, BaseAction.FLAG_FLASH_INTERVAL_MS);
   }
 
@@ -413,7 +424,9 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
   private applyFlagOverlayToContexts(): void {
     if (this.currentFlags.length === 0) return;
 
-    const flagInfo = this.currentFlags[this.flagFlashIndex % this.currentFlags.length];
+    // Rotate through flags using even ticks only (tick 0, 2, 4... → index 0, 1, 2...)
+    const flagIndex = Math.floor(this.flagFlashTick / 2) % this.currentFlags.length;
+    const flagInfo = this.currentFlags[flagIndex];
     const flagSvg = this.generateFlagOverlaySvg(flagInfo);
 
     for (const contextId of this.flagOverlayContexts) {
@@ -425,6 +438,15 @@ export abstract class BaseAction<T extends JsonObject = JsonObject> extends Sing
       entry.action.setImage(flagSvg).catch((err) => {
         this.logger.warn(`Failed to set flag overlay for context ${contextId}: ${err}`);
       });
+    }
+  }
+
+  /**
+   * Restore original images for all overlay-enabled contexts (flash off-phase).
+   */
+  private restoreAllFlagOverlayImages(): void {
+    for (const contextId of this.flagOverlayContexts) {
+      this.restoreFlagOverlayImage(contextId);
     }
   }
 

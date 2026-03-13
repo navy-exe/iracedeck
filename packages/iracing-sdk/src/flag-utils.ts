@@ -66,8 +66,14 @@ export function resolveActiveFlag(sessionFlags: number | undefined): FlagInfo | 
 }
 
 /**
- * Resolves all active flags from the session flags bitfield, in priority order.
- * Excludes Green (normal racing state) — Green should not trigger an overlay.
+ * Labels excluded from the overlay. These are either normal racing state
+ * or informational flags that should not flash buttons.
+ */
+const OVERLAY_EXCLUDED_LABELS = new Set(["GREEN", "WHITE", "FINISH"]);
+
+/**
+ * Resolves all active warning flags from the session flags bitfield, in priority order.
+ * Excludes non-warning flags: Green (normal racing), White (last lap), Checkered (finish).
  */
 export function resolveAllActiveFlags(sessionFlags: number | undefined): FlagInfo[] {
   if (sessionFlags === undefined) return [];
@@ -75,7 +81,7 @@ export function resolveAllActiveFlags(sessionFlags: number | undefined): FlagInf
   const result: FlagInfo[] = [];
 
   for (const def of FLAG_DEFINITIONS) {
-    if (def.info.label === "GREEN") continue;
+    if (OVERLAY_EXCLUDED_LABELS.has(def.info.label)) continue;
 
     if (def.check(sessionFlags)) result.push(def.info);
   }

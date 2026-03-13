@@ -92,6 +92,22 @@ describe("flag-utils", () => {
       expect(resolveAllActiveFlags(Flags.Green)).toEqual([]);
     });
 
+    it("should exclude white flag (informational)", () => {
+      const result = resolveAllActiveFlags(Flags.White | Flags.Blue);
+      expect(result).toHaveLength(1);
+      expect(result[0].label).toBe("BLUE");
+    });
+
+    it("should exclude checkered flag (informational)", () => {
+      const result = resolveAllActiveFlags(Flags.Checkered | Flags.Yellow);
+      expect(result).toHaveLength(1);
+      expect(result[0].label).toBe("YELLOW");
+    });
+
+    it("should return empty for only informational flags", () => {
+      expect(resolveAllActiveFlags(Flags.Green | Flags.White | Flags.Checkered)).toEqual([]);
+    });
+
     it("should maintain priority order", () => {
       const result = resolveAllActiveFlags(Flags.Blue | Flags.Yellow | Flags.Red);
       expect(result[0].label).toBe("RED");
