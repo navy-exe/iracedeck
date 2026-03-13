@@ -114,11 +114,13 @@ On non-Windows platforms, the mock is used automatically. On Windows, you can fo
 
 ### File-based (recommended for Stream Deck plugins)
 
-Create an empty `.mock` file in the sdPlugin folder:
+Create an empty `.mock` file in your application's working directory. For Stream Deck plugins, this is the sdPlugin folder:
 
 ```
 com.iracedeck.sd.core.sdPlugin/.mock
 ```
+
+For other consumers, place the `.mock` file in whatever directory your process runs from (i.e., `process.cwd()`).
 
 Delete the file to return to native mode. The `.mock` file is gitignored.
 
