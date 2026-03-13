@@ -10,7 +10,7 @@ import { MOCK_SNAPSHOTS } from "./mock-data/snapshots.js";
 import { buildTelemetryBuffer, getBufferSize, MOCK_VAR_HEADERS, MOCK_VAR_INDEX_MAP } from "./mock-data/telemetry.js";
 
 /** Default interval between snapshot rotations in milliseconds */
-const DEFAULT_ROTATION_INTERVAL_MS = 3000;
+const DEFAULT_ROTATION_INTERVAL_MS = 5000;
 
 export class IRacingNativeMock {
   private connected = false;
