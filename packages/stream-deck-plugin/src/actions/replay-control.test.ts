@@ -201,6 +201,12 @@ describe("ReplayControl", () => {
       expect(formatSpeedDisplay(4, true)).toBe("1/4x");
       expect(formatSpeedDisplay(16, true)).toBe("1/16x");
     });
+
+    it("should format reverse slow-motion speeds", () => {
+      expect(formatSpeedDisplay(-2, true)).toBe("-1/2x");
+      expect(formatSpeedDisplay(-4, true)).toBe("-1/4x");
+      expect(formatSpeedDisplay(-16, true)).toBe("-1/16x");
+    });
   });
 
   describe("formatSetSpeedLabel", () => {

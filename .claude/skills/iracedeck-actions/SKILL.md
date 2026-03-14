@@ -7,7 +7,7 @@ description: Use when looking up Stream Deck actions, sub-actions, modes, catego
 
 ## Data File
 
-Complete action definitions (29 actions, 285 controls): `docs/reference/actions.json`
+Complete action definitions (28 actions, 287 controls): `docs/reference/actions.json`
 
 Each action entry:
 ```json
@@ -38,12 +38,12 @@ When asked about actions or controls:
 | Display & Session | 1 | 6 | Live session data: incidents, laps, position, fuel, flags |
 | Driving Controls | 5 | 35 | AI spotter, audio, black boxes, look direction, car control |
 | Cockpit & Interface | 4 | 25 | Wipers, FFB, delta splits, telemetry, UI toggles |
-| View & Camera | 8 | 104 | FOV, replay, camera cycle/focus, broadcast tools |
+| View & Camera | 6 | 101 | FOV, replay, camera cycle/focus, broadcast tools |
 | Media | 1 | 7 | Video recording, screenshots, texture management |
 | Pit Service | 3 | 13 | Fuel, tires, compounds, tearoff, fast repair |
 | Car Setup | 7 | 79 | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
 | Chat | 1 | 21 | Open chat, macros (15), whisper, reply |
-| **Total** | **30** | **290** | |
+| **Total** | **28** | **287** | |
 
 ## Actions by Category
 
@@ -77,9 +77,7 @@ When asked about actions or controls:
 | Action | Controls | Modes |
 |--------|----------|-------|
 | View Adjustment | 9 | FOV +/-, horizon +/-, driver height +/-, recenter VR, UI size +/- |
-| Replay Transport | 8 | play, pause, stop, FF, rewind, slow-mo, frame +/- |
-| Replay Speed | 4 | increase (slow-mo), decrease (slow-mo), set speed, speed display |
-| Replay Navigation | 11 | session/lap/incident next/prev, jump start/end, set position, search time, erase |
+| Replay Control | 20 | play/pause, play-backward, stop, FF, rewind, slow-mo, frame +/-, speed +/-, set speed, speed display, session/lap/incident next/prev, jump start/end |
 | Camera Cycle | 8 | 4 types (camera, sub-camera, car, driving) x 2 directions |
 | Camera Editor Adjustments | 29 | 14 parameters +/- plus auto-set mic gain |
 | Camera Editor Controls | 28 | Camera tool, origins, locks, states, undo/redo, grid, bookmarks |

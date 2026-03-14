@@ -227,7 +227,7 @@
             { "value": "frame-backward", "label": "Frame Backward" },
             { "value": "speed-increase", "label": "Increase Speed (Slow-Mo)" },
             { "value": "speed-decrease", "label": "Decrease Speed (Slow-Mo)" },
-            { "value": "set-speed", "label": "Set Speed" },
+            { "value": "set-speed", "label": "Set Speed", "additionalSettings": ["speed"] },
             { "value": "speed-display", "label": "Speed Display" },
             { "value": "next-session", "label": "Next Session" },
             { "value": "prev-session", "label": "Previous Session" },

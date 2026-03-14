@@ -188,6 +188,8 @@ export function calculateNeedleAngle(speedSetting: string): number {
 export function formatSpeedDisplay(speed: number, slowMotion: boolean): string {
   if (speed === 0) return "PAUSED";
 
+  if (slowMotion && speed < 0) return `-1/${Math.abs(speed)}x`;
+
   if (slowMotion) return `1/${Math.abs(speed)}x`;
 
   if (speed < 0) return `${speed}x`;
@@ -273,8 +275,8 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   /** Current slow-motion state from telemetry, keyed by action context ID */
   private replaySlowMotion = new Map<string, boolean>();
 
-  /** Speed stored when pausing, restored on play, keyed by action context ID */
-  private pausedSpeed = new Map<string, { speed: number; slowMotion: boolean }>();
+  /** Speed stored when pausing, restored on play (global, not per-context) */
+  private pausedSpeed: { speed: number; slowMotion: boolean } | null = null;
 
   /** Active long-press repeat timers, keyed by action context ID */
   private repeatTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -321,7 +323,6 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     this.sdkController.unsubscribe(ev.action.id);
     this.replaySpeed.delete(ev.action.id);
     this.replaySlowMotion.delete(ev.action.id);
-    this.pausedSpeed.delete(ev.action.id);
     this.stopRepeat(ev.action.id);
     this.activeContexts.delete(ev.action.id);
     this.lastState.delete(ev.action.id);
@@ -458,6 +459,17 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     return { speed: 0, slowMotion: false };
   }
 
+  /**
+   * Optimistically update the local speed cache after sending a command.
+   * Prevents duplicate speeds on rapid presses before telemetry catches up.
+   */
+  private setLocalSpeed(speed: number, slowMotion: boolean): void {
+    for (const [contextId] of this.replaySpeed) {
+      this.replaySpeed.set(contextId, speed);
+      this.replaySlowMotion.set(contextId, slowMotion);
+    }
+  }
+
   private executeMode(contextId: string, settings: ReplayControlSettings): void {
     const replay = getCommands().replay;
     const { mode } = settings;
@@ -469,37 +481,42 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         if (current.speed > 0) {
           // Playing forward (any speed) → pause, remember slow-mo speeds
           if (current.slowMotion) {
-            this.pausedSpeed.set(contextId, current);
+            this.pausedSpeed = current;
           }
 
           const success = replay.pause();
+          this.setLocalSpeed(0, false);
           this.logger.info("Pause executed");
           this.logger.debug(`Result: ${success}, stored speed: ${current.speed}`);
         } else if (current.speed === 0) {
           // Paused → play forward, restore slow-motion speed or 1x
-          const stored = this.pausedSpeed.get(contextId);
+          const stored = this.pausedSpeed;
           let success: boolean;
 
           if (stored) {
             success = replay.setPlaySpeed(stored.speed, stored.slowMotion);
+            this.setLocalSpeed(stored.speed, stored.slowMotion);
             this.logger.info("Play executed with restored speed");
             this.logger.debug(`Result: ${success}, speed: ${stored.speed}, slowMotion: ${stored.slowMotion}`);
           } else {
             success = replay.play();
+            this.setLocalSpeed(1, false);
             this.logger.info("Play executed");
             this.logger.debug(`Result: ${success}`);
           }
 
-          this.pausedSpeed.delete(contextId);
+          this.pausedSpeed = null;
         } else if (current.slowMotion) {
           // Slow-mo backward → mirror to forward slow-mo
           const mirroredSpeed = Math.abs(current.speed);
           const success = replay.setPlaySpeed(mirroredSpeed, true);
+          this.setLocalSpeed(mirroredSpeed, true);
           this.logger.info("Play executed (mirrored slow-mo)");
           this.logger.debug(`Result: ${success}, speed: ${mirroredSpeed}`);
         } else {
           // Rewind/backward at non-slow-mo → reset to 1x
           const success = replay.play();
+          this.setLocalSpeed(1, false);
           this.logger.info("Play executed (reset to 1x)");
           this.logger.debug(`Result: ${success}, was speed: ${current.speed}`);
         }
@@ -512,37 +529,42 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         if (current.speed < 0) {
           // Playing backward (any speed) → pause, remember slow-mo speeds
           if (current.slowMotion) {
-            this.pausedSpeed.set(contextId, current);
+            this.pausedSpeed = current;
           }
 
           const success = replay.pause();
+          this.setLocalSpeed(0, false);
           this.logger.info("Pause backward executed");
           this.logger.debug(`Result: ${success}, stored speed: ${current.speed}`);
         } else if (current.speed === 0) {
           // Paused → play backward, restore slow-motion reverse speed or -1x
-          const stored = this.pausedSpeed.get(contextId);
+          const stored = this.pausedSpeed;
           let success: boolean;
 
           if (stored) {
             success = replay.setPlaySpeed(stored.speed, stored.slowMotion);
+            this.setLocalSpeed(stored.speed, stored.slowMotion);
             this.logger.info("Play backward executed with restored speed");
             this.logger.debug(`Result: ${success}, speed: ${stored.speed}, slowMotion: ${stored.slowMotion}`);
           } else {
             success = replay.setPlaySpeed(-1);
+            this.setLocalSpeed(-1, false);
             this.logger.info("Play backward executed");
             this.logger.debug(`Result: ${success}`);
           }
 
-          this.pausedSpeed.delete(contextId);
+          this.pausedSpeed = null;
         } else if (current.slowMotion) {
           // Slow-mo forward → mirror to backward slow-mo
           const mirroredSpeed = -Math.abs(current.speed);
           const success = replay.setPlaySpeed(mirroredSpeed, true);
+          this.setLocalSpeed(mirroredSpeed, true);
           this.logger.info("Play backward executed (mirrored slow-mo)");
           this.logger.debug(`Result: ${success}, speed: ${mirroredSpeed}`);
         } else {
           // FF/forward at non-slow-mo → reset to -1x
           const success = replay.setPlaySpeed(-1);
+          this.setLocalSpeed(-1, false);
           this.logger.info("Play backward executed (reset to -1x)");
           this.logger.debug(`Result: ${success}, was speed: ${current.speed}`);
         }
@@ -551,8 +573,8 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       }
       case "stop": {
         const success = replay.pause();
-        // Clear remembered speed so next play starts at 1x
-        this.pausedSpeed.delete(contextId);
+        this.setLocalSpeed(0, false);
+        this.pausedSpeed = null;
         this.logger.info("Stop executed");
         this.logger.debug(`Result: ${success}`);
         break;
@@ -568,6 +590,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         }
 
         const success = replay.setPlaySpeed(nextSpeed);
+        this.setLocalSpeed(nextSpeed, false);
         this.logger.info("Fast forward executed");
         this.logger.debug(`Result: ${success}, speed: ${nextSpeed}`);
         break;
@@ -583,12 +606,14 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         }
 
         const success = replay.setPlaySpeed(nextSpeed);
+        this.setLocalSpeed(nextSpeed, false);
         this.logger.info("Rewind executed");
         this.logger.debug(`Result: ${success}, speed: ${nextSpeed}`);
         break;
       }
       case "slow-motion": {
         const success = replay.setPlaySpeed(2, true);
+        this.setLocalSpeed(2, true);
         this.logger.info("Slow motion executed");
         this.logger.debug(`Result: ${success}`);
         break;
@@ -613,21 +638,21 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         let success: boolean;
 
         if (current.slowMotion && absSpeed > 2) {
-          // Slow-mo: decrease divisor (e.g., 1/4x → 1/3x)
           const next = absSpeed - 1;
           success = replay.setPlaySpeed(next * sign, true);
+          this.setLocalSpeed(next * sign, true);
           this.logger.debug(`Speed increase: slow-mo 1/${absSpeed}x -> 1/${next}x`);
         } else if (current.slowMotion && absSpeed <= 2) {
-          // Exit slow-mo to 1x
           success = replay.setPlaySpeed(sign, false);
+          this.setLocalSpeed(sign, false);
           this.logger.debug(`Speed increase: exiting slow-mo to ${sign}x`);
         } else if (absSpeed === 0) {
-          // Paused → 1x forward
           success = replay.play();
+          this.setLocalSpeed(1, false);
           this.logger.debug("Speed increase: from paused to 1x");
         } else if (absSpeed < 16) {
-          // Normal speed: increase (e.g., 1x → 2x, 4x → 5x)
           success = replay.setPlaySpeed((absSpeed + 1) * sign);
+          this.setLocalSpeed((absSpeed + 1) * sign, false);
           this.logger.debug(`Speed increase: ${current.speed}x -> ${(absSpeed + 1) * sign}x`);
         } else {
           // Already at max 16x
@@ -647,25 +672,24 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         let success: boolean;
 
         if (current.slowMotion && absSpeed < 16) {
-          // Slow-mo: increase divisor (e.g., 1/4x → 1/5x)
           const next = absSpeed + 1;
           success = replay.setPlaySpeed(next * sign, true);
+          this.setLocalSpeed(next * sign, true);
           this.logger.debug(`Speed decrease: slow-mo 1/${absSpeed}x -> 1/${next}x`);
         } else if (current.slowMotion) {
-          // Already at slowest 1/16x
           this.logger.debug("Speed decrease: already at min slow-mo speed");
           break;
         } else if (absSpeed === 0) {
-          // Paused → 1/2x forward slow-mo
           success = replay.setPlaySpeed(2, true);
+          this.setLocalSpeed(2, true);
           this.logger.debug("Speed decrease: from paused to 1/2x");
         } else if (absSpeed > 1) {
-          // Normal speed > 1x: decrease (e.g., 4x → 3x)
           success = replay.setPlaySpeed((absSpeed - 1) * sign);
+          this.setLocalSpeed((absSpeed - 1) * sign, false);
           this.logger.debug(`Speed decrease: ${current.speed}x -> ${(absSpeed - 1) * sign}x`);
         } else {
-          // At 1x → enter slow-mo at 1/2x
           success = replay.setPlaySpeed(2 * sign, true);
+          this.setLocalSpeed(2 * sign, true);
           this.logger.debug(`Speed decrease: entering slow-mo at ${isBackward ? "-" : ""}1/2x`);
         }
 
@@ -676,6 +700,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       case "set-speed": {
         const { speed, slowMotion } = parseSpeedSetting(settings.speed);
         const success = replay.setPlaySpeed(speed, slowMotion);
+        this.setLocalSpeed(speed, slowMotion);
         this.logger.info("Set speed executed");
         this.logger.debug(`Result: ${success}, speed: ${speed}, slowMotion: ${slowMotion}`);
         break;
