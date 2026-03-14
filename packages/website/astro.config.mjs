@@ -13,6 +13,11 @@ export default defineConfig({
       customCss: ["./src/styles/custom.css"],
       social: [
         {
+          icon: "external",
+          label: "Elgato Marketplace",
+          href: "https://marketplace.elgato.com/product/iracedeck-042a0efb-58aa-428c-b1de-8b6169edd21d",
+        },
+        {
           icon: "github",
           label: "GitHub",
           href: "https://github.com/niklam/iracedeck",
@@ -21,6 +26,11 @@ export default defineConfig({
           icon: "discord",
           label: "Discord",
           href: "https://discord.gg/c6nRYywpah",
+        },
+        {
+          icon: "reddit",
+          label: "Reddit",
+          href: "https://www.reddit.com/r/iRaceDeck/",
         },
       ],
       favicon: "/favicon.svg",
@@ -68,6 +78,7 @@ export default defineConfig({
         },
       ],
       sidebar: [
+        { label: "Home", link: "/" },
         {
           label: "Getting Started",
           items: [
