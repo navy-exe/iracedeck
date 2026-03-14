@@ -30,6 +30,21 @@
   color: var(--sl-color-gray-3);
 }
 
+/* ── Header theme toggle alignment ── */
+
+starlight-theme-select label {
+  gap: 0.35rem;
+}
+
+starlight-theme-select label .label-icon {
+  inset-inline-start: 1px !important;
+}
+
+starlight-theme-select label select {
+  padding-inline-start: calc(0.875rem + 0.5rem + 0.25rem + 2px) !important;
+  transform: translateY(2px);
+}
+
 /* ── Landing page hero ── */
 
 .hero .accent {
@@ -38,6 +53,7 @@
 
 /* Reduce hero spacing on splash page */
 .page .hero {
+  padding-top: clamp(1rem, calc(0.3rem + 4.5vmin), 4.3rem) !important;
   padding-bottom: 2rem !important;
 }
 
@@ -53,7 +69,8 @@
 .hero > .hero-html,
 .hero > picture {
   order: -1;
-  width: min(80%, 16rem);
+  width: min(80%, 20rem);
+  margin-bottom: 4rem;
 }
 
 .hero .stack {
