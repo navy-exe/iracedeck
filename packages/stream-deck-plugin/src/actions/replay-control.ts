@@ -597,23 +597,31 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       }
       case "speed-increase": {
         const current = this.getCurrentSpeed();
-        const absDivisor = Math.abs(current.speed);
+        const absSpeed = Math.abs(current.speed);
         const isBackward = current.speed < 0;
+        const sign = isBackward ? -1 : 1;
         let success: boolean;
 
-        if (current.slowMotion && absDivisor > 2) {
-          // Decrease divisor (faster slow-mo)
-          const nextDivisor = absDivisor - 1;
-          const nextSpeed = isBackward ? -nextDivisor : nextDivisor;
-          success = replay.setPlaySpeed(nextSpeed, true);
-          this.logger.debug(`Speed increase: slow-mo ${current.speed} -> ${nextSpeed}`);
-        } else if (current.slowMotion && absDivisor <= 2) {
-          // Exit slow-mo to normal speed
-          const nextSpeed = isBackward ? -1 : 1;
-          success = replay.setPlaySpeed(nextSpeed, false);
-          this.logger.debug(`Speed increase: exiting slow-mo to ${nextSpeed}x`);
+        if (current.slowMotion && absSpeed > 2) {
+          // Slow-mo: decrease divisor (e.g., 1/4x → 1/3x)
+          const next = absSpeed - 1;
+          success = replay.setPlaySpeed(next * sign, true);
+          this.logger.debug(`Speed increase: slow-mo 1/${absSpeed}x -> 1/${next}x`);
+        } else if (current.slowMotion && absSpeed <= 2) {
+          // Exit slow-mo to 1x
+          success = replay.setPlaySpeed(sign, false);
+          this.logger.debug(`Speed increase: exiting slow-mo to ${sign}x`);
+        } else if (absSpeed === 0) {
+          // Paused → 1x forward
+          success = replay.play();
+          this.logger.debug("Speed increase: from paused to 1x");
+        } else if (absSpeed < 16) {
+          // Normal speed: increase (e.g., 1x → 2x, 4x → 5x)
+          success = replay.setPlaySpeed((absSpeed + 1) * sign);
+          this.logger.debug(`Speed increase: ${current.speed}x -> ${(absSpeed + 1) * sign}x`);
         } else {
-          this.logger.debug("Speed increase: already at normal speed, no-op");
+          // Already at max 16x
+          this.logger.debug("Speed increase: already at max speed");
           break;
         }
 
@@ -623,20 +631,31 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       }
       case "speed-decrease": {
         const current = this.getCurrentSpeed();
+        const absSpeed = Math.abs(current.speed);
         const isBackward = current.speed < 0;
+        const sign = isBackward ? -1 : 1;
         let success: boolean;
 
-        if (current.slowMotion) {
-          // Increase divisor (slower slow-mo), preserving direction
-          const absDivisor = Math.abs(current.speed);
-          const nextDivisor = Math.min(absDivisor + 1, 16);
-          const nextSpeed = isBackward ? -nextDivisor : nextDivisor;
-          success = replay.setPlaySpeed(nextSpeed, true);
-          this.logger.debug(`Speed decrease: slow-mo ${current.speed} -> ${nextSpeed}`);
+        if (current.slowMotion && absSpeed < 16) {
+          // Slow-mo: increase divisor (e.g., 1/4x → 1/5x)
+          const next = absSpeed + 1;
+          success = replay.setPlaySpeed(next * sign, true);
+          this.logger.debug(`Speed decrease: slow-mo 1/${absSpeed}x -> 1/${next}x`);
+        } else if (current.slowMotion) {
+          // Already at slowest 1/16x
+          this.logger.debug("Speed decrease: already at min slow-mo speed");
+          break;
+        } else if (absSpeed === 0) {
+          // Paused → 1/2x forward slow-mo
+          success = replay.setPlaySpeed(2, true);
+          this.logger.debug("Speed decrease: from paused to 1/2x");
+        } else if (absSpeed > 1) {
+          // Normal speed > 1x: decrease (e.g., 4x → 3x)
+          success = replay.setPlaySpeed((absSpeed - 1) * sign);
+          this.logger.debug(`Speed decrease: ${current.speed}x -> ${(absSpeed - 1) * sign}x`);
         } else {
-          // Enter slow-mo at 1/2x, preserving direction
-          const nextSpeed = isBackward ? -2 : 2;
-          success = replay.setPlaySpeed(nextSpeed, true);
+          // At 1x → enter slow-mo at 1/2x
+          success = replay.setPlaySpeed(2 * sign, true);
           this.logger.debug(`Speed decrease: entering slow-mo at ${isBackward ? "-" : ""}1/2x`);
         }
 
