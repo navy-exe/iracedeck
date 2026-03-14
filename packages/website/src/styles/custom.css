@@ -1,0 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700&display=swap");
+
+:root {
+  --sl-font: "Exo", system-ui, sans-serif;
+
+  /* Dark mode accent (default) */
+  --sl-color-accent-low: #2a0809;
+  --sl-color-accent: #ce2128;
+  --sl-color-accent-high: #f5c6c7;
+
+  /* Dark background */
+  --sl-color-black: #0a0a0c;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #f5c6c7;
+  --sl-color-accent: #ce2128;
+  --sl-color-accent-high: #2a0809;
+}
