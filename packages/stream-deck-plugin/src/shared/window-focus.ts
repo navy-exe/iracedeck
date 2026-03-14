@@ -9,6 +9,7 @@
  * The focuser callback is provided during initialization and typically
  * wraps the native focusIRacingWindow() function.
  */
+import { FocusResult } from "@iracedeck/iracing-native";
 import type { ILogger } from "@iracedeck/logger";
 import { silentLogger } from "@iracedeck/logger";
 
@@ -16,9 +17,9 @@ import { getGlobalSettings, isGlobalSettingsInitialized } from "./global-setting
 
 /**
  * Function type for focusing the iRacing window.
- * Returns true if the window was found and focused (or already focused).
+ * Returns a FocusResult status code.
  */
-export type WindowFocuser = () => boolean;
+export type WindowFocuser = () => number;
 
 let focuser: WindowFocuser | null = null;
 let logger: ILogger = silentLogger;
@@ -52,19 +53,31 @@ export function focusIRacingIfEnabled(): void {
 
   if (!settings.focusIRacingWindow) return;
 
-  let success = false;
+  let result: number;
 
   try {
-    success = focuser();
+    result = focuser();
   } catch (error) {
     logger.warn(`Failed to focus iRacing window: ${error}`);
 
     return;
   }
 
-  if (!success) {
-    logger.warn("Failed to focus iRacing window (window not found or timed out)");
-  } else {
-    logger.debug("Focused iRacing window before sending key");
+  switch (result) {
+    case FocusResult.AlreadyFocused:
+      logger.debug("iRacing window already focused");
+      break;
+    case FocusResult.Focused:
+      logger.debug("iRacing window focused successfully");
+      break;
+    case FocusResult.WindowNotFound:
+      logger.warn("iRacing window not found — is iRacing running?");
+      break;
+    case FocusResult.FocusTimedOut:
+      logger.warn("iRacing window found but focus timed out (1000ms)");
+      break;
+    default:
+      logger.warn(`Unexpected focus result: ${result}`);
+      break;
   }
 }

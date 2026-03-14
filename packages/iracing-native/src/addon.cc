@@ -453,24 +453,38 @@ Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
 // ============================================================================
 
 /**
+ * Focus result codes returned by focusIRacingWindow().
+ *
+ * 0 = AlreadyFocused — window was already in the foreground
+ * 1 = Focused        — window was found and successfully focused
+ * 2 = WindowNotFound — no window with the expected title exists
+ * 3 = FocusTimedOut  — window was found but SetForegroundWindow
+ *                       did not take effect within 1000ms
+ */
+static const int FOCUS_ALREADY_FOCUSED = 0;
+static const int FOCUS_FOCUSED = 1;
+static const int FOCUS_WINDOW_NOT_FOUND = 2;
+static const int FOCUS_TIMED_OUT = 3;
+
+/**
  * Attempt to bring the iRacing simulator window to the foreground.
  * Uses AttachThreadInput pattern for reliable focusing across
  * Windows foreground window restrictions.
  *
- * @returns true if iRacing window was found and focused (or already focused)
+ * @returns int status code (see FOCUS_* constants above)
  */
-static bool focusIRacingWindow()
+static int focusIRacingWindow()
 {
     HWND hwnd = FindWindowA(NULL, "iRacing.com Simulator");
     if (!hwnd)
     {
-        return false;
+        return FOCUS_WINDOW_NOT_FOUND;
     }
 
     // Already focused — nothing to do
     if (GetForegroundWindow() == hwnd)
     {
-        return true;
+        return FOCUS_ALREADY_FOCUSED;
     }
 
     HWND fg = GetForegroundWindow();
@@ -493,27 +507,27 @@ static bool focusIRacingWindow()
     // SetForegroundWindow returns immediately but focus changes
     // asynchronously. Without this, subsequent actions (e.g., chat
     // commands) may fire before the target window has focus.
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 100; i++)
     {
         if (GetForegroundWindow() == hwnd)
         {
-            return true;
+            return FOCUS_FOCUSED;
         }
         Sleep(10);
     }
 
-    // Timed out (500ms) — focus may not have switched
-    return false;
+    // Timed out (1000ms) — focus may not have switched
+    return FOCUS_TIMED_OUT;
 }
 
 /**
  * N-API wrapper: Focus the iRacing simulator window.
- * @returns boolean - true if window was found and focused (or already focused)
+ * @returns number - status code (0=already focused, 1=focused, 2=not found, 3=timed out)
  */
 Napi::Value FocusIRacingWindow(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
-    return Napi::Boolean::New(env, focusIRacingWindow());
+    return Napi::Number::New(env, focusIRacingWindow());
 }
 
 // ============================================================================

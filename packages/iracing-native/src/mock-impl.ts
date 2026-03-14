@@ -96,10 +96,10 @@ export class IRacingNativeMock {
     return true;
   }
 
-  focusIRacingWindow(): boolean {
+  focusIRacingWindow(): number {
     console.debug("[IRacingNativeMock] focusIRacingWindow()");
 
-    return true;
+    return 0; // AlreadyFocused
   }
 
   sendScanKeys(scanCodes: number[]): void {
