@@ -118,9 +118,9 @@ starlight-theme-select label select {
   justify-content: center;
   align-items: stretch;
   gap: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin: 0 auto 1rem;
-  max-width: 40rem;
+  max-width: 50rem;
 }
 
 .stat {
@@ -129,7 +129,7 @@ starlight-theme-select label select {
   align-items: center;
   justify-content: flex-end;
   gap: 0.25rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1rem;
 }
 
 .stat-divider {
