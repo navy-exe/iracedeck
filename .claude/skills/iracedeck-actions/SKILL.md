@@ -133,7 +133,7 @@ When actions are added, removed, or modified (new modes, renamed settings, chang
 
 1. **`docs/reference/actions.json`** — add/update the action entry with all modes
 2. **This skill file** (`SKILL.md`) — update the category overview table (counts) and the per-category action tables
-3. **`packages/website/public_html/index.html`** — update category cards and stats if counts changed
+3. **`packages/website/src/content/docs/index.mdx`** — update category cards and stats if counts changed
 
 ## Key Project Files
 
