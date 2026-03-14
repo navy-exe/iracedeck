@@ -483,7 +483,79 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     }
   }
 
-  private executeMode(contextId: string, settings: ReplayControlSettings): void {
+  /**
+   * Look up a car number from session info by car index.
+   * Returns the numeric car number, or null if not found.
+   */
+  private getCarNumberByIdx(carIdx: number): number | null {
+    const sessionInfo = this.sdkController.getSessionInfo();
+    const driverInfo = (sessionInfo as Record<string, unknown>)?.DriverInfo as Record<string, unknown> | undefined;
+    const drivers = driverInfo?.Drivers as Array<{ CarIdx: number; CarNumber: string }> | undefined;
+
+    if (!drivers) return null;
+
+    const driver = drivers.find((d) => d.CarIdx === carIdx);
+
+    if (!driver) return null;
+
+    const num = parseInt(driver.CarNumber, 10);
+
+    return isNaN(num) ? null : num;
+  }
+
+  /**
+   * Find the nearest car on track ahead or behind the currently viewed car (CamCarIdx).
+   * Uses CarIdxLapCompleted + CarIdxLapDistPct for track progress.
+   * Skips inactive cars (lap < 0) and cars on pit road.
+   */
+  private findAdjacentCarOnTrack(direction: "ahead" | "behind"): number | null {
+    const telemetry = this.sdkController.getCurrentTelemetry();
+
+    if (!telemetry?.CarIdxLapCompleted || !telemetry?.CarIdxLapDistPct) return null;
+
+    const camCarIdx = (telemetry.CamCarIdx as number) ?? -1;
+
+    if (camCarIdx < 0) return null;
+
+    const lapCompleted = telemetry.CarIdxLapCompleted as number[];
+    const lapDistPct = telemetry.CarIdxLapDistPct as number[];
+    const onPitRoad = telemetry.CarIdxOnPitRoad as boolean[] | undefined;
+
+    // Build sorted list of active on-track cars by track progress
+    const activeCars: Array<{ carIdx: number; progress: number }> = [];
+
+    for (let idx = 0; idx < lapCompleted.length; idx++) {
+      if (lapCompleted[idx] === undefined || lapCompleted[idx] < 0) continue;
+
+      if (onPitRoad?.[idx]) continue;
+
+      if (lapDistPct[idx] === undefined || lapDistPct[idx] < 0) continue;
+
+      const progress = lapCompleted[idx] + lapDistPct[idx];
+      activeCars.push({ carIdx: idx, progress });
+    }
+
+    // Sort by progress descending (highest first = most laps/distance)
+    activeCars.sort((a, b) => b.progress - a.progress);
+
+    const currentIndex = activeCars.findIndex((c) => c.carIdx === camCarIdx);
+
+    if (currentIndex === -1) return null;
+
+    if (direction === "ahead") {
+      // Car ahead = higher progress = lower index in sorted array (wraps around)
+      const aheadIndex = currentIndex === 0 ? activeCars.length - 1 : currentIndex - 1;
+
+      return activeCars[aheadIndex].carIdx;
+    } else {
+      // Car behind = lower progress = higher index in sorted array (wraps around)
+      const behindIndex = currentIndex === activeCars.length - 1 ? 0 : currentIndex + 1;
+
+      return activeCars[behindIndex].carIdx;
+    }
+  }
+
+  private async executeMode(contextId: string, settings: ReplayControlSettings): Promise<void> {
     const replay = getCommands().replay;
     const { mode } = settings;
 
@@ -772,50 +844,68 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         break;
       }
       case "jump-to-my-car": {
-        const telemetry = this.sdkController.getCurrentTelemetry();
+        const sessionInfo = this.sdkController.getSessionInfo();
+        const driverInfo = (sessionInfo as Record<string, unknown>)?.DriverInfo as Record<string, unknown> | undefined;
+        const driverCarIdx = (driverInfo?.DriverCarIdx as number) ?? -1;
 
-        if (!telemetry) {
-          this.logger.warn("No telemetry available for camera");
+        if (driverCarIdx < 0) {
+          this.logger.warn("No session info available for jump to my car");
+          break;
+        }
+
+        const carNum = this.getCarNumberByIdx(driverCarIdx);
+
+        if (carNum === null) {
+          this.logger.warn("Could not find car number for player");
           break;
         }
 
         const camera = getCommands().camera;
-        const playerCarIdx = (telemetry.PlayerCarIdx as number) ?? 0;
-        const groupNum = (telemetry.CamGroupNumber as number) ?? 1;
-        const cameraNum = (telemetry.CamCameraNumber as number) ?? 1;
-        const success = camera.switchPos(playerCarIdx, groupNum, cameraNum);
+        const success = camera.switchNum(carNum, 0, 0);
         this.logger.info("Jump to my car executed");
-        this.logger.debug(`Result: ${success}, playerCarIdx: ${playerCarIdx}`);
+        this.logger.debug(`Result: ${success}, carNum: ${carNum}`);
         break;
       }
       case "next-car": {
-        const telemetry = this.sdkController.getCurrentTelemetry();
+        const nextCarIdx = this.findAdjacentCarOnTrack("ahead");
 
-        if (!telemetry) {
-          this.logger.warn("No telemetry available for camera");
+        if (nextCarIdx === null) {
+          this.logger.warn("No car found ahead on track");
+          break;
+        }
+
+        const nextCarNum = this.getCarNumberByIdx(nextCarIdx);
+
+        if (nextCarNum === null) {
+          this.logger.warn("Could not find car number for next car");
           break;
         }
 
         const camera = getCommands().camera;
-        const carIdx = (telemetry.CamCarIdx as number) ?? 0;
-        const success = camera.cycleCar(carIdx, 1);
+        const success = camera.switchNum(nextCarNum, 0, 0);
         this.logger.info("Next car executed");
-        this.logger.debug(`Result: ${success}`);
+        this.logger.debug(`Result: ${success}, carNum: ${nextCarNum}`);
         break;
       }
       case "prev-car": {
-        const telemetry = this.sdkController.getCurrentTelemetry();
+        const prevCarIdx = this.findAdjacentCarOnTrack("behind");
 
-        if (!telemetry) {
-          this.logger.warn("No telemetry available for camera");
+        if (prevCarIdx === null) {
+          this.logger.warn("No car found behind on track");
+          break;
+        }
+
+        const prevCarNum = this.getCarNumberByIdx(prevCarIdx);
+
+        if (prevCarNum === null) {
+          this.logger.warn("Could not find car number for previous car");
           break;
         }
 
         const camera = getCommands().camera;
-        const carIdx = (telemetry.CamCarIdx as number) ?? 0;
-        const success = camera.cycleCar(carIdx, -1);
+        const success = camera.switchNum(prevCarNum, 0, 0);
         this.logger.info("Previous car executed");
-        this.logger.debug(`Result: ${success}`);
+        this.logger.debug(`Result: ${success}, carNum: ${prevCarNum}`);
         break;
       }
     }
@@ -870,13 +960,18 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         this.logger.info("Previous incident (dial)");
       }
     } else if (mode === "jump-to-my-car") {
-      const telemetry = this.sdkController.getCurrentTelemetry();
+      // Rotate cycles next/prev car on track
+      const direction = ticks > 0 ? "ahead" : "behind";
+      const carIdx = this.findAdjacentCarOnTrack(direction);
 
-      if (telemetry) {
-        const camera = getCommands().camera;
-        const carIdx = (telemetry.CamCarIdx as number) ?? 0;
-        camera.cycleCar(carIdx, ticks > 0 ? 1 : -1);
-        this.logger.info(ticks > 0 ? "Next car (dial)" : "Previous car (dial)");
+      if (carIdx !== null) {
+        const carNum = this.getCarNumberByIdx(carIdx);
+
+        if (carNum !== null) {
+          const camera = getCommands().camera;
+          camera.switchNum(carNum, 0, 0);
+          this.logger.info(ticks > 0 ? "Next car (dial)" : "Previous car (dial)");
+        }
       }
     } else {
       // Transport modes: rotate does frame step
