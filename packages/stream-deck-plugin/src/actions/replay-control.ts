@@ -4,6 +4,7 @@ import streamDeck, {
   DialRotateEvent,
   DidReceiveSettingsEvent,
   KeyDownEvent,
+  KeyUpEvent,
   WillAppearEvent,
   WillDisappearEvent,
 } from "@elgato/streamdeck";
@@ -126,11 +127,25 @@ const DIRECTIONAL_PAIRS: Partial<Record<ReplayControlMode, { next: ReplayControl
 };
 
 /** Modes whose display changes based on telemetry state */
+/** Modes whose display changes based on telemetry state */
 const TELEMETRY_DISPLAY_MODES: ReadonlySet<ReplayControlMode> = new Set([
   "play-pause",
   "play-backward",
   "speed-display",
 ]);
+
+/** Modes that support long-press repeat */
+const LONG_PRESS_REPEAT_MODES: ReadonlySet<ReplayControlMode> = new Set([
+  "fast-forward",
+  "rewind",
+  "frame-forward",
+  "frame-backward",
+  "speed-increase",
+  "speed-decrease",
+]);
+
+const LONG_PRESS_INITIAL_DELAY = 500;
+const LONG_PRESS_REPEAT_INTERVAL = 250;
 
 /**
  * @internal Exported for testing
@@ -247,6 +262,9 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   /** Speed stored when pausing, restored on play, keyed by action context ID */
   private pausedSpeed = new Map<string, { speed: number; slowMotion: boolean }>();
 
+  /** Active long-press repeat timers, keyed by action context ID */
+  private repeatTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
   /** Cached settings per context for telemetry-driven display updates */
   private activeContexts = new Map<string, ReplayControlSettings>();
 
@@ -290,6 +308,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     this.replaySpeed.delete(ev.action.id);
     this.replaySlowMotion.delete(ev.action.id);
     this.pausedSpeed.delete(ev.action.id);
+    this.stopRepeat(ev.action.id);
     this.activeContexts.delete(ev.action.id);
     this.lastState.delete(ev.action.id);
   }
@@ -305,6 +324,14 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
     this.executeMode(ev.action.id, settings);
+
+    if (LONG_PRESS_REPEAT_MODES.has(settings.mode)) {
+      this.startRepeat(ev.action.id, settings);
+    }
+  }
+
+  override async onKeyUp(ev: KeyUpEvent<ReplayControlSettings>): Promise<void> {
+    this.stopRepeat(ev.action.id);
   }
 
   override async onDialDown(ev: DialDownEvent<ReplayControlSettings>): Promise<void> {
@@ -317,6 +344,32 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     this.logger.info("Dial rotated");
     const settings = this.parseSettings(ev.payload.settings);
     this.executeDialRotate(ev.action.id, settings.mode, ev.payload.ticks);
+  }
+
+  private startRepeat(contextId: string, settings: ReplayControlSettings): void {
+    this.stopRepeat(contextId);
+
+    const timer = setTimeout(() => {
+      this.executeMode(contextId, settings);
+
+      const interval = setInterval(() => {
+        this.executeMode(contextId, settings);
+      }, LONG_PRESS_REPEAT_INTERVAL);
+
+      this.repeatTimers.set(contextId, interval);
+    }, LONG_PRESS_INITIAL_DELAY);
+
+    this.repeatTimers.set(contextId, timer);
+  }
+
+  private stopRepeat(contextId: string): void {
+    const timer = this.repeatTimers.get(contextId);
+
+    if (timer) {
+      clearTimeout(timer);
+      clearInterval(timer);
+      this.repeatTimers.delete(contextId);
+    }
   }
 
   private parseSettings(settings: unknown): ReplayControlSettings {
