@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.2.0](https://github.com/niklam/iracedeck/compare/v1.1.0...v1.2.0) (2026-03-14)
+
+### Features
+
+* **stream-deck-plugin:** add camera subactions to Replay Control ([fde7b3e](https://github.com/niklam/iracedeck/commit/fde7b3ec7108bf1a9234126d68a3c6bfc03b32b5)), closes [#125](https://github.com/niklam/iracedeck/issues/125)
+* **stream-deck-plugin:** refine camera subaction icons ([88506df](https://github.com/niklam/iracedeck/commit/88506df3873d495a970c4ca90e48f8de129fc9b5))
+
+### Bug Fixes
+
+* **stream-deck-plugin:** use switchNum with car number lookup for camera subactions ([ebd28e2](https://github.com/niklam/iracedeck/commit/ebd28e245b5b0b8a841ebbd053bc9b6ef11b2a98)), closes [#125](https://github.com/niklam/iracedeck/issues/125)
+* **website:** add build step and change deploy trigger for Firebase Hosting ([cd6353e](https://github.com/niklam/iracedeck/commit/cd6353ec22905efe8607953fa03a2e6f560a4076))
+
+### Refactoring
+
+* **stream-deck-plugin:** address review feedback for camera subactions ([73fa323](https://github.com/niklam/iracedeck/commit/73fa323f772b2dd504ed4a0a4f07d0faac83f2e7))
+* **website:** rename workflow to firebase-hosting-release.yml ([88ba6a9](https://github.com/niklam/iracedeck/commit/88ba6a9a0d0ccbf7a206cf30ea9701e7cd5b4d45))
+
+### Documentation
+
+* fix stale control count total in actions skill metadata ([0a57286](https://github.com/niklam/iracedeck/commit/0a572865611185733547b6546538d5732bd7392f))
+* fix View & Camera control count (101 → 104) in actions skill ([6c58a9e](https://github.com/niklam/iracedeck/commit/6c58a9ec11617b1b0780179c7e8283a7cc0bc8af))
+* **website:** update controls count to 290 on landing page ([24724b1](https://github.com/niklam/iracedeck/commit/24724b1f879ea8ef2c251e0f18e59c30d386115f))
+
 ## [1.1.0](https://github.com/niklam/iracedeck/compare/v1.0.0...v1.1.0) (2026-03-14)
 
 ### Features
