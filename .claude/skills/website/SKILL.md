@@ -35,26 +35,34 @@ Colors are set as Starlight CSS custom properties in `src/styles/custom.css`.
 
 ## Content Structure
 
+All docs pages live under `src/content/docs/docs/` and are served at `/docs/...`.
+
 ```
 src/content/docs/
-├── index.mdx                    # Landing page (splash template)
-├── getting-started/
-│   ├── installation.md
-│   └── troubleshooting.md
-├── actions/
-│   ├── overview.md
-│   ├── display-session/         # 2 actions
-│   ├── driving/                 # 5 actions
-│   ├── cockpit/                 # 4 actions
-│   ├── view-camera/             # 6 actions
-│   ├── media/                   # 1 action
-│   ├── pit-service/             # 3 actions
-│   ├── car-setup/               # 7 actions
-│   └── communication/           # 1 action
-└── reference/
-    ├── action-types.md
-    ├── template-variables.md
-    └── keyboard-shortcuts.md
+├── index.mdx                        # Landing page at / (splash template)
+└── docs/
+    ├── index.md                     # Docs landing page at /docs/
+    ├── getting-started/
+    │   ├── installation.md
+    │   └── troubleshooting.md
+    ├── features/
+    │   ├── key-bindings.md
+    │   ├── flags-overlay.md
+    │   ├── focus-iracing-window.md
+    │   └── template-variables.md    # Source of truth for telemetry template vars
+    ├── actions/
+    │   ├── overview.md
+    │   ├── display-session/         # 2 actions
+    │   ├── driving/                 # 5 actions
+    │   ├── cockpit/                 # 4 actions
+    │   ├── view-camera/             # 6 actions
+    │   ├── media/                   # 1 action
+    │   ├── pit-service/             # 3 actions
+    │   ├── car-setup/               # 7 actions
+    │   └── communication/           # 1 action
+    └── reference/
+        ├── action-types.md
+        └── keyboard-shortcuts.md
 ```
 
 ## Sidebar
