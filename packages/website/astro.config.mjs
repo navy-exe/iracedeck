@@ -174,6 +174,15 @@ export default defineConfig({
           ],
         },
         {
+          label: "Development",
+          items: [
+            { slug: "docs/development" },
+            { slug: "docs/development/tech-stack" },
+            { slug: "docs/development/contributing" },
+            { slug: "docs/development/setup" },
+          ],
+        },
+        {
           label: "Links",
           items: [
             {
@@ -189,6 +198,11 @@ export default defineConfig({
             {
               label: "Discord",
               link: "https://discord.gg/c6nRYywpah",
+              attrs: { target: "_blank" },
+            },
+            {
+              label: "Reddit",
+              link: "https://www.reddit.com/r/iRaceDeck/",
               attrs: { target: "_blank" },
             },
           ],

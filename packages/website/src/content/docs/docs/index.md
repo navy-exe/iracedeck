@@ -34,3 +34,10 @@ iRaceDeck provides **30 actions** with **288 controls** across 8 categories. See
 
 - [Action Types](/docs/reference/action-types/) — Button, toggle, +/-, hold, and other action patterns
 - [Keyboard Shortcuts](/docs/reference/keyboard-shortcuts/) — Complete iRacing keyboard shortcut reference
+
+## Development
+
+- [Development](/docs/development/) — Open source and what it means
+- [Tech Stack](/docs/development/tech-stack/) — Packages, architecture, and iRacing communication
+- [Contributing](/docs/development/contributing/) — Report issues, submit code, and join the community
+- [Setup](/docs/development/setup/) — Clone, build, and run locally
