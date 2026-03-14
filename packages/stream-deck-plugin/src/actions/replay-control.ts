@@ -534,16 +534,22 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       }
       case "speed-increase": {
         const current = this.getCurrentSpeed();
+        const absDivisor = Math.abs(current.speed);
+        const isBackward = current.speed < 0;
         let success: boolean;
 
-        if (current.slowMotion && current.speed > 2) {
-          success = replay.setPlaySpeed(current.speed - 1, true);
-          this.logger.debug(`Speed increase: slow-mo ${current.speed} -> ${current.speed - 1}`);
-        } else if (current.slowMotion && current.speed <= 2) {
-          success = replay.setPlaySpeed(1, false);
-          this.logger.debug("Speed increase: exiting slow-mo to 1x");
+        if (current.slowMotion && absDivisor > 2) {
+          // Decrease divisor (faster slow-mo)
+          const nextDivisor = absDivisor - 1;
+          const nextSpeed = isBackward ? -nextDivisor : nextDivisor;
+          success = replay.setPlaySpeed(nextSpeed, true);
+          this.logger.debug(`Speed increase: slow-mo ${current.speed} -> ${nextSpeed}`);
+        } else if (current.slowMotion && absDivisor <= 2) {
+          // Exit slow-mo to normal speed
+          const nextSpeed = isBackward ? -1 : 1;
+          success = replay.setPlaySpeed(nextSpeed, false);
+          this.logger.debug(`Speed increase: exiting slow-mo to ${nextSpeed}x`);
         } else {
-          // Already at or above 1x normal — no-op
           this.logger.debug("Speed increase: already at normal speed, no-op");
           break;
         }
@@ -554,15 +560,21 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       }
       case "speed-decrease": {
         const current = this.getCurrentSpeed();
+        const isBackward = current.speed < 0;
         let success: boolean;
 
         if (current.slowMotion) {
-          const nextDivisor = Math.min(current.speed + 1, 16);
-          success = replay.setPlaySpeed(nextDivisor, true);
-          this.logger.debug(`Speed decrease: slow-mo ${current.speed} -> ${nextDivisor}`);
+          // Increase divisor (slower slow-mo), preserving direction
+          const absDivisor = Math.abs(current.speed);
+          const nextDivisor = Math.min(absDivisor + 1, 16);
+          const nextSpeed = isBackward ? -nextDivisor : nextDivisor;
+          success = replay.setPlaySpeed(nextSpeed, true);
+          this.logger.debug(`Speed decrease: slow-mo ${current.speed} -> ${nextSpeed}`);
         } else {
-          success = replay.setPlaySpeed(2, true);
-          this.logger.debug("Speed decrease: entering slow-mo at 1/2x");
+          // Enter slow-mo at 1/2x, preserving direction
+          const nextSpeed = isBackward ? -2 : 2;
+          success = replay.setPlaySpeed(nextSpeed, true);
+          this.logger.debug(`Speed decrease: entering slow-mo at ${isBackward ? "-" : ""}1/2x`);
         }
 
         this.logger.info("Speed decrease executed");
