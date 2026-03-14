@@ -1,0 +1,70 @@
+---
+title: iRaceDeck
+description: Free, open-source Stream Deck plugin for iRacing. Control pit stops, cameras, replay, telemetry, chat and hundreds more — all one tap away.
+template: splash
+hero:
+  tagline: Pit stops, car setup, cameras, replay, telemetry, chat — hundreds of controls, all one tap away without leaving the cockpit.
+  image:
+    alt: iRaceDeck logo
+    file: ../../assets/iracedeck-logo-full-white.png
+  actions:
+    - text: Install from Elgato Marketplace
+      link: https://marketplace.elgato.com/product/iracedeck-042a0efb-58aa-428c-b1de-8b6169edd21d
+      icon: external
+      variant: primary
+    - text: View Documentation
+      link: /actions/overview/
+      variant: secondary
+    - text: GitHub
+      link: https://github.com/niklam/iracedeck
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## 8 Categories, 288 Controls
+
+<CardGrid stagger>
+  <Card title="Display & Session" icon="information">
+    Live session data — incidents, laps, position, fuel, flags, and custom telemetry displays.
+  </Card>
+  <Card title="Driving Controls" icon="puzzle">
+    AI spotter, audio controls, black boxes, look direction, car control — starter, ignition, pit limiter.
+  </Card>
+  <Card title="Cockpit & Interface" icon="setting">
+    Wipers, FFB, delta splits, telemetry logging, dash pages, UI element toggles.
+  </Card>
+  <Card title="View & Camera" icon="magnifier">
+    FOV, replay transport and navigation, camera cycle/focus, full broadcast camera editor.
+  </Card>
+  <Card title="Media" icon="laptop">
+    Video recording, screenshots, giant screenshots, texture management.
+  </Card>
+  <Card title="Pit Service" icon="rocket">
+    Fuel add/reduce/autofuel, tire changes and compounds, tearoff, fast repair.
+  </Card>
+  <Card title="Car Setup" icon="bars">
+    Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control — all adjustable live.
+  </Card>
+  <Card title="Communication" icon="comment-alt">
+    Open chat, 15 macros, reply, whisper, and more.
+  </Card>
+</CardGrid>
+
+---
+
+## Ready to Upgrade Your Cockpit?
+
+Free, open-source, and ready to install. Works with Stream Deck, Stream Deck Mini, Stream Deck XL, and Stream Deck+.
+
+Requires Stream Deck software 7.1 or newer.
+
+<CardGrid>
+  <Card title="Discord" icon="discord">
+    [Join the community](https://discord.gg/c6nRYywpah) for support, feedback, and feature requests.
+  </Card>
+  <Card title="GitHub" icon="github">
+    [View source and contribute](https://github.com/niklam/iracedeck) — issues and PRs welcome.
+  </Card>
+</CardGrid>
