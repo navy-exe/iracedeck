@@ -53,8 +53,8 @@ Replay Control replaces the legacy Replay Transport, Replay Speed, and Replay Na
 | Mode | Description |
 |------|-------------|
 | Jump to My Car | Jump the replay camera to your own car. |
-| Next Car | Switch to the next car in the replay. |
-| Previous Car | Switch to the previous car in the replay. |
+| Next Car | Switch to the next car ahead on track. Skips cars on pit road. |
+| Previous Car | Switch to the next car behind on track. Skips cars on pit road. |
 
 ## Long-Press Repeat
 
