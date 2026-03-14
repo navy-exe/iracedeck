@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  calculateNeedleAngle,
   formatSetSpeedLabel,
   formatSpeedDisplay,
   generateReplayControlSvg,
@@ -218,6 +219,32 @@ describe("ReplayControl", () => {
     it("should format slow-motion speed settings", () => {
       expect(formatSetSpeedLabel("s2")).toBe("1/2x");
       expect(formatSetSpeedLabel("s16")).toBe("1/16x");
+    });
+  });
+
+  describe("calculateNeedleAngle", () => {
+    it("should return -90 for slowest speed (1/16x)", () => {
+      expect(calculateNeedleAngle("s16")).toBe(-90);
+    });
+
+    it("should return 0 for normal speed (1x)", () => {
+      expect(calculateNeedleAngle("1")).toBe(0);
+    });
+
+    it("should return 90 for fastest speed (16x)", () => {
+      expect(calculateNeedleAngle("16")).toBe(90);
+    });
+
+    it("should return -6 for 1/2x slow-mo", () => {
+      expect(calculateNeedleAngle("s2")).toBe(-6);
+    });
+
+    it("should return 6 for 2x", () => {
+      expect(calculateNeedleAngle("2")).toBe(6);
+    });
+
+    it("should return 48 for 9x (midpoint of fast range)", () => {
+      expect(calculateNeedleAngle("9")).toBeCloseTo(48, 0);
     });
   });
 

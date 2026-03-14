@@ -77,7 +77,7 @@ When asked about actions or controls:
 | Action | Controls | Modes |
 |--------|----------|-------|
 | View Adjustment | 9 | FOV +/-, horizon +/-, driver height +/-, recenter VR, UI size +/- |
-| Replay Control | 20 | play/pause, play-backward, stop, FF, rewind, slow-mo, frame +/-, speed +/-, set speed, speed display, session/lap/incident next/prev, jump start/end |
+| Replay Control | 20 | play/pause, play-backward, stop, FF, rewind, slow-mo, frame +/-, speed +/-, set speed, speed display, session next/prev, lap next/prev, incident next/prev, jump to beginning, jump to live |
 | Camera Cycle | 8 | 4 types (camera, sub-camera, car, driving) x 2 directions |
 | Camera Editor Adjustments | 29 | 14 parameters +/- plus auto-set mic gain |
 | Camera Editor Controls | 28 | Camera tool, origins, locks, states, undo/redo, grid, bookmarks |
@@ -131,14 +131,16 @@ When actions are added, removed, or modified (new modes, renamed settings, chang
 
 1. **`docs/reference/actions.json`** — add/update the action entry with all modes
 2. **This skill file** (`SKILL.md`) — update the category overview table (counts) and the per-category action tables
-3. **`packages/website/public_html/index.html`** — update category cards and stats if counts changed
+3. **`packages/website/src/content/docs/index.mdx`** — update category cards and stats if counts changed
+4. **`packages/website/src/content/docs/docs/actions/`** — add/update the action's documentation page
+5. **`packages/website/astro.config.mjs`** — add new action slugs to the sidebar if a new action was created
 
 ## Key Project Files
 
 | File | Role |
 |------|------|
 | `packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
-| `packages/stream-deck-plugin/src/actions/` | Action source files (29 .ts files) |
+| `packages/stream-deck-plugin/src/actions/` | Action source files (32 .ts files) |
 | `packages/stream-deck-plugin/src/pi/` | Property Inspector EJS templates |
 | `packages/stream-deck-plugin/src/pi/data/key-bindings.json` | Global key binding definitions |
 | `packages/stream-deck-plugin/icons/` | SVG icon Mustache templates |
