@@ -43,7 +43,7 @@ When asked about actions or controls:
 | Pit Service | 3 | 13 | Fuel, tires, compounds, tearoff, fast repair |
 | Car Setup | 7 | 79 | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
 | Chat | 1 | 21 | Open chat, macros (15), whisper, reply |
-| **Total** | **28** | **287** | |
+| **Total** | **28** | **290** | |
 
 ## Actions by Category
 
