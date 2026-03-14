@@ -218,6 +218,7 @@
           "settingsKey": "mode",
           "modes": [
             { "value": "play-pause", "label": "Play / Pause" },
+            { "value": "play-backward", "label": "Play / Pause Backward" },
             { "value": "stop", "label": "Stop" },
             { "value": "fast-forward", "label": "Fast Forward" },
             { "value": "rewind", "label": "Rewind" },

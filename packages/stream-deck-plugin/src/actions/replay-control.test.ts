@@ -56,6 +56,12 @@ vi.mock("@iracedeck/icons/replay-control/set-speed.svg", () => ({
 vi.mock("@iracedeck/icons/replay-control/speed-display.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">speed-display {{speedText}} {{mainLabel}} {{subLabel}}</svg>',
 }));
+vi.mock("@iracedeck/icons/replay-control/pause.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">pause-icon {{mainLabel}} {{subLabel}}</svg>',
+}));
+vi.mock("@iracedeck/icons/replay-control/play-backward.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">play-backward {{mainLabel}} {{subLabel}}</svg>',
+}));
 vi.mock("@iracedeck/icons/replay-control/next-session.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">next-session {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -212,6 +218,7 @@ describe("ReplayControl", () => {
   describe("generateReplayControlSvg", () => {
     const ALL_MODES = [
       "play-pause",
+      "play-backward",
       "stop",
       "fast-forward",
       "rewind",
@@ -250,6 +257,29 @@ describe("ReplayControl", () => {
       const result = generateReplayControlSvg({ mode: "play-pause" });
 
       expect(decodeURIComponent(result)).toContain("PLAY");
+    });
+
+    it("should include PLAY and BACKWARD labels for play-backward mode", () => {
+      const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-backward" }));
+
+      expect(decoded).toContain("PLAY");
+      expect(decoded).toContain("BACKWARD");
+    });
+
+    it("should show PAUSE label and pause icon for play-backward when isPlaying is true", () => {
+      const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-backward" }, true));
+
+      expect(decoded).toContain("PAUSE");
+      expect(decoded).toContain("pause-icon");
+      expect(decoded).not.toContain("BACKWARD");
+    });
+
+    it("should show PLAY label for play-backward when isPlaying is false", () => {
+      const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-backward" }, false));
+
+      expect(decoded).toContain("PLAY");
+      expect(decoded).toContain("BACKWARD");
+      expect(decoded).not.toContain("PAUSE");
     });
 
     it("should include STOP label for stop mode", () => {
@@ -405,10 +435,12 @@ describe("ReplayControl", () => {
       expect(decoded).not.toContain("PAUSE");
     });
 
-    it("should show PAUSE label when isPlaying is true", () => {
+    it("should show PAUSE label and pause icon when isPlaying is true", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-pause" }, true));
 
       expect(decoded).toContain("PAUSE");
+      expect(decoded).toContain("pause-icon");
+      expect(decoded).not.toContain("FORWARD");
     });
 
     it("should show PLAY label when isPlaying is undefined", () => {
