@@ -127,7 +127,6 @@ const DIRECTIONAL_PAIRS: Partial<Record<ReplayControlMode, { next: ReplayControl
 };
 
 /** Modes whose display changes based on telemetry state */
-/** Modes whose display changes based on telemetry state */
 const TELEMETRY_DISPLAY_MODES: ReadonlySet<ReplayControlMode> = new Set([
   "play-pause",
   "play-backward",
