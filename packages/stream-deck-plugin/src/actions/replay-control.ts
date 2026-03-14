@@ -20,8 +20,10 @@ import prevIncidentIconSvg from "@iracedeck/icons/replay-control/prev-incident.s
 import prevLapIconSvg from "@iracedeck/icons/replay-control/prev-lap.svg";
 import prevSessionIconSvg from "@iracedeck/icons/replay-control/prev-session.svg";
 import rewindIconSvg from "@iracedeck/icons/replay-control/rewind.svg";
+import setSpeedIconSvg from "@iracedeck/icons/replay-control/set-speed.svg";
 import slowMotionIconSvg from "@iracedeck/icons/replay-control/slow-motion.svg";
 import speedDecreaseIconSvg from "@iracedeck/icons/replay-control/speed-decrease.svg";
+import speedDisplayIconSvg from "@iracedeck/icons/replay-control/speed-display.svg";
 import speedIncreaseIconSvg from "@iracedeck/icons/replay-control/speed-increase.svg";
 import stopIconSvg from "@iracedeck/icons/replay-control/stop.svg";
 import type { TelemetryData } from "@iracedeck/iracing-sdk";
@@ -47,6 +49,8 @@ const REPLAY_CONTROL_MODES = [
   "frame-backward",
   "speed-increase",
   "speed-decrease",
+  "set-speed",
+  "speed-display",
   "next-session",
   "prev-session",
   "next-lap",
@@ -69,6 +73,8 @@ const REPLAY_CONTROL_ICONS: Record<ReplayControlMode, string> = {
   "frame-backward": frameBackwardIconSvg,
   "speed-increase": speedIncreaseIconSvg,
   "speed-decrease": speedDecreaseIconSvg,
+  "set-speed": setSpeedIconSvg,
+  "speed-display": speedDisplayIconSvg,
   "next-session": nextSessionIconSvg,
   "prev-session": prevSessionIconSvg,
   "next-lap": nextLapIconSvg,
@@ -89,6 +95,8 @@ const REPLAY_CONTROL_LABELS: Record<ReplayControlMode, { mainLabel: string; subL
   "frame-backward": { mainLabel: "FRAME BACK", subLabel: "" },
   "speed-increase": { mainLabel: "FASTER", subLabel: "REPLAY" },
   "speed-decrease": { mainLabel: "SLOWER", subLabel: "REPLAY" },
+  "set-speed": { mainLabel: "", subLabel: "SET SPEED" },
+  "speed-display": { mainLabel: "", subLabel: "SPEED" },
   "next-session": { mainLabel: "NEXT", subLabel: "SESSION" },
   "prev-session": { mainLabel: "PREVIOUS", subLabel: "SESSION" },
   "next-lap": { mainLabel: "LAP", subLabel: "NEXT" },
@@ -112,40 +120,108 @@ const DIRECTIONAL_PAIRS: Partial<Record<ReplayControlMode, { next: ReplayControl
   "prev-incident": { next: "next-incident", prev: "prev-incident" },
 };
 
-const ReplayControlSettings = CommonSettings.extend({
-  mode: z.enum(REPLAY_CONTROL_MODES).default("play-pause"),
-});
+/** Modes whose display changes based on telemetry state */
+const TELEMETRY_DISPLAY_MODES: ReadonlySet<ReplayControlMode> = new Set(["play-pause", "speed-display"]);
 
-type ReplayControlSettings = z.infer<typeof ReplayControlSettings>;
+/**
+ * @internal Exported for testing
+ *
+ * Parses a speed setting value into speed and slowMotion flag.
+ * Format: "1"-"16" for normal speeds, "s2"-"s16" for slow-motion (1/Nx).
+ */
+export function parseSpeedSetting(value: string): { speed: number; slowMotion: boolean } {
+  if (value.startsWith("s")) {
+    const speed = parseInt(value.slice(1), 10);
+
+    return { speed: isNaN(speed) ? 2 : Math.max(2, Math.min(speed, 16)), slowMotion: true };
+  }
+
+  const speed = parseInt(value, 10);
+
+  return { speed: isNaN(speed) ? 1 : Math.max(1, Math.min(speed, 16)), slowMotion: false };
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Formats a speed value for display.
+ */
+export function formatSpeedDisplay(speed: number, slowMotion: boolean): string {
+  if (speed === 0) return "PAUSED";
+
+  if (slowMotion) return `1/${Math.abs(speed)}x`;
+
+  if (speed < 0) return `${speed}x`;
+
+  return `${speed}x`;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Formats a speed setting value for display on the set-speed icon.
+ */
+export function formatSetSpeedLabel(speedSetting: string): string {
+  const { speed, slowMotion } = parseSpeedSetting(speedSetting);
+
+  return formatSpeedDisplay(speed, slowMotion);
+}
 
 /**
  * @internal Exported for testing
  *
  * Generates an SVG data URI icon for the replay control action.
  * When mode is "play-pause", the label toggles based on isPlaying state.
+ * When mode is "speed-display", the label shows the current speed.
+ * When mode is "set-speed", the label shows the configured speed.
  */
-export function generateReplayControlSvg(settings: { mode: ReplayControlMode }, isPlaying?: boolean): string {
+export function generateReplayControlSvg(
+  settings: { mode: ReplayControlMode; speed?: string },
+  isPlaying?: boolean,
+  replaySpeed?: number,
+  replaySlowMotion?: boolean,
+): string {
   const { mode } = settings;
 
   const iconSvg = REPLAY_CONTROL_ICONS[mode] || REPLAY_CONTROL_ICONS["play-pause"];
   const labels = REPLAY_CONTROL_LABELS[mode] || REPLAY_CONTROL_LABELS["play-pause"];
 
-  // For play-pause mode, toggle label based on actual playback state
-  const mainLabel = mode === "play-pause" && isPlaying ? "PAUSE" : labels.mainLabel;
-
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel,
+  let mainLabel = labels.mainLabel;
+  const templateData: Record<string, string> = {
     subLabel: labels.subLabel,
-  });
+  };
+
+  if (mode === "play-pause" && isPlaying) {
+    mainLabel = "PAUSE";
+  } else if (mode === "speed-display") {
+    const speed = replaySpeed ?? 0;
+    const slowMo = replaySlowMotion ?? false;
+    const speedText = formatSpeedDisplay(speed, slowMo);
+    templateData.speedText = speedText;
+    mainLabel = isPlaying === false ? "PAUSED" : speedText;
+  } else if (mode === "set-speed" && settings.speed) {
+    mainLabel = formatSetSpeedLabel(settings.speed);
+  }
+
+  templateData.mainLabel = mainLabel;
+
+  const svg = renderIconTemplate(iconSvg, templateData);
 
   return svgToDataUri(svg);
 }
 
+const ReplayControlSettings = CommonSettings.extend({
+  mode: z.enum(REPLAY_CONTROL_MODES).default("play-pause"),
+  speed: z.string().default("1"),
+});
+
+type ReplayControlSettings = z.infer<typeof ReplayControlSettings>;
+
 /**
  * Replay Control
  * Unified replay action combining transport, speed, and navigation controls.
- * Provides 17 modes covering play/pause toggle, speed adjustment, and replay
- * navigation via iRacing SDK commands.
+ * Provides progressive speed control for fast-forward, rewind, and slow-motion,
+ * with speed memory across pause/resume and telemetry-driven display.
  */
 @action({ UUID: "com.iracedeck.sd.core.replay-control" })
 export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSettings> {
@@ -153,6 +229,15 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
 
   /** Cached telemetry for play/pause toggle, keyed by action context ID */
   private isReplayPlaying = new Map<string, boolean>();
+
+  /** Current replay speed from telemetry, keyed by action context ID */
+  private replaySpeed = new Map<string, number>();
+
+  /** Current slow-motion state from telemetry, keyed by action context ID */
+  private replaySlowMotion = new Map<string, boolean>();
+
+  /** Speed stored when pausing, restored on play, keyed by action context ID */
+  private pausedSpeed = new Map<string, { speed: number; slowMotion: boolean }>();
 
   /** Cached settings per context for telemetry-driven display updates */
   private activeContexts = new Map<string, ReplayControlSettings>();
@@ -165,25 +250,21 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
 
-    // Seed initial play state from current telemetry
+    // Seed initial state from current telemetry
     const current = this.sdkController.getCurrentTelemetry();
-
-    if (current?.IsReplayPlaying !== undefined) {
-      this.isReplayPlaying.set(ev.action.id, current.IsReplayPlaying as boolean);
-    }
+    this.seedTelemetryState(ev.action.id, current);
 
     await this.updateDisplay(ev, settings);
 
     this.sdkController.subscribe(ev.action.id, (telemetry: TelemetryData | null) => {
       this.updateConnectionState();
-      const wasPlaying = this.isReplayPlaying.get(ev.action.id);
+      const prevStateKey = this.buildTelemetryStateKey(ev.action.id);
       this.updateTelemetryState(ev.action.id, telemetry);
-      const nowPlaying = this.isReplayPlaying.get(ev.action.id);
+      const newStateKey = this.buildTelemetryStateKey(ev.action.id);
 
-      // Re-render when play state changes (for play-pause mode icon toggle)
       const storedSettings = this.activeContexts.get(ev.action.id);
 
-      if (storedSettings && wasPlaying !== nowPlaying) {
+      if (storedSettings && prevStateKey !== newStateKey && TELEMETRY_DISPLAY_MODES.has(storedSettings.mode)) {
         this.updateDisplayFromTelemetry(ev.action.id, storedSettings);
       }
     });
@@ -193,6 +274,9 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.isReplayPlaying.delete(ev.action.id);
+    this.replaySpeed.delete(ev.action.id);
+    this.replaySlowMotion.delete(ev.action.id);
+    this.pausedSpeed.delete(ev.action.id);
     this.activeContexts.delete(ev.action.id);
     this.lastState.delete(ev.action.id);
   }
@@ -207,19 +291,19 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   override async onKeyDown(ev: KeyDownEvent<ReplayControlSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    this.executeMode(ev.action.id, settings.mode);
+    this.executeMode(ev.action.id, settings);
   }
 
   override async onDialDown(ev: DialDownEvent<ReplayControlSettings>): Promise<void> {
     this.logger.info("Dial down received");
     const settings = this.parseSettings(ev.payload.settings);
-    this.executeDialDown(ev.action.id, settings.mode);
+    this.executeDialDown(ev.action.id, settings);
   }
 
   override async onDialRotate(ev: DialRotateEvent<ReplayControlSettings>): Promise<void> {
     this.logger.info("Dial rotated");
     const settings = this.parseSettings(ev.payload.settings);
-    this.executeDialRotate(settings.mode, ev.payload.ticks);
+    this.executeDialRotate(ev.action.id, settings.mode, ev.payload.ticks);
   }
 
   private parseSettings(settings: unknown): ReplayControlSettings {
@@ -228,44 +312,137 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     return parsed.success ? parsed.data : ReplayControlSettings.parse({});
   }
 
-  private updateTelemetryState(contextId: string, telemetry: TelemetryData | null): void {
-    if (telemetry && telemetry.IsReplayPlaying !== undefined) {
+  private seedTelemetryState(contextId: string, telemetry: TelemetryData | null): void {
+    if (!telemetry) return;
+
+    if (telemetry.IsReplayPlaying !== undefined) {
       this.isReplayPlaying.set(contextId, telemetry.IsReplayPlaying as boolean);
+    }
+
+    if (telemetry.ReplayPlaySpeed !== undefined) {
+      this.replaySpeed.set(contextId, telemetry.ReplayPlaySpeed as number);
+    }
+
+    if (telemetry.ReplayPlaySlowMotion !== undefined) {
+      this.replaySlowMotion.set(contextId, telemetry.ReplayPlaySlowMotion as boolean);
     }
   }
 
-  private executeMode(contextId: string, mode: ReplayControlMode): void {
+  private updateTelemetryState(contextId: string, telemetry: TelemetryData | null): void {
+    if (!telemetry) return;
+
+    if (telemetry.IsReplayPlaying !== undefined) {
+      this.isReplayPlaying.set(contextId, telemetry.IsReplayPlaying as boolean);
+    }
+
+    if (telemetry.ReplayPlaySpeed !== undefined) {
+      this.replaySpeed.set(contextId, telemetry.ReplayPlaySpeed as number);
+    }
+
+    if (telemetry.ReplayPlaySlowMotion !== undefined) {
+      this.replaySlowMotion.set(contextId, telemetry.ReplayPlaySlowMotion as boolean);
+    }
+  }
+
+  private buildTelemetryStateKey(contextId: string): string {
+    const isPlaying = this.isReplayPlaying.get(contextId) ?? false;
+    const speed = this.replaySpeed.get(contextId) ?? 0;
+    const slowMo = this.replaySlowMotion.get(contextId) ?? false;
+
+    return `${isPlaying}:${speed}:${slowMo}`;
+  }
+
+  private getCurrentSpeed(): { speed: number; slowMotion: boolean } {
+    // Use the first available telemetry context (speed is global, same across all contexts)
+    for (const [contextId] of this.replaySpeed) {
+      return {
+        speed: this.replaySpeed.get(contextId) ?? 0,
+        slowMotion: this.replaySlowMotion.get(contextId) ?? false,
+      };
+    }
+
+    return { speed: 0, slowMotion: false };
+  }
+
+  private executeMode(contextId: string, settings: ReplayControlSettings): void {
     const replay = getCommands().replay;
+    const { mode } = settings;
 
     switch (mode) {
       case "play-pause": {
         const isPlaying = this.isReplayPlaying.get(contextId) ?? false;
-        const success = isPlaying ? replay.pause() : replay.play();
-        this.logger.info(isPlaying ? "Pause executed" : "Play executed");
-        this.logger.debug(`Result: ${success}, wasPlaying: ${isPlaying}`);
+
+        if (isPlaying) {
+          // Pausing: remember current speed
+          const current = this.getCurrentSpeed();
+
+          if (current.speed !== 0) {
+            this.pausedSpeed.set(contextId, current);
+          }
+
+          const success = replay.pause();
+          this.logger.info("Pause executed");
+          this.logger.debug(`Result: ${success}, stored speed: ${current.speed}`);
+        } else {
+          // Playing: restore remembered speed
+          const stored = this.pausedSpeed.get(contextId);
+          let success: boolean;
+
+          if (stored && (stored.speed !== 1 || stored.slowMotion)) {
+            success = replay.setPlaySpeed(stored.speed, stored.slowMotion);
+            this.logger.info("Play executed with restored speed");
+            this.logger.debug(`Result: ${success}, speed: ${stored.speed}, slowMotion: ${stored.slowMotion}`);
+          } else {
+            success = replay.play();
+            this.logger.info("Play executed");
+            this.logger.debug(`Result: ${success}`);
+          }
+
+          this.pausedSpeed.delete(contextId);
+        }
+
         break;
       }
       case "stop": {
-        // iRacing SDK has no separate "stop" command; pause is the closest equivalent
         const success = replay.pause();
+        // Clear remembered speed so next play starts at 1x
+        this.pausedSpeed.delete(contextId);
         this.logger.info("Stop executed");
         this.logger.debug(`Result: ${success}`);
         break;
       }
       case "fast-forward": {
-        const success = replay.fastForward();
+        const current = this.getCurrentSpeed();
+        let nextSpeed: number;
+
+        if (!current.slowMotion && current.speed >= 2) {
+          nextSpeed = Math.min(current.speed + 1, 16);
+        } else {
+          nextSpeed = 2;
+        }
+
+        const success = replay.setPlaySpeed(nextSpeed);
         this.logger.info("Fast forward executed");
-        this.logger.debug(`Result: ${success}`);
+        this.logger.debug(`Result: ${success}, speed: ${nextSpeed}`);
         break;
       }
       case "rewind": {
-        const success = replay.rewind();
+        const current = this.getCurrentSpeed();
+        let nextSpeed: number;
+
+        if (!current.slowMotion && current.speed <= -2) {
+          nextSpeed = Math.max(current.speed - 1, -16);
+        } else {
+          nextSpeed = -2;
+        }
+
+        const success = replay.setPlaySpeed(nextSpeed);
         this.logger.info("Rewind executed");
-        this.logger.debug(`Result: ${success}`);
+        this.logger.debug(`Result: ${success}, speed: ${nextSpeed}`);
         break;
       }
       case "slow-motion": {
-        const success = replay.slowMotion();
+        const success = replay.setPlaySpeed(2, true);
         this.logger.info("Slow motion executed");
         this.logger.debug(`Result: ${success}`);
         break;
@@ -283,15 +460,52 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         break;
       }
       case "speed-increase": {
-        const success = replay.fastForward();
+        const current = this.getCurrentSpeed();
+        let success: boolean;
+
+        if (current.slowMotion && current.speed > 2) {
+          success = replay.setPlaySpeed(current.speed - 1, true);
+          this.logger.debug(`Speed increase: slow-mo ${current.speed} -> ${current.speed - 1}`);
+        } else if (current.slowMotion && current.speed <= 2) {
+          success = replay.setPlaySpeed(1, false);
+          this.logger.debug("Speed increase: exiting slow-mo to 1x");
+        } else {
+          // Already at or above 1x normal — no-op
+          this.logger.debug("Speed increase: already at normal speed, no-op");
+          break;
+        }
+
         this.logger.info("Speed increase executed");
         this.logger.debug(`Result: ${success}`);
         break;
       }
       case "speed-decrease": {
-        const success = replay.rewind();
+        const current = this.getCurrentSpeed();
+        let success: boolean;
+
+        if (current.slowMotion) {
+          const nextDivisor = Math.min(current.speed + 1, 16);
+          success = replay.setPlaySpeed(nextDivisor, true);
+          this.logger.debug(`Speed decrease: slow-mo ${current.speed} -> ${nextDivisor}`);
+        } else {
+          success = replay.setPlaySpeed(2, true);
+          this.logger.debug("Speed decrease: entering slow-mo at 1/2x");
+        }
+
         this.logger.info("Speed decrease executed");
         this.logger.debug(`Result: ${success}`);
+        break;
+      }
+      case "set-speed": {
+        const { speed, slowMotion } = parseSpeedSetting(settings.speed);
+        const success = replay.setPlaySpeed(speed, slowMotion);
+        this.logger.info("Set speed executed");
+        this.logger.debug(`Result: ${success}, speed: ${speed}, slowMotion: ${slowMotion}`);
+        break;
+      }
+      case "speed-display": {
+        // Read-only display — no action on press
+        this.logger.debug("Speed display pressed — no action");
         break;
       }
       case "next-session": {
@@ -345,8 +559,9 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     }
   }
 
-  private executeDialDown(contextId: string, mode: ReplayControlMode): void {
+  private executeDialDown(contextId: string, settings: ReplayControlSettings): void {
     const replay = getCommands().replay;
+    const { mode } = settings;
 
     if (mode === "speed-increase" || mode === "speed-decrease") {
       // Speed modes: encoder push resets to normal speed
@@ -354,14 +569,15 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       this.logger.info("Speed reset to normal");
       this.logger.debug(`Result: ${success}`);
     } else if (mode === "play-pause") {
-      // Play/pause toggle based on telemetry state
-      this.executeMode(contextId, mode);
+      this.executeMode(contextId, settings);
+    } else if (mode === "set-speed") {
+      this.executeMode(contextId, settings);
+    } else if (mode === "speed-display") {
+      // No action for speed display
     } else if (DIRECTIONAL_PAIRS[mode]) {
-      // Navigation directional pairs: encoder push executes the selected action
-      this.executeMode(contextId, mode);
+      this.executeMode(contextId, settings);
     } else if (mode === "jump-to-beginning" || mode === "jump-to-live") {
-      // Navigation non-directional: encoder push executes the action
-      this.executeMode(contextId, mode);
+      this.executeMode(contextId, settings);
     } else {
       // Transport modes: encoder push plays
       const success = replay.play();
@@ -370,25 +586,18 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     }
   }
 
-  private executeDialRotate(mode: ReplayControlMode, ticks: number): void {
+  private executeDialRotate(contextId: string, mode: ReplayControlMode, ticks: number): void {
     const replay = getCommands().replay;
 
     if (mode === "speed-increase" || mode === "speed-decrease") {
-      // Speed modes: rotate adjusts speed
-      if (ticks > 0) {
-        replay.fastForward();
-        this.logger.info("Speed increase (dial)");
-      } else {
-        replay.rewind();
-        this.logger.info("Speed decrease (dial)");
-      }
+      // Speed modes: rotate adjusts speed progressively
+      const adjustedMode: ReplayControlMode = ticks > 0 ? "speed-increase" : "speed-decrease";
+      this.executeMode(contextId, { mode: adjustedMode, speed: "1", flagsOverlay: false });
     } else if (DIRECTIONAL_PAIRS[mode]) {
-      // Navigation directional pairs: rotate cycles next/prev
       const pair = DIRECTIONAL_PAIRS[mode]!;
       const nav = ticks > 0 ? pair.next : pair.prev;
-      this.executeMode("__dial__", nav);
+      this.executeMode("__dial__", { mode: nav, speed: "1", flagsOverlay: false });
     } else if (mode === "jump-to-beginning" || mode === "jump-to-live") {
-      // Navigation non-directional: rotate does next/prev incident
       if (ticks > 0) {
         replay.nextIncident();
         this.logger.info("Next incident (dial)");
@@ -415,22 +624,26 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     this.updateConnectionState();
 
     const isPlaying = this.isReplayPlaying.get(ev.action.id) ?? false;
-    const svgDataUri = generateReplayControlSvg(settings, isPlaying);
+    const speed = this.replaySpeed.get(ev.action.id);
+    const slowMo = this.replaySlowMotion.get(ev.action.id);
+    const svgDataUri = generateReplayControlSvg(settings, isPlaying, speed, slowMo);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
   }
 
   private async updateDisplayFromTelemetry(contextId: string, settings: ReplayControlSettings): Promise<void> {
-    if (settings.mode !== "play-pause") return;
+    if (!TELEMETRY_DISPLAY_MODES.has(settings.mode)) return;
 
     const isPlaying = this.isReplayPlaying.get(contextId) ?? false;
-    const stateKey = `${settings.mode}:${isPlaying}`;
+    const speed = this.replaySpeed.get(contextId) ?? 0;
+    const slowMo = this.replaySlowMotion.get(contextId) ?? false;
+    const stateKey = `${settings.mode}:${isPlaying}:${speed}:${slowMo}`;
 
     if (this.lastState.get(contextId) === stateKey) return;
 
     this.lastState.set(contextId, stateKey);
 
-    const svgDataUri = generateReplayControlSvg(settings, isPlaying);
+    const svgDataUri = generateReplayControlSvg(settings, isPlaying, speed, slowMo);
     await this.updateKeyImage(contextId, svgDataUri);
   }
 }
