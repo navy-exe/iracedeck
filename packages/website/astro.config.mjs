@@ -7,7 +7,8 @@ export default defineConfig({
     starlight({
       title: "iRaceDeck",
       logo: {
-        src: "./src/assets/iracedeck-logo-full-white.png",
+        dark: "./src/assets/logo-dark.png",
+        light: "./src/assets/logo-light.png",
         replacesTitle: true,
       },
       customCss: ["./src/styles/custom.css"],

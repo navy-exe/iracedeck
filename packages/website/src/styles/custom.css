@@ -69,8 +69,13 @@ starlight-theme-select label select {
 .hero > .hero-html,
 .hero > picture {
   order: -1;
-  width: min(80%, 20rem);
+  width: min(90%, 34rem);
   margin-bottom: 4rem;
+}
+
+.hero .hero-html img {
+  width: 100%;
+  height: auto;
 }
 
 .hero .stack {
