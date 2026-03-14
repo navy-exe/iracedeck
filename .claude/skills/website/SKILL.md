@@ -37,7 +37,7 @@ Colors are set as Starlight CSS custom properties in `src/styles/custom.css`.
 
 All docs pages live under `src/content/docs/docs/` and are served at `/docs/...`.
 
-```
+```text
 src/content/docs/
 ├── index.mdx                        # Landing page at / (splash template)
 └── docs/
@@ -115,7 +115,7 @@ Domain: **iracedeck.com** (Firebase Hosting with custom domain).
 
 ## Common Changes
 
-**Update action count on landing page**: Edit `src/content/docs/index.mdx` CardGrid
+**Update action count on landing page**: Edit the stats row and category cards in `src/content/docs/index.mdx`
 **Add an action page**: Create `.md` in the right category folder, add slug to sidebar in `astro.config.mjs`, update `docs/reference/actions.json`, and update `.claude/skills/iracedeck-actions/SKILL.md`
 **Change brand color**: Update `--sl-color-accent` in `src/styles/custom.css`
 **Update favicon**: Replace files in `public/`, source from `assets/favicon/`
