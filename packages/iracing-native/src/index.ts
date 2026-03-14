@@ -20,6 +20,20 @@ import { IRacingNativeMock } from "./mock-impl.js";
 export * from "./defines.js";
 export { IRacingNativeMock } from "./mock-impl.js";
 
+/**
+ * Result codes from focusIRacingWindow().
+ */
+export enum FocusResult {
+  /** Window was already in the foreground */
+  AlreadyFocused = 0,
+  /** Window was found and successfully focused */
+  Focused = 1,
+  /** No window with the expected title exists */
+  WindowNotFound = 2,
+  /** Window was found but focus did not transfer within timeout */
+  FocusTimedOut = 3,
+}
+
 // Try to load native addon (only on Windows, with safety catch).
 // Force mock mode by creating a `.mock` file in the sdPlugin folder,
 // or by setting IRACEDECK_MOCK=1 in the environment.
@@ -188,9 +202,9 @@ export class IRacingNative {
    * Attempt to bring the iRacing simulator window to the foreground.
    * Uses AttachThreadInput pattern for reliable window focusing on Windows.
    *
-   * @returns true if iRacing window was found and focused (or already focused)
+   * @returns FocusResult status code (0=already focused, 1=focused, 2=not found, 3=timed out)
    */
-  focusIRacingWindow(): boolean {
+  focusIRacingWindow(): number {
     return addon ? addon.focusIRacingWindow() : this.getMock().focusIRacingWindow();
   }
 

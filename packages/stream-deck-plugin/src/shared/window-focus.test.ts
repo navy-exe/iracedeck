@@ -9,6 +9,13 @@ vi.mock("./global-settings.js", () => ({
   isGlobalSettingsInitialized: () => mockIsGlobalSettingsInitialized(),
 }));
 
+const FOCUS_RESULT_MOCK = {
+  AlreadyFocused: 0,
+  Focused: 1,
+  WindowNotFound: 2,
+  FocusTimedOut: 3,
+};
+
 vi.mock("@iracedeck/logger", () => ({
   silentLogger: {
     debug: vi.fn(),
@@ -16,6 +23,10 @@ vi.mock("@iracedeck/logger", () => ({
     warn: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock("@iracedeck/iracing-native", () => ({
+  FocusResult: FOCUS_RESULT_MOCK,
 }));
 
 // Dynamic import to get fresh module state per test
@@ -41,6 +52,9 @@ describe("Window Focus Service", () => {
         error: vi.fn(),
       },
     }));
+    vi.doMock("@iracedeck/iracing-native", () => ({
+      FocusResult: FOCUS_RESULT_MOCK,
+    }));
 
     const mod = await import("./window-focus.js");
     initWindowFocus = mod.initWindowFocus;
@@ -57,7 +71,7 @@ describe("Window Focus Service", () => {
 
   it("should call focuser when focusIRacingWindow is enabled", () => {
     mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: true, disableWhenDisconnected: true });
-    const mockFocuser = vi.fn(() => true);
+    const mockFocuser = vi.fn(() => 0);
     const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     initWindowFocus(mockLogger as any, mockFocuser);
 
@@ -68,7 +82,7 @@ describe("Window Focus Service", () => {
 
   it("should NOT call focuser when focusIRacingWindow is disabled", () => {
     mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: false, disableWhenDisconnected: true });
-    const mockFocuser = vi.fn(() => true);
+    const mockFocuser = vi.fn(() => 0);
     const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     initWindowFocus(mockLogger as any, mockFocuser);
 
@@ -80,7 +94,7 @@ describe("Window Focus Service", () => {
   it("should NOT call focuser when global settings not initialized", () => {
     mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: true, disableWhenDisconnected: true });
     mockIsGlobalSettingsInitialized.mockReturnValue(false);
-    const mockFocuser = vi.fn(() => true);
+    const mockFocuser = vi.fn(() => 0);
     const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     initWindowFocus(mockLogger as any, mockFocuser);
 
@@ -89,25 +103,47 @@ describe("Window Focus Service", () => {
     expect(mockFocuser).not.toHaveBeenCalled();
   });
 
-  it("should log warning when focuser returns false", () => {
+  it("should log debug when window is already focused", () => {
     mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: true, disableWhenDisconnected: true });
-    const mockFocuser = vi.fn(() => false);
+    const mockFocuser = vi.fn(() => 0); // AlreadyFocused
     const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     initWindowFocus(mockLogger as any, mockFocuser);
 
     focusIRacingIfEnabled();
 
-    expect(mockLogger.warn).toHaveBeenCalledWith("Failed to focus iRacing window (window not found or timed out)");
+    expect(mockLogger.debug).toHaveBeenCalledWith("iRacing window already focused");
   });
 
-  it("should log debug when focuser succeeds", () => {
+  it("should log debug when window is focused successfully", () => {
     mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: true, disableWhenDisconnected: true });
-    const mockFocuser = vi.fn(() => true);
+    const mockFocuser = vi.fn(() => 1); // Focused
     const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     initWindowFocus(mockLogger as any, mockFocuser);
 
     focusIRacingIfEnabled();
 
-    expect(mockLogger.debug).toHaveBeenCalledWith("Focused iRacing window before sending key");
+    expect(mockLogger.debug).toHaveBeenCalledWith("iRacing window focused successfully");
+  });
+
+  it("should log warning when window is not found", () => {
+    mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: true, disableWhenDisconnected: true });
+    const mockFocuser = vi.fn(() => 2); // WindowNotFound
+    const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    initWindowFocus(mockLogger as any, mockFocuser);
+
+    focusIRacingIfEnabled();
+
+    expect(mockLogger.warn).toHaveBeenCalledWith("iRacing window not found — is iRacing running?");
+  });
+
+  it("should log warning when focus times out", () => {
+    mockGetGlobalSettings.mockReturnValue({ focusIRacingWindow: true, disableWhenDisconnected: true });
+    const mockFocuser = vi.fn(() => 3); // FocusTimedOut
+    const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    initWindowFocus(mockLogger as any, mockFocuser);
+
+    focusIRacingIfEnabled();
+
+    expect(mockLogger.warn).toHaveBeenCalledWith("iRacing window found but focus timed out (1000ms)");
   });
 });
