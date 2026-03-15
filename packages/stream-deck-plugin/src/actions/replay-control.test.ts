@@ -6,7 +6,6 @@ import {
   formatSetSpeedLabel,
   formatSpeedDisplay,
   generateReplayControlSvg,
-  getCarNumberFromSessionInfo,
   parseSpeedSetting,
 } from "./replay-control.js";
 
@@ -527,48 +526,6 @@ describe("ReplayControl", () => {
 
       expect(decoded).toContain("STOP");
       expect(decoded).not.toContain("PAUSE");
-    });
-  });
-
-  describe("getCarNumberFromSessionInfo", () => {
-    const sessionInfo = {
-      DriverInfo: {
-        DriverCarIdx: 2,
-        Drivers: [
-          { CarIdx: 0, CarNumber: "0" },
-          { CarIdx: 1, CarNumber: "42" },
-          { CarIdx: 2, CarNumber: "4" },
-          { CarIdx: 3, CarNumber: "99" },
-        ],
-      },
-    };
-
-    it("should return car number for a valid car index", () => {
-      expect(getCarNumberFromSessionInfo(sessionInfo, 2)).toBe(4);
-      expect(getCarNumberFromSessionInfo(sessionInfo, 1)).toBe(42);
-      expect(getCarNumberFromSessionInfo(sessionInfo, 0)).toBe(0);
-    });
-
-    it("should return null for unknown car index", () => {
-      expect(getCarNumberFromSessionInfo(sessionInfo, 99)).toBeNull();
-    });
-
-    it("should return null when session info is null", () => {
-      expect(getCarNumberFromSessionInfo(null, 0)).toBeNull();
-    });
-
-    it("should return null when DriverInfo is missing", () => {
-      expect(getCarNumberFromSessionInfo({}, 0)).toBeNull();
-    });
-
-    it("should return null when Drivers array is missing", () => {
-      expect(getCarNumberFromSessionInfo({ DriverInfo: {} }, 0)).toBeNull();
-    });
-
-    it("should return null for non-numeric car number", () => {
-      const info = { DriverInfo: { Drivers: [{ CarIdx: 0, CarNumber: "ABC" }] } };
-
-      expect(getCarNumberFromSessionInfo(info, 0)).toBeNull();
     });
   });
 
