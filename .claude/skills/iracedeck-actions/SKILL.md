@@ -114,7 +114,7 @@ When asked about actions or controls:
 | Action | Controls | Modes |
 |--------|----------|-------|
 | Chat | 21 | open, reply, whisper, respond PM, cancel, send message, 15 macros |
-| Race Admin | 29 | yellow, black-flag, dq-driver, show-dqs (field/driver), clear-penalties, clear-all, wave-around, eol, pit-close, pit-open, pace-laps, single/double-file-restart, advance-session, grid-set, grid-start, track-state, grant/revoke-admin, remove-driver, enable/disable-chat (all/driver), message-all, rc-message, next/prev-car-number |
+| Race Admin | 29 | yellow, black-flag, dq-driver, show-dqs-field, show-dqs-driver, clear-penalties, clear-all, wave-around, eol, pit-close, pit-open, pace-laps, single/double-file-restart, advance-session, grid-set, grid-start, track-state, grant/revoke-admin, remove-driver, enable/disable-chat (all/driver), message-all, rc-message, next/prev-car-number |
 
 ## Control Patterns
 

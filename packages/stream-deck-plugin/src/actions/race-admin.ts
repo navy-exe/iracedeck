@@ -79,7 +79,10 @@ const RaceAdminSettings = CommonSettings.extend({
 
 type RaceAdminSettings = z.infer<typeof RaceAdminSettings>;
 
-const RACE_ADMIN_ICONS: Record<RaceAdminMode, string> = {
+/**
+ * @internal Exported for testing
+ */
+export const RACE_ADMIN_ICONS: Record<RaceAdminMode, string> = {
   yellow: yellowIconSvg,
   "black-flag": blackFlagIconSvg,
   "dq-driver": dqDriverIconSvg,
