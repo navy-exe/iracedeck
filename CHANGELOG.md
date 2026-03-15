@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.3.0](https://github.com/niklam/iracedeck/compare/v1.2.0...v1.3.0) (2026-03-15)
+
+### Features
+
+* **stream-deck-plugin:** add font size setting for Chat action key text ([337ecd9](https://github.com/niklam/iracedeck/commit/337ecd91701e364b8fb2f7168f6957ac514ce3ca)), closes [#140](https://github.com/niklam/iracedeck/issues/140)
+* **stream-deck-plugin:** add Race Admin action ([6a3e933](https://github.com/niklam/iracedeck/commit/6a3e933e721f7b6eae5736a3b9773e7908cd2f11)), closes [#139](https://github.com/niklam/iracedeck/issues/139)
+
+### Bug Fixes
+
+* address review findings and adjust car number icon positions ([c207870](https://github.com/niklam/iracedeck/commit/c207870c408ec8e62ca369a757e2360cdb7a12ab))
+* align control counts across website pages and fix stale action count ([7c43bde](https://github.com/niklam/iracedeck/commit/7c43bde708ec11b29be46da9c2b18f1be55525c4))
+* **stream-deck-plugin:** address PR review comments ([06777b3](https://github.com/niklam/iracedeck/commit/06777b3f02771b5b62ce1f17892fafb2caac1a91))
+* **stream-deck-plugin:** address PR review findings for car number nav ([201c522](https://github.com/niklam/iracedeck/commit/201c522e05236b371b86d1e28596635d2910bef8))
+* **stream-deck-plugin:** address Race Admin code review findings ([6689bd9](https://github.com/niklam/iracedeck/commit/6689bd90b28334157e4e5ca9a9c73384ef6934dc))
+* **stream-deck-plugin:** adjust text vertical position based on font size ([6f2030e](https://github.com/niklam/iracedeck/commit/6f2030e792d22600a80b9e9ee51384a26b5849eb))
+* **stream-deck-plugin:** correct misleading baseY comment about SVG Y-axis ([7dab6d0](https://github.com/niklam/iracedeck/commit/7dab6d0b8f05b09c3019cebe6b9bbc2dd15cca6e))
+* **stream-deck-plugin:** fix TS2345 type errors in race-admin tests ([890d834](https://github.com/niklam/iracedeck/commit/890d834b6c4e8bce26d5595fdbfc38717e65306b))
+
+### Refactoring
+
+* **iracing-sdk:** extract getCarNumberFromSessionInfo to session-utils ([6a08467](https://github.com/niklam/iracedeck/commit/6a0846764e75311a083e6d2ac8a8e1f1ad0f7021)), closes [#139](https://github.com/niklam/iracedeck/issues/139)
+* **stream-deck-plugin:** move car number navigation from Race Admin to Replay Control ([997407a](https://github.com/niklam/iracedeck/commit/997407a0c220d6fc17810b6e2249827f1b23bb04)), closes [#145](https://github.com/niklam/iracedeck/issues/145)
+* **stream-deck-plugin:** split Show Disqualifications into field and driver modes ([4359eb9](https://github.com/niklam/iracedeck/commit/4359eb99f11d37839e940943a9c074fe675ac32e)), closes [#143](https://github.com/niklam/iracedeck/issues/143)
+
+### Documentation
+
+* add Race Admin action documentation ([2db42d4](https://github.com/niklam/iracedeck/commit/2db42d4fb942f4c6c5af340fd9404065842f1ba1))
+* **website:** document Chat action settings and fix encoder description ([f83593d](https://github.com/niklam/iracedeck/commit/f83593da33dd580a4db53114f3b067685fb4e8fd))
+
 ## [1.2.0](https://github.com/niklam/iracedeck/compare/v1.1.0...v1.2.0) (2026-03-14)
 
 ### Features
