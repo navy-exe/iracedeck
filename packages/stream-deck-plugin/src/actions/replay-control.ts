@@ -32,7 +32,7 @@ import speedDecreaseIconSvg from "@iracedeck/icons/replay-control/speed-decrease
 import speedDisplayIconSvg from "@iracedeck/icons/replay-control/speed-display.svg";
 import speedIncreaseIconSvg from "@iracedeck/icons/replay-control/speed-increase.svg";
 import stopIconSvg from "@iracedeck/icons/replay-control/stop.svg";
-import type { TelemetryData } from "@iracedeck/iracing-sdk";
+import { getCarNumberFromSessionInfo, type TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
 import {
@@ -263,27 +263,6 @@ export function generateReplayControlSvg(
   const svg = renderIconTemplate(iconSvg, templateData);
 
   return svgToDataUri(svg);
-}
-
-/**
- * @internal Exported for testing
- *
- * Look up a car number from session info by car index.
- * Returns the numeric car number, or null if not found.
- */
-export function getCarNumberFromSessionInfo(sessionInfo: unknown, carIdx: number): number | null {
-  const driverInfo = (sessionInfo as Record<string, unknown>)?.DriverInfo as Record<string, unknown> | undefined;
-  const drivers = driverInfo?.Drivers as Array<{ CarIdx: number; CarNumber: string }> | undefined;
-
-  if (!drivers) return null;
-
-  const driver = drivers.find((d) => d.CarIdx === carIdx);
-
-  if (!driver) return null;
-
-  const num = parseInt(driver.CarNumber, 10);
-
-  return isNaN(num) ? null : num;
 }
 
 /**

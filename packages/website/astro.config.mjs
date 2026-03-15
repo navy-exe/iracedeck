@@ -163,7 +163,10 @@ export default defineConfig({
             },
             {
               label: "Communication",
-              items: [{ slug: "docs/actions/communication/chat" }],
+              items: [
+                { slug: "docs/actions/communication/chat" },
+                { slug: "docs/actions/communication/race-admin" },
+              ],
             },
           ],
         },
