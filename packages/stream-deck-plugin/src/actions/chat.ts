@@ -195,9 +195,12 @@ export function generateSendMessageSvg(iconColor: string, keyText: string, messa
     .filter((line) => line.length > 0)
     .join("\n");
 
-  // Generate text element positioned inside the bubble (centered around y=40)
+  // Adjust vertical position based on font size (larger text shifts up to stay centered in bubble)
+  const baseY = 40 + (fontSize - 11) / 3;
+
+  // Generate text element positioned inside the bubble
   const textElement = normalizedText
-    ? generateIconText({ text: normalizedText, fontSize, baseY: 40, lineHeightMultiplier: 1.2 })
+    ? generateIconText({ text: normalizedText, fontSize, baseY, lineHeightMultiplier: 1.2 })
     : "";
 
   const svg = renderIconTemplate(SEND_MESSAGE_TEMPLATE, { color: iconColor, textElement });
@@ -223,7 +226,10 @@ export function generateMacroSvg(iconColor: string, keyText: string, macroNumber
       .filter((line) => line.length > 0)
       .join("\n");
 
-    textElement = generateIconText({ text: normalizedText, fontSize, baseY: 40, lineHeightMultiplier: 1.2 });
+    // Adjust vertical position based on font size (larger text shifts up to stay centered in bubble)
+    const baseY = 40 + (fontSize - 10) / 3;
+
+    textElement = generateIconText({ text: normalizedText, fontSize, baseY, lineHeightMultiplier: 1.2 });
   } else {
     // Default: "Macro" text on top, large number below (fixed font sizes)
     textElement = generateIconText({ text: "Macro", fontSize: 10, baseY: 30, lineHeightMultiplier: 1.2 });
