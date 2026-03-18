@@ -1,0 +1,30 @@
+<!--
+  Color Overrides Component
+
+  Displays per-action color override controls in a collapsible section.
+  Colors are stored in per-action settings (unique to each button instance).
+
+  Parameters:
+    - slots: Array of slot names to show. Options:
+        'backgroundColor', 'textColor', 'graphic1Color', 'graphic2Color'
+
+  Example usage:
+    <%- include('color-overrides', {
+      slots: ['backgroundColor', 'textColor', 'graphic1Color']
+    }) %>
+-->
+<% const slotLabels = {
+  backgroundColor: 'Background',
+  textColor: 'Text',
+  graphic1Color: 'Graphic 1',
+  graphic2Color: 'Graphic 2'
+}; %>
+<%- include('accordion', {
+  title: 'Color Overrides',
+  open: false,
+  content: slots.map(function(slot) {
+    return '<sdpi-item label="' + slotLabels[slot] + '">' +
+      '<sdpi-color setting="colorOverrides.' + slot + '"></sdpi-color>' +
+      '</sdpi-item>';
+  }).join('\n')
+}) %>
