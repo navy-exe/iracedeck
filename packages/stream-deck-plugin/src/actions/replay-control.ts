@@ -34,7 +34,12 @@ import speedDecreaseIconSvg from "@iracedeck/icons/replay-control/speed-decrease
 import speedDisplayIconSvg from "@iracedeck/icons/replay-control/speed-display.svg";
 import speedIncreaseIconSvg from "@iracedeck/icons/replay-control/speed-increase.svg";
 import stopIconSvg from "@iracedeck/icons/replay-control/stop.svg";
-import { getAllCarNumbers, getCarNumberFromSessionInfo, type TelemetryData } from "@iracedeck/iracing-sdk";
+import {
+  getAllCarNumbers,
+  getCarNumberFromSessionInfo,
+  getCarNumberRawFromSessionInfo,
+  type TelemetryData,
+} from "@iracedeck/iracing-sdk";
 import z from "zod";
 
 import {
@@ -332,7 +337,7 @@ export function findAdjacentCarOnTrack(telemetry: TelemetryData | null, directio
  *
  * Find the next or previous car by car number order.
  * Includes all cars (even in pits), skips the pace car.
- * Returns the car number to switch to, or null if not found.
+ * Returns the CarNumberRaw value for camera API use, or null if not found.
  */
 export function findAdjacentCarByNumber(
   sessionInfo: unknown,
@@ -344,26 +349,26 @@ export function findAdjacentCarByNumber(
   if (allCars.length === 0) return null;
 
   const currentCarNumber = getCarNumberFromSessionInfo(sessionInfo, currentCarIdx);
-  const fallback = direction === "next" ? allCars[0].carNumber : allCars[allCars.length - 1].carNumber;
+  const fallbackCar = direction === "next" ? allCars[0] : allCars[allCars.length - 1];
 
   if (currentCarNumber === null) {
-    return fallback;
+    return fallbackCar.carNumberRaw;
   }
 
   const currentIndex = allCars.findIndex((c) => c.carNumber === currentCarNumber);
 
   if (currentIndex === -1) {
-    return fallback;
+    return fallbackCar.carNumberRaw;
   }
 
   if (direction === "next") {
     const nextIndex = (currentIndex + 1) % allCars.length;
 
-    return allCars[nextIndex].carNumber;
+    return allCars[nextIndex].carNumberRaw;
   } else {
     const prevIndex = (currentIndex - 1 + allCars.length) % allCars.length;
 
-    return allCars[prevIndex].carNumber;
+    return allCars[prevIndex].carNumberRaw;
   }
 }
 
@@ -585,10 +590,10 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     }
   }
 
-  private getCarNumberByIdx(carIdx: number): number | null {
+  private getCarNumberRawByIdx(carIdx: number): number | null {
     const sessionInfo = this.sdkController.getSessionInfo();
 
-    return getCarNumberFromSessionInfo(sessionInfo, carIdx);
+    return getCarNumberRawFromSessionInfo(sessionInfo, carIdx);
   }
 
   private findAdjacentCarOnTrack(direction: "ahead" | "behind"): number | null {
@@ -895,7 +900,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
           break;
         }
 
-        const carNum = this.getCarNumberByIdx(driverCarIdx);
+        const carNum = this.getCarNumberRawByIdx(driverCarIdx);
 
         if (carNum === null) {
           this.logger.warn("Could not find car number for player");
@@ -916,7 +921,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
           break;
         }
 
-        const nextCarNum = this.getCarNumberByIdx(nextCarIdx);
+        const nextCarNum = this.getCarNumberRawByIdx(nextCarIdx);
 
         if (nextCarNum === null) {
           this.logger.warn("Could not find car number for next car");
@@ -937,7 +942,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
           break;
         }
 
-        const prevCarNum = this.getCarNumberByIdx(prevCarIdx);
+        const prevCarNum = this.getCarNumberRawByIdx(prevCarIdx);
 
         if (prevCarNum === null) {
           this.logger.warn("Could not find car number for previous car");
@@ -1034,7 +1039,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
       if (carIdx === null) {
         this.logger.warn("No adjacent car found on track (dial)");
       } else {
-        const carNum = this.getCarNumberByIdx(carIdx);
+        const carNum = this.getCarNumberRawByIdx(carIdx);
 
         if (carNum === null) {
           this.logger.warn("Could not find car number for adjacent car (dial)");
