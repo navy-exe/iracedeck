@@ -343,6 +343,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     const svgDataUri = generateTireServiceSvg(settings, tireState, compound);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateTireServiceSvg(settings, tireState, compound));
 
     const stateKey = this.buildStateKey(settings, tireState, compound);
     this.lastState.set(ev.action.id, stateKey);
@@ -377,6 +378,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     const svgDataUri = generateTireServiceSvg(settings, tireState, compound);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateTireServiceSvg(settings, tireState, compound));
 
     const stateKey = this.buildStateKey(settings, tireState, compound);
     this.lastState.set(ev.action.id, stateKey);
@@ -396,6 +398,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
       this.lastState.set(contextId, stateKey);
       const svgDataUri = generateTireServiceSvg(settings, tireState, compound);
       await this.updateKeyImage(contextId, svgDataUri);
+      this.setRegenerateCallback(contextId, () => generateTireServiceSvg(settings, tireState, compound));
     }
   }
 

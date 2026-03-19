@@ -285,5 +285,6 @@ export class ReplayNavigation extends ConnectionStateAwareAction<ReplayNavigatio
     const svgDataUri = generateReplayNavigationSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateReplayNavigationSvg(settings));
   }
 }

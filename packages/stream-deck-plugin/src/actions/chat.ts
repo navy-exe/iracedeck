@@ -448,6 +448,7 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     if (this.lastRenderedIcon.get(contextId) !== svgDataUri) {
       this.lastRenderedIcon.set(contextId, svgDataUri);
       await this.updateKeyImage(contextId, svgDataUri);
+      this.setRegenerateCallback(contextId, () => generateChatSvg(resolved));
     }
   }
 
@@ -462,5 +463,6 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     this.lastRenderedIcon.set(ev.action.id, svgDataUri);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateChatSvg(resolved));
   }
 }

@@ -326,5 +326,6 @@ export class CameraEditorControls extends ConnectionStateAwareAction<CameraEdito
     const svgDataUri = generateCameraEditorControlsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateCameraEditorControlsSvg(settings));
   }
 }

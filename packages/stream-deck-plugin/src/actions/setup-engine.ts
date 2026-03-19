@@ -225,5 +225,6 @@ export class SetupEngine extends ConnectionStateAwareAction<SetupEngineSettings>
     const svgDataUri = generateSetupEngineSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupEngineSvg(settings));
   }
 }

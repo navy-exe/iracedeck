@@ -228,5 +228,6 @@ export class LookDirection extends ConnectionStateAwareAction<LookDirectionSetti
     const svgDataUri = generateLookDirectionSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateLookDirectionSvg(settings));
   }
 }

@@ -198,6 +198,7 @@ export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelecto
     const svgDataUri = generateBlackBoxSelectorSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateBlackBoxSelectorSvg(settings));
   }
 
   /**

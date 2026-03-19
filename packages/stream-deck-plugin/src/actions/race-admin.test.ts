@@ -134,6 +134,7 @@ vi.mock("../shared/index.js", () => ({
     };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
+    setRegenerateCallback = vi.fn();
   },
   createSDLogger: vi.fn(() => ({
     debug: vi.fn(),

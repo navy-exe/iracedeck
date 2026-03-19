@@ -92,6 +92,7 @@ vi.mock("../shared/index.js", () => ({
     };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
+    setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}

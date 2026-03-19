@@ -222,5 +222,6 @@ export class ReplayTransport extends ConnectionStateAwareAction<ReplayTransportS
     const svgDataUri = generateReplayTransportSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateReplayTransportSvg(settings));
   }
 }

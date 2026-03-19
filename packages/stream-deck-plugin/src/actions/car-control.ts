@@ -166,10 +166,12 @@ export function generateCarControlSvg(
 
     const labels = CAR_CONTROL_LABELS["pit-speed-limiter"];
 
+    const colors = resolveIconColors(carControlTemplate, getGlobalColors(), settings.colorOverrides);
     const svg = renderIconTemplate(carControlTemplate, {
       iconContent,
       mainLabel: labels.line1,
       subLabel: labels.line2,
+      ...colors,
     });
 
     return svgToDataUri(svg);
@@ -376,6 +378,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
     const svgDataUri = generateCarControlSvg(settings, pitLimiterState, pitSpeedLimit);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateCarControlSvg(settings, pitLimiterState, pitSpeedLimit));
 
     // Initialize state cache
     const stateKey = this.buildStateKey(settings, pitLimiterState ?? false, pitSpeedLimit);
@@ -406,6 +409,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
       this.lastState.set(contextId, stateKey);
       const svgDataUri = generateCarControlSvg(settings, active, pitSpeedLimit);
       await this.updateKeyImage(contextId, svgDataUri);
+      this.setRegenerateCallback(contextId, () => generateCarControlSvg(settings, active, pitSpeedLimit));
     }
   }
 }

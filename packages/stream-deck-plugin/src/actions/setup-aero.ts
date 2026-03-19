@@ -257,5 +257,6 @@ export class SetupAero extends ConnectionStateAwareAction<SetupAeroSettings> {
     const svgDataUri = generateSetupAeroSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupAeroSvg(settings));
   }
 }

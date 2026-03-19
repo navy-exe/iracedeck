@@ -311,5 +311,6 @@ export class SetupChassis extends ConnectionStateAwareAction<SetupChassisSetting
     const svgDataUri = generateSetupChassisSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupChassisSvg(settings));
   }
 }

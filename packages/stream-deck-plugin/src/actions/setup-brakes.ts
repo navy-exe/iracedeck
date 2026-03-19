@@ -300,5 +300,6 @@ export class SetupBrakes extends ConnectionStateAwareAction<SetupBrakesSettings>
     const svgDataUri = generateSetupBrakesSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupBrakesSvg(settings));
   }
 }

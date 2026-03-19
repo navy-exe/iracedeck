@@ -258,5 +258,6 @@ export class SetupFuel extends ConnectionStateAwareAction<SetupFuelSettings> {
     const svgDataUri = generateSetupFuelSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupFuelSvg(settings));
   }
 }

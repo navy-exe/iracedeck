@@ -255,5 +255,6 @@ export class ViewAdjustment extends ConnectionStateAwareAction<ViewAdjustmentSet
     const svgDataUri = generateViewAdjustmentSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateViewAdjustmentSvg(settings));
   }
 }

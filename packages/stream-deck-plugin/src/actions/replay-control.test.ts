@@ -128,6 +128,7 @@ vi.mock("../shared/index.js", () => ({
     sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn(() => null) };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
+    setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn();
   },
   createSDLogger: vi.fn(() => ({

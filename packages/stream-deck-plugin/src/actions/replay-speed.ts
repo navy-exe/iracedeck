@@ -144,5 +144,6 @@ export class ReplaySpeed extends ConnectionStateAwareAction<ReplaySpeedSettings>
     const svgDataUri = generateReplaySpeedSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateReplaySpeedSvg(settings));
   }
 }

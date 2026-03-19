@@ -357,5 +357,6 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
     const svgDataUri = generateSetupHybridSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupHybridSvg(settings));
   }
 }

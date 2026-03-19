@@ -207,5 +207,6 @@ export class CameraCycle extends ConnectionStateAwareAction<CameraCycleSettings>
     const svgDataUri = generateCameraCycleSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateCameraCycleSvg(settings));
   }
 }

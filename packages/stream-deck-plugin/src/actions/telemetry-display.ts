@@ -8,16 +8,20 @@ import {
   ConnectionStateAwareAction,
   createSDLogger,
   escapeXml,
+  getGlobalColors,
   LogLevel,
   renderIconTemplate,
   svgToDataUri,
 } from "../shared/index.js";
 
+const TELEMETRY_DISPLAY_DEFAULT_BG = "#2a3444";
+const TELEMETRY_DISPLAY_DEFAULT_TEXT = "#ffffff";
+
 const TelemetryDisplaySettings = CommonSettings.extend({
   template: z.string().default("{{sessionInfo.DriverInfo.DriverCarIdx}}"),
   title: z.string().default("CAR #"),
-  backgroundColor: z.string().default("#2a3444"),
-  textColor: z.string().default("#ffffff"),
+  backgroundColor: z.string().default(TELEMETRY_DISPLAY_DEFAULT_BG),
+  textColor: z.string().default(TELEMETRY_DISPLAY_DEFAULT_TEXT),
   fontSize: z.coerce.number().default(18),
 });
 
@@ -53,11 +57,23 @@ export function generateValueContent(value: string, fontSize: number, textColor:
  * @internal Exported for testing
  */
 export function generateTelemetryDisplaySvg(title: string, value: string, settings: TelemetryDisplaySettings): string {
-  const valueContent = generateValueContent(value, settings.fontSize, settings.textColor);
+  const globalColors = getGlobalColors();
+
+  // Use per-action color if user changed it from default, otherwise fall through to global → default
+  const bgColor =
+    settings.backgroundColor !== TELEMETRY_DISPLAY_DEFAULT_BG
+      ? settings.backgroundColor
+      : globalColors.backgroundColor || TELEMETRY_DISPLAY_DEFAULT_BG;
+  const txtColor =
+    settings.textColor !== TELEMETRY_DISPLAY_DEFAULT_TEXT
+      ? settings.textColor
+      : globalColors.textColor || TELEMETRY_DISPLAY_DEFAULT_TEXT;
+
+  const valueContent = generateValueContent(value, settings.fontSize, txtColor);
 
   const svg = renderIconTemplate(telemetryDisplayTemplate, {
-    backgroundColor: settings.backgroundColor,
-    titleColor: settings.textColor,
+    backgroundColor: bgColor,
+    titleColor: txtColor,
     titleLabel: title,
     valueContent,
   });
@@ -125,6 +141,11 @@ export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDispla
     const svgDataUri = generateTelemetryDisplaySvg(title, value, settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => {
+      const display = this.resolveDisplay(settings);
+
+      return generateTelemetryDisplaySvg(display.title, display.value, settings);
+    });
 
     const stateKey = this.buildStateKey(title, value, settings);
     this.lastState.set(ev.action.id, stateKey);

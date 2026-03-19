@@ -78,6 +78,7 @@ vi.mock("../shared/index.js", () => ({
     sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn() };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
+    setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
     async onWillAppear() {}
     async onDidReceiveSettings() {}

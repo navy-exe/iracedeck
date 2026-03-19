@@ -149,5 +149,6 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
     const svgDataUri = generatePitQuickActionsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generatePitQuickActionsSvg(settings));
   }
 }

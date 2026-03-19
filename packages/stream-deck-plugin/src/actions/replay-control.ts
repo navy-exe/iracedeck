@@ -1071,6 +1071,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     const svgDataUri = generateReplayControlSvg(settings, isPlaying, speed, slowMo);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateReplayControlSvg(settings, isPlaying, speed, slowMo));
   }
 
   private async updateDisplayFromTelemetry(contextId: string, settings: ReplayControlSettings): Promise<void> {
@@ -1087,5 +1088,6 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
 
     const svgDataUri = generateReplayControlSvg(settings, isPlaying, speed, slowMo);
     await this.updateKeyImage(contextId, svgDataUri);
+    this.setRegenerateCallback(contextId, () => generateReplayControlSvg(settings, isPlaying, speed, slowMo));
   }
 }

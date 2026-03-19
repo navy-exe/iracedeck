@@ -144,6 +144,7 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     const svgDataUri = generateSplitsDeltaCycleSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSplitsDeltaCycleSvg(settings));
   }
 
   private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {

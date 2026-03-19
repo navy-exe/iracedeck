@@ -219,6 +219,7 @@ export class RaceAdmin extends ConnectionStateAwareAction<RaceAdminSettings> {
   ): Promise<void> {
     const svg = generateRaceAdminSvg(settings.mode, settings);
     await this.setKeyImage(ev, svg);
+    this.setRegenerateCallback(ev.action.id, () => generateRaceAdminSvg(settings.mode, settings));
   }
 
   // ── Telemetry ───────────────────────────────────────────────

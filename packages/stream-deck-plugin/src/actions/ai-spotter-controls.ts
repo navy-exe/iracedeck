@@ -214,5 +214,6 @@ export class AiSpotterControls extends ConnectionStateAwareAction<AiSpotterContr
     const svgDataUri = generateAiSpotterControlsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateAiSpotterControlsSvg(settings));
   }
 }

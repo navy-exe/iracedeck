@@ -264,5 +264,6 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
     const svgDataUri = generateToggleUiElementsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateToggleUiElementsSvg(settings));
   }
 }

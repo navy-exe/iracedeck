@@ -290,5 +290,6 @@ export class CockpitMisc extends ConnectionStateAwareAction<CockpitMiscSettings>
     const svgDataUri = generateCockpitMiscSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateCockpitMiscSvg(settings));
   }
 }

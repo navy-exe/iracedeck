@@ -233,5 +233,6 @@ export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSetting
     const svgDataUri = generateMediaCaptureSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateMediaCaptureSvg(settings));
   }
 }

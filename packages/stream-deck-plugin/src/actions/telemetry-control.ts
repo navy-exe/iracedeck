@@ -219,5 +219,6 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
     const svgDataUri = generateTelemetryControlSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateTelemetryControlSvg(settings));
   }
 }

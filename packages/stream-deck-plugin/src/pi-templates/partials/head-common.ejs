@@ -87,12 +87,13 @@
   }, 500);
 
   // Color picker reset buttons — event delegation for all .ird-color-reset links
+  // Per-action: resets to icon default color. Global: resets to #000000 (treated as "not set").
   document.addEventListener('click', function(ev) {
     var link = ev.target.closest('.ird-color-reset');
     if (!link) return;
     ev.preventDefault();
     var inputId = link.getAttribute('data-input');
-    var defaultColor = link.getAttribute('data-default');
+    var defaultColor = link.getAttribute('data-default') || '#000000';
     var colorEl = document.getElementById(inputId);
     if (colorEl) {
       colorEl.value = defaultColor;

@@ -228,5 +228,6 @@ export class AudioControls extends ConnectionStateAwareAction<AudioControlsSetti
     const svgDataUri = generateAudioControlsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateAudioControlsSvg(settings));
   }
 }

@@ -355,5 +355,6 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     const svgDataUri = generateFuelServiceSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateFuelServiceSvg(settings));
   }
 }

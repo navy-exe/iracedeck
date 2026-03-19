@@ -263,5 +263,6 @@ export class SetupTraction extends ConnectionStateAwareAction<SetupTractionSetti
     const svgDataUri = generateSetupTractionSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateSetupTractionSvg(settings));
   }
 }

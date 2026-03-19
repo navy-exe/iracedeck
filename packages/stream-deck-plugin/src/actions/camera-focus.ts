@@ -216,5 +216,6 @@ export class CameraFocus extends ConnectionStateAwareAction<CameraFocusSettings>
     const svgDataUri = generateCameraFocusSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
+    this.setRegenerateCallback(ev.action.id, () => generateCameraFocusSvg(settings));
   }
 }

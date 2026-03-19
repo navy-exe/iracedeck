@@ -180,7 +180,14 @@ export function getGlobalColors(): {
   const color = (key: string): string | undefined => {
     const val = settings[key];
 
-    return typeof val === "string" && val.length > 0 ? val : undefined;
+    // Ignore empty strings and #000001 (sentinel for "not set" — HTML color inputs
+    // can't be empty, so reset buttons set to #000001 which is visually indistinguishable
+    // from black but signals "no override")
+    if (typeof val !== "string" || val.length === 0 || val === "#000001") {
+      return undefined;
+    }
+
+    return val;
   };
 
   return {
