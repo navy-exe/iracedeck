@@ -21,13 +21,15 @@ var defaultG2 = (defaults && defaults.graphic2Color) || '#ffffff';
   open: false,
   content:
     '<sdpi-item label="Presets">' +
-    '<div style="display:flex;gap:6px;">' +
-    '<button class="ird-override-preset" data-bg="#000001" data-text="#000001" data-g1="#000001" data-g2="#000001"' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+    '<button class="ird-override-preset" data-bg="' + defaultBg + '" data-text="' + defaultText + '" data-g1="' + defaultG1 + '" data-g2="' + defaultG2 + '"' +
       ' style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#808080;">Default</button>' +
     '<button class="ird-override-preset" data-bg="#ffffff" data-text="#000000" data-g1="#000000" data-g2="#ffffff"' +
       ' style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#ffffff;color:#000000;">White</button>' +
     '<button class="ird-override-preset" data-bg="#000000" data-text="#ffffff" data-g1="#ffffff" data-g2="#000000"' +
       ' style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#000000;color:#ffffff;">Black</button>' +
+    '<button class="ird-override-preset" data-bg="#000001" data-text="#000001" data-g1="#000001" data-g2="#000001"' +
+      ' style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#808080;">Global</button>' +
     '</div>' +
     '</sdpi-item>' +
     slots.map(function(slot) {
@@ -35,8 +37,8 @@ var defaultG2 = (defaults && defaults.graphic2Color) || '#ffffff';
       var inputId = 'color-override-' + slot;
       return '<sdpi-item label="' + slotLabels[slot] + '">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
-        '<sdpi-color id="' + inputId + '" setting="colorOverrides.' + slot + '" default="' + defaultColor + '"></sdpi-color>' +
-        '<a href="#" class="ird-color-reset" data-input="' + inputId + '" data-default="' + defaultColor + '" ' +
+        '<sdpi-color id="' + inputId + '" setting="colorOverrides.' + slot + '" default="#000001"></sdpi-color>' +
+        '<a href="#" class="ird-color-reset" data-input="' + inputId + '" data-default="#000001" ' +
           'style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" ' +
           'title="Reset to default">&#x21BA;</a>' +
         '</div>' +
