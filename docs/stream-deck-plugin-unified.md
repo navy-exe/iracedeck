@@ -49,16 +49,17 @@ Opens a specific black box or cycles through them.
 
 ---
 
-## Main Action 2: Splits Delta Cycle
+## Main Action 2: Splits & Reference
 
-Cycles through split/delta display modes.
+Cycles through split/delta display modes or toggles the reference car display.
 
 | Sub-Action | Default Key | iRacing Setting | Long-Press | Notes |
 | ---------- | ----------- | --------------- | ---------- | ----- |
-| Next       | TAB         | -               | None       | -     |
-| Previous   | Shift+TAB   | -               | None       | -     |
+| Next       | TAB         | -               | None       | Cycle mode |
+| Previous   | Shift+TAB   | -               | None       | Cycle mode |
+| Toggle Reference Car | Ctrl+C | Toggle Display Reference Car | None | Toggle mode |
 
-**Type:** +/- (direction selector)
+**Type:** +/- (direction selector), toggle
 
 ---
 
@@ -580,8 +581,8 @@ Hybrid/ERS system adjustments.
 | #   | Main Action                 | Sub-Actions | Primary Type  | Category          |
 | --- | --------------------------- | ----------- | ------------- | ----------------- |
 | 1   | Black Box Selector          | 13          | Multi-toggle  | Core Racing       |
-| 2   | Splits Delta Cycle          | 2           | +/-           | Core Racing       |
-| 3   | Toggle UI Elements          | 9           | Toggle        | Core Racing       |
+| 2   | Splits & Reference          | 3           | +/-           | Core Racing       |
+| 3   | Toggle UI Elements          | 8           | Toggle        | Core Racing       |
 | 4   | Car Control                 | 5           | Button/Toggle | Core Racing       |
 | 5   | Look Direction              | 4           | Multi-toggle  | Core Racing       |
 | 6   | View Adjustment             | 9           | +/-           | Core Racing       |

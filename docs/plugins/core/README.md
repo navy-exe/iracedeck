@@ -9,7 +9,7 @@ See [Action Types](../action-types.md) for type definitions.
 | Property | Value |
 |----------|-------|
 | Plugin ID | `com.iracedeck.sd.core` |
-| Actions | 27 |
+| Actions | 26 |
 | Category | Core Driving & Interface |
 
 ## Actions
@@ -17,32 +17,31 @@ See [Action Types](../action-types.md) for type definitions.
 | # | Action | Type | Documentation |
 |---|--------|------|---------------|
 | 1 | Black Box Selector | Multi-toggle | [Details](actions/black-box-selector.md) |
-| 2 | Splits Delta Cycle | Multi-toggle | [Details](actions/splits-delta-cycle.md) |
-| 3 | Toggle Display Reference Car | Toggle | [Details](actions/toggle-display-reference-car.md) |
-| 4 | Starter | Button | [Details](actions/starter.md) |
-| 5 | Ignition | Button | [Details](actions/ignition.md) |
-| 6 | Pit Speed Limiter | Toggle | [Details](actions/pit-speed-limiter.md) |
-| 7 | Enter/Exit/Tow Car | Button | [Details](actions/enter-exit-tow-car.md) |
-| 8 | Autofuel Toggle | Toggle | [Details](actions/autofuel-toggle.md) |
-| 9 | Autofuel Lap Margin | +/- | [Details](actions/autofuel-lap-margin.md) |
-| 10 | Toggle Dash Box | Toggle | [Details](actions/toggle-dash-box.md) |
-| 11 | Trigger Windshield Wipers | Button | [Details](actions/trigger-windshield-wipers.md) |
-| 12 | Look Direction | Multi-toggle | [Details](actions/look-direction.md) |
-| 13 | FOV Adjust | +/- | [Details](actions/fov-adjust.md) |
-| 14 | Horizon Adjust (VanishY) | +/- | [Details](actions/horizon-adjust.md) |
-| 15 | Driver Height Adjust | +/- | [Details](actions/driver-height-adjust.md) |
-| 16 | Recenter VR View | Button | [Details](actions/recenter-vr-view.md) |
-| 17 | Speed/Gear/Pedals Display | Toggle | [Details](actions/speed-gear-pedals-display.md) |
-| 18 | Radio Display | Toggle | [Details](actions/radio-display.md) |
-| 19 | FPS/Network Display | Toggle | [Details](actions/fps-network-display.md) |
-| 20 | Report Latency | Button | [Details](actions/report-latency.md) |
-| 21 | Toggle Weather Radar | Toggle | [Details](actions/toggle-weather-radar.md) |
-| 22 | Toggle Virtual Mirror | Toggle | [Details](actions/toggle-virtual-mirror.md) |
-| 23 | Toggle UI Edit | Toggle | [Details](actions/toggle-ui-edit.md) |
-| 24 | UI Size Adjust | +/- | [Details](actions/ui-size-adjust.md) |
-| 25 | Pause Sim | Toggle | [Details](actions/pause-sim.md) |
-| 26 | Set FFB Max Force | Adjustment | [Details](actions/set-ffb-max-force.md) |
-| 27 | Adjust Master Volume | +/- | [Details](actions/adjust-master-volume.md) |
+| 2 | Splits & Reference | Multi-toggle | [Details](actions/splits-delta-cycle.md) |
+| 3 | Starter | Button | [Details](actions/starter.md) |
+| 4 | Ignition | Button | [Details](actions/ignition.md) |
+| 5 | Pit Speed Limiter | Toggle | [Details](actions/pit-speed-limiter.md) |
+| 6 | Enter/Exit/Tow Car | Button | [Details](actions/enter-exit-tow-car.md) |
+| 7 | Autofuel Toggle | Toggle | [Details](actions/autofuel-toggle.md) |
+| 8 | Autofuel Lap Margin | +/- | [Details](actions/autofuel-lap-margin.md) |
+| 9 | Toggle Dash Box | Toggle | [Details](actions/toggle-dash-box.md) |
+| 10 | Trigger Windshield Wipers | Button | [Details](actions/trigger-windshield-wipers.md) |
+| 11 | Look Direction | Multi-toggle | [Details](actions/look-direction.md) |
+| 12 | FOV Adjust | +/- | [Details](actions/fov-adjust.md) |
+| 13 | Horizon Adjust (VanishY) | +/- | [Details](actions/horizon-adjust.md) |
+| 14 | Driver Height Adjust | +/- | [Details](actions/driver-height-adjust.md) |
+| 15 | Recenter VR View | Button | [Details](actions/recenter-vr-view.md) |
+| 16 | Speed/Gear/Pedals Display | Toggle | [Details](actions/speed-gear-pedals-display.md) |
+| 17 | Radio Display | Toggle | [Details](actions/radio-display.md) |
+| 18 | FPS/Network Display | Toggle | [Details](actions/fps-network-display.md) |
+| 19 | Report Latency | Button | [Details](actions/report-latency.md) |
+| 20 | Toggle Weather Radar | Toggle | [Details](actions/toggle-weather-radar.md) |
+| 21 | Toggle Virtual Mirror | Toggle | [Details](actions/toggle-virtual-mirror.md) |
+| 22 | Toggle UI Edit | Toggle | [Details](actions/toggle-ui-edit.md) |
+| 23 | UI Size Adjust | +/- | [Details](actions/ui-size-adjust.md) |
+| 24 | Pause Sim | Toggle | [Details](actions/pause-sim.md) |
+| 25 | Set FFB Max Force | Adjustment | [Details](actions/set-ffb-max-force.md) |
+| 26 | Adjust Master Volume | +/- | [Details](actions/adjust-master-volume.md) |
 
 ## Implementation Notes
 

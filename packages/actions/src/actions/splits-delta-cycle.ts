@@ -5,6 +5,7 @@ import {
   getGlobalColors,
   getGlobalSettings,
   getKeyboard,
+  type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
@@ -21,6 +22,7 @@ import {
 } from "@iracedeck/deck-core";
 import nextIconSvg from "@iracedeck/icons/splits-delta-cycle/next.svg";
 import previousIconSvg from "@iracedeck/icons/splits-delta-cycle/previous.svg";
+import displayRefCarIconSvg from "@iracedeck/icons/toggle-ui-elements/display-ref-car.svg";
 import z from "zod";
 
 const DIRECTION_ICONS: Record<string, string> = {
@@ -29,6 +31,7 @@ const DIRECTION_ICONS: Record<string, string> = {
 };
 
 const SplitsDeltaCycleSettings = CommonSettings.extend({
+  mode: z.enum(["cycle", "toggle-ref-car"]).default("cycle"),
   direction: z.enum(["next", "previous"]).default("next"),
 });
 
@@ -40,13 +43,26 @@ type SplitsDeltaCycleSettings = z.infer<typeof SplitsDeltaCycleSettings>;
 export const GLOBAL_KEY_NAMES = {
   NEXT: "splitsDeltaNext",
   PREVIOUS: "splitsDeltaPrevious",
+  TOGGLE_REF_CAR: "toggleUiDisplayRefCar",
 } as const;
 
 /**
  * @internal Exported for testing
  */
 export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings): string {
-  const { direction } = settings;
+  const { mode, direction } = settings;
+
+  if (mode === "toggle-ref-car") {
+    const colors = resolveIconColors(displayRefCarIconSvg, getGlobalColors(), settings.colorOverrides);
+    const svg = renderIconTemplate(displayRefCarIconSvg, {
+      mainLabel: "REFERENCE",
+      subLabel: "CAR",
+      ...colors,
+    });
+
+    return svgToDataUri(svg);
+  }
+
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS.next;
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const svg = renderIconTemplate(iconSvg, {
@@ -59,8 +75,8 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
 }
 
 /**
- * Splits Delta Cycle Action
- * Cycles through iRacing split-time delta display modes via keyboard shortcuts.
+ * Splits & Reference Action
+ * Cycles through iRacing split-time delta display modes or toggles the reference car display.
  */
 export const SPLITS_DELTA_CYCLE_UUID = "com.iracedeck.sd.core.splits-delta-cycle" as const;
 
@@ -96,7 +112,13 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
     const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
 
-    const settingKey = settings.direction === "next" ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS;
+    const settingKey =
+      settings.mode === "toggle-ref-car"
+        ? GLOBAL_KEY_NAMES.TOGGLE_REF_CAR
+        : settings.direction === "next"
+          ? GLOBAL_KEY_NAMES.NEXT
+          : GLOBAL_KEY_NAMES.PREVIOUS;
+
     const globalSettings = getGlobalSettings() as Record<string, unknown>;
     const binding = parseKeyBinding(globalSettings[settingKey]);
 
@@ -109,7 +131,32 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     await this.sendKeyBinding(binding);
   }
 
+  override async onDialDown(ev: IDeckDialDownEvent<SplitsDeltaCycleSettings>): Promise<void> {
+    this.logger.info("Dial down received");
+
+    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
+    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
+
+    if (settings.mode !== "toggle-ref-car") return;
+
+    const globalSettings = getGlobalSettings() as Record<string, unknown>;
+    const binding = parseKeyBinding(globalSettings[GLOBAL_KEY_NAMES.TOGGLE_REF_CAR]);
+
+    if (!binding?.key) {
+      this.logger.warn(`No key binding configured for ${GLOBAL_KEY_NAMES.TOGGLE_REF_CAR}`);
+
+      return;
+    }
+
+    await this.sendKeyBinding(binding);
+  }
+
   override async onDialRotate(ev: IDeckDialRotateEvent<SplitsDeltaCycleSettings>): Promise<void> {
+    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
+    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
+
+    if (settings.mode !== "cycle") return;
+
     this.logger.info(`Dial rotated: ${ev.payload.ticks} ticks`);
 
     const globalSettings = getGlobalSettings() as Record<string, unknown>;
