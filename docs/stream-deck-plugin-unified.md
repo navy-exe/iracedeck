@@ -582,7 +582,7 @@ Hybrid/ERS system adjustments.
 | --- | --------------------------- | ----------- | ------------- | ----------------- |
 | 1   | Black Box Selector          | 13          | Multi-toggle  | Core Racing       |
 | 2   | Splits & Reference          | 3           | +/-           | Core Racing       |
-| 3   | Toggle UI Elements          | 9           | Toggle        | Core Racing       |
+| 3   | Toggle UI Elements          | 8           | Toggle        | Core Racing       |
 | 4   | Car Control                 | 5           | Button/Toggle | Core Racing       |
 | 5   | Look Direction              | 4           | Multi-toggle  | Core Racing       |
 | 6   | View Adjustment             | 9           | +/-           | Core Racing       |
