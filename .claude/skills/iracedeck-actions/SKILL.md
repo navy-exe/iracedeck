@@ -70,7 +70,7 @@ When asked about actions or controls:
 | Cockpit Misc | 10 | toggle/trigger wipers, FFB +/-, latency, dash pages +/-, in-lap mode |
 | Splits & Reference | 3 | cycle (next/previous), toggle-ref-car |
 | Telemetry Control | 5 | toggle-logging, mark-event, start/stop/restart recording |
-| Toggle UI Elements | 9 | dash-box, speed/gear, radio, FPS, weather, mirror, edit mode, ref car (deprecated, moved to Splits & Reference), replay UI |
+| Toggle UI Elements | 8 | dash-box, speed/gear, radio, FPS, weather, mirror, edit mode, replay UI |
 
 ### View & Camera
 

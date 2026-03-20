@@ -3,7 +3,7 @@ title: Splits & Reference
 description: Cycle through iRacing's splits delta display modes or toggle the reference car
 sidebar:
   badge:
-    text: "3 modes"
+    text: "2 modes"
     variant: tip
 ---
 

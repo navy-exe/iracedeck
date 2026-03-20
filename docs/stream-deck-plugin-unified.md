@@ -55,10 +55,11 @@ Cycles through split/delta display modes or toggles the reference car display.
 
 | Sub-Action | Default Key | iRacing Setting | Long-Press | Notes |
 | ---------- | ----------- | --------------- | ---------- | ----- |
-| Next       | TAB         | -               | None       | -     |
-| Previous   | Shift+TAB   | -               | None       | -     |
+| Next       | TAB         | -               | None       | Cycle mode |
+| Previous   | Shift+TAB   | -               | None       | Cycle mode |
+| Toggle Reference Car | Ctrl+C | Toggle Display Reference Car | None | Toggle mode |
 
-**Type:** +/- (direction selector)
+**Type:** +/- (direction selector), toggle
 
 ---
 
