@@ -44,4 +44,5 @@ Pure TypeScript library, no Rollup needed. Outputs ESM with declarations.
 - `@iracedeck/iracing-sdk` — For telemetry types and SDK controller
 - `@iracedeck/logger` — For `ILogger` interface
 - `zod` — For settings schemas
-- `keysender` — devDependency for types only (keyboard service)
+
+Note: `keyboard-service.ts` dynamically imports `keysender` at runtime (Windows-only native module). The types are defined locally to avoid a compile-time dependency.

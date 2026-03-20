@@ -39,9 +39,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@iracedeck/deck-core": resolve(__dirname, "packages/deck-core/src/index.ts"),
-      // keysender is a devDependency of deck-core; ensure tests in other packages
-      // can mock it by resolving to the same physical module.
-      keysender: resolve(__dirname, "packages/deck-core/node_modules/keysender"),
     },
   },
   test: {

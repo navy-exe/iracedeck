@@ -30,11 +30,19 @@
  */
 import type { ILogger } from "@iracedeck/logger";
 import { silentLogger } from "@iracedeck/logger";
-// Import keysender types for proper typing
-import type { Keyboard, KeyboardButton } from "keysender";
 
 import type { KeyboardKey, KeyboardModifier, KeyCombination } from "./keyboard-types.js";
 import { getModifierScanCode, getScanCode } from "./scan-code-map.js";
+
+/**
+ * Local type definitions matching keysender's API surface.
+ * Avoids a direct dependency on the keysender native package.
+ */
+type KeyboardButton = string;
+interface KeysenderKeyboard {
+  sendKey(key: KeyboardButton | KeyboardButton[]): Promise<void>;
+  toggleKey(key: KeyboardButton | KeyboardButton[], state: boolean): Promise<void>;
+}
 
 /**
  * Function type for sending scan codes via native SendInput (tap: press + release).
@@ -121,7 +129,7 @@ function toKeysenderModifier(modifier: KeyboardModifier): KeyboardButton {
  * Interface for the Hardware instance from keysender.
  */
 interface KeysenderHardware {
-  keyboard: Keyboard;
+  keyboard: KeysenderKeyboard;
 }
 
 /**
@@ -165,10 +173,15 @@ class KeyboardService implements IKeyboardService {
 
     this.initPromise = (async () => {
       try {
-        // Dynamic import to avoid loading during test environment
-        const keysender = await import("keysender");
+        // Dynamic import — keysender is a Windows-only native module provided
+        // at runtime by the platform plugin (e.g., stream-deck-plugin).
+        // Use a variable to prevent TypeScript from resolving the module at compile time.
+        const moduleName = "keysender";
+        const keysender = (await import(moduleName)) as {
+          Hardware: new () => KeysenderHardware;
+        };
         // Create Hardware instance without arguments for desktop-wide targeting
-        this.hardware = new keysender.Hardware() as KeysenderHardware;
+        this.hardware = new keysender.Hardware();
         this.logger.debug("Keysender Hardware initialized");
       } catch (error) {
         this.logger.error(`Failed to initialize keysender: ${error}`);
