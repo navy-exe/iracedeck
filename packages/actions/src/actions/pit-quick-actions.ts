@@ -15,6 +15,7 @@ import {
 import clearAllCheckboxesIconSvg from "@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg";
 import requestFastRepairIconSvg from "@iracedeck/icons/pit-quick-actions/request-fast-repair.svg";
 import windshieldTearoffIconSvg from "@iracedeck/icons/pit-quick-actions/windshield-tearoff.svg";
+import { hasFlag, PitSvFlags } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
 type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "request-fast-repair";
@@ -119,15 +120,31 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
         break;
       }
       case "windshield-tearoff": {
-        const success = pit.windshield();
-        this.logger.info("Windshield tearoff executed");
-        this.logger.debug(`Result: ${success}`);
+        const telemetry = this.sdkController.getCurrentTelemetry();
+
+        if (!telemetry) {
+          this.logger.warn("No telemetry available for windshield tearoff toggle");
+          break;
+        }
+
+        const isSet = hasFlag(telemetry.PitSvFlags, PitSvFlags.WindshieldTearoff);
+        const success = isSet ? pit.clearWindshield() : pit.windshield();
+        this.logger.info("Windshield tearoff toggled");
+        this.logger.debug(`Action: ${isSet ? "cleared" : "requested"}, result: ${success}`);
         break;
       }
       case "request-fast-repair": {
-        const success = pit.fastRepair();
-        this.logger.info("Fast repair executed");
-        this.logger.debug(`Result: ${success}`);
+        const telemetry = this.sdkController.getCurrentTelemetry();
+
+        if (!telemetry) {
+          this.logger.warn("No telemetry available for fast repair toggle");
+          break;
+        }
+
+        const isSet = hasFlag(telemetry.PitSvFlags, PitSvFlags.FastRepair);
+        const success = isSet ? pit.clearFastRepair() : pit.fastRepair();
+        this.logger.info("Fast repair toggled");
+        this.logger.debug(`Action: ${isSet ? "cleared" : "requested"}, result: ${success}`);
         break;
       }
     }

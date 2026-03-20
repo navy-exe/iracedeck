@@ -2,17 +2,33 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generatePitQuickActionsSvg, PitQuickActions } from "./pit-quick-actions.js";
 
-const { mockPitClear, mockPitWindshield, mockPitFastRepair, mockGetCommands } = vi.hoisted(() => ({
+const {
+  mockPitClear,
+  mockPitWindshield,
+  mockPitClearWindshield,
+  mockPitFastRepair,
+  mockPitClearFastRepair,
+  mockGetCommands,
+} = vi.hoisted(() => ({
   mockPitClear: vi.fn(() => true),
   mockPitWindshield: vi.fn(() => true),
+  mockPitClearWindshield: vi.fn(() => true),
   mockPitFastRepair: vi.fn(() => true),
+  mockPitClearFastRepair: vi.fn(() => true),
   mockGetCommands: vi.fn(() => ({
     pit: {
       clear: mockPitClear,
       windshield: mockPitWindshield,
+      clearWindshield: mockPitClearWindshield,
       fastRepair: mockPitFastRepair,
+      clearFastRepair: mockPitClearFastRepair,
     },
   })),
+}));
+
+vi.mock("@iracedeck/iracing-sdk", () => ({
+  PitSvFlags: { WindshieldTearoff: 0x0020, FastRepair: 0x0040 },
+  hasFlag: (value: number | undefined, flag: number) => value !== undefined && (value & flag) !== 0,
 }));
 
 vi.mock("@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg", () => ({
@@ -139,20 +155,52 @@ describe("PitQuickActions", () => {
       expect(mockPitFastRepair).not.toHaveBeenCalled();
     });
 
-    it("should call pit.windshield() on keyDown for windshield-tearoff", async () => {
+    it("should call pit.windshield() on keyDown when windshield is not set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
       await action.onKeyDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
 
       expect(mockPitWindshield).toHaveBeenCalledOnce();
-      expect(mockPitClear).not.toHaveBeenCalled();
-      expect(mockPitFastRepair).not.toHaveBeenCalled();
+      expect(mockPitClearWindshield).not.toHaveBeenCalled();
     });
 
-    it("should call pit.fastRepair() on keyDown for request-fast-repair", async () => {
+    it("should call pit.clearWindshield() on keyDown when windshield is already set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0020 });
+      await action.onKeyDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+
+      expect(mockPitClearWindshield).toHaveBeenCalledOnce();
+      expect(mockPitWindshield).not.toHaveBeenCalled();
+    });
+
+    it("should call pit.fastRepair() on keyDown when fast repair is not set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
       await action.onKeyDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
 
       expect(mockPitFastRepair).toHaveBeenCalledOnce();
-      expect(mockPitClear).not.toHaveBeenCalled();
+      expect(mockPitClearFastRepair).not.toHaveBeenCalled();
+    });
+
+    it("should call pit.clearFastRepair() on keyDown when fast repair is already set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0040 });
+      await action.onKeyDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+
+      expect(mockPitClearFastRepair).toHaveBeenCalledOnce();
+      expect(mockPitFastRepair).not.toHaveBeenCalled();
+    });
+
+    it("should not call any pit command when telemetry is null for windshield-tearoff", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue(null);
+      await action.onKeyDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+
       expect(mockPitWindshield).not.toHaveBeenCalled();
+      expect(mockPitClearWindshield).not.toHaveBeenCalled();
+    });
+
+    it("should not call any pit command when telemetry is null for request-fast-repair", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue(null);
+      await action.onKeyDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+
+      expect(mockPitFastRepair).not.toHaveBeenCalled();
+      expect(mockPitClearFastRepair).not.toHaveBeenCalled();
     });
 
     it("should default to clear-all-checkboxes when no action is specified", async () => {
@@ -175,16 +223,36 @@ describe("PitQuickActions", () => {
       expect(mockPitClear).toHaveBeenCalledOnce();
     });
 
-    it("should call pit.windshield() on dialDown for windshield-tearoff", async () => {
+    it("should call pit.windshield() on dialDown when windshield is not set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
       await action.onDialDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
 
       expect(mockPitWindshield).toHaveBeenCalledOnce();
+      expect(mockPitClearWindshield).not.toHaveBeenCalled();
     });
 
-    it("should call pit.fastRepair() on dialDown for request-fast-repair", async () => {
+    it("should call pit.clearWindshield() on dialDown when windshield is already set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0020 });
+      await action.onDialDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+
+      expect(mockPitClearWindshield).toHaveBeenCalledOnce();
+      expect(mockPitWindshield).not.toHaveBeenCalled();
+    });
+
+    it("should call pit.fastRepair() on dialDown when fast repair is not set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
       await action.onDialDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
 
       expect(mockPitFastRepair).toHaveBeenCalledOnce();
+      expect(mockPitClearFastRepair).not.toHaveBeenCalled();
+    });
+
+    it("should call pit.clearFastRepair() on dialDown when fast repair is already set", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0040 });
+      await action.onDialDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+
+      expect(mockPitClearFastRepair).toHaveBeenCalledOnce();
+      expect(mockPitFastRepair).not.toHaveBeenCalled();
     });
   });
 });
