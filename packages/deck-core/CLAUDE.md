@@ -23,7 +23,6 @@ Platform-agnostic core interfaces, base classes, and utilities for deck device p
 - `app-monitor.ts` — iRacing process detection (takes `IDeckPlatformAdapter`)
 - `sdk-singleton.ts` — iRacing SDK singleton (`initializeSDK`, `getController`, `getCommands`)
 - `keyboard-service.ts` — Keyboard singleton (`initializeKeyboard`, `getKeyboard`)
-- `window-focus.ts` — Window focus service (`initWindowFocus`, `focusIRacingIfEnabled`)
 - `icon-template.ts` — SVG template rendering and color resolution
 - `overlay-utils.ts` — SVG overlay utilities (inactive state, data URI conversion)
 - `key-binding-utils.ts` — Key binding parsing and formatting
@@ -43,7 +42,6 @@ Pure TypeScript library, no Rollup needed. Outputs ESM with declarations.
 ## Dependencies
 
 - `@iracedeck/iracing-sdk` — For telemetry types and SDK controller
-- `@iracedeck/iracing-native` — For `FocusResult` enum (window focus)
 - `@iracedeck/logger` — For `ILogger` interface
 - `zod` — For settings schemas
 - `keysender` — devDependency for types only (keyboard service)

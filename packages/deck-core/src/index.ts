@@ -117,9 +117,6 @@ export {
 // App monitor for iRacing process detection
 export { initAppMonitor, isIRacingRunning, isAppMonitorInitialized, _resetAppMonitor } from "./app-monitor.js";
 
-// Window focus service
-export { initWindowFocus, focusIRacingIfEnabled } from "./window-focus.js";
-
 // Scan code mapping
 export { getScanCode, getModifierScanCode } from "./scan-code-map.js";
 

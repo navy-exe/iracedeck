@@ -7,16 +7,9 @@ const mockGetGlobalSettings = vi.fn(() => ({
 }));
 const mockIsGlobalSettingsInitialized = vi.fn(() => true);
 
-vi.mock("../../../deck-core/src/global-settings.js", () => ({
+vi.mock("@iracedeck/deck-core", () => ({
   getGlobalSettings: () => mockGetGlobalSettings(),
   isGlobalSettingsInitialized: () => mockIsGlobalSettingsInitialized(),
-  // Re-export other things window-focus.ts might need
-  GlobalSettingsSchema: {},
-  KeyBindingValueSchema: {},
-  initGlobalSettings: vi.fn(),
-  getGlobalColors: vi.fn(),
-  onGlobalSettingsChange: vi.fn(),
-  _resetGlobalSettings: vi.fn(),
 }));
 
 // Mock FocusResult enum used by window-focus.ts
@@ -41,8 +34,8 @@ vi.mock("@iracedeck/logger", () => ({
 
 // Since window-focus.ts has module-level state (focuser, logger), we need to
 // reset it between tests. Use dynamic imports with vi.resetModules().
-let initWindowFocus: (typeof import("@iracedeck/deck-core"))["initWindowFocus"];
-let focusIRacingIfEnabled: (typeof import("@iracedeck/deck-core"))["focusIRacingIfEnabled"];
+let initWindowFocus: (typeof import("./window-focus.js"))["initWindowFocus"];
+let focusIRacingIfEnabled: (typeof import("./window-focus.js"))["focusIRacingIfEnabled"];
 
 describe("Window Focus Service", () => {
   beforeEach(async () => {
@@ -51,15 +44,9 @@ describe("Window Focus Service", () => {
     vi.resetModules();
 
     // Re-register mocks after resetModules
-    vi.doMock("../../../deck-core/src/global-settings.js", () => ({
+    vi.doMock("@iracedeck/deck-core", () => ({
       getGlobalSettings: () => mockGetGlobalSettings(),
       isGlobalSettingsInitialized: () => mockIsGlobalSettingsInitialized(),
-      GlobalSettingsSchema: {},
-      KeyBindingValueSchema: {},
-      initGlobalSettings: vi.fn(),
-      getGlobalColors: vi.fn(),
-      onGlobalSettingsChange: vi.fn(),
-      _resetGlobalSettings: vi.fn(),
     }));
     vi.doMock("@iracedeck/iracing-native", () => ({
       FocusResult: {
@@ -78,7 +65,7 @@ describe("Window Focus Service", () => {
       },
     }));
 
-    const mod = await import("@iracedeck/deck-core");
+    const mod = await import("./window-focus.js");
     initWindowFocus = mod.initWindowFocus;
     focusIRacingIfEnabled = mod.focusIRacingIfEnabled;
 

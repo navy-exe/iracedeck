@@ -16,7 +16,6 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@iracedeck/iracing-native": "workspace:*",
     "@iracedeck/iracing-sdk": "workspace:*",
     "@iracedeck/logger": "workspace:*",
     "zod": "4.3.6"

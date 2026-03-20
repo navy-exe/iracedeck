@@ -68,15 +68,10 @@ import {
   ViewAdjustment,
 } from "@iracedeck/actions";
 import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
-import {
-  focusIRacingIfEnabled,
-  initAppMonitor,
-  initGlobalSettings,
-  initializeKeyboard,
-  initializeSDK,
-  initWindowFocus,
-} from "@iracedeck/deck-core";
+import { initAppMonitor, initGlobalSettings, initializeKeyboard, initializeSDK } from "@iracedeck/deck-core";
 import { IRacingNative } from "@iracedeck/iracing-native";
+
+import { focusIRacingIfEnabled, initWindowFocus } from "./shared/index.js";
 
 // Create the Elgato platform adapter
 const adapter = new ElgatoPlatformAdapter(streamDeck);
