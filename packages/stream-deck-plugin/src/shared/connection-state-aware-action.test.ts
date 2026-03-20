@@ -10,7 +10,7 @@ const mockGetController = vi.fn(() => ({
 }));
 
 vi.mock("../../../deck-core/src/sdk-singleton.js", () => ({
-  getController: (...args: unknown[]) => mockGetController(...args),
+  getController: () => mockGetController(),
   getSDK: vi.fn(),
   getCommands: vi.fn(),
   initializeSDK: vi.fn(),

@@ -15,7 +15,7 @@ const mockGetController = vi.fn(() => ({
 // The path is relative from this test file to the deck-core source module.
 // vitest resolves relative paths from the test file location.
 vi.mock("../../../deck-core/src/sdk-singleton.js", () => ({
-  getController: (...args: unknown[]) => mockGetController(...args),
+  getController: () => mockGetController(),
 }));
 
 // Helper to create mock logger

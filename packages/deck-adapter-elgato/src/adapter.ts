@@ -88,6 +88,11 @@ function wrapEvent<T>(ev: {
 /**
  * Wrap a WillDisappearEvent where action is ActionContext (no setImage/setTitle/isKey).
  * Provides a minimal IDeckActionContext with stubs for unavailable methods.
+ *
+ * Note: isKey() always returns false here because Elgato's ActionContext doesn't
+ * expose the controller type. BaseAction.onWillDisappear only uses ev.action.id
+ * for cleanup, so this is safe. If future logic needs key vs. dial distinction
+ * in onWillDisappear, track the controller type in the context map during onWillAppear.
  */
 function wrapDisappearEvent<T>(ev: WillDisappearEvent<T & JsonObject>): IDeckWillDisappearEvent<T> {
   return {

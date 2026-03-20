@@ -183,7 +183,7 @@ export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelecto
    * Update display with current settings
    */
   private async updateDisplay(
-    ev: IDeckWillAppearEvent<BlackBoxSelectorSettings> | any,
+    ev: IDeckWillAppearEvent<BlackBoxSelectorSettings> | IDeckDidReceiveSettingsEvent<BlackBoxSelectorSettings>,
     settings: BlackBoxSelectorSettings,
   ): Promise<void> {
     this.updateConnectionState();
@@ -197,7 +197,7 @@ export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelecto
   /**
    * When settings are received or updated
    */
-  override async onDidReceiveSettings(ev: any): Promise<void> {
+  override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<BlackBoxSelectorSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const parsed = BlackBoxSelectorSettings.safeParse(ev.payload.settings);
     const settings = parsed.success ? parsed.data : BlackBoxSelectorSettings.parse({});
