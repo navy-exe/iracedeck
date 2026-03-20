@@ -8,19 +8,21 @@
  * Options:
  *   --format=json|keyvalue  Output format (default: json)
  *   --output=<file>         Write to file instead of stdout
+ *   --output-dir=<dir>      Write to dir with auto-generated timestamped filename
  *   --include-session       Include session info in output
  *   --vars=<var1,var2,...>  Only include specific variables
  *   --help                  Show help
  */
 import { consoleLogger, silentLogger } from "@iracedeck/logger";
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 import { createSDK } from "../factory.js";
 
 interface CliOptions {
   format: "json" | "keyvalue";
   output: string | null;
+  outputDir: string | null;
   includeSession: boolean;
   vars: string[] | null;
   help: boolean;
@@ -31,6 +33,7 @@ function parseArgs(args: string[]): CliOptions {
   const options: CliOptions = {
     format: "json",
     output: null,
+    outputDir: null,
     includeSession: false,
     vars: null,
     help: false,
@@ -53,6 +56,8 @@ function parseArgs(args: string[]): CliOptions {
         console.error(`Invalid format: ${format}. Use 'json' or 'keyvalue'.`);
         process.exit(1);
       }
+    } else if (arg.startsWith("--output-dir=")) {
+      options.outputDir = arg.slice("--output-dir=".length);
     } else if (arg.startsWith("--output=")) {
       options.output = arg.slice("--output=".length);
     } else if (arg.startsWith("--vars=")) {
@@ -79,6 +84,7 @@ Usage:
 Options:
   --format=json|keyvalue  Output format (default: json)
   --output=<file>         Write to file instead of stdout
+  --output-dir=<dir>      Write to dir with timestamped filename
   --include-session       Include session info in output
   --vars=<var1,var2,...>  Only include specific variables
   --verbose, -v           Show connection info
@@ -230,14 +236,25 @@ async function main(): Promise<void> {
     result = formatKeyValue(output);
   }
 
-  // Output
-  if (options.output) {
-    const outputPath = resolve(options.output);
-    writeFileSync(outputPath, result, "utf-8");
+  // Resolve output path
+  let outputPath: string | null = null;
 
-    if (options.verbose) {
-      console.error(`Snapshot saved to: ${outputPath}`);
-    }
+  if (options.output) {
+    outputPath = resolve(process.env.INIT_CWD || process.cwd(), options.output);
+  } else if (options.outputDir) {
+    const now = new Date();
+    const pad = (n: number): string => String(n).padStart(2, "0");
+    const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const ext = options.format === "json" ? "json" : "txt";
+    const baseDir = resolve(process.env.INIT_CWD || process.cwd(), options.outputDir);
+    mkdirSync(baseDir, { recursive: true });
+    outputPath = join(baseDir, `telemetry-snapshot-${timestamp}.${ext}`);
+  }
+
+  // Output
+  if (outputPath) {
+    writeFileSync(outputPath, result, "utf-8");
+    console.error(`Snapshot saved to: ${outputPath}`);
   } else {
     console.log(result);
   }
