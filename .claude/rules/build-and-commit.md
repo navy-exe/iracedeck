@@ -26,13 +26,13 @@ pnpm relink:stream-deck    # Unlink + link (useful when switching worktrees)
 
 Branching & Worktrees
 
-All development must happen in a **git worktree** inside `.worktrees/`, never directly in the main working tree on `master`.
+All development must happen in a **git worktree**, never directly in the main working tree on `master`. Worktrees are created as sibling directories of the main working tree (same parent directory), named `ir-<issue>`.
 
 ### Worktree workflow
 
 1. Create a worktree with a new branch:
    ```bash
-   git worktree add .worktrees/<branch-name> -b <branch-name>
+   git worktree add ../ir-<issue> -b <type>/<issue>-<short-description>
    ```
 2. Work inside the worktree directory.
 3. Open a PR, get it reviewed and merged.
@@ -136,7 +136,7 @@ Merging
 After a PR is merged, the related worktree **must** be deleted:
 
 ```bash
-git worktree remove .worktrees/<branch-name>
+git worktree remove ../ir-<issue>
 ```
 
 Confirm deletion by verifying it no longer appears in `git worktree list`.
