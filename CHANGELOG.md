@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.4.0](https://github.com/niklam/iracedeck/compare/v1.3.0...v1.4.0) (2026-03-20)
+
+### Features
+
+* **actions:** add reference car toggle mode to splits-delta-cycle ([4a18402](https://github.com/niklam/iracedeck/commit/4a18402062210766d3f29bf42a253b7576a05ace)), closes [#163](https://github.com/niklam/iracedeck/issues/163)
+* **deck-adapter-elgato:** implement Elgato platform adapter ([c077e69](https://github.com/niklam/iracedeck/commit/c077e69d774dbd75889f4312c07af7a2500e8d6e))
+* **deck-core:** add platform-agnostic interfaces and base classes ([92bdcd5](https://github.com/niklam/iracedeck/commit/92bdcd5b26e1a0d4fa6fac8140386d958fb5b0f2)), closes [#156](https://github.com/niklam/iracedeck/issues/156)
+* **icons:** migrate all SVGs to color template system ([7e5c02f](https://github.com/niklam/iracedeck/commit/7e5c02f876137520621ea75e53db688a663e8566))
+* **stream-deck-plugin:** add color customization foundation ([bf3f692](https://github.com/niklam/iracedeck/commit/bf3f6921934c0109e037b8ce5c17911c20914c7c))
+* **stream-deck-plugin:** add color PI templates ([e4a6c01](https://github.com/niklam/iracedeck/commit/e4a6c0163e23d46f9837d8915b40f243f1ff1103))
+* **stream-deck-plugin:** add global color preset buttons ([5781178](https://github.com/niklam/iracedeck/commit/57811785df5eb06efc9c7a6c1f962255da4dacff))
+* **stream-deck-plugin:** add graphic1Color slot and fix global color pickers ([034f86c](https://github.com/niklam/iracedeck/commit/034f86c12148c76a52a276f6421c428e250e5736))
+* **stream-deck-plugin:** collapse global key bindings by default ([c70b712](https://github.com/niklam/iracedeck/commit/c70b712a17715e82b6297cb854557c99532ed513)), closes [#151](https://github.com/niklam/iracedeck/issues/151)
+* **stream-deck-plugin:** improve Color Overrides preset buttons ([b8ecfdb](https://github.com/niklam/iracedeck/commit/b8ecfdb2eb5505522155f07191112c7cb82bd640)), closes [#000001](https://github.com/niklam/iracedeck/issues/000001) [#152](https://github.com/niklam/iracedeck/issues/152)
+* **stream-deck-plugin:** re-render icons on global color changes ([f19b171](https://github.com/niklam/iracedeck/commit/f19b171ea6a777980380705842fcb62d81bd8da7)), closes [#000000](https://github.com/niklam/iracedeck/issues/000000) [#000000](https://github.com/niklam/iracedeck/issues/000000)
+* **stream-deck-plugin:** wire up color resolution in all actions ([bba6deb](https://github.com/niklam/iracedeck/commit/bba6deb408723e43196ad4ad3391df3de0b704ec))
+
+### Bug Fixes
+
+* **actions:** fix tire compound cycling in tire service action ([9dff62d](https://github.com/niklam/iracedeck/commit/9dff62db273ceea32b0c9eef916b5ed2e0c950eb))
+* **actions:** keep SPLITS DELTA icon label unchanged in cycle mode ([f46d4c3](https://github.com/niklam/iracedeck/commit/f46d4c36820e18318bf35c670b105678d85a365f))
+* **actions:** skip dial rotation in toggle-ref-car mode ([03648bf](https://github.com/niklam/iracedeck/commit/03648bf67e7d9ba758c730e89d5e843c48ae1ff8))
+* **actions:** toggle windshield tearoff and fast repair via PitSvFlags ([c1e1548](https://github.com/niklam/iracedeck/commit/c1e1548586cb345d421f7c57dd58fc558863b764)), closes [#161](https://github.com/niklam/iracedeck/issues/161)
+* address code review findings ([eee72ad](https://github.com/niklam/iracedeck/commit/eee72add4bf8ac47d0c61d740f15f6c4cb55f6b5))
+* **deck-adapter-elgato:** eliminate build warnings ([93b4a4e](https://github.com/niklam/iracedeck/commit/93b4a4e3753e288f9d954447a5e89e35b4e47350))
+* **deck-core:** remove keysender native dependency for CI compatibility ([56f9aff](https://github.com/niklam/iracedeck/commit/56f9aff7d7420ddf5cbbf8b2631a2bfd998d46e4))
+* **icons:** make ignition icon respect graphic1Color override ([5c713f4](https://github.com/niklam/iracedeck/commit/5c713f41583dbfba85f1cf3f325a69d13929fa6a)), closes [#158](https://github.com/niklam/iracedeck/issues/158)
+* **iracing-sdk:** make telemetry-snapshot script cross-platform ([cbb6abe](https://github.com/niklam/iracedeck/commit/cbb6abeabcbc5db2d99ef966c56c590fbde43a98))
+* **iracing-sdk:** preserve leading zeros in car numbers ([caf02c8](https://github.com/niklam/iracedeck/commit/caf02c8207406b1b846a604cf55cb84afb9de8bf)), closes [#147](https://github.com/niklam/iracedeck/issues/147)
+* **stream-deck-plugin:** use CarNumberRaw for camera operations ([5e206e6](https://github.com/niklam/iracedeck/commit/5e206e6edf7b9437d2796004fb0ca29ac76520c4))
+* **stream-deck-plugin:** use display string for race admin chat commands ([696ccb1](https://github.com/niklam/iracedeck/commit/696ccb1b8386fa963f270e2a81a69897a94dd63c))
+* use cmd.exe-compatible syntax in relink:stream-deck script ([2eacb77](https://github.com/niklam/iracedeck/commit/2eacb7708597903d0a135ededbb117e94c733651))
+
+### Refactoring
+
+* **actions:** extract action classes to shared package ([075b55a](https://github.com/niklam/iracedeck/commit/075b55abd996a482bf673e8fbfc7ac23153fc896))
+* **deck-core:** move window-focus to stream-deck-plugin ([aa646a9](https://github.com/niklam/iracedeck/commit/aa646a97de6ea6208c6b2aa4b36067d61aa40d56))
+* **stream-deck-plugin:** move ref car from toggle-ui-elements to splits & reference ([072efc7](https://github.com/niklam/iracedeck/commit/072efc7de206decf3f84ad7f54119c481a3562aa)), closes [#163](https://github.com/niklam/iracedeck/issues/163)
+* **stream-deck-plugin:** use adapter pattern in plugin entry point ([e315b7e](https://github.com/niklam/iracedeck/commit/e315b7ec9cf66b1e539440b934bb4361ddda283d))
+
+### Documentation
+
+* add customizable icon colors design spec ([f5257cf](https://github.com/niklam/iracedeck/commit/f5257cfa705bff00ef3d607834f4e8b3a90a04bf))
+* address CodeRabbit review feedback ([7d0fb47](https://github.com/niklam/iracedeck/commit/7d0fb47755d6c2f7ccba7bd1ba727b360999f690)), closes [#f1c40f](https://github.com/niklam/iracedeck/issues/f1c40f) [#f39c12](https://github.com/niklam/iracedeck/issues/f39c12)
+* fix remaining non-canonical yellow hex in icons.md ([483cd76](https://github.com/niklam/iracedeck/commit/483cd76e9d7f4b6486c67d353b6cb7d6b9ad9fc4))
+* fix review issues in documentation ([dc2bfad](https://github.com/niklam/iracedeck/commit/dc2bfad839f03f396350fbc8238d2fac3fc486dc))
+* fix Toggle UI Elements sub-action count (9 → 8) ([0c9527e](https://github.com/niklam/iracedeck/commit/0c9527e665838c34a6244dafd5dbd44a284a96c4))
+* update documentation for Splits & Reference rename ([33df0d4](https://github.com/niklam/iracedeck/commit/33df0d4b6a8c714c4fef6d0e222a453681150554)), closes [#163](https://github.com/niklam/iracedeck/issues/163)
+* update guidelines and website for customizable icon colors ([a5a6059](https://github.com/niklam/iracedeck/commit/a5a6059aef14535cad7059c8af28a3a18f972265))
+* update rules, guides, and CLAUDE.md for platform abstraction ([4e7bd79](https://github.com/niklam/iracedeck/commit/4e7bd79322d83d69de47eb1c6905c9eaf2da7e4c))
+
+### Maintenance
+
+* add build:ts, build:native, and restart:stream-deck commands ([2f79b30](https://github.com/niklam/iracedeck/commit/2f79b30c32eec80ad0c079d367f72a5c67d857ea))
+* add root telemetry-snapshot script with local/ output ([b4efc74](https://github.com/niklam/iracedeck/commit/b4efc7438adc041d3075095bbe10eeb9d41e1d93))
+* include session info in telemetry-snapshot command ([e890fe0](https://github.com/niklam/iracedeck/commit/e890fe0f04b1674ae25d1cdbc322b24248f69b83))
+* **iracing-sdk:** stop tracking full-snapshot-replay.json ([4c80fd6](https://github.com/niklam/iracedeck/commit/4c80fd68dcda5d3287280a9158a4e44149ff3386))
+* simplify PR checklist and add issue guidelines ([1c5d3ad](https://github.com/niklam/iracedeck/commit/1c5d3adc75d7f1858c73f533088dc9edb0d37980))
+* **stream-deck-plugin:** clean up color overrides template ([c141fc2](https://github.com/niklam/iracedeck/commit/c141fc2a51ccadd5024a37ae685ec0e4d8141844))
+* **stream-deck-plugin:** remove dead subtitle param and unused CSS ([cb924fe](https://github.com/niklam/iracedeck/commit/cb924fe94f6aecc0faec8d3791f4ece6184d8d18))
+* **stream-deck-plugin:** stop tracking generated PI HTML files ([0453a6f](https://github.com/niklam/iracedeck/commit/0453a6f0393493d87b1494af71a5e34397cba6f8)), closes [#150](https://github.com/niklam/iracedeck/issues/150)
+* update lockfile after removing iracing-native from deck-core ([f070415](https://github.com/niklam/iracedeck/commit/f07041599ab5564cfb25f6f600c36f81293d4b41))
+* update worktree convention and unlink script ([dd8e9cf](https://github.com/niklam/iracedeck/commit/dd8e9cf0e2f8a15c8039eb9c32dc2e5104ed6459))
+
 ## [1.3.0](https://github.com/niklam/iracedeck/compare/v1.2.0...v1.3.0) (2026-03-15)
 
 ### Features
