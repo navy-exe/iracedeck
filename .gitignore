@@ -56,6 +56,10 @@ Python/
 # Local scripts
 scripts/local/
 
+# Local data (snapshots, scratch files)
+local/*
+!local/.gitkeep
+
 # Git worktrees (parallel implementation)
 .worktrees/
 
