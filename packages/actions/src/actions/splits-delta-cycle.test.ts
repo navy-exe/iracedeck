@@ -8,6 +8,9 @@ vi.mock("@iracedeck/icons/splits-delta-cycle/next.svg", () => ({
 vi.mock("@iracedeck/icons/splits-delta-cycle/previous.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
 }));
+vi.mock("@iracedeck/icons/toggle-ui-elements/display-ref-car.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg" class="ref-car">{{mainLabel}} {{subLabel}}</svg>',
+}));
 
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
@@ -70,46 +73,72 @@ describe("SplitsDeltaCycle", () => {
     it("should have correct global key name for previous", () => {
       expect(GLOBAL_KEY_NAMES.PREVIOUS).toBe("splitsDeltaPrevious");
     });
+
+    it("should have correct global key name for toggle ref car", () => {
+      expect(GLOBAL_KEY_NAMES.TOGGLE_REF_CAR).toBe("toggleUiDisplayRefCar");
+    });
   });
 
   describe("generateSplitsDeltaCycleSvg", () => {
     it("should generate a valid data URI for next direction", () => {
-      const result = generateSplitsDeltaCycleSvg({ direction: "next" });
+      const result = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "next" });
 
       expect(result).toContain("data:image/svg+xml");
     });
 
     it("should generate a valid data URI for previous direction", () => {
-      const result = generateSplitsDeltaCycleSvg({ direction: "previous" });
+      const result = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "previous" });
 
       expect(result).toContain("data:image/svg+xml");
     });
 
     it("should produce different icons for next and previous", () => {
-      const next = generateSplitsDeltaCycleSvg({ direction: "next" });
-      const previous = generateSplitsDeltaCycleSvg({ direction: "previous" });
+      const next = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "next" });
+      const previous = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "previous" });
 
       expect(next).not.toBe(previous);
     });
 
     it("should include NEXT label for next direction", () => {
-      const result = generateSplitsDeltaCycleSvg({ direction: "next" });
+      const result = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "next" });
 
       expect(decodeURIComponent(result)).toContain("NEXT");
     });
 
     it("should include PREVIOUS label for previous direction", () => {
-      const result = generateSplitsDeltaCycleSvg({ direction: "previous" });
+      const result = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "previous" });
 
       expect(decodeURIComponent(result)).toContain("PREVIOUS");
     });
 
-    it("should include SPLITS DELTA label for both directions", () => {
-      const next = generateSplitsDeltaCycleSvg({ direction: "next" });
-      const previous = generateSplitsDeltaCycleSvg({ direction: "previous" });
+    it("should include SPLITS & REF label for cycle mode", () => {
+      const next = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "next" });
+      const previous = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "previous" });
 
-      expect(decodeURIComponent(next)).toContain("SPLITS DELTA");
-      expect(decodeURIComponent(previous)).toContain("SPLITS DELTA");
+      expect(decodeURIComponent(next)).toContain("SPLITS & REF");
+      expect(decodeURIComponent(previous)).toContain("SPLITS & REF");
+    });
+
+    it("should generate ref car icon for toggle-ref-car mode", () => {
+      const result = generateSplitsDeltaCycleSvg({ mode: "toggle-ref-car", direction: "next" });
+
+      expect(result).toContain("data:image/svg+xml");
+      expect(decodeURIComponent(result)).toContain("ref-car");
+    });
+
+    it("should include REFERENCE and CAR labels for toggle-ref-car mode", () => {
+      const result = generateSplitsDeltaCycleSvg({ mode: "toggle-ref-car", direction: "next" });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("REFERENCE");
+      expect(decoded).toContain("CAR");
+    });
+
+    it("should produce different icons for cycle and toggle-ref-car modes", () => {
+      const cycle = generateSplitsDeltaCycleSvg({ mode: "cycle", direction: "next" });
+      const refCar = generateSplitsDeltaCycleSvg({ mode: "toggle-ref-car", direction: "next" });
+
+      expect(cycle).not.toBe(refCar);
     });
   });
 });
