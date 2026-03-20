@@ -61,8 +61,7 @@ export function getDriverTires(): DriverTire[] {
   try {
     const sessionInfo = getSDK().sdk.getSessionInfo();
     const driverInfo = sessionInfo?.DriverInfo as Record<string, unknown> | undefined;
-    const drivers = driverInfo?.Drivers as Array<Record<string, unknown>> | undefined;
-    const tires = drivers?.[0]?.DriverTires as DriverTire[] | undefined;
+    const tires = driverInfo?.DriverTires as DriverTire[] | undefined;
 
     return tires && tires.length > 0 ? tires : DEFAULT_TIRES;
   } catch {
@@ -438,10 +437,12 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
         const telemetry = this.sdkController.getCurrentTelemetry();
         const { pitSv } = getCompoundState(telemetry);
         const compounds = getDriverTires();
-        const nextIndex = (pitSv + 1) % compounds.length;
+        const currentArrayIdx = compounds.findIndex((t) => t.TireIndex === pitSv);
+        const nextArrayIdx = (currentArrayIdx + 1) % compounds.length;
+        const nextTire = compounds[nextArrayIdx];
 
-        this.logger.debug(`Changing compound from ${getCompoundName(pitSv)} to ${getCompoundName(nextIndex)}`);
-        const success = getCommands().pit.tireCompound(nextIndex);
+        this.logger.debug(`Changing compound from ${getCompoundName(pitSv)} to ${getCompoundName(nextTire.TireIndex)}`);
+        const success = getCommands().pit.tireCompound(nextTire.TireIndex);
 
         if (success) {
           this.logger.info("Tire compound change sent");

@@ -118,13 +118,9 @@ describe("TireService", () => {
     it("should return tires from session info", () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
-          Drivers: [
-            {
-              DriverTires: [
-                { TireIndex: 0, TireCompoundType: "Hard" },
-                { TireIndex: 1, TireCompoundType: "Wet" },
-              ],
-            },
+          DriverTires: [
+            { TireIndex: 0, TireCompoundType: "Hard" },
+            { TireIndex: 1, TireCompoundType: "Wet" },
           ],
         },
       });
@@ -142,14 +138,14 @@ describe("TireService", () => {
     });
 
     it("should return fallback when DriverTires is missing", () => {
-      mockGetSessionInfo.mockReturnValue({ DriverInfo: { Drivers: [{}] } });
+      mockGetSessionInfo.mockReturnValue({ DriverInfo: {} });
 
       expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Dry" }]);
     });
 
     it("should return fallback when DriverTires is empty", () => {
       mockGetSessionInfo.mockReturnValue({
-        DriverInfo: { Drivers: [{ DriverTires: [] }] },
+        DriverInfo: { DriverTires: [] },
       });
 
       expect(getDriverTires()).toEqual([{ TireIndex: 0, TireCompoundType: "Dry" }]);
@@ -191,13 +187,9 @@ describe("TireService", () => {
     it("should return DRY/WET for 2 compounds when one is Wet", () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
-          Drivers: [
-            {
-              DriverTires: [
-                { TireIndex: 0, TireCompoundType: "Hard" },
-                { TireIndex: 1, TireCompoundType: "Wet" },
-              ],
-            },
+          DriverTires: [
+            { TireIndex: 0, TireCompoundType: "Hard" },
+            { TireIndex: 1, TireCompoundType: "Wet" },
           ],
         },
       });
@@ -209,7 +201,7 @@ describe("TireService", () => {
     it("should uppercase single compound name", () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
-          Drivers: [{ DriverTires: [{ TireIndex: 0, TireCompoundType: "Soft" }] }],
+          DriverTires: [{ TireIndex: 0, TireCompoundType: "Soft" }],
         },
       });
 
@@ -219,14 +211,10 @@ describe("TireService", () => {
     it("should use actual names for 3+ compounds", () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
-          Drivers: [
-            {
-              DriverTires: [
-                { TireIndex: 0, TireCompoundType: "Soft" },
-                { TireIndex: 1, TireCompoundType: "Medium" },
-                { TireIndex: 2, TireCompoundType: "Hard" },
-              ],
-            },
+          DriverTires: [
+            { TireIndex: 0, TireCompoundType: "Soft" },
+            { TireIndex: 1, TireCompoundType: "Medium" },
+            { TireIndex: 2, TireCompoundType: "Hard" },
           ],
         },
       });
@@ -376,13 +364,9 @@ describe("TireService", () => {
       beforeEach(() => {
         mockGetSessionInfo.mockReturnValue({
           DriverInfo: {
-            Drivers: [
-              {
-                DriverTires: [
-                  { TireIndex: 0, TireCompoundType: "Hard" },
-                  { TireIndex: 1, TireCompoundType: "Wet" },
-                ],
-              },
+            DriverTires: [
+              { TireIndex: 0, TireCompoundType: "Hard" },
+              { TireIndex: 1, TireCompoundType: "Wet" },
             ],
           },
         });
@@ -512,13 +496,9 @@ describe("TireService", () => {
       it("should cycle from 0 to 1 with 2 compounds", async () => {
         mockGetSessionInfo.mockReturnValue({
           DriverInfo: {
-            Drivers: [
-              {
-                DriverTires: [
-                  { TireIndex: 0, TireCompoundType: "Hard" },
-                  { TireIndex: 1, TireCompoundType: "Wet" },
-                ],
-              },
+            DriverTires: [
+              { TireIndex: 0, TireCompoundType: "Hard" },
+              { TireIndex: 1, TireCompoundType: "Wet" },
             ],
           },
         });
@@ -534,13 +514,9 @@ describe("TireService", () => {
       it("should wrap from 1 to 0 with 2 compounds", async () => {
         mockGetSessionInfo.mockReturnValue({
           DriverInfo: {
-            Drivers: [
-              {
-                DriverTires: [
-                  { TireIndex: 0, TireCompoundType: "Hard" },
-                  { TireIndex: 1, TireCompoundType: "Wet" },
-                ],
-              },
+            DriverTires: [
+              { TireIndex: 0, TireCompoundType: "Hard" },
+              { TireIndex: 1, TireCompoundType: "Wet" },
             ],
           },
         });
@@ -555,14 +531,10 @@ describe("TireService", () => {
       it("should cycle through 3+ compounds", async () => {
         mockGetSessionInfo.mockReturnValue({
           DriverInfo: {
-            Drivers: [
-              {
-                DriverTires: [
-                  { TireIndex: 0, TireCompoundType: "Soft" },
-                  { TireIndex: 1, TireCompoundType: "Medium" },
-                  { TireIndex: 2, TireCompoundType: "Hard" },
-                ],
-              },
+            DriverTires: [
+              { TireIndex: 0, TireCompoundType: "Soft" },
+              { TireIndex: 1, TireCompoundType: "Medium" },
+              { TireIndex: 2, TireCompoundType: "Hard" },
             ],
           },
         });
@@ -577,14 +549,10 @@ describe("TireService", () => {
       it("should wrap around with 3+ compounds", async () => {
         mockGetSessionInfo.mockReturnValue({
           DriverInfo: {
-            Drivers: [
-              {
-                DriverTires: [
-                  { TireIndex: 0, TireCompoundType: "Soft" },
-                  { TireIndex: 1, TireCompoundType: "Medium" },
-                  { TireIndex: 2, TireCompoundType: "Hard" },
-                ],
-              },
+            DriverTires: [
+              { TireIndex: 0, TireCompoundType: "Soft" },
+              { TireIndex: 1, TireCompoundType: "Medium" },
+              { TireIndex: 2, TireCompoundType: "Hard" },
             ],
           },
         });
@@ -603,7 +571,7 @@ describe("TireService", () => {
         await action.onKeyDown(fakeEvent("a1", { action: "change-compound" }) as any);
 
         expect(mockPitTireCompound).toHaveBeenCalledOnce();
-        // Fallback has 1 compound, (0+1) % 1 = 0
+        // Fallback has 1 compound (TireIndex 0), (0+1) % 1 = 0
         expect(mockPitTireCompound).toHaveBeenCalledWith(0);
       });
     });
@@ -666,13 +634,9 @@ describe("TireService", () => {
     it("should cycle compound on dial down for change-compound", async () => {
       mockGetSessionInfo.mockReturnValue({
         DriverInfo: {
-          Drivers: [
-            {
-              DriverTires: [
-                { TireIndex: 0, TireCompoundType: "Hard" },
-                { TireIndex: 1, TireCompoundType: "Wet" },
-              ],
-            },
+          DriverTires: [
+            { TireIndex: 0, TireCompoundType: "Hard" },
+            { TireIndex: 1, TireCompoundType: "Wet" },
           ],
         },
       });
