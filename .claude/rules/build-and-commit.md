@@ -123,6 +123,16 @@ Pull Requests
 - Fill in all sections: Related Issue, What changed?, How to test, and Checklist.
 - Mark checklist items as complete (`[x]`) or incomplete (`[ ]`) as appropriate.
 - Use `N/A` for sections that don't apply (e.g., "Related Issue" for infra work with no issue).
+- Build, test, and lint checks are handled by CI — they are not in the PR checklist.
+
+Issues
+
+When creating issues, always include requirements for updating all affected artifacts beyond the code itself. If the change affects actions, features, or behavior described in any of these, the issue must list them:
+
+- **Website** (`@iracedeck/website`) — action descriptions, feature lists, action counts
+- **Action documentation** (`docs/`) — action docs, keyboard shortcut tables
+- **Skills** (`iracedeck-actions`, `iracing-telemetry`, etc.) — action/mode/sub-action listings
+- **Rules and guidance** (`.claude/rules/`, `CLAUDE.md` files) — conventions, patterns, references
 
 Merging
 

@@ -13,8 +13,5 @@ Fixes #
 ## Checklist
 
 - [ ] Linked to an approved issue
-- [ ] `pnpm build` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm lint:fix` and `pnpm format:fix` run with no remaining issues
 - [ ] New code has unit tests
 - [ ] No unrelated changes included
