@@ -107,7 +107,7 @@ Current dynamic templates: `car-control.svg`, `session-info.svg`, `tire-service.
 - Standalone icons: 144x144 canvas, no rounded corners on background rect.
 - Dynamic templates: 144x144 canvas, no rounded corners.
 - Stroke width: 4–5px main, 2–3px details (144x144 scale).
-- Colors: white `#ffffff`, green `#2ecc71`, red `#e74c3c`, yellow `#f1c40f`, purple `#9b59b6`, gray `#888888`.
+- Colors: white `#ffffff`, green `#2ecc71`, red `#e74c3c`, yellow `#f39c12`, purple `#9b59b6`, gray `#888888`.
 
 ## Text and Variants
 
