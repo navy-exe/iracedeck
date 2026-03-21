@@ -360,9 +360,15 @@ importers:
       '@tsconfig/node22':
         specifier: 22.0.5
         version: 22.0.5
+      '@types/ejs':
+        specifier: 3.1.5
+        version: 3.1.5
       '@types/node':
         specifier: 25.3.5
         version: 25.3.5
+      ejs:
+        specifier: 5.0.1
+        version: 5.0.1
       rimraf:
         specifier: 6.1.3
         version: 6.1.3

@@ -4,3 +4,5 @@ node_modules/
 # Stream Dock files
 *.sdPlugin/bin
 *.sdPlugin/logs
+*.sdPlugin/imgs
+*.sdPlugin/ui
