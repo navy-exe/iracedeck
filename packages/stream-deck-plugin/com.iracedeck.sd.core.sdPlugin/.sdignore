@@ -26,8 +26,8 @@
 **/node_modules/rimraf/
 
 # Source files (already compiled)
-*/node_modules//src/
-*/node_modules/@/*/src/
+**/node_modules/*/src/
+**/node_modules/@*/*/src/
 
 # Dev/build config files
 **/tsconfig.json

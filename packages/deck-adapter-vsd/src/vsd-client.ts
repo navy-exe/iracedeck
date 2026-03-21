@@ -34,7 +34,7 @@ export interface VSDEvent {
 /**
  * Callback type for VSD event handlers.
  */
-export type VSDEventHandler = (data: VSDEvent) => void;
+export type VSDEventHandler = (data: VSDEvent) => void | Promise<void>;
 
 /**
  * Connection parameters for VSD Craft.
@@ -151,14 +151,18 @@ export class VSDClient {
   /**
    * Route an incoming event to the appropriate handler(s).
    */
-  private routeEvent(data: VSDEvent): void {
+  private async routeEvent(data: VSDEvent): Promise<void> {
     const { event, action } = data;
 
     // Route to action-specific handlers
     if (action) {
       for (const reg of this.actionHandlers) {
         if (reg.uuid === action && reg.event === event) {
-          reg.handler(data);
+          try {
+            await reg.handler(data);
+          } catch (error) {
+            this.logger.error(`Error dispatching ${event} for ${action}: ${error}`);
+          }
         }
       }
     }
@@ -168,7 +172,11 @@ export class VSDClient {
 
     if (globalHandlers) {
       for (const handler of globalHandlers) {
-        handler(data);
+        try {
+          await handler(data);
+        } catch (error) {
+          this.logger.error(`Error dispatching global ${event}: ${error}`);
+        }
       }
     }
   }

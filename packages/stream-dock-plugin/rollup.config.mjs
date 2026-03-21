@@ -10,7 +10,6 @@ import { piTemplatePlugin } from "../stream-deck-plugin/src/build/pi-template-pl
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
-const actionsPackagePath = path.resolve(__dirname, "../actions/src");
 const elgatoPluginPath = path.resolve(__dirname, "../stream-deck-plugin");
 
 /**

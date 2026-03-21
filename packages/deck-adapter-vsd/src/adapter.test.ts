@@ -219,9 +219,13 @@ describe("VSDPlatformAdapter", () => {
       expect(handler.onWillDisappear).toHaveBeenCalledOnce();
       const ev = (handler.onWillDisappear as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(ev.action.id).toBe("ctx-gone");
-      // setImage/setTitle should be no-ops (not throw)
+      // setImage/setTitle should be no-ops that don't delegate to VSDClient
+      client.setImage.mockClear();
+      client.setTitle.mockClear();
       await ev.action.setImage("test");
       await ev.action.setTitle("test");
+      expect(client.setImage).not.toHaveBeenCalled();
+      expect(client.setTitle).not.toHaveBeenCalled();
     });
   });
 
@@ -273,9 +277,10 @@ describe("VSDPlatformAdapter", () => {
     });
 
     it("should fire onDialDown callbacks before handler.onDialDown", async () => {
-      const broadcastCb = vi.fn();
+      const callOrder: string[] = [];
+      const broadcastCb = vi.fn(() => callOrder.push("broadcast"));
       const handler: IDeckActionHandler = {
-        onDialDown: vi.fn(),
+        onDialDown: vi.fn(async () => callOrder.push("handler")),
       };
 
       adapter.onDialDown(broadcastCb);
@@ -291,8 +296,7 @@ describe("VSDPlatformAdapter", () => {
         payload: { settings: {} },
       });
 
-      expect(broadcastCb).toHaveBeenCalledOnce();
-      expect(handler.onDialDown).toHaveBeenCalledOnce();
+      expect(callOrder).toEqual(["broadcast", "handler"]);
     });
   });
 
