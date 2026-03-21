@@ -9,6 +9,7 @@
     "postbuild": "cd com.iracedeck.dock.core.sdPlugin/bin && npm install",
     "watch": "rollup -c -w",
     "clean": "rimraf com.iracedeck.dock.core.sdPlugin/bin/plugin.js com.iracedeck.dock.core.sdPlugin/bin/plugin.js.map",
+    "pack:plugin": "streamdeck pack com.iracedeck.dock.core.sdPlugin --force --ignore-validation -o ../../local && mv ../../local/com.iracedeck.dock.core.streamDeckPlugin ../../local/iracedeck-dev.mirabox.sdPlugin",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -27,6 +28,7 @@
     "@rollup/plugin-node-resolve": "16.0.3",
     "@rollup/plugin-terser": "1.0.0",
     "@rollup/plugin-typescript": "12.3.0",
+    "@elgato/cli": "1.7.1",
     "@types/ejs": "3.1.5",
     "@tsconfig/node22": "22.0.5",
     "@types/node": "25.3.5",

@@ -33,17 +33,18 @@ jobs:
       - name: Pack Stream Dock plugin
         run: |
           $version = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}".TrimStart("v") } else { "dev" }
-          Compress-Archive -Path "packages/stream-dock-plugin/com.iracedeck.dock.core.sdPlugin/*" -DestinationPath "iracedeck-dock-v${version}.zip"
+          npx @elgato/cli@latest pack packages/stream-dock-plugin/com.iracedeck.dock.core.sdPlugin --force --ignore-validation
+          Rename-Item "com.iracedeck.dock.core.streamDeckPlugin" "iracedeck-dock-v${version}.streamDeckPlugin"
         shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: streamdock-plugin
-          path: iracedeck-dock-v*.zip
+          path: iracedeck-dock-v*.streamDeckPlugin
 
       - name: Attach plugin to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: iracedeck-dock-v*.zip
+          files: iracedeck-dock-v*.streamDeckPlugin
