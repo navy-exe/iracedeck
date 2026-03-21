@@ -12,10 +12,16 @@ const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1"
 
 // Bump version in all packages/*/package.json
 const packageJsonPaths = [
-  "packages/logger/package.json",
+  "packages/actions/package.json",
+  "packages/deck-adapter-elgato/package.json",
+  "packages/deck-adapter-vsd/package.json",
+  "packages/deck-core/package.json",
+  "packages/icons/package.json",
   "packages/iracing-native/package.json",
   "packages/iracing-sdk/package.json",
+  "packages/logger/package.json",
   "packages/stream-deck-plugin/package.json",
+  "packages/stream-dock-plugin/package.json",
   "packages/website/package.json",
 ];
 
@@ -27,19 +33,20 @@ for (const rel of packageJsonPaths) {
   console.log(`  Updated ${rel} → ${version}`);
 }
 
-// Bump Version in Stream Deck manifest.json (4-part format: x.y.z.0)
-const manifestPath = join(
-  root,
+// Bump Version in manifest.json files (4-part format: x.y.z.0)
+const manifestPaths = [
   "packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json",
-);
-const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-manifest.Version = `${version}.0`;
-writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
-console.log(`  Updated manifest.json → ${version}.0`);
+  "packages/stream-dock-plugin/com.iracedeck.dock.core.sdPlugin/manifest.json",
+];
+
+for (const rel of manifestPaths) {
+  const filePath = join(root, rel);
+  const manifest = JSON.parse(readFileSync(filePath, "utf-8"));
+  manifest.Version = `${version}.0`;
+  writeFileSync(filePath, JSON.stringify(manifest, null, 2) + "\n");
+  console.log(`  Updated ${rel} → ${version}.0`);
+}
 
 // Stage all modified files
-const allPaths = [
-  ...packageJsonPaths,
-  "packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json",
-];
+const allPaths = [...packageJsonPaths, ...manifestPaths];
 execSync(`git add ${allPaths.join(" ")}`, { cwd: root, stdio: "inherit" });
