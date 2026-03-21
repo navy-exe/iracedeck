@@ -1,6 +1,6 @@
 {
   "name": "@iracedeck/stream-dock-plugin",
-  "version": "0.1.0",
+  "version": "1.5.0",
   "description": "VSDinside Stream Dock plugin for iRacing - Core driving and interface controls",
   "type": "module",
   "packageManager": "pnpm@10.0.0",

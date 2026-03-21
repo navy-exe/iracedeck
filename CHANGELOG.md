@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.5.0](https://github.com/niklam/iracedeck/compare/v1.4.0...v1.5.0) (2026-03-21)
+
+### Features
+
+* **deck-adapter-vsd:** implement VSDPlatformAdapter ([65e2dbe](https://github.com/niklam/iracedeck/commit/65e2dbe330e450d2befd73122326322a2829d7bf)), closes [#154](https://github.com/niklam/iracedeck/issues/154)
+* **stream-dock-plugin:** add packaging and CI workflow ([db2e2a5](https://github.com/niklam/iracedeck/commit/db2e2a5eb6051a41b99541e55f67c48a8bf8ebbd))
+* **stream-dock-plugin:** add PI templates, icons, and asset pipeline ([00be266](https://github.com/niklam/iracedeck/commit/00be266176fa0a81bbea09a9eab02c4c0cf53004))
+* **stream-dock-plugin:** add VSDinside Stream Dock plugin ([d5c21c6](https://github.com/niklam/iracedeck/commit/d5c21c6bd73c09878144cb53745d63a364ca6fd9)), closes [#154](https://github.com/niklam/iracedeck/issues/154)
+
+### Bug Fixes
+
+* address CodeRabbit review findings ([1e2824d](https://github.com/niklam/iracedeck/commit/1e2824db3e80fcbb030b7b08c57b73b073e05217))
+* **deck-adapter-vsd:** address code review issues ([787d406](https://github.com/niklam/iracedeck/commit/787d406598e4273cf8f7cd8b8de1641a352482cc))
+* **stream-dock-plugin:** rename Encoder to Knob in manifest config blocks ([5d2aac0](https://github.com/niklam/iracedeck/commit/5d2aac0b225b8b601399141032938949b3651845))
+* **stream-dock-plugin:** rename sdPlugin folder to match UUID ([0b3bcae](https://github.com/niklam/iracedeck/commit/0b3bcaec18c1dd274a290eaf3ddc7f6bc7125bd6))
+* **stream-dock-plugin:** set SDKVersion to 2 in VSD manifest ([5151517](https://github.com/niklam/iracedeck/commit/5151517320c640ed50237d4c691a4aee103ac31b))
+* **stream-dock-plugin:** use com.iracedeck.sd.core as plugin UUID ([c219e12](https://github.com/niklam/iracedeck/commit/c219e12bd8ac5600a4748a86a40aa0041d620f77))
+
+### CI/CD
+
+* add release workflow for Stream Dock plugin ([d4d2bca](https://github.com/niklam/iracedeck/commit/d4d2bca0587d219d3a9903a018f2662b65bf6e5b))
+* rename Stream Dock latest file to com.iracedeck.sd.core.sdPlugin ([587cd4d](https://github.com/niklam/iracedeck/commit/587cd4d73a9f2c0f6b98f2f1f527f9e886daff64))
+* standardize release filenames and add latest copies ([083e9cd](https://github.com/niklam/iracedeck/commit/083e9cd1a079769880588259f04f2afd4f7abdda))
+* use com.iracedeck.sd.core.v{version}.sdPlugin for versioned builds ([5866730](https://github.com/niklam/iracedeck/commit/5866730cf0d17b68145af6e63f5f2a78ed07336a))
+
+### Maintenance
+
+* add all packages to release version bump script ([fffbcb9](https://github.com/niklam/iracedeck/commit/fffbcb90df87f5994d6395561db0ad6491ef6e9c))
+* update lockfile and fix window-focus comment ([76f357f](https://github.com/niklam/iracedeck/commit/76f357fec224ee341ccef422d107e582de6161d5))
+* update lockfile for @elgato/cli in stream-dock-plugin ([9b18b3a](https://github.com/niklam/iracedeck/commit/9b18b3a7eb69aba09bfddb6c1ff1eb015c1008ee))
+
 ## [1.4.0](https://github.com/niklam/iracedeck/compare/v1.3.0...v1.4.0) (2026-03-20)
 
 ### Features
