@@ -34,22 +34,18 @@ jobs:
         run: |
           $version = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}".TrimStart("v") } else { "dev" }
           npx @elgato/cli@latest pack packages/stream-dock-plugin/com.iracedeck.sd.core.sdPlugin --force --ignore-validation
-          Rename-Item "com.iracedeck.sd.core.streamDeckPlugin" "iracedeck-mirabox-v${version}.sdPlugin"
-          Copy-Item "iracedeck-mirabox-v${version}.sdPlugin" "com.iracedeck.sd.core.sdPlugin"
+          Rename-Item "com.iracedeck.sd.core.streamDeckPlugin" "com.iracedeck.sd.core.v${version}.sdPlugin"
+          Copy-Item "com.iracedeck.sd.core.v${version}.sdPlugin" "com.iracedeck.sd.core.sdPlugin"
         shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: streamdock-plugin
-          path: |
-            iracedeck-mirabox-*.sdPlugin
-            com.iracedeck.sd.core.sdPlugin
+          path: com.iracedeck.sd.core*.sdPlugin
 
       - name: Attach plugin to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            iracedeck-mirabox-*.sdPlugin
-            com.iracedeck.sd.core.sdPlugin
+          files: com.iracedeck.sd.core*.sdPlugin
