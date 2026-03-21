@@ -109,5 +109,5 @@ export {
 // Re-export from deck-adapter-elgato
 export { createSDLogger, type SDLoggerLike } from "@iracedeck/deck-adapter-elgato";
 
-// Window focus service (Elgato-specific, depends on @iracedeck/iracing-native)
+// Window focus service (depends on @iracedeck/iracing-native)
 export { initWindowFocus, focusIRacingIfEnabled } from "./window-focus.js";

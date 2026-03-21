@@ -1,0 +1,199 @@
+import commonjs from "@rollup/plugin-commonjs";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
+import typescript from "@rollup/plugin-typescript";
+import path from "node:path";
+import url from "node:url";
+import process from "node:process";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { piTemplatePlugin } from "../stream-deck-plugin/src/build/pi-template-plugin.mjs";
+
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const iconsPackagePath = path.resolve(__dirname, "../icons");
+const elgatoPluginPath = path.resolve(__dirname, "../stream-deck-plugin");
+
+/**
+ * Rollup plugin to import SVG files as strings.
+ * Handles both relative imports and @iracedeck/icons/ package imports.
+ */
+function svgPlugin() {
+	return {
+		name: "svg",
+		resolveId(source, importer) {
+			if (source.endsWith(".svg")) {
+				if (source.startsWith("@iracedeck/icons/")) {
+					const relativePath = source.replace("@iracedeck/icons/", "");
+					return path.join(iconsPackagePath, relativePath);
+				}
+				if (importer) {
+					return path.resolve(path.dirname(importer), source);
+				}
+			}
+		},
+		load(id) {
+			if (id.endsWith(".svg")) {
+				const content = readFileSync(id, "utf-8");
+				return `export default ${JSON.stringify(content)};`;
+			}
+		}
+	};
+}
+
+/**
+ * Rollup plugin to copy static assets from the Elgato plugin.
+ * Copies imgs/ directory and PI JS files (sdpi-components.js, pi-components.js).
+ */
+function copyAssetsPlugin(sdPlugin) {
+	return {
+		name: "copy-assets",
+		generateBundle() {
+			const elgatoSdPlugin = path.join(elgatoPluginPath, "com.iracedeck.sd.core.sdPlugin");
+
+			// Copy imgs/ directory
+			const srcImgs = path.join(elgatoSdPlugin, "imgs");
+			const destImgs = path.join(sdPlugin, "imgs");
+			if (existsSync(srcImgs)) {
+				cpSync(srcImgs, destImgs, { recursive: true });
+				this.info?.("Copied imgs/ from stream-deck-plugin");
+			}
+
+			// Copy PI JS files
+			const uiDir = path.join(sdPlugin, "ui");
+			if (!existsSync(uiDir)) {
+				mkdirSync(uiDir, { recursive: true });
+			}
+			for (const jsFile of ["sdpi-components.js", "pi-components.js"]) {
+				const src = path.join(elgatoSdPlugin, "ui", jsFile);
+				if (existsSync(src)) {
+					copyFileSync(src, path.join(uiDir, jsFile));
+				}
+			}
+			this.info?.("Copied PI JS files from stream-deck-plugin");
+		},
+	};
+}
+
+/**
+ * Rollup plugin to strip lang="en" from generated HTML files.
+ * VSD Craft requires <html> without a lang attribute.
+ */
+function stripHtmlLangPlugin(outputDir) {
+	return {
+		name: "strip-html-lang",
+		writeBundle() {
+			if (!existsSync(outputDir)) return;
+
+			const htmlFiles = readdirSync(outputDir).filter(f => f.endsWith(".html"));
+			for (const file of htmlFiles) {
+				const filePath = path.join(outputDir, file);
+				const content = readFileSync(filePath, "utf-8");
+				const updated = content.replace(/<html\s+lang="[^"]*"/, "<html");
+				if (updated !== content) {
+					writeFileSync(filePath, updated, "utf-8");
+				}
+			}
+		},
+	};
+}
+
+const isWatching = !!process.env.ROLLUP_WATCH;
+const sdPlugin = "com.iracedeck.dock.core.sdPlugin";
+
+/**
+ * @type {import('rollup').RollupOptions}
+ */
+const config = {
+	input: "src/plugin.ts",
+	output: {
+		file: `${sdPlugin}/bin/plugin.js`,
+		sourcemap: isWatching,
+		sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+			return url.pathToFileURL(path.resolve(path.dirname(sourcemapPath), relativeSourcePath)).href;
+		},
+		inlineDynamicImports: true
+	},
+	external: ["@iracedeck/iracing-native", "yaml", "keysender", "ws"],
+	plugins: [
+		// Resolve .js imports to .ts files for the raw-TypeScript actions package.
+		// Only applies to relative imports (starting with ".") within the actions package.
+		{
+			name: "resolve-actions-ts",
+			resolveId(source, importer) {
+				if (!importer || !source.startsWith(".") || !source.endsWith(".js")) return null;
+				// Only handle imports from the actions package
+				const normalizedImporter = importer.replace(/\\/g, "/");
+				if (!normalizedImporter.includes("/actions/src/")) return null;
+				const tsPath = path.resolve(path.dirname(importer), source.replace(/\.js$/, ".ts"));
+				return tsPath;
+			},
+		},
+		svgPlugin(),
+		// Compile PI templates from the Elgato plugin's source (shared templates)
+		piTemplatePlugin({
+			templatesDir: path.join(elgatoPluginPath, "src/pi"),
+			outputDir: `${sdPlugin}/ui`,
+			partialsDir: path.join(elgatoPluginPath, "src/pi-templates/partials"),
+		}),
+		// Copy static assets (imgs/, JS files) from the Elgato plugin
+		copyAssetsPlugin(sdPlugin),
+		{
+			name: "watch-externals",
+			buildStart: function () {
+				this.addWatchFile(`${sdPlugin}/manifest.json`);
+				// Recursively watch SVG files in a directory
+				const watchSvgsRecursive = (dir) => {
+					try {
+						for (const entry of readdirSync(dir, { withFileTypes: true })) {
+							const fullPath = path.join(dir, entry.name);
+							if (entry.isDirectory()) watchSvgsRecursive(fullPath);
+							else if (entry.name.endsWith(".svg")) this.addWatchFile(fullPath);
+						}
+					} catch {
+						// directory may not exist
+					}
+				};
+				// Watch local icons directory and shared icons package
+				watchSvgsRecursive(path.resolve("icons"));
+				watchSvgsRecursive(iconsPackagePath);
+			},
+		},
+		typescript({
+			mapRoot: isWatching ? "./" : undefined,
+			// Include both the plugin source and the raw-TypeScript actions package
+			include: ["src/**/*.ts", "../actions/src/**/*.ts"],
+		}),
+		nodeResolve({
+			browser: false,
+			exportConditions: ["node"],
+			preferBuiltins: true
+		}),
+		commonjs({
+			ignore: (id) => {
+				// Exclude .node native modules from bundling
+				return id.endsWith(".node");
+			},
+		}),
+		// Strip lang="en" from generated HTML (VSD Craft requirement)
+		stripHtmlLangPlugin(`${sdPlugin}/ui`),
+		!isWatching && terser(),
+		{
+			name: "emit-module-package-file",
+			generateBundle() {
+				const pkg = {
+					type: "module",
+					dependencies: {
+						"@iracedeck/iracing-native": "file:../../../iracing-native",
+						ws: "8.18.2",
+						yaml: "2.8.2",
+					},
+					optionalDependencies: {
+						"keysender": "2.4.0",
+					}
+				};
+				this.emitFile({ fileName: "package.json", source: JSON.stringify(pkg, null, 2), type: "asset" });
+			},
+		},
+	],
+};
+
+export default config;
