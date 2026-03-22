@@ -127,6 +127,7 @@ Pull Requests
 - Mark checklist items as complete (`[x]`) or incomplete (`[ ]`) as appropriate.
 - Use `N/A` for sections that don't apply (e.g., "Related Issue" for infra work with no issue).
 - Build, test, and lint checks are handled by CI — they are not in the PR checklist.
+- **Before creating a PR**, run the code-review agent (via the `code-review` skill or `code-reviewer` agent) to review all changes on the branch. Address any issues found before opening the PR.
 
 Issues
 
