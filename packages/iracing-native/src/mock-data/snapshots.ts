@@ -115,6 +115,10 @@ export const SNAPSHOT_MID_STRAIGHT: MockSnapshotValues = {
   // Display
   DisplayUnits: 1, // Metric
 
+  // Driver Controls
+  dcPushToPass: false,
+  dcDRSToggle: false,
+
   // Environment
   AirTemp: 25.56,
   TrackTempCrew: 32.22,

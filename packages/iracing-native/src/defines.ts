@@ -687,6 +687,10 @@ export interface TelemetryData {
   CpuUsageFG?: number;
   CpuUsageBG?: number;
   GpuUsage?: number;
+
+  // Driver Controls (dc* — read-only telemetry state of in-car toggles)
+  dcPushToPass?: boolean;
+  dcDRSToggle?: boolean;
 }
 
 /**
