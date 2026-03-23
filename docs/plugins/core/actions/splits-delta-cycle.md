@@ -1,6 +1,6 @@
 # Splits & Reference
 
-Manages splits delta display cycling and reference car toggling.
+Manages splits delta display cycling, reference car toggling, custom sector markers, and active reset controls.
 
 ## Properties
 
@@ -14,11 +14,12 @@ Manages splits delta display cycling and reference car toggling.
 ## Behavior
 
 ### Button Press
-Triggers the action configured in Settings (cycle delta mode or toggle reference car).
+Triggers the action configured in Settings.
 
-### Encoder (Cycle mode only)
-- **Rotate clockwise**: Next splits delta display
-- **Rotate counter-clockwise**: Previous splits delta display
+### Encoder
+- **Rotate clockwise**: Next splits delta display (Cycle mode only)
+- **Rotate counter-clockwise**: Previous splits delta display (Cycle mode only)
+- **Press**: Triggers the configured action (all modes except Cycle)
 
 ## Settings
 

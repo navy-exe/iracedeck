@@ -1,13 +1,13 @@
 ---
 title: Splits & Reference
-description: Cycle through iRacing's splits delta display modes or toggle the reference car
+description: Cycle splits delta modes, toggle reference car, mark custom sectors, and use active reset
 sidebar:
   badge:
     text: "6 modes"
     variant: tip
 ---
 
-The Splits & Reference action lets you switch between iRacing's different splits delta display modes or toggle the reference car display. Quickly find the delta comparison that's most useful for your current session, or show/hide the reference car you're comparing against.
+The Splits & Reference action lets you switch between iRacing's different splits delta display modes, toggle the reference car display, mark custom sector start and end points, and use active reset to practice specific track sections.
 
 ## Modes
 
@@ -22,7 +22,7 @@ The Splits & Reference action lets you switch between iRacing's different splits
 
 ## Encoder Support
 
-Yes — in Cycle mode, rotation cycles through delta modes (clockwise for next, counter-clockwise for previous).
+Yes — in Cycle mode, rotation cycles through delta modes (clockwise for next, counter-clockwise for previous). In all other modes, pressing the encoder triggers the configured action.
 
 ## Notes
 
