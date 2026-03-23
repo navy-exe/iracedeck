@@ -64,6 +64,7 @@
 				<option value="switch-by-position">Switch by Position</option>
 				<option value="switch-by-car-number">Switch by Car Number</option>
 				<option value="set-camera-state">Set Camera State</option>
+				<option value="change-camera">Change Camera</option>
 			</sdpi-select>
 		</sdpi-item>
 
@@ -93,6 +94,31 @@
 
 		<sdpi-item label="Camera State" id="camera-state-item" class="hidden">
 			<sdpi-textfield setting="cameraState" placeholder="0" type="number"></sdpi-textfield>
+		</sdpi-item>
+
+		<sdpi-item label="Camera Group" id="camera-group-item" class="hidden">
+			<sdpi-select setting="cameraGroup" default="9">
+				<option value="1">Nose</option>
+				<option value="2">Gearbox</option>
+				<option value="3">Roll Bar</option>
+				<option value="4">LF Susp</option>
+				<option value="5">LR Susp</option>
+				<option value="6">Gyro</option>
+				<option value="7">RF Susp</option>
+				<option value="8">RR Susp</option>
+				<option value="9">Cockpit</option>
+				<option value="10">Blimp</option>
+				<option value="11">Chopper</option>
+				<option value="12">Chase</option>
+				<option value="13">Far Chase</option>
+				<option value="14">Rear Chase</option>
+				<option value="15">Pit Lane</option>
+				<option value="16">Pit Lane 2</option>
+				<option value="17">TV1</option>
+				<option value="18">TV2</option>
+				<option value="19">TV3</option>
+				<option value="20">Scenic</option>
+			</sdpi-select>
 		</sdpi-item>
 
 		<%- include('common-settings') %>
@@ -229,6 +255,10 @@
 					}
 					if (cameraStateItem) {
 						cameraStateItem.classList.toggle("hidden", target !== "set-camera-state");
+					}
+					var cameraGroupItem = document.getElementById("camera-group-item");
+					if (cameraGroupItem) {
+						cameraGroupItem.classList.toggle("hidden", target !== "change-camera");
 					}
 				}
 
