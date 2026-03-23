@@ -20,6 +20,10 @@ import {
   resolveIconColors,
   svgToDataUri,
 } from "@iracedeck/deck-core";
+import activeResetRunIconSvg from "@iracedeck/icons/splits-delta-cycle/active-reset-run.svg";
+import activeResetSetIconSvg from "@iracedeck/icons/splits-delta-cycle/active-reset-set.svg";
+import customSectorEndIconSvg from "@iracedeck/icons/splits-delta-cycle/custom-sector-end.svg";
+import customSectorStartIconSvg from "@iracedeck/icons/splits-delta-cycle/custom-sector-start.svg";
 import nextIconSvg from "@iracedeck/icons/splits-delta-cycle/next.svg";
 import previousIconSvg from "@iracedeck/icons/splits-delta-cycle/previous.svg";
 import displayRefCarIconSvg from "@iracedeck/icons/toggle-ui-elements/display-ref-car.svg";
@@ -30,8 +34,24 @@ const DIRECTION_ICONS: Record<string, string> = {
   previous: previousIconSvg,
 };
 
+const MODE_ICONS: Record<string, { svg: string; mainLabel: string; subLabel: string }> = {
+  "custom-sector-start": { svg: customSectorStartIconSvg, mainLabel: "START", subLabel: "SECTOR" },
+  "custom-sector-end": { svg: customSectorEndIconSvg, mainLabel: "END", subLabel: "SECTOR" },
+  "active-reset-set": { svg: activeResetSetIconSvg, mainLabel: "SET", subLabel: "RESET POINT" },
+  "active-reset-run": { svg: activeResetRunIconSvg, mainLabel: "RESET", subLabel: "TO START" },
+};
+
 const SplitsDeltaCycleSettings = CommonSettings.extend({
-  mode: z.enum(["cycle", "toggle-ref-car"]).default("cycle"),
+  mode: z
+    .enum([
+      "cycle",
+      "toggle-ref-car",
+      "custom-sector-start",
+      "custom-sector-end",
+      "active-reset-set",
+      "active-reset-run",
+    ])
+    .default("cycle"),
   direction: z.enum(["next", "previous"]).default("next"),
 });
 
@@ -44,6 +64,10 @@ export const GLOBAL_KEY_NAMES = {
   NEXT: "splitsDeltaNext",
   PREVIOUS: "splitsDeltaPrevious",
   TOGGLE_REF_CAR: "toggleUiDisplayRefCar",
+  CUSTOM_SECTOR_START: "splitsDeltaCustomSectorStart",
+  CUSTOM_SECTOR_END: "splitsDeltaCustomSectorEnd",
+  ACTIVE_RESET_SET: "splitsDeltaActiveResetSet",
+  ACTIVE_RESET_RUN: "splitsDeltaActiveResetRun",
 } as const;
 
 /**
@@ -57,6 +81,19 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
     const svg = renderIconTemplate(displayRefCarIconSvg, {
       mainLabel: "REFERENCE",
       subLabel: "CAR",
+      ...colors,
+    });
+
+    return svgToDataUri(svg);
+  }
+
+  const modeIcon = MODE_ICONS[mode];
+
+  if (modeIcon) {
+    const colors = resolveIconColors(modeIcon.svg, getGlobalColors(), settings.colorOverrides);
+    const svg = renderIconTemplate(modeIcon.svg, {
+      mainLabel: modeIcon.mainLabel,
+      subLabel: modeIcon.subLabel,
       ...colors,
     });
 
