@@ -436,7 +436,8 @@
             { "value": "focus-on-exiting", "label": "Focus on Exiting" },
             { "value": "switch-by-position", "label": "Switch by Position" },
             { "value": "switch-by-car-number", "label": "Switch by Car Number" },
-            { "value": "set-camera-state", "label": "Set Camera State" }
+            { "value": "set-camera-state", "label": "Set Camera State" },
+            { "value": "change-camera", "label": "Change Camera" }
           ]
         }
       ]
