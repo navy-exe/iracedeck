@@ -52,7 +52,8 @@
 	</head>
 	<body>
 		<sdpi-item label="Target">
-			<sdpi-select id="target-select" setting="target" default="focus-your-car">
+			<sdpi-select id="target-select" setting="target" default="change-camera">
+				<option value="change-camera">Change Camera</option>
 				<option value="cycle-camera">Cycle Camera</option>
 				<option value="cycle-sub-camera">Cycle Sub-Camera</option>
 				<option value="cycle-car">Cycle Car</option>
@@ -93,6 +94,31 @@
 
 		<sdpi-item label="Camera State" id="camera-state-item" class="hidden">
 			<sdpi-textfield setting="cameraState" placeholder="0" type="number"></sdpi-textfield>
+		</sdpi-item>
+
+		<sdpi-item label="Camera Group" id="camera-group-item" class="hidden">
+			<sdpi-select setting="cameraGroup" default="9">
+				<option value="1">Nose</option>
+				<option value="2">Gearbox</option>
+				<option value="3">Roll Bar</option>
+				<option value="4">LF Susp</option>
+				<option value="5">LR Susp</option>
+				<option value="6">Gyro</option>
+				<option value="7">RF Susp</option>
+				<option value="8">RR Susp</option>
+				<option value="9">Cockpit</option>
+				<option value="10">Blimp</option>
+				<option value="11">Chopper</option>
+				<option value="12">Chase</option>
+				<option value="13">Far Chase</option>
+				<option value="14">Rear Chase</option>
+				<option value="15">Pit Lane</option>
+				<option value="16">Pit Lane 2</option>
+				<option value="17">TV1</option>
+				<option value="18">TV2</option>
+				<option value="19">TV3</option>
+				<option value="20">Scenic</option>
+			</sdpi-select>
 		</sdpi-item>
 
 		<%- include('common-settings') %>
@@ -230,6 +256,10 @@
 					if (cameraStateItem) {
 						cameraStateItem.classList.toggle("hidden", target !== "set-camera-state");
 					}
+					var cameraGroupItem = document.getElementById("camera-group-item");
+					if (cameraGroupItem) {
+						cameraGroupItem.classList.toggle("hidden", target !== "change-camera");
+					}
 				}
 
 				async function initializePI() {
@@ -268,17 +298,17 @@
 					// Target visibility
 					var targetSelect = document.getElementById("target-select");
 					if (targetSelect) {
-						var initialValue = targetSelect.value || "focus-your-car";
+						var initialValue = targetSelect.value || "change-camera";
 						updateVisibility(initialValue);
 
 						targetSelect.addEventListener("change", function (ev) {
-							updateVisibility(ev.target.value || "focus-your-car");
+							updateVisibility(ev.target.value || "change-camera");
 						});
 						targetSelect.addEventListener("input", function (ev) {
-							updateVisibility(ev.target.value || "focus-your-car");
+							updateVisibility(ev.target.value || "change-camera");
 						});
 
-						var lastTarget = targetSelect.value || "focus-your-car";
+						var lastTarget = targetSelect.value || "change-camera";
 						setInterval(function () {
 							var currentTarget = targetSelect.value;
 							if (currentTarget && currentTarget !== lastTarget) {
