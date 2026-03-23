@@ -70,6 +70,14 @@ export const GLOBAL_KEY_NAMES = {
   ACTIVE_RESET_RUN: "splitsDeltaActiveResetRun",
 } as const;
 
+const MODE_KEY_MAP: Record<string, string> = {
+  "custom-sector-start": GLOBAL_KEY_NAMES.CUSTOM_SECTOR_START,
+  "custom-sector-end": GLOBAL_KEY_NAMES.CUSTOM_SECTOR_END,
+  "active-reset-set": GLOBAL_KEY_NAMES.ACTIVE_RESET_SET,
+  "active-reset-run": GLOBAL_KEY_NAMES.ACTIVE_RESET_RUN,
+  "toggle-ref-car": GLOBAL_KEY_NAMES.TOGGLE_REF_CAR,
+};
+
 /**
  * @internal Exported for testing
  */
@@ -150,11 +158,8 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
 
     const settingKey =
-      settings.mode === "toggle-ref-car"
-        ? GLOBAL_KEY_NAMES.TOGGLE_REF_CAR
-        : settings.direction === "next"
-          ? GLOBAL_KEY_NAMES.NEXT
-          : GLOBAL_KEY_NAMES.PREVIOUS;
+      MODE_KEY_MAP[settings.mode] ??
+      (settings.direction === "next" ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS);
 
     const globalSettings = getGlobalSettings() as Record<string, unknown>;
     const binding = parseKeyBinding(globalSettings[settingKey]);
@@ -174,13 +179,15 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
     const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
 
-    if (settings.mode !== "toggle-ref-car") return;
+    const settingKey = MODE_KEY_MAP[settings.mode];
+
+    if (!settingKey) return;
 
     const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[GLOBAL_KEY_NAMES.TOGGLE_REF_CAR]);
+    const binding = parseKeyBinding(globalSettings[settingKey]);
 
     if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${GLOBAL_KEY_NAMES.TOGGLE_REF_CAR}`);
+      this.logger.warn(`No key binding configured for ${settingKey}`);
 
       return;
     }
