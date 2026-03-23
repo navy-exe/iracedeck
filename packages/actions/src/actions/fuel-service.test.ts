@@ -15,6 +15,7 @@ const {
   mockSendKeyCombination,
   mockParseKeyBinding,
   mockGetGlobalSettings,
+  mockTap,
 } = vi.hoisted(() => ({
   mockPitClearFuel: vi.fn(() => true),
   mockSendMessage: vi.fn(() => true),
@@ -29,6 +30,7 @@ const {
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/fuel-service/add-fuel.svg", () => ({
@@ -87,6 +89,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   getCommands: mockGetCommands,
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
     pressKeyCombination: vi.fn().mockResolvedValue(true),
@@ -346,30 +349,30 @@ describe("FuelService", () => {
       });
     });
 
-    it("should call sendKeyCombination for toggle-autofuel", async () => {
+    it("should call tapGlobalBinding for toggle-autofuel", async () => {
       await action.onKeyDown(fakeEvent("action-1", { mode: "toggle-autofuel" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceToggleAutofuel");
     });
 
-    it("should call sendKeyCombination for lap-margin-increase", async () => {
+    it("should call tapGlobalBinding for lap-margin-increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { mode: "lap-margin-increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceLapMarginIncrease");
     });
 
-    it("should call sendKeyCombination for lap-margin-decrease", async () => {
+    it("should call tapGlobalBinding for lap-margin-decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { mode: "lap-margin-decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceLapMarginDecrease");
     });
 
-    it("should warn when no key binding is configured", async () => {
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       mockParseKeyBinding.mockReturnValue(null);
 
       await action.onKeyDown(fakeEvent("action-1", { mode: "toggle-autofuel" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceToggleAutofuel");
     });
 
     it("should not call SDK or macro commands for keyboard modes", async () => {
@@ -401,7 +404,7 @@ describe("FuelService", () => {
     it("should trigger same action as keyDown on dialDown for keyboard modes", async () => {
       await action.onDialDown(fakeEvent("action-1", { mode: "toggle-autofuel" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceToggleAutofuel");
     });
 
     it("should send add-fuel macro on clockwise rotation for add-fuel", async () => {
@@ -421,13 +424,13 @@ describe("FuelService", () => {
     it("should trigger lap-margin-increase on clockwise rotation for lap-margin-increase mode", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { mode: "lap-margin-increase" }, 1) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceLapMarginIncrease");
     });
 
     it("should trigger lap-margin-decrease on counter-clockwise rotation for lap-margin-increase mode", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { mode: "lap-margin-increase" }, -1) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("fuelServiceLapMarginDecrease");
     });
 
     it("should ignore rotation for non-rotatable modes", async () => {
@@ -435,20 +438,20 @@ describe("FuelService", () => {
 
       expect(mockSendMessage).not.toHaveBeenCalled();
       expect(mockPitClearFuel).not.toHaveBeenCalled();
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for set-fuel-amount", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { mode: "set-fuel-amount" }, -1) as any);
 
       expect(mockSendMessage).not.toHaveBeenCalled();
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for toggle-autofuel", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { mode: "toggle-autofuel" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
   });
 });

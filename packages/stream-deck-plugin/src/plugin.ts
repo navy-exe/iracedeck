@@ -69,6 +69,7 @@ import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
 import {
   initAppMonitor,
   initGlobalSettings,
+  initializeBindingDispatcher,
   initializeKeyboard,
   initializeSDK,
   initializeSimHub,
@@ -97,6 +98,9 @@ initializeKeyboard(
 
 // Initialize SimHub Control Mapper service for optional SimHub role triggering
 initializeSimHub(adapter.createLogger("SimHub"));
+
+// Initialize binding dispatcher for centralized keyboard/SimHub/future binding dispatch
+initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
 
 // Initialize window focus service for focusing iRacing before any action
 initWindowFocus(adapter.createLogger("WindowFocus"), () => native.focusIRacingWindow());

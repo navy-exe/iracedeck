@@ -1,22 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -148,72 +138,22 @@ export class AiSpotterControls extends ConnectionStateAwareAction<AiSpotterContr
   override async onKeyDown(ev: IDeckKeyDownEvent<AiSpotterControlsSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeControl(settings.control);
+
+    const settingKey = SPOTTER_GLOBAL_KEYS[settings.control];
+
+    if (!settingKey) {
+      this.logger.warn(`No global key mapping for ${settings.control}`);
+
+      return;
+    }
+
+    await getBindingDispatcher().tap(settingKey);
   }
 
   private parseSettings(settings: unknown): AiSpotterControlsSettings {
     const parsed = AiSpotterControlsSettings.safeParse(settings);
 
     return parsed.success ? parsed.data : AiSpotterControlsSettings.parse({});
-  }
-
-  private async executeControl(control: SpotterControl): Promise<void> {
-    this.logger.info("Control executed");
-    this.logger.debug(`Executing ${control}`);
-
-    const settingKey = SPOTTER_GLOBAL_KEYS[control];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for ${control}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    this.logger.debug(`Key binding for ${settingKey}: ${formatKeyBinding(binding)} (code=${binding.code ?? "none"})`);
-
-    await this.sendKeyBinding(binding);
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 
   private async updateDisplay(

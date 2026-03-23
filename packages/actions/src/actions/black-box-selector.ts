@@ -1,23 +1,13 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -226,69 +216,7 @@ export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelecto
           ? GLOBAL_KEYS.CYCLE_NEXT
           : GLOBAL_KEYS.CYCLE_PREVIOUS;
 
-    await this.executeBinding(settingKey);
-  }
-
-  /**
-   * Resolve and execute a binding (keyboard shortcut or SimHub role) from global settings.
-   */
-  private async executeBinding(settingKey: string): Promise<void> {
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
-  }
-
-  /**
-   * Send a key binding via the keyboard interface
-   */
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    this.logger.debug(`Sending key combination: ${JSON.stringify(combination)}`);
-
-    const keyboard = getKeyboard();
-
-    if (!keyboard) {
-      this.logger.error("Keyboard interface not available");
-
-      return;
-    }
-
-    const success = await keyboard.sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
+    await getBindingDispatcher().tap(settingKey);
   }
 
   /**
@@ -300,6 +228,6 @@ export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelecto
     // Clockwise (ticks > 0) = next, Counter-clockwise (ticks < 0) = previous
     const settingKey = ev.payload.ticks > 0 ? GLOBAL_KEYS.CYCLE_NEXT : GLOBAL_KEYS.CYCLE_PREVIOUS;
 
-    await this.executeBinding(settingKey);
+    await getBindingDispatcher().tap(settingKey);
   }
 }

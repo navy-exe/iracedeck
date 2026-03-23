@@ -24,10 +24,11 @@ vi.mock("@iracedeck/icons/setup-fuel/low-fuel-accept.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">low-fuel-accept {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
+const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings, mockTap } = vi.hoisted(() => ({
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
@@ -63,6 +64,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
   })),
@@ -323,122 +325,64 @@ describe("SetupFuel", () => {
       action = new SetupFuel();
     });
 
-    it("should call sendKeyCombination on keyDown for disable-fuel-cut", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelDisableFuelCut: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for disable-fuel-cut", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "disable-fuel-cut" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelDisableFuelCut");
     });
 
-    it("should call sendKeyCombination on keyDown for low-fuel-accept", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelLowFuelAccept: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "l", modifiers: [], code: "KeyL" });
-
+    it("should call tapGlobalBinding on keyDown for low-fuel-accept", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "low-fuel-accept" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "l",
-        modifiers: undefined,
-        code: "KeyL",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelLowFuelAccept");
     });
 
-    it("should call sendKeyCombination on keyDown for fcy-mode-toggle", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFcyModeToggle: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "f", modifiers: ["shift"], code: "KeyF" });
-
+    it("should call tapGlobalBinding on keyDown for fcy-mode-toggle", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "fcy-mode-toggle" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "f",
-        modifiers: ["shift"],
-        code: "KeyF",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFcyModeToggle");
     });
 
-    it("should call sendKeyCombination for fuel-mixture increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelMixtureIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for fuel-mixture increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "fuel-mixture", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelMixtureIncrease");
     });
 
-    it("should call sendKeyCombination for fuel-mixture decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelMixtureDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for fuel-mixture decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "fuel-mixture", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelMixtureDecrease");
     });
 
-    it("should call sendKeyCombination for fuel-cut-position increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelCutPositionIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for fuel-cut-position increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "fuel-cut-position", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelCutPositionIncrease");
     });
 
-    it("should call sendKeyCombination for fuel-cut-position decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelCutPositionDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "down", modifiers: [], code: "ArrowDown" });
-
+    it("should call tapGlobalBinding for fuel-cut-position decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "fuel-cut-position", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "down",
-        modifiers: undefined,
-        code: "ArrowDown",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelCutPositionDecrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelDisableFuelCut: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "disable-fuel-cut" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupFuelDisableFuelCut");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "disable-fuel-cut" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupFuelDisableFuelCut");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding for directional settings", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "fuel-mixture", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelMixtureIncrease");
     });
   });
 
@@ -449,63 +393,46 @@ describe("SetupFuel", () => {
       action = new SetupFuel();
     });
 
-    it("should send increase key on clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelMixtureIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation for directional controls", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "fuel-mixture", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelMixtureIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelMixtureDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation for directional controls", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "fuel-mixture", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelMixtureDecrease");
     });
 
-    it("should send correct key for fuel-cut-position rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupFuelFuelCutPositionIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for fuel-cut-position rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "fuel-cut-position", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupFuelFuelCutPositionIncrease");
     });
 
     it("should ignore rotation for non-directional controls (disable-fuel-cut)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "disable-fuel-cut" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for non-directional controls (low-fuel-accept)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "low-fuel-accept" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for non-directional controls (fcy-mode-toggle)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "fcy-mode-toggle" }, -1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
   });
 });

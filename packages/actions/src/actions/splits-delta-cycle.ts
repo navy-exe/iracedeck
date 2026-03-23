@@ -1,24 +1,14 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -165,7 +155,7 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
       MODE_KEY_MAP[settings.mode] ??
       (settings.direction === "next" ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS);
 
-    await this.executeBinding(settingKey);
+    await getBindingDispatcher().tap(settingKey);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<SplitsDeltaCycleSettings>): Promise<void> {
@@ -178,7 +168,7 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
 
     if (!settingKey) return;
 
-    await this.executeBinding(settingKey);
+    await getBindingDispatcher().tap(settingKey);
   }
 
   override async onDialRotate(ev: IDeckDialRotateEvent<SplitsDeltaCycleSettings>): Promise<void> {
@@ -192,35 +182,7 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     // Clockwise (ticks > 0) = next, Counter-clockwise (ticks < 0) = previous
     const settingKey = ev.payload.ticks > 0 ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS;
 
-    await this.executeBinding(settingKey);
-  }
-
-  private async executeBinding(settingKey: string): Promise<void> {
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
+    await getBindingDispatcher().tap(settingKey);
   }
 
   private async updateDisplay(
@@ -233,33 +195,5 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
     this.setRegenerateCallback(ev.action.id, () => generateSplitsDeltaCycleSvg(settings));
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    this.logger.debug(`Sending key combination: ${JSON.stringify(combination)}`);
-
-    const keyboard = getKeyboard();
-
-    if (!keyboard) {
-      this.logger.error("Keyboard interface not available");
-
-      return;
-    }
-
-    const success = await keyboard.sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 }

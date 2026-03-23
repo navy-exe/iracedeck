@@ -1,12 +1,9 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   getSDK,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDialUpEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -14,13 +11,6 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -348,9 +338,6 @@ function renderDynamicIcon(settings: CarControlSettings, iconContent: string, sh
 export const CAR_CONTROL_UUID = "com.iracedeck.sd.core.car-control" as const;
 
 export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
-  /** Currently held key combinations per action context, tracked for cleanup on release/disappear */
-  private heldCombinations = new Map<string, KeyCombination>();
-
   /** Settings per action context for telemetry-driven updates */
   private activeContexts = new Map<string, CarControlSettings>();
 
@@ -375,8 +362,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<CarControlSettings>): Promise<void> {
-    await this.releaseHeldKey(ev.action.id);
-    this.heldSimHubRoles.delete(ev.action.id);
+    await getBindingDispatcher().release(ev.action.id);
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.activeContexts.delete(ev.action.id);
@@ -398,7 +384,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   override async onKeyUp(ev: IDeckKeyUpEvent<CarControlSettings>): Promise<void> {
     this.logger.info("Key up received");
-    await this.releaseHeldKey(ev.action.id);
+    await getBindingDispatcher().release(ev.action.id);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<CarControlSettings>): Promise<void> {
@@ -409,7 +395,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   override async onDialUp(ev: IDeckDialUpEvent<CarControlSettings>): Promise<void> {
     this.logger.info("Dial up received");
-    await this.releaseHeldKey(ev.action.id);
+    await getBindingDispatcher().release(ev.action.id);
   }
 
   private parseSettings(settings: unknown): CarControlSettings {
@@ -417,9 +403,6 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
     return parsed.success ? parsed.data : CarControlSettings.parse({});
   }
-
-  /** Currently held SimHub roles per action context */
-  private heldSimHubRoles = new Map<string, string>();
 
   private async executeControl(actionId: string, settings: CarControlSettings): Promise<void> {
     const settingKey = CAR_CONTROL_GLOBAL_KEYS[settings.control];
@@ -430,114 +413,11 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
       return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    // SimHub path
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (!isSimHubInitialized()) {
-        this.logger.warn("SimHub service not initialized");
-
-        return;
-      }
-
-      const simHub = getSimHub();
-
-      if (HOLD_CONTROLS.has(settings.control)) {
-        // Hold: start on key-down, stop on key-up
-        await simHub.startRole(binding.role);
-        this.heldSimHubRoles.set(actionId, binding.role);
-      } else {
-        // Tap: start + stop immediately
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      }
-
-      return;
-    }
-
-    // Keyboard path
     if (HOLD_CONTROLS.has(settings.control)) {
-      await this.pressAndHold(actionId, binding);
+      await getBindingDispatcher().hold(actionId, settingKey);
     } else {
-      await this.tapControl(binding);
+      await getBindingDispatcher().tap(settingKey);
     }
-  }
-
-  private async pressAndHold(actionId: string, binding: KeyBindingValue): Promise<void> {
-    const combination = this.buildCombination(binding);
-    const success = await getKeyboard().pressKeyCombination(combination);
-
-    if (success) {
-      this.heldCombinations.set(actionId, combination);
-      this.logger.info("Key pressed (holding)");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to press key");
-    }
-  }
-
-  private async tapControl(binding: KeyBindingValue): Promise<void> {
-    const combination = this.buildCombination(binding);
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
-  private async releaseHeldKey(actionId: string): Promise<void> {
-    // Release SimHub role if held
-    const heldRole = this.heldSimHubRoles.get(actionId);
-
-    if (heldRole) {
-      this.heldSimHubRoles.delete(actionId);
-
-      if (isSimHubInitialized()) {
-        await getSimHub().stopRole(heldRole);
-        this.logger.info("SimHub role released");
-      }
-
-      return;
-    }
-
-    // Release keyboard key if held
-    const combination = this.heldCombinations.get(actionId);
-
-    if (!combination) {
-      return;
-    }
-
-    this.heldCombinations.delete(actionId);
-
-    const success = await getKeyboard().releaseKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key released");
-    } else {
-      this.logger.warn("Failed to release key");
-    }
-  }
-
-  private buildCombination(binding: KeyBindingValue): KeyCombination {
-    return {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
   }
 
   private getTelemetryState(telemetry: TelemetryData | null, control: CarControlType): CarControlTelemetryState {

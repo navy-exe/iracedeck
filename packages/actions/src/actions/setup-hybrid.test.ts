@@ -8,12 +8,18 @@ const {
   mockReleaseKeyCombination,
   mockParseKeyBinding,
   mockGetGlobalSettings,
+  mockTap,
+  mockHold,
+  mockRelease,
 } = vi.hoisted(() => ({
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockPressKeyCombination: vi.fn().mockResolvedValue(true),
   mockReleaseKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
+  mockHold: vi.fn().mockResolvedValue(undefined),
+  mockRelease: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/setup-hybrid/mguk-regen-gain-increase.svg", () => ({
@@ -77,6 +83,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: mockHold, release: mockRelease })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
     pressKeyCombination: mockPressKeyCombination,
@@ -317,92 +324,52 @@ describe("SetupHybrid", () => {
       action = new SetupHybrid();
     });
 
-    it("should call sendKeyCombination on keyDown for mguk-regen-gain increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukRegenGainIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for mguk-regen-gain increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
-    it("should call sendKeyCombination on keyDown for mguk-deploy-mode decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukDeployModeDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding on keyDown for mguk-deploy-mode decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-deploy-mode", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukDeployModeDecrease");
     });
 
-    it("should call sendKeyCombination on keyDown for mguk-fixed-deploy increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukFixedDeployIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding on keyDown for mguk-fixed-deploy increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-fixed-deploy", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukFixedDeployIncrease");
     });
 
-    it("should call sendKeyCombination on keyDown for hys-no-boost (toggle)", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysNoBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "n", modifiers: [], code: "KeyN" });
-
+    it("should call tapGlobalBinding on keyDown for hys-no-boost (toggle)", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-no-boost" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "n",
-        modifiers: undefined,
-        code: "KeyN",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupHybridHysNoBoost");
     });
 
-    it("should call sendKeyCombination on dialDown for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukRegenGainIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown for directional controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
-    it("should call sendKeyCombination on dialDown for toggle control", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysNoBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "n", modifiers: [], code: "KeyN" });
-
+    it("should call tapGlobalBinding on dialDown for toggle control", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "hys-no-boost" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupHybridHysNoBoost");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding for toggle settings", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-no-boost" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupHybridHysNoBoost");
     });
   });
 
@@ -413,131 +380,79 @@ describe("SetupHybrid", () => {
       action = new SetupHybrid();
     });
 
-    it("should call pressKeyCombination on keyDown for hys-boost", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
+    it("should call holdGlobalBinding on keyDown for hys-boost", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledWith({
-        key: "b",
-        modifiers: undefined,
-        code: "KeyB",
-      });
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockHold).toHaveBeenCalledWith("action-1", "setupHybridHysBoost");
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
-    it("should call pressKeyCombination on keyDown for hys-regen", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysRegen: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "r", modifiers: [], code: "KeyR" });
-
+    it("should call holdGlobalBinding on keyDown for hys-regen", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-regen" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledWith({
-        key: "r",
-        modifiers: undefined,
-        code: "KeyR",
-      });
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockHold).toHaveBeenCalledWith("action-1", "setupHybridHysRegen");
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
-    it("should call releaseKeyCombination on keyUp after keyDown for hold controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
+    it("should call releaseHeldBinding on keyUp after keyDown for hold controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
       await action.onKeyUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
-        key: "b",
-        modifiers: undefined,
-        code: "KeyB",
-      });
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
-    it("should call pressKeyCombination on dialDown for hold controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
+    it("should call holdGlobalBinding on dialDown for hold controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledOnce();
+      expect(mockHold).toHaveBeenCalledOnce();
     });
 
-    it("should call releaseKeyCombination on dialUp after dialDown for hold controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
+    it("should call releaseHeldBinding on dialUp after dialDown for hold controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
       await action.onDialUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledOnce();
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
     it("should release held key on onWillDisappear", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridHysBoost: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
       await action.onWillDisappear(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
-        key: "b",
-        modifiers: undefined,
-        code: "KeyB",
-      });
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
     it("should track multiple action contexts independently", async () => {
-      mockGetGlobalSettings.mockReturnValue({
-        setupHybridHysBoost: "bound",
-        setupHybridHysRegen: "bound2",
-      });
-
       // Press hys-boost on action-1
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
       // Press hys-regen on action-2
-      mockParseKeyBinding.mockReturnValue({ key: "r", modifiers: [], code: "KeyR" });
       await action.onKeyDown(fakeEvent("action-2", { setting: "hys-regen" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledTimes(2);
+      expect(mockHold).toHaveBeenCalledTimes(2);
 
       // Release action-1 only
       await action.onKeyUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledTimes(1);
-      expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
-        key: "b",
-        modifiers: undefined,
-        code: "KeyB",
-      });
+      expect(mockRelease).toHaveBeenCalledTimes(1);
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
 
       // Release action-2
       await action.onKeyUp(fakeEvent("action-2", { setting: "hys-regen" }) as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledTimes(2);
-      expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
-        key: "r",
-        modifiers: undefined,
-        code: "KeyR",
-      });
+      expect(mockRelease).toHaveBeenCalledTimes(2);
+      expect(mockRelease).toHaveBeenCalledWith("action-2");
     });
 
-    it("should not call releaseKeyCombination on keyUp when no key is held", async () => {
+    it("should call releaseHeldBinding on keyUp even when no key is held", async () => {
       await action.onKeyUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockReleaseKeyCombination).not.toHaveBeenCalled();
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
-    it("should handle missing key binding for hold controls gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call holdGlobalBinding even when no key binding is configured for hold controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockHold).toHaveBeenCalledWith("action-1", "setupHybridHysBoost");
     });
   });
 
@@ -548,65 +463,48 @@ describe("SetupHybrid", () => {
       action = new SetupHybrid();
     });
 
-    it("should send increase key on clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukRegenGainIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation for directional controls", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukRegenGainDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation for directional controls", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukRegenGainDecrease");
     });
 
-    it("should send correct key for mguk-deploy-mode rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupHybridMgukDeployModeIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for mguk-deploy-mode rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "mguk-deploy-mode", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupHybridMgukDeployModeIncrease");
     });
 
     it("should ignore rotation for hold controls (hys-boost)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "hys-boost" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
+      expect(mockHold).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for hold controls (hys-regen)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "hys-regen" }, -1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
+      expect(mockHold).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for toggle control (hys-no-boost)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "hys-no-boost" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
   });
 });

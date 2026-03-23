@@ -19,6 +19,7 @@ const {
   mockSendKeyCombination,
   mockParseKeyBinding,
   mockGetGlobalSettings,
+  mockTap,
 } = vi.hoisted(() => ({
   mockBeginChat: vi.fn(() => true),
   mockReply: vi.fn(() => true),
@@ -37,6 +38,7 @@ const {
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/chat/open-chat.svg", () => ({
@@ -99,6 +101,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   getCommands: mockGetCommands,
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
     pressKeyCombination: vi.fn().mockResolvedValue(true),
@@ -530,18 +533,18 @@ describe("Chat", () => {
       });
     });
 
-    it("should call sendKeyCombination for whisper", async () => {
+    it("should call tapGlobalBinding for whisper", async () => {
       await action.onKeyDown(fakeEvent("action-1", { mode: "whisper" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("chatWhisper");
     });
 
-    it("should warn when no key binding configured for whisper", async () => {
+    it("should call tapGlobalBinding even when no key binding is configured for whisper", async () => {
       mockParseKeyBinding.mockReturnValue(null);
 
       await action.onKeyDown(fakeEvent("action-1", { mode: "whisper" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("chatWhisper");
     });
 
     it("should not call SDK commands for keyboard modes", async () => {

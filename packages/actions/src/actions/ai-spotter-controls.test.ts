@@ -8,10 +8,11 @@ import {
   SPOTTER_LABELS,
 } from "./ai-spotter-controls.js";
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
+const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings, mockTap } = vi.hoisted(() => ({
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/ai-spotter-controls/damage-report.svg", () => ({
@@ -68,6 +69,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
   })),
@@ -252,65 +254,34 @@ describe("AiSpotterControls", () => {
       action = new AiSpotterControls();
     });
 
-    it("should call sendKeyCombination on keyDown for damage-report", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterDamageReport: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "d", modifiers: ["ctrl"], code: "KeyD" });
-
+    it("should call tapGlobalBinding on keyDown for damage-report", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "damage-report" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "d",
-        modifiers: ["ctrl"],
-        code: "KeyD",
-      });
+      expect(mockTap).toHaveBeenCalledWith("spotterDamageReport");
     });
 
-    it("should call sendKeyCombination on keyDown for louder", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterLouder: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "numpad_add", modifiers: ["shift", "ctrl"], code: "NumpadAdd" });
-
+    it("should call tapGlobalBinding on keyDown for louder", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "louder" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "numpad_add",
-        modifiers: ["shift", "ctrl"],
-        code: "NumpadAdd",
-      });
+      expect(mockTap).toHaveBeenCalledWith("spotterLouder");
     });
 
-    it("should call sendKeyCombination on keyDown for silence", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterSilence: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: ["shift", "ctrl"], code: "KeyM" });
-
+    it("should call tapGlobalBinding on keyDown for silence", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "silence" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "m",
-        modifiers: ["shift", "ctrl"],
-        code: "KeyM",
-      });
+      expect(mockTap).toHaveBeenCalledWith("spotterSilence");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "damage-report" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("spotterDamageReport");
     });
 
-    it("should send key with empty modifiers as undefined", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterSilence: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: [], code: "KeyM" });
-
+    it("should call tapGlobalBinding for all controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "silence" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "m",
-        modifiers: undefined,
-        code: "KeyM",
-      });
+      expect(mockTap).toHaveBeenCalledWith("spotterSilence");
     });
   });
 });

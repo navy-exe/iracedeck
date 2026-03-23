@@ -5,14 +5,10 @@ import {
   CarControl,
   generateCarControlSvg,
   getPitSpeedLimit,
-  isDrsActive,
   isPitLimiterActive,
-  isPushToPassActive,
   parsePitSpeedLimit,
   pitLimiterActiveIcon,
   pitLimiterInactiveIcon,
-  statusBarOff,
-  statusBarOn,
 } from "./car-control.js";
 
 const {
@@ -22,6 +18,9 @@ const {
   mockParseKeyBinding,
   mockGetGlobalSettings,
   mockGetSessionInfo,
+  mockTap,
+  mockHold,
+  mockRelease,
 } = vi.hoisted(() => ({
   mockPressKeyCombination: vi.fn().mockResolvedValue(true),
   mockReleaseKeyCombination: vi.fn().mockResolvedValue(true),
@@ -29,6 +28,9 @@ const {
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
   mockGetSessionInfo: vi.fn((): Record<string, unknown> | null => null),
+  mockTap: vi.fn().mockResolvedValue(undefined),
+  mockHold: vi.fn().mockResolvedValue(undefined),
+  mockRelease: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/car-control/starter.svg", () => ({
@@ -42,12 +44,6 @@ vi.mock("@iracedeck/icons/car-control/enter-exit-tow.svg", () => ({
 }));
 vi.mock("@iracedeck/icons/car-control/pause-sim.svg", () => ({
   default: "<svg>pause-sim-icon</svg>",
-}));
-vi.mock("@iracedeck/icons/car-control/headlight-flash.svg", () => ({
-  default: "<svg>headlight-flash-icon</svg>",
-}));
-vi.mock("@iracedeck/icons/car-control/tear-off-visor.svg", () => ({
-  default: "<svg>tear-off-visor-icon</svg>",
 }));
 
 vi.mock("@iracedeck/iracing-sdk", () => ({
@@ -89,6 +85,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: mockHold, release: mockRelease })),
   getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
@@ -127,24 +124,44 @@ describe("CarControl", () => {
   });
 
   describe("CAR_CONTROL_GLOBAL_KEYS", () => {
-    it("should have correct mapping for all 9 controls", () => {
+    it("should have correct mapping for starter", () => {
       expect(CAR_CONTROL_GLOBAL_KEYS["starter"]).toBe("carControlStarter");
-      expect(CAR_CONTROL_GLOBAL_KEYS["ignition"]).toBe("carControlIgnition");
-      expect(CAR_CONTROL_GLOBAL_KEYS["pit-speed-limiter"]).toBe("carControlPitSpeedLimiter");
-      expect(CAR_CONTROL_GLOBAL_KEYS["enter-exit-tow"]).toBe("carControlEnterExitTow");
-      expect(CAR_CONTROL_GLOBAL_KEYS["pause-sim"]).toBe("carControlPauseSim");
-      expect(CAR_CONTROL_GLOBAL_KEYS["headlight-flash"]).toBe("carControlHeadlightFlash");
-      expect(CAR_CONTROL_GLOBAL_KEYS["push-to-pass"]).toBe("carControlPushToPass");
-      expect(CAR_CONTROL_GLOBAL_KEYS["drs"]).toBe("carControlDrs");
-      expect(CAR_CONTROL_GLOBAL_KEYS["tear-off-visor"]).toBe("carControlTearOffVisor");
     });
 
-    it("should have exactly 9 entries", () => {
-      expect(Object.keys(CAR_CONTROL_GLOBAL_KEYS)).toHaveLength(9);
+    it("should have correct mapping for ignition", () => {
+      expect(CAR_CONTROL_GLOBAL_KEYS["ignition"]).toBe("carControlIgnition");
+    });
+
+    it("should have correct mapping for pit-speed-limiter", () => {
+      expect(CAR_CONTROL_GLOBAL_KEYS["pit-speed-limiter"]).toBe("carControlPitSpeedLimiter");
+    });
+
+    it("should have correct mapping for enter-exit-tow", () => {
+      expect(CAR_CONTROL_GLOBAL_KEYS["enter-exit-tow"]).toBe("carControlEnterExitTow");
+    });
+
+    it("should have correct mapping for pause-sim", () => {
+      expect(CAR_CONTROL_GLOBAL_KEYS["pause-sim"]).toBe("carControlPauseSim");
+    });
+
+    it("should have exactly 5 entries", () => {
+      expect(Object.keys(CAR_CONTROL_GLOBAL_KEYS)).toHaveLength(5);
     });
   });
 
   describe("generateCarControlSvg", () => {
+    it("should generate a valid data URI for starter", () => {
+      const result = generateCarControlSvg({ control: "starter" });
+
+      expect(result).toContain("data:image/svg+xml");
+    });
+
+    it("should generate a valid data URI for ignition", () => {
+      const result = generateCarControlSvg({ control: "ignition" });
+
+      expect(result).toContain("data:image/svg+xml");
+    });
+
     it("should generate valid data URIs for all controls", () => {
       const controls = [
         "starter",
@@ -152,10 +169,6 @@ describe("CarControl", () => {
         "pit-speed-limiter",
         "enter-exit-tow",
         "pause-sim",
-        "headlight-flash",
-        "push-to-pass",
-        "drs",
-        "tear-off-visor",
       ] as const;
 
       for (const control of controls) {
@@ -172,16 +185,12 @@ describe("CarControl", () => {
     });
 
     it("should include correct labels for all controls", () => {
-      const expectedLabels: Record<string, { line1: string; line2?: string }> = {
+      const expectedLabels: Record<string, { line1: string; line2: string }> = {
         starter: { line1: "START", line2: "ENGINE" },
         ignition: { line1: "IGNITION", line2: "ON/OFF" },
         "pit-speed-limiter": { line1: "PIT", line2: "LIMITER" },
         "enter-exit-tow": { line1: "ENTER/EXIT", line2: "TOW" },
         "pause-sim": { line1: "PAUSE", line2: "SIM" },
-        "headlight-flash": { line1: "HEADLIGHT", line2: "FLASH" },
-        "push-to-pass": { line1: "PUSH TO", line2: "PASS" },
-        drs: { line1: "DRS" },
-        "tear-off-visor": { line1: "TEAR OFF", line2: "VISOR" },
       };
 
       for (const [control, labels] of Object.entries(expectedLabels)) {
@@ -189,112 +198,56 @@ describe("CarControl", () => {
         const decoded = decodeURIComponent(result);
 
         expect(decoded).toContain(labels.line1);
-
-        if (labels.line2) {
-          expect(decoded).toContain(labels.line2);
-        }
+        expect(decoded).toContain(labels.line2);
       }
     });
   });
 
-  describe("tap behavior (non-hold controls)", () => {
+  describe("tap behavior (non-starter controls)", () => {
     let action: CarControl;
-
-    function setupKeyBinding(settingKey: string, key: string, modifiers: string[] = [], code?: string) {
-      mockGetGlobalSettings.mockReturnValue({ [settingKey]: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key, modifiers, code });
-    }
 
     beforeEach(() => {
       action = new CarControl();
     });
 
-    it("should call sendKeyCombination on keyDown for ignition", async () => {
-      setupKeyBinding("carControlIgnition", "i", [], "KeyI");
-
+    it("should call tapGlobalBinding on keyDown for ignition", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "ignition" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "i",
-        modifiers: undefined,
-        code: "KeyI",
-      });
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("carControlIgnition");
+      expect(mockHold).not.toHaveBeenCalled();
     });
 
-    it("should call sendKeyCombination on keyDown for pit-speed-limiter", async () => {
-      setupKeyBinding("carControlPitSpeedLimiter", "a", [], "KeyA");
-
+    it("should call tapGlobalBinding on keyDown for pit-speed-limiter", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "pit-speed-limiter" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("carControlPitSpeedLimiter");
+      expect(mockHold).not.toHaveBeenCalled();
     });
 
-    it("should call sendKeyCombination on keyDown for enter-exit-tow", async () => {
-      setupKeyBinding("carControlEnterExitTow", "r", ["shift"], "KeyR");
-
+    it("should call tapGlobalBinding on keyDown for enter-exit-tow", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "r",
-        modifiers: ["shift"],
-        code: "KeyR",
-      });
+      expect(mockTap).toHaveBeenCalledWith("carControlEnterExitTow");
     });
 
-    it("should call sendKeyCombination on keyDown for pause-sim", async () => {
-      setupKeyBinding("carControlPauseSim", "p", ["shift"], "KeyP");
-
+    it("should call tapGlobalBinding on keyDown for pause-sim", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "pause-sim" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("carControlPauseSim");
+      expect(mockHold).not.toHaveBeenCalled();
     });
 
-    it("should call sendKeyCombination on keyDown for push-to-pass", async () => {
-      setupKeyBinding("carControlPushToPass", "p", [], "KeyP");
-
-      await action.onKeyDown(fakeEvent("action-1", { control: "push-to-pass" }) as any);
-
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
-    });
-
-    it("should call sendKeyCombination on keyDown for drs", async () => {
-      setupKeyBinding("carControlDrs", "d", [], "KeyD");
-
-      await action.onKeyDown(fakeEvent("action-1", { control: "drs" }) as any);
-
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
-    });
-
-    it("should call sendKeyCombination on keyDown for tear-off-visor", async () => {
-      setupKeyBinding("carControlTearOffVisor", "v", [], "KeyV");
-
-      await action.onKeyDown(fakeEvent("action-1", { control: "tear-off-visor" }) as any);
-
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
-    });
-
-    it("should call sendKeyCombination on dialDown for non-hold controls", async () => {
-      setupKeyBinding("carControlIgnition", "i", [], "KeyI");
-
+    it("should call tapGlobalBinding on dialDown for non-starter controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { control: "ignition" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("carControlIgnition");
+      expect(mockHold).not.toHaveBeenCalled();
     });
 
-    it("should handle missing key binding gracefully for tap controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured for tap controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "ignition" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("carControlIgnition");
     });
   });
 
@@ -317,42 +270,6 @@ describe("CarControl", () => {
 
     it("should return true when pit speed limiter is set among other flags", () => {
       expect(isPitLimiterActive({ EngineWarnings: 0x0011 } as any)).toBe(true);
-    });
-  });
-
-  describe("isPushToPassActive", () => {
-    it("should return false when telemetry is null", () => {
-      expect(isPushToPassActive(null)).toBe(false);
-    });
-
-    it("should return false when P2P_Status is undefined", () => {
-      expect(isPushToPassActive({} as any)).toBe(false);
-    });
-
-    it("should return false when P2P_Status is false", () => {
-      expect(isPushToPassActive({ P2P_Status: false } as any)).toBe(false);
-    });
-
-    it("should return true when P2P_Status is true", () => {
-      expect(isPushToPassActive({ P2P_Status: true } as any)).toBe(true);
-    });
-  });
-
-  describe("isDrsActive", () => {
-    it("should return false when telemetry is null", () => {
-      expect(isDrsActive(null)).toBe(false);
-    });
-
-    it("should return false when DRS_Status is undefined", () => {
-      expect(isDrsActive({} as any)).toBe(false);
-    });
-
-    it("should return false when DRS_Status is 0", () => {
-      expect(isDrsActive({ DRS_Status: 0 } as any)).toBe(false);
-    });
-
-    it("should return true when DRS_Status is > 0", () => {
-      expect(isDrsActive({ DRS_Status: 1 } as any)).toBe(true);
     });
   });
 
@@ -428,50 +345,22 @@ describe("CarControl", () => {
     });
   });
 
-  describe("status bar icon functions", () => {
-    it("should produce distinct ON and OFF icons", () => {
-      expect(statusBarOn()).not.toBe(statusBarOff());
-    });
-
-    it("ON icon should contain green color", () => {
-      expect(statusBarOn()).toContain("#2ecc71");
-    });
-
-    it("OFF icon should contain red color", () => {
-      expect(statusBarOff()).toContain("#e74c3c");
-    });
-
-    it("ON icon should contain 'ON' text", () => {
-      expect(statusBarOn()).toContain("ON");
-    });
-
-    it("OFF icon should contain 'OFF' text", () => {
-      expect(statusBarOff()).toContain("OFF");
-    });
-  });
-
   describe("generateCarControlSvg telemetry variants", () => {
     it("should use active icon when pitLimiterActive is true", () => {
-      const result = generateCarControlSvg(
-        { control: "pit-speed-limiter" },
-        { pitLimiterActive: true, pitSpeedLimit: 80 },
-      );
+      const result = generateCarControlSvg({ control: "pit-speed-limiter" }, true, 80);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("#3498db");
     });
 
     it("should use inactive icon when pitLimiterActive is false", () => {
-      const result = generateCarControlSvg(
-        { control: "pit-speed-limiter" },
-        { pitLimiterActive: false, pitSpeedLimit: 80 },
-      );
+      const result = generateCarControlSvg({ control: "pit-speed-limiter" }, false, 80);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("#e74c3c");
     });
 
-    it("should use default (inactive) icon when no telemetry state provided", () => {
+    it("should use default (inactive) icon when pitLimiterActive is undefined", () => {
       const result = generateCarControlSvg({ control: "pit-speed-limiter" });
       const decoded = decodeURIComponent(result);
 
@@ -479,54 +368,21 @@ describe("CarControl", () => {
     });
 
     it("should include speed limit in the icon", () => {
-      const result = generateCarControlSvg(
-        { control: "pit-speed-limiter" },
-        { pitLimiterActive: false, pitSpeedLimit: 60 },
-      );
+      const result = generateCarControlSvg({ control: "pit-speed-limiter" }, false, 60);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("60");
     });
 
     it("should use default speed when pitSpeedLimit is undefined", () => {
-      const result = generateCarControlSvg({ control: "pit-speed-limiter" }, { pitLimiterActive: true });
+      const result = generateCarControlSvg({ control: "pit-speed-limiter" }, true);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("80");
     });
 
-    it("should show ON status bar when push-to-pass is active", () => {
-      const result = generateCarControlSvg({ control: "push-to-pass" }, { pushToPassActive: true });
-      const decoded = decodeURIComponent(result);
-
-      expect(decoded).toContain("#2ecc71");
-      expect(decoded).toContain("ON");
-    });
-
-    it("should show OFF status bar when push-to-pass is inactive", () => {
-      const result = generateCarControlSvg({ control: "push-to-pass" }, { pushToPassActive: false });
-      const decoded = decodeURIComponent(result);
-
-      expect(decoded).toContain("OFF");
-    });
-
-    it("should show ON status bar when DRS is active", () => {
-      const result = generateCarControlSvg({ control: "drs" }, { drsActive: true });
-      const decoded = decodeURIComponent(result);
-
-      expect(decoded).toContain("#2ecc71");
-      expect(decoded).toContain("ON");
-    });
-
-    it("should show OFF status bar when DRS is inactive", () => {
-      const result = generateCarControlSvg({ control: "drs" }, { drsActive: false });
-      const decoded = decodeURIComponent(result);
-
-      expect(decoded).toContain("OFF");
-    });
-
-    it("should not affect static controls when telemetry state is passed", () => {
-      const starter = generateCarControlSvg({ control: "starter" }, { pitLimiterActive: true });
+    it("should not affect other controls when pitLimiterActive is passed", () => {
+      const starter = generateCarControlSvg({ control: "starter" }, true, 80);
       const starterDefault = generateCarControlSvg({ control: "starter" });
 
       expect(starter).toBe(starterDefault);
@@ -565,141 +421,84 @@ describe("CarControl", () => {
     });
   });
 
-  describe("long-press behavior (hold controls)", () => {
+  describe("long-press behavior (starter)", () => {
     let action: CarControl;
-
-    function setupKeyBinding(settingKey: string, key: string, modifiers: string[] = [], code?: string) {
-      mockGetGlobalSettings.mockReturnValue({ [settingKey]: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key, modifiers, code });
-    }
 
     beforeEach(() => {
       action = new CarControl();
     });
 
-    it("should press key on keyDown and release on keyUp for starter", async () => {
-      setupKeyBinding("carControlStarter", "s", [], "KeyS");
-
+    it("should hold key on keyDown and release on keyUp", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "starter" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledWith({
-        key: "s",
-        modifiers: undefined,
-        code: "KeyS",
-      });
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockHold).toHaveBeenCalledWith("action-1", "carControlStarter");
+      expect(mockTap).not.toHaveBeenCalled();
 
       await action.onKeyUp(fakeEvent("action-1") as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
-        key: "s",
-        modifiers: undefined,
-        code: "KeyS",
-      });
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
-    it("should use hold pattern for headlight-flash", async () => {
-      setupKeyBinding("carControlHeadlightFlash", "h", [], "KeyH");
-
-      await action.onKeyDown(fakeEvent("action-1", { control: "headlight-flash" }) as any);
-
-      expect(mockPressKeyCombination).toHaveBeenCalledWith({
-        key: "h",
-        modifiers: undefined,
-        code: "KeyH",
-      });
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
-
-      await action.onKeyUp(fakeEvent("action-1") as any);
-
-      expect(mockReleaseKeyCombination).toHaveBeenCalledOnce();
-    });
-
-    it("should press key on dialDown and release on dialUp", async () => {
-      setupKeyBinding("carControlStarter", "s", [], "KeyS");
-
+    it("should hold key on dialDown and release on dialUp", async () => {
       await action.onDialDown(fakeEvent("action-1", { control: "starter" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledOnce();
+      expect(mockHold).toHaveBeenCalledOnce();
 
       await action.onDialUp(fakeEvent("action-1") as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledOnce();
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
     it("should track concurrent presses on different action contexts independently", async () => {
-      mockGetGlobalSettings.mockReturnValue({
-        carControlStarter: "bound",
-      });
-      mockParseKeyBinding.mockImplementation((val: unknown) => {
-        if (val === "bound") {
-          return { key: "s", modifiers: [], code: "KeyS" };
-        }
-
-        return undefined;
-      });
-
+      // Press starter on action-1
       await action.onKeyDown(fakeEvent("action-1", { control: "starter" }) as any);
+      // Press starter on action-2
       await action.onKeyDown(fakeEvent("action-2", { control: "starter" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledTimes(2);
+      expect(mockHold).toHaveBeenCalledTimes(2);
 
+      // Release action-1 — should release action-1's combination only
       await action.onKeyUp(fakeEvent("action-1") as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledTimes(1);
+      expect(mockRelease).toHaveBeenCalledTimes(1);
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
 
+      // Release action-2
       await action.onKeyUp(fakeEvent("action-2") as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledTimes(2);
+      expect(mockRelease).toHaveBeenCalledTimes(2);
+      expect(mockRelease).toHaveBeenCalledWith("action-2");
     });
 
     it("should release held key on onWillDisappear", async () => {
-      setupKeyBinding("carControlStarter", "s", [], "KeyS");
-
       await action.onKeyDown(fakeEvent("action-1", { control: "starter" }) as any);
       await action.onWillDisappear(fakeEvent("action-1") as any);
 
-      expect(mockReleaseKeyCombination).toHaveBeenCalledOnce();
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
-    it("should not store combination when press fails", async () => {
-      setupKeyBinding("carControlStarter", "s", [], "KeyS");
-      mockPressKeyCombination.mockResolvedValueOnce(false);
-
+    it("should call holdGlobalBinding on keyDown for starter", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "starter" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledOnce();
+      expect(mockHold).toHaveBeenCalledWith("action-1", "carControlStarter");
+    });
 
+    it("should call releaseHeldBinding on keyUp even when no key is held", async () => {
       await action.onKeyUp(fakeEvent("action-1") as any);
 
-      expect(mockReleaseKeyCombination).not.toHaveBeenCalled();
+      expect(mockRelease).toHaveBeenCalledWith("action-1");
     });
 
-    it("should not call release if no key is held", async () => {
-      await action.onKeyUp(fakeEvent("action-1") as any);
-
-      expect(mockReleaseKeyCombination).not.toHaveBeenCalled();
-    });
-
-    it("should include modifiers in the combination when present", async () => {
-      setupKeyBinding("carControlStarter", "s", ["ctrl", "shift"], "KeyS");
-
+    it("should call holdGlobalBinding with correct setting key", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "starter" }) as any);
 
-      expect(mockPressKeyCombination).toHaveBeenCalledWith({
-        key: "s",
-        modifiers: ["ctrl", "shift"],
-        code: "KeyS",
-      });
+      expect(mockHold).toHaveBeenCalledWith("action-1", "carControlStarter");
     });
 
-    it("should not press key when no binding is configured", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call holdGlobalBinding even when no binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "starter" }) as any);
 
-      expect(mockPressKeyCombination).not.toHaveBeenCalled();
+      expect(mockHold).toHaveBeenCalledWith("action-1", "carControlStarter");
     });
   });
 });

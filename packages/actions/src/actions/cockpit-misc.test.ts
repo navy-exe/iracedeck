@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { COCKPIT_MISC_GLOBAL_KEYS, CockpitMisc, generateCockpitMiscSvg } from "./cockpit-misc.js";
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
+const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings, mockTap } = vi.hoisted(() => ({
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/cockpit-misc/toggle-wipers.svg", () => ({
@@ -72,6 +73,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
   })),
@@ -352,127 +354,70 @@ describe("CockpitMisc", () => {
       action = new CockpitMisc();
     });
 
-    it("should call sendKeyCombination on keyDown for trigger-wipers", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscTriggerWipers: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "w", modifiers: ["ctrl", "alt"], code: "KeyW" });
-
+    it("should call tapGlobalBinding on keyDown for trigger-wipers", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "trigger-wipers" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "w",
-        modifiers: ["ctrl", "alt"],
-        code: "KeyW",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscTriggerWipers");
     });
 
-    it("should call sendKeyCombination on keyDown for report-latency", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscReportLatency: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "l", modifiers: [], code: "KeyL" });
-
+    it("should call tapGlobalBinding on keyDown for report-latency", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "report-latency" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "l",
-        modifiers: undefined,
-        code: "KeyL",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscReportLatency");
     });
 
-    it("should call sendKeyCombination on keyDown for in-lap-mode", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscInLapMode: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "l", modifiers: ["shift", "alt"], code: "KeyL" });
-
+    it("should call tapGlobalBinding on keyDown for in-lap-mode", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "in-lap-mode" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "l",
-        modifiers: ["shift", "alt"],
-        code: "KeyL",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscInLapMode");
     });
 
-    it("should call sendKeyCombination for ffb-max-force increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscFfbForceIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for ffb-max-force increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "ffb-max-force", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscFfbForceIncrease");
     });
 
-    it("should call sendKeyCombination for ffb-max-force decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscFfbForceDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "down", modifiers: [], code: "ArrowDown" });
-
+    it("should call tapGlobalBinding for ffb-max-force decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "ffb-max-force", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "down",
-        modifiers: undefined,
-        code: "ArrowDown",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscFfbForceDecrease");
     });
 
-    it("should call sendKeyCombination for dash-page-1 increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscDashPage1Increase: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "pageup", modifiers: [], code: "PageUp" });
-
+    it("should call tapGlobalBinding for dash-page-1 increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "dash-page-1", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscDashPage1Increase");
     });
 
-    it("should call sendKeyCombination for dash-page-2 decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscDashPage2Decrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "pagedown", modifiers: [], code: "PageDown" });
-
+    it("should call tapGlobalBinding for dash-page-2 decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "dash-page-2", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscDashPage2Decrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscTriggerWipers: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "w", modifiers: ["ctrl", "alt"], code: "KeyW" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { control: "trigger-wipers" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscTriggerWipers");
     });
 
-    it("should call sendKeyCombination on keyDown for toggle-wipers", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscToggleWipers: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "w", modifiers: ["shift"], code: "KeyW" });
-
+    it("should call tapGlobalBinding on keyDown for toggle-wipers", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "w",
-        modifiers: ["shift"],
-        code: "KeyW",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscToggleWipers");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "trigger-wipers" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscTriggerWipers");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even for report-latency with no binding", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "report-latency" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscReportLatency");
     });
   });
 
@@ -483,69 +428,52 @@ describe("CockpitMisc", () => {
       action = new CockpitMisc();
     });
 
-    it("should send increase key on clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscFfbForceIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation for directional controls", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { control: "ffb-max-force", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscFfbForceIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscFfbForceDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "down", modifiers: [], code: "ArrowDown" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation for directional controls", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { control: "ffb-max-force", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "down",
-        modifiers: undefined,
-        code: "ArrowDown",
-      });
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscFfbForceDecrease");
     });
 
-    it("should send correct key for dash-page-1 rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ cockpitMiscDashPage1Increase: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "pageup", modifiers: [], code: "PageUp" });
-
+    it("should call tapGlobalBinding for dash-page-1 rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { control: "dash-page-1", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("cockpitMiscDashPage1Increase");
     });
 
     it("should ignore rotation for non-directional controls (toggle-wipers)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { control: "toggle-wipers" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for non-directional controls (trigger-wipers)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { control: "trigger-wipers" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for non-directional controls (report-latency)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { control: "report-latency" }, -1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for non-directional controls (in-lap-mode)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { control: "in-lap-mode" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,24 +1,14 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -192,9 +182,6 @@ export class SetupFuel extends ConnectionStateAwareAction<SetupFuelSettings> {
   }
 
   private async executeSetting(setting: SetupFuelSetting, direction: DirectionType): Promise<void> {
-    this.logger.info("Setting executed");
-    this.logger.debug(`Executing ${setting} ${direction}`);
-
     const settingKey = this.resolveGlobalKey(setting, direction);
 
     if (!settingKey) {
@@ -203,33 +190,7 @@ export class SetupFuel extends ConnectionStateAwareAction<SetupFuelSettings> {
       return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    this.logger.debug(`Key binding for ${settingKey}: ${formatKeyBinding(binding)} (code=${binding.code ?? "none"})`);
-
-    await this.sendKeyBinding(binding);
+    await getBindingDispatcher().tap(settingKey);
   }
 
   private resolveGlobalKey(setting: SetupFuelSetting, direction: DirectionType): string | null {
@@ -240,24 +201,6 @@ export class SetupFuel extends ConnectionStateAwareAction<SetupFuelSettings> {
     }
 
     return SETUP_FUEL_GLOBAL_KEYS[setting] ?? null;
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 
   private async updateDisplay(

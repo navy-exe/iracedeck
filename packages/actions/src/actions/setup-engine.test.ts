@@ -28,10 +28,11 @@ vi.mock("@iracedeck/icons/setup-engine/launch-rpm-decrease.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">launch-rpm-decrease {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
+const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings, mockTap } = vi.hoisted(() => ({
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
@@ -67,6 +68,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
   })),
@@ -266,88 +268,52 @@ describe("SetupEngine", () => {
       action = new SetupEngine();
     });
 
-    it("should call sendKeyCombination on keyDown for engine-power increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineEnginePowerIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for engine-power increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "engine-power", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupEngineEnginePowerIncrease");
     });
 
-    it("should call sendKeyCombination for engine-power decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineEnginePowerDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
+    it("should call tapGlobalBinding for engine-power decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "engine-power", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "b",
-        modifiers: undefined,
-        code: "KeyB",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupEngineEnginePowerDecrease");
     });
 
-    it("should call sendKeyCombination for throttle-shaping increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineThrottleShapingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for throttle-shaping increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "throttle-shaping", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupEngineThrottleShapingIncrease");
     });
 
-    it("should call sendKeyCombination for boost-level increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineBoostLevelIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for boost-level increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "boost-level", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupEngineBoostLevelIncrease");
     });
 
-    it("should call sendKeyCombination for launch-rpm decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineLaunchRpmDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for launch-rpm decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "launch-rpm", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupEngineLaunchRpmDecrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineEnginePowerIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "engine-power", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupEngineEnginePowerIncrease");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "engine-power", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupEngineEnginePowerIncrease");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding for all directional settings", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "boost-level", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupEngineBoostLevelDecrease");
     });
   });
 
@@ -358,45 +324,28 @@ describe("SetupEngine", () => {
       action = new SetupEngine();
     });
 
-    it("should send increase key on clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineEnginePowerIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "engine-power", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupEngineEnginePowerIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineEnginePowerDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "engine-power", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupEngineEnginePowerDecrease");
     });
 
-    it("should send correct key for different settings on rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupEngineThrottleShapingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for different settings on rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "throttle-shaping", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupEngineThrottleShapingIncrease");
     });
   });
 });

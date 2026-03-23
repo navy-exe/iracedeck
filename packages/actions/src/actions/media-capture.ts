@@ -1,23 +1,14 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -173,9 +164,18 @@ export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSetting
         break;
 
       // Keyboard-based actions
-      case "take-giant-screenshot":
-        await this.executeKeyboardAction(actionType);
+      case "take-giant-screenshot": {
+        const settingKey = MEDIA_CAPTURE_GLOBAL_KEYS[actionType];
+
+        if (!settingKey) {
+          this.logger.warn(`No global key mapping for action: ${actionType}`);
+
+          return;
+        }
+
+        await getBindingDispatcher().tap(settingKey);
         break;
+      }
     }
   }
 
@@ -183,56 +183,6 @@ export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSetting
     const success = command();
     this.logger.info(`${label} executed`);
     this.logger.debug(`Result: ${success}`);
-  }
-
-  private async executeKeyboardAction(actionType: MediaCaptureAction): Promise<void> {
-    const settingKey = MEDIA_CAPTURE_GLOBAL_KEYS[actionType];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for action: ${actionType}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 
   private async updateDisplay(

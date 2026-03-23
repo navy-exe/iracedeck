@@ -1,25 +1,16 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   generateIconText,
+  getBindingDispatcher,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -376,9 +367,18 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
         break;
 
       // Keyboard-based mode
-      case "whisper":
-        await this.executeKeyboardMode(mode);
+      case "whisper": {
+        const settingKey = CHAT_GLOBAL_KEYS[mode];
+
+        if (!settingKey) {
+          this.logger.warn(`No global key mapping for mode: ${mode}`);
+
+          return;
+        }
+
+        await getBindingDispatcher().tap(settingKey);
         break;
+      }
     }
   }
 
@@ -433,56 +433,6 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     const success = chat.macro(macroNumber);
     this.logger.info("Chat macro executed");
     this.logger.debug(`Macro number: ${macroNumber}, result: ${success}`);
-  }
-
-  private async executeKeyboardMode(mode: ChatMode): Promise<void> {
-    const settingKey = CHAT_GLOBAL_KEYS[mode];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for mode: ${mode}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 
   /** Resolves template variables for display only (icon rendering).

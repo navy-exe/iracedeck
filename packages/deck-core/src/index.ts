@@ -134,5 +134,13 @@ export {
   type ISimHubService,
 } from "./simhub-service.js";
 
+// Binding dispatcher singleton
+export {
+  initializeBindingDispatcher,
+  getBindingDispatcher,
+  isBindingDispatcherInitialized,
+  _resetBindingDispatcher,
+} from "./binding-dispatcher.js";
+
 // Key binding utilities
 export { formatKeyBinding, parseKeyBinding, parseBinding } from "./key-binding-utils.js";

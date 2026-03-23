@@ -1,24 +1,15 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -273,9 +264,18 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
       // Keyboard-based modes
       case "toggle-autofuel":
       case "lap-margin-increase":
-      case "lap-margin-decrease":
-        await this.executeKeyboardMode(mode);
+      case "lap-margin-decrease": {
+        const settingKey = FUEL_SERVICE_GLOBAL_KEYS[mode];
+
+        if (!settingKey) {
+          this.logger.warn(`No global key mapping for mode: ${mode}`);
+
+          return;
+        }
+
+        await getBindingDispatcher().tap(settingKey);
         break;
+      }
     }
   }
 
@@ -305,56 +305,6 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     const success = pit.clearFuel();
     this.logger.info("Clear fuel checkbox executed");
     this.logger.debug(`Result: ${success}`);
-  }
-
-  private async executeKeyboardMode(mode: FuelServiceMode): Promise<void> {
-    const settingKey = FUEL_SERVICE_GLOBAL_KEYS[mode];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for mode: ${mode}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    if (isSimHubBinding(binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(binding.role);
-        await simHub.stopRole(binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 
   private async updateDisplay(

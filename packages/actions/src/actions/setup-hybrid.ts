@@ -1,11 +1,8 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
+  getBindingDispatcher,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
-  getSimHub,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDialUpEvent,
@@ -14,13 +11,6 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  isSimHubBinding,
-  isSimHubInitialized,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -161,12 +151,6 @@ export function generateSetupHybridSvg(settings: SetupHybridSettings): string {
 export const SETUP_HYBRID_UUID = "com.iracedeck.sd.core.setup-hybrid" as const;
 
 export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings> {
-  /** Currently held key combinations per action context, tracked for cleanup on release/disappear */
-  private heldCombinations = new Map<string, KeyCombination>();
-
-  /** Currently held SimHub roles per action context */
-  private heldSimHubRoles = new Map<string, string>();
-
   override async onWillAppear(ev: IDeckWillAppearEvent<SetupHybridSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
@@ -178,8 +162,7 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<SetupHybridSettings>): Promise<void> {
-    await this.releaseHeldKey(ev.action.id);
-    this.heldSimHubRoles.delete(ev.action.id);
+    await getBindingDispatcher().release(ev.action.id);
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
   }
@@ -195,7 +178,11 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
     const settings = this.parseSettings(ev.payload.settings);
 
     if (HOLD_CONTROLS.has(settings.setting)) {
-      await this.pressHold(ev.action.id, settings.setting);
+      const settingKey = this.resolveGlobalKey(settings.setting, "increase");
+
+      if (settingKey) {
+        await getBindingDispatcher().hold(ev.action.id, settingKey);
+      }
     } else {
       await this.executeTap(settings.setting, settings.direction);
     }
@@ -203,7 +190,7 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
 
   override async onKeyUp(ev: IDeckKeyUpEvent<SetupHybridSettings>): Promise<void> {
     this.logger.info("Key up received");
-    await this.releaseHeldKey(ev.action.id);
+    await getBindingDispatcher().release(ev.action.id);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<SetupHybridSettings>): Promise<void> {
@@ -211,7 +198,11 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
     const settings = this.parseSettings(ev.payload.settings);
 
     if (HOLD_CONTROLS.has(settings.setting)) {
-      await this.pressHold(ev.action.id, settings.setting);
+      const settingKey = this.resolveGlobalKey(settings.setting, "increase");
+
+      if (settingKey) {
+        await getBindingDispatcher().hold(ev.action.id, settingKey);
+      }
     } else {
       await this.executeTap(settings.setting, settings.direction);
     }
@@ -219,7 +210,7 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
 
   override async onDialUp(ev: IDeckDialUpEvent<SetupHybridSettings>): Promise<void> {
     this.logger.info("Dial up received");
-    await this.releaseHeldKey(ev.action.id);
+    await getBindingDispatcher().release(ev.action.id);
   }
 
   override async onDialRotate(ev: IDeckDialRotateEvent<SetupHybridSettings>): Promise<void> {
@@ -252,154 +243,16 @@ export class SetupHybrid extends ConnectionStateAwareAction<SetupHybridSettings>
     return SETUP_HYBRID_GLOBAL_KEYS[setting] ?? null;
   }
 
-  private resolveBinding(
-    setting: SetupHybridSetting,
-    direction: DirectionType,
-  ): { settingKey: string; binding: KeyBindingValue | { type: "simhub"; role: string } } | null {
+  private async executeTap(setting: SetupHybridSetting, direction: DirectionType): Promise<void> {
     const settingKey = this.resolveGlobalKey(setting, direction);
 
     if (!settingKey) {
       this.logger.warn(`No global key mapping for ${setting} ${direction}`);
 
-      return null;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
-
-    if (!binding) {
-      this.logger.warn(`No binding configured for ${settingKey}`);
-
-      return null;
-    }
-
-    return { settingKey, binding };
-  }
-
-  private async executeTap(setting: SetupHybridSetting, direction: DirectionType): Promise<void> {
-    this.logger.info("Setting executed");
-    this.logger.debug(`Executing tap ${setting} ${direction}`);
-
-    const resolved = this.resolveBinding(setting, direction);
-
-    if (!resolved) {
       return;
     }
 
-    if (isSimHubBinding(resolved.binding)) {
-      this.logger.info("Triggering SimHub role");
-      this.logger.debug(`SimHub role: ${resolved.binding.role}`);
-
-      if (isSimHubInitialized()) {
-        const simHub = getSimHub();
-        await simHub.startRole(resolved.binding.role);
-        await simHub.stopRole(resolved.binding.role);
-      } else {
-        this.logger.warn("SimHub service not initialized");
-      }
-
-      return;
-    }
-
-    this.logger.debug(
-      `Key binding for ${resolved.settingKey}: ${formatKeyBinding(resolved.binding)} (code=${resolved.binding.code ?? "none"})`,
-    );
-
-    const combination: KeyCombination = {
-      key: resolved.binding.key as KeyboardKey,
-      modifiers: resolved.binding.modifiers.length > 0 ? (resolved.binding.modifiers as KeyboardModifier[]) : undefined,
-      code: resolved.binding.code,
-    };
-
-    await this.sendKeyBinding(resolved.binding, combination);
-  }
-
-  private async pressHold(actionId: string, setting: SetupHybridSetting): Promise<void> {
-    this.logger.debug(`Pressing hold for ${setting}`);
-
-    const resolved = this.resolveBinding(setting, "increase");
-
-    if (!resolved) {
-      return;
-    }
-
-    if (isSimHubBinding(resolved.binding)) {
-      this.logger.info("Triggering SimHub role (hold)");
-      this.logger.debug(`SimHub role: ${resolved.binding.role}`);
-
-      if (!isSimHubInitialized()) {
-        this.logger.warn("SimHub service not initialized");
-
-        return;
-      }
-
-      const simHub = getSimHub();
-      await simHub.startRole(resolved.binding.role);
-      this.heldSimHubRoles.set(actionId, resolved.binding.role);
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: resolved.binding.key as KeyboardKey,
-      modifiers: resolved.binding.modifiers.length > 0 ? (resolved.binding.modifiers as KeyboardModifier[]) : undefined,
-      code: resolved.binding.code,
-    };
-
-    const success = await getKeyboard().pressKeyCombination(combination);
-
-    if (success) {
-      this.heldCombinations.set(actionId, combination);
-      this.logger.info("Key pressed (holding)");
-      this.logger.debug(`Key combination: ${formatKeyBinding(resolved.binding)}`);
-    } else {
-      this.logger.warn("Failed to press key");
-    }
-  }
-
-  private async releaseHeldKey(actionId: string): Promise<void> {
-    // Release SimHub role if held
-    const heldRole = this.heldSimHubRoles.get(actionId);
-
-    if (heldRole) {
-      this.heldSimHubRoles.delete(actionId);
-
-      if (isSimHubInitialized()) {
-        await getSimHub().stopRole(heldRole);
-        this.logger.info("SimHub role released");
-      }
-
-      return;
-    }
-
-    // Release keyboard key if held
-    const combination = this.heldCombinations.get(actionId);
-
-    if (!combination) {
-      return;
-    }
-
-    this.heldCombinations.delete(actionId);
-
-    const success = await getKeyboard().releaseKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key released");
-    } else {
-      this.logger.warn("Failed to release key");
-    }
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue, combination: KeyCombination): Promise<void> {
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
+    await getBindingDispatcher().tap(settingKey);
   }
 
   private async updateDisplay(

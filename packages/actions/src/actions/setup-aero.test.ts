@@ -24,10 +24,11 @@ vi.mock("@iracedeck/icons/setup-aero/rf-brake-attached.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">rf-brake-attached {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
+const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings, mockTap } = vi.hoisted(() => ({
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTap: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
@@ -63,6 +64,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
+  getBindingDispatcher: vi.fn(() => ({ tap: mockTap, hold: vi.fn(), release: vi.fn() })),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: mockSendKeyCombination,
   })),
@@ -257,96 +259,52 @@ describe("SetupAero", () => {
       action = new SetupAero();
     });
 
-    it("should call sendKeyCombination on keyDown for rf-brake-attached", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRfBrakeAttached: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for rf-brake-attached", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
-    it("should call sendKeyCombination for front-wing increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for front-wing increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
 
-    it("should call sendKeyCombination for front-wing decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for front-wing decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
     });
 
-    it("should call sendKeyCombination for rear-wing increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRearWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for rear-wing increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rear-wing", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroRearWingIncrease");
     });
 
-    it("should call sendKeyCombination for qualifying-tape decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroQualifyingTapeDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "down", modifiers: [], code: "ArrowDown" });
-
+    it("should call tapGlobalBinding for qualifying-tape decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "qualifying-tape", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "down",
-        modifiers: undefined,
-        code: "ArrowDown",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroQualifyingTapeDecrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRfBrakeAttached: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when global key mapping exists", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
   });
 
@@ -357,51 +315,34 @@ describe("SetupAero", () => {
       action = new SetupAero();
     });
 
-    it("should send increase key on clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "front-wing", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "front-wing", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTap).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
     });
 
-    it("should send correct key for different settings on rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRearWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for different settings on rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "rear-wing", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTap).toHaveBeenCalledWith("setupAeroRearWingIncrease");
     });
 
     it("should ignore rotation for non-directional controls (rf-brake-attached)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "rf-brake-attached" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTap).not.toHaveBeenCalled();
     });
   });
 });
