@@ -73,7 +73,11 @@
       "default": "Shift+R",
       "setting": "carControlEnterExitTow"
     },
-    { "id": "pauseSim", "label": "Pause Sim", "default": "Shift+P", "setting": "carControlPauseSim" }
+    { "id": "pauseSim", "label": "Pause Sim", "default": "Shift+P", "setting": "carControlPauseSim" },
+    { "id": "headlightFlash", "label": "Headlight Flash", "default": "", "setting": "carControlHeadlightFlash" },
+    { "id": "pushToPass", "label": "Push To Pass", "default": "", "setting": "carControlPushToPass" },
+    { "id": "drs", "label": "DRS", "default": "", "setting": "carControlDrs" },
+    { "id": "tearOffVisor", "label": "Tear Off Visor", "default": "", "setting": "carControlTearOffVisor" }
   ],
   "viewAdjustment": [
     { "id": "fovIncrease", "label": "FOV Increase", "default": "]", "setting": "viewAdjustFovIncrease" },

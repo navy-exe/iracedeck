@@ -251,6 +251,24 @@ function buildVarHeaders(): VarHeader[] {
     // Display
     { type: VarType.Int, count: 1, countAsTime: false, name: "DisplayUnits", desc: "Display units", unit: "" },
 
+    // Driver Controls
+    {
+      type: VarType.Bool,
+      count: 1,
+      countAsTime: false,
+      name: "P2P_Status",
+      desc: "Push to pass / overtake active state",
+      unit: "",
+    },
+    {
+      type: VarType.Int,
+      count: 1,
+      countAsTime: false,
+      name: "DRS_Status",
+      desc: "Drag Reduction System status",
+      unit: "",
+    },
+
     // Environment
     { type: VarType.Float, count: 1, countAsTime: false, name: "AirTemp", desc: "Air temperature", unit: "C" },
     { type: VarType.Float, count: 1, countAsTime: false, name: "TrackTempCrew", desc: "Track temperature", unit: "C" },

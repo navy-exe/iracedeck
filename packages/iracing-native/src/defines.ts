@@ -681,12 +681,18 @@ export interface TelemetryData {
   DriverMarker?: boolean;
   PushToTalk?: boolean;
   PushToPass?: boolean;
+  P2P_Status?: boolean;
   IsDiskLoggingEnabled?: boolean;
   IsDiskLoggingActive?: boolean;
   FrameRate?: number;
   CpuUsageFG?: number;
   CpuUsageBG?: number;
   GpuUsage?: number;
+
+  // Driver Controls
+  DRS_Status?: number;
+  dcPushToPass?: boolean;
+  dcDRSToggle?: boolean;
 }
 
 /**
