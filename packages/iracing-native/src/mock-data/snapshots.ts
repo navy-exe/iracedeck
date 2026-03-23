@@ -116,8 +116,8 @@ export const SNAPSHOT_MID_STRAIGHT: MockSnapshotValues = {
   DisplayUnits: 1, // Metric
 
   // Driver Controls
-  dcPushToPass: false,
-  dcDRSToggle: false,
+  P2P_Status: true,
+  DRS_Status: 1,
 
   // Environment
   AirTemp: 25.56,
@@ -151,6 +151,9 @@ export const SNAPSHOT_BRAKING: MockSnapshotValues = {
   LongAccel: -35.0,
 
   CarIdxLapDistPct: carArray(-1, { 0: 0.38, 1: 0.34, 2: 0.3 }),
+
+  P2P_Status: false,
+  DRS_Status: 0,
 };
 
 /**
@@ -189,6 +192,9 @@ export const SNAPSHOT_PIT_ENTRY: MockSnapshotValues = {
   CarIdxLapDistPct: carArray(-1, { 0: 0.12, 1: 0.45, 2: 0.4 }),
   CarIdxOnPitRoad: carBoolArray(false, { 0: true }),
   CarIdxTrackSurface: carArray(TrkLoc.NotInWorld, { 0: TrkLoc.AproachingPits, 1: TrkLoc.OnTrack, 2: TrkLoc.OnTrack }),
+
+  P2P_Status: false,
+  DRS_Status: 0,
 };
 
 /**
@@ -201,6 +207,8 @@ export const SNAPSHOT_YELLOW_FLAG: MockSnapshotValues = {
   SessionFlags: Flags.Yellow | Flags.Caution,
   Speed: 33.3, // ~120 km/h (slowing under caution)
   Throttle: 0.4,
+  P2P_Status: false,
+  DRS_Status: 0,
 };
 
 /**
@@ -227,6 +235,8 @@ export const SNAPSHOT_YELLOW_BLUE_FLAG: MockSnapshotValues = {
   Throttle: 0.4,
   PlayerCarPosition: 3,
   PlayerCarClassPosition: 3,
+  P2P_Status: false,
+  DRS_Status: 0,
 };
 
 /**

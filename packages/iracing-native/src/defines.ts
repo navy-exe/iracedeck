@@ -681,6 +681,7 @@ export interface TelemetryData {
   DriverMarker?: boolean;
   PushToTalk?: boolean;
   PushToPass?: boolean;
+  P2P_Status?: boolean;
   IsDiskLoggingEnabled?: boolean;
   IsDiskLoggingActive?: boolean;
   FrameRate?: number;
@@ -688,7 +689,8 @@ export interface TelemetryData {
   CpuUsageBG?: number;
   GpuUsage?: number;
 
-  // Driver Controls (dc* — read-only telemetry state of in-car toggles)
+  // Driver Controls
+  DRS_Status?: number;
   dcPushToPass?: boolean;
   dcDRSToggle?: boolean;
 }

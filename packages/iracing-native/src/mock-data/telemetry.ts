@@ -252,8 +252,22 @@ function buildVarHeaders(): VarHeader[] {
     { type: VarType.Int, count: 1, countAsTime: false, name: "DisplayUnits", desc: "Display units", unit: "" },
 
     // Driver Controls
-    { type: VarType.Bool, count: 1, countAsTime: false, name: "dcPushToPass", desc: "Push to pass toggle", unit: "" },
-    { type: VarType.Bool, count: 1, countAsTime: false, name: "dcDRSToggle", desc: "DRS toggle", unit: "" },
+    {
+      type: VarType.Bool,
+      count: 1,
+      countAsTime: false,
+      name: "P2P_Status",
+      desc: "Push to pass / overtake active state",
+      unit: "",
+    },
+    {
+      type: VarType.Int,
+      count: 1,
+      countAsTime: false,
+      name: "DRS_Status",
+      desc: "Drag Reduction System status",
+      unit: "",
+    },
 
     // Environment
     { type: VarType.Float, count: 1, countAsTime: false, name: "AirTemp", desc: "Air temperature", unit: "C" },
