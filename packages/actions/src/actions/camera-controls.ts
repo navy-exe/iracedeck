@@ -231,7 +231,7 @@ export const CAMERA_GROUP_MAP: Record<number, { name: string; icon: string }> = 
   13: { name: "Far Chase", icon: farChaseSvg },
   14: { name: "Rear Chase", icon: rearChaseSvg },
   15: { name: "Pit Lane", icon: pitLaneSvg },
-  16: { name: "Pit Lane 2", icon: pitLane2Svg },
+  16: { name: "Pit Lane2", icon: pitLane2Svg },
   17: { name: "TV1", icon: tv1Svg },
   18: { name: "TV2", icon: tv2Svg },
   19: { name: "TV3", icon: tv3Svg },
@@ -641,12 +641,20 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     const camera = getCommands().camera;
     const carIdx = telemetry.CamCarIdx ?? 0;
     const sessionInfo = this.sdkController.getSessionInfo();
+    const sessionGroups = sessionInfo ? getCameraGroupsFromSessionInfo(sessionInfo) : [];
+
+    // Resolve the actual group number from session info (camera group numbers can vary by track)
+    const targetName = CAMERA_GROUP_MAP[cameraGroup]?.name;
+    const resolvedGroup = targetName
+      ? (sessionGroups.find((g) => g.groupName === targetName)?.groupNum ?? cameraGroup)
+      : cameraGroup;
+
     const carNumberRaw = sessionInfo ? getCarNumberRawFromSessionInfo(sessionInfo, carIdx) : null;
 
     if (carNumberRaw !== null) {
-      const success = camera.switchNum(carNumberRaw, cameraGroup, 0);
+      const success = camera.switchNum(carNumberRaw, resolvedGroup, 0);
       this.logger.info("Camera changed");
-      this.logger.debug(`Result: ${success}, cameraGroup: ${cameraGroup}`);
+      this.logger.debug(`Result: ${success}, cameraGroup: ${resolvedGroup} (${targetName ?? cameraGroup})`);
     } else {
       this.logger.warn("Cannot change camera: car number not found in session info");
     }
