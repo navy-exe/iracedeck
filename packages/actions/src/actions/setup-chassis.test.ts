@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generateSetupChassisSvg, SETUP_CHASSIS_GLOBAL_KEYS, SetupChassis } from "./setup-chassis.js";
 
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-chassis/differential-entry-decrease.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">differential-entry-decrease {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -81,12 +85,6 @@ vi.mock("@iracedeck/icons/setup-chassis/rr-shock-increase.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">rr-shock-increase {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
-  mockSendKeyCombination: vi.fn().mockResolvedValue(true),
-  mockParseKeyBinding: vi.fn(),
-  mockGetGlobalSettings: vi.fn(() => ({})),
-}));
-
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
     extend: (_fields: unknown) => {
@@ -107,6 +105,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
+    updateKeyImage = vi.fn().mockResolvedValue(true);
+    tapBinding = mockTapBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
     async onWillDisappear() {}
@@ -119,12 +122,21 @@ vi.mock("@iracedeck/deck-core", () => ({
     return b.key;
   }),
   getGlobalColors: vi.fn(() => ({})),
-  getGlobalSettings: mockGetGlobalSettings,
+  getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
-    sendKeyCombination: mockSendKeyCombination,
+    sendKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
-  parseKeyBinding: mockParseKeyBinding,
+  parseBinding: vi.fn(),
+  parseKeyBinding: vi.fn(),
+  isSimHubBinding: vi.fn(
+    (v: unknown) => v !== null && typeof v === "object" && (v as Record<string, unknown>).type === "simhub",
+  ),
+  isSimHubInitialized: vi.fn(() => false),
+  getSimHub: vi.fn(() => ({
+    startRole: vi.fn().mockResolvedValue(true),
+    stopRole: vi.fn().mockResolvedValue(true),
+  })),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -450,88 +462,52 @@ describe("SetupChassis", () => {
       action = new SetupChassis();
     });
 
-    it("should call sendKeyCombination on keyDown for differential-preload increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisDifferentialPreloadIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for differential-preload increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "differential-preload", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
-    it("should call sendKeyCombination for differential-preload decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisDifferentialPreloadDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "b", modifiers: [], code: "KeyB" });
-
+    it("should call tapGlobalBinding for differential-preload decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "differential-preload", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "b",
-        modifiers: undefined,
-        code: "KeyB",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadDecrease");
     });
 
-    it("should call sendKeyCombination for front-arb increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisFrontArbIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for front-arb increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-arb", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisFrontArbIncrease");
     });
 
-    it("should call sendKeyCombination for lf-shock increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisLfShockIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for lf-shock increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "lf-shock", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisLfShockIncrease");
     });
 
-    it("should call sendKeyCombination for power-steering decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisPowerSteeringDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for power-steering decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "power-steering", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisPowerSteeringDecrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisDifferentialPreloadIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "differential-preload", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "differential-preload", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding for all directional settings", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "lf-shock", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisLfShockDecrease");
     });
   });
 
@@ -542,45 +518,28 @@ describe("SetupChassis", () => {
       action = new SetupChassis();
     });
 
-    it("should send increase key on clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisDifferentialPreloadIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "differential-preload", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisDifferentialPreloadDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "differential-preload", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadDecrease");
     });
 
-    it("should send correct key for different settings on rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupChassisFrontArbIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for different settings on rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "front-arb", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisFrontArbIncrease");
     });
   });
 });

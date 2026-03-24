@@ -1,20 +1,11 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -157,140 +148,58 @@ export function generateBlackBoxSelectorSvg(settings: BlackBoxSelectorSettings):
 export const BLACK_BOX_SELECTOR_UUID = "com.iracedeck.sd.core.black-box-selector" as const;
 
 export class BlackBoxSelector extends ConnectionStateAwareAction<BlackBoxSelectorSettings> {
-  /**
-   * When the action appears on the Stream Deck
-   */
   override async onWillAppear(ev: IDeckWillAppearEvent<BlackBoxSelectorSettings>): Promise<void> {
     await super.onWillAppear(ev);
-    const parsed = BlackBoxSelectorSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : BlackBoxSelectorSettings.parse({});
-
+    const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(this.resolveSettingKey(settings));
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
   }
 
-  /**
-   * When the action disappears from the Stream Deck
-   */
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<BlackBoxSelectorSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
+  override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<BlackBoxSelectorSettings>): Promise<void> {
+    await super.onDidReceiveSettings(ev);
+    const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(this.resolveSettingKey(settings));
+    await this.updateDisplay(ev, settings);
   }
 
-  /**
-   * Update display with current settings
-   */
+  override async onKeyDown(ev: IDeckKeyDownEvent<BlackBoxSelectorSettings>): Promise<void> {
+    this.logger.info("Key down received");
+    const settings = this.parseSettings(ev.payload.settings);
+    await this.tapBinding(this.resolveSettingKey(settings));
+  }
+
+  private parseSettings(settings: unknown): BlackBoxSelectorSettings {
+    const parsed = BlackBoxSelectorSettings.safeParse(settings);
+
+    return parsed.success ? parsed.data : BlackBoxSelectorSettings.parse({});
+  }
+
+  private resolveSettingKey(settings: BlackBoxSelectorSettings): string {
+    const { mode, blackBox } = settings;
+
+    return mode === "direct"
+      ? BLACK_BOX_GLOBAL_KEYS[blackBox]
+      : mode === "next"
+        ? GLOBAL_KEYS.CYCLE_NEXT
+        : GLOBAL_KEYS.CYCLE_PREVIOUS;
+  }
+
   private async updateDisplay(
     ev: IDeckWillAppearEvent<BlackBoxSelectorSettings> | IDeckDidReceiveSettingsEvent<BlackBoxSelectorSettings>,
     settings: BlackBoxSelectorSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateBlackBoxSelectorSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
     this.setRegenerateCallback(ev.action.id, () => generateBlackBoxSelectorSvg(settings));
   }
 
-  /**
-   * When settings are received or updated
-   */
-  override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<BlackBoxSelectorSettings>): Promise<void> {
-    await super.onDidReceiveSettings(ev);
-    const parsed = BlackBoxSelectorSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : BlackBoxSelectorSettings.parse({});
-
-    await this.updateDisplay(ev, settings);
-  }
-
-  /**
-   * When the key is pressed
-   */
-  override async onKeyDown(ev: IDeckKeyDownEvent<BlackBoxSelectorSettings>): Promise<void> {
-    this.logger.info("Key down received");
-
-    const parsed = BlackBoxSelectorSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : BlackBoxSelectorSettings.parse({});
-
-    const { mode, blackBox } = settings;
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-
-    let settingKey: string;
-
-    if (mode === "direct") {
-      settingKey = BLACK_BOX_GLOBAL_KEYS[blackBox];
-    } else if (mode === "next") {
-      settingKey = GLOBAL_KEYS.CYCLE_NEXT;
-    } else {
-      settingKey = GLOBAL_KEYS.CYCLE_PREVIOUS;
-    }
-
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    this.logger.info(`Looking for key: ${settingKey}, found: ${JSON.stringify(binding)}`);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
-  }
-
-  /**
-   * Send a key binding via the keyboard interface
-   */
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    this.logger.debug(`Sending key combination: ${JSON.stringify(combination)}`);
-
-    const keyboard = getKeyboard();
-
-    if (!keyboard) {
-      this.logger.error("Keyboard interface not available");
-
-      return;
-    }
-
-    const success = await keyboard.sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
-  /**
-   * When the encoder dial is rotated (Stream Deck+)
-   */
   override async onDialRotate(ev: IDeckDialRotateEvent<BlackBoxSelectorSettings>): Promise<void> {
     this.logger.info(`Dial rotated: ${ev.payload.ticks} ticks`);
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
 
     // Clockwise (ticks > 0) = next, Counter-clockwise (ticks < 0) = previous
     const settingKey = ev.payload.ticks > 0 ? GLOBAL_KEYS.CYCLE_NEXT : GLOBAL_KEYS.CYCLE_PREVIOUS;
 
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
+    await this.tapBinding(settingKey);
   }
 }

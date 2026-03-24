@@ -1,21 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -144,21 +135,14 @@ export class ViewAdjustment extends ConnectionStateAwareAction<ViewAdjustmentSet
   override async onWillAppear(ev: IDeckWillAppearEvent<ViewAdjustmentSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(VIEW_ADJUSTMENT_GLOBAL_KEYS[settings.adjustment]?.[settings.direction]);
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<ViewAdjustmentSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<ViewAdjustmentSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(VIEW_ADJUSTMENT_GLOBAL_KEYS[settings.adjustment]?.[settings.direction]);
     await this.updateDisplay(ev, settings);
   }
 
@@ -197,8 +181,6 @@ export class ViewAdjustment extends ConnectionStateAwareAction<ViewAdjustmentSet
   }
 
   private async executeAdjustment(adjustment: AdjustmentType, direction: DirectionType): Promise<void> {
-    this.logger.info(`Executing ${adjustment} ${direction}`);
-
     const settingKey = VIEW_ADJUSTMENT_GLOBAL_KEYS[adjustment]?.[direction];
 
     if (!settingKey) {
@@ -207,44 +189,13 @@ export class ViewAdjustment extends ConnectionStateAwareAction<ViewAdjustmentSet
       return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    this.logger.debug(`Key binding for ${settingKey}: ${formatKeyBinding(binding)} (code=${binding.code ?? "none"})`);
-
-    await this.sendKeyBinding(binding);
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
+    await this.tapBinding(settingKey);
   }
 
   private async updateDisplay(
     ev: IDeckWillAppearEvent<ViewAdjustmentSettings> | IDeckDidReceiveSettingsEvent<ViewAdjustmentSettings>,
     settings: ViewAdjustmentSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateViewAdjustmentSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

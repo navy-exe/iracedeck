@@ -1,20 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -105,21 +97,24 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
   override async onWillAppear(ev: IDeckWillAppearEvent<TelemetryControlSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.action];
+
+    if (activeKey) {
+      this.setActiveBinding(activeKey);
+    }
+
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<TelemetryControlSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<TelemetryControlSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.action];
+
+    if (activeKey) {
+      this.setActiveBinding(activeKey);
+    }
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -145,9 +140,18 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
     switch (actionType) {
       // Keyboard-based actions
       case "toggle-logging":
-      case "mark-event":
-        await this.executeKeyboardAction(actionType);
+      case "mark-event": {
+        const settingKey = TELEMETRY_CONTROL_GLOBAL_KEYS[actionType];
+
+        if (!settingKey) {
+          this.logger.warn(`No global key mapping for action: ${actionType}`);
+
+          return;
+        }
+
+        await this.tapBinding(settingKey);
         break;
+      }
 
       // SDK-based actions
       case "start-recording":
@@ -168,47 +172,10 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
     this.logger.debug(`Result: ${success}`);
   }
 
-  private async executeKeyboardAction(actionType: TelemetryControlAction): Promise<void> {
-    const settingKey = TELEMETRY_CONTROL_GLOBAL_KEYS[actionType];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for action: ${actionType}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
   private async updateDisplay(
     ev: IDeckWillAppearEvent<TelemetryControlSettings> | IDeckDidReceiveSettingsEvent<TelemetryControlSettings>,
     settings: TelemetryControlSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateTelemetryControlSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

@@ -8,10 +8,8 @@ import {
   SPOTTER_LABELS,
 } from "./ai-spotter-controls.js";
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
-  mockSendKeyCombination: vi.fn().mockResolvedValue(true),
-  mockParseKeyBinding: vi.fn(),
-  mockGetGlobalSettings: vi.fn(() => ({})),
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/ai-spotter-controls/damage-report.svg", () => ({
@@ -55,6 +53,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
+    updateKeyImage = vi.fn().mockResolvedValue(true);
+    tapBinding = mockTapBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
     async onWillDisappear() {}
@@ -67,12 +70,21 @@ vi.mock("@iracedeck/deck-core", () => ({
     return b.key;
   }),
   getGlobalColors: vi.fn(() => ({})),
-  getGlobalSettings: mockGetGlobalSettings,
+  getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
-    sendKeyCombination: mockSendKeyCombination,
+    sendKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
-  parseKeyBinding: mockParseKeyBinding,
+  parseBinding: vi.fn(),
+  parseKeyBinding: vi.fn(),
+  isSimHubBinding: vi.fn(
+    (v: unknown) => v !== null && typeof v === "object" && (v as Record<string, unknown>).type === "simhub",
+  ),
+  isSimHubInitialized: vi.fn(() => false),
+  getSimHub: vi.fn(() => ({
+    startRole: vi.fn().mockResolvedValue(true),
+    stopRole: vi.fn().mockResolvedValue(true),
+  })),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -243,65 +255,34 @@ describe("AiSpotterControls", () => {
       action = new AiSpotterControls();
     });
 
-    it("should call sendKeyCombination on keyDown for damage-report", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterDamageReport: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "d", modifiers: ["ctrl"], code: "KeyD" });
-
+    it("should call tapGlobalBinding on keyDown for damage-report", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "damage-report" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "d",
-        modifiers: ["ctrl"],
-        code: "KeyD",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("spotterDamageReport");
     });
 
-    it("should call sendKeyCombination on keyDown for louder", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterLouder: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "numpad_add", modifiers: ["shift", "ctrl"], code: "NumpadAdd" });
-
+    it("should call tapGlobalBinding on keyDown for louder", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "louder" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "numpad_add",
-        modifiers: ["shift", "ctrl"],
-        code: "NumpadAdd",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("spotterLouder");
     });
 
-    it("should call sendKeyCombination on keyDown for silence", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterSilence: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: ["shift", "ctrl"], code: "KeyM" });
-
+    it("should call tapGlobalBinding on keyDown for silence", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "silence" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "m",
-        modifiers: ["shift", "ctrl"],
-        code: "KeyM",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("spotterSilence");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "damage-report" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("spotterDamageReport");
     });
 
-    it("should send key with empty modifiers as undefined", async () => {
-      mockGetGlobalSettings.mockReturnValue({ spotterSilence: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: [], code: "KeyM" });
-
+    it("should call tapGlobalBinding for all controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "silence" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "m",
-        modifiers: undefined,
-        code: "KeyM",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("spotterSilence");
     });
   });
 });

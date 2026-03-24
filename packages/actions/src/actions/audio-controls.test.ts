@@ -2,10 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AUDIO_CONTROLS_GLOBAL_KEYS, AudioControls, generateAudioControlsSvg } from "./audio-controls.js";
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
-  mockSendKeyCombination: vi.fn().mockResolvedValue(true),
-  mockParseKeyBinding: vi.fn(),
-  mockGetGlobalSettings: vi.fn(() => ({})),
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/audio-controls/voice-chat-volume-up.svg", () => ({
@@ -47,6 +45,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
+    updateKeyImage = vi.fn().mockResolvedValue(true);
+    tapBinding = mockTapBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
     async onWillDisappear() {}
@@ -59,12 +62,21 @@ vi.mock("@iracedeck/deck-core", () => ({
     return b.key;
   }),
   getGlobalColors: vi.fn(() => ({})),
-  getGlobalSettings: mockGetGlobalSettings,
+  getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
-    sendKeyCombination: mockSendKeyCombination,
+    sendKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
-  parseKeyBinding: mockParseKeyBinding,
+  parseBinding: vi.fn(),
+  parseKeyBinding: vi.fn(),
+  isSimHubBinding: vi.fn(
+    (v: unknown) => v !== null && typeof v === "object" && (v as Record<string, unknown>).type === "simhub",
+  ),
+  isSimHubInitialized: vi.fn(() => false),
+  getSimHub: vi.fn(() => ({
+    startRole: vi.fn().mockResolvedValue(true),
+    stopRole: vi.fn().mockResolvedValue(true),
+  })),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -239,78 +251,41 @@ describe("AudioControls", () => {
       action = new AudioControls();
     });
 
-    it("should call sendKeyCombination on keyDown for voice-chat mute", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatMute: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: ["shift", "ctrl", "alt"], code: "KeyM" });
-
+    it("should call tapGlobalBinding on keyDown for voice-chat mute", async () => {
       await action.onKeyDown(fakeEvent("action-1", { category: "voice-chat", action: "mute" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "m",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "KeyM",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatMute");
     });
 
-    it("should call sendKeyCombination on keyDown for master volume-down", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioMasterVolumeDown: "bound" });
-      mockParseKeyBinding.mockReturnValue({
-        key: "numpad_subtract",
-        modifiers: ["shift", "alt"],
-        code: "NumpadSubtract",
-      });
-
+    it("should call tapGlobalBinding on keyDown for master volume-down", async () => {
       await action.onKeyDown(fakeEvent("action-1", { category: "master", action: "volume-down" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "numpad_subtract",
-        modifiers: ["shift", "alt"],
-        code: "NumpadSubtract",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("audioMasterVolumeDown");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatVolumeUp: "bound" });
-      mockParseKeyBinding.mockReturnValue({
-        key: "numpad_add",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "NumpadAdd",
-      });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
+      // For voice-chat category, dialDown always sends mute regardless of action setting
       await action.onDialDown(fakeEvent("action-1", { category: "voice-chat", action: "volume-up" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatMute");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { category: "voice-chat", action: "volume-up" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatVolumeUp");
     });
 
-    it("should handle missing global key mapping gracefully (master mute)", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should not call tapGlobalBinding for master mute (no global key mapping)", async () => {
       await action.onKeyDown(fakeEvent("action-1", { category: "master", action: "mute" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
 
-    it("should send key with empty modifiers as undefined", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatMute: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: [], code: "KeyM" });
-
+    it("should call tapGlobalBinding for voice-chat mute", async () => {
       await action.onKeyDown(fakeEvent("action-1", { category: "voice-chat", action: "mute" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "m",
-        modifiers: undefined,
-        code: "KeyM",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatMute");
     });
   });
 
@@ -321,89 +296,43 @@ describe("AudioControls", () => {
       action = new AudioControls();
     });
 
-    it("should send volume-up key on clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatVolumeUp: "bound" });
-      mockParseKeyBinding.mockReturnValue({
-        key: "numpad_add",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "NumpadAdd",
-      });
-
+    it("should call tapGlobalBinding for volume-up on clockwise rotation", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { category: "voice-chat", action: "mute" }, 1) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "numpad_add",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "NumpadAdd",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatVolumeUp");
     });
 
-    it("should send volume-down key on counter-clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatVolumeDown: "bound" });
-      mockParseKeyBinding.mockReturnValue({
-        key: "numpad_subtract",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "NumpadSubtract",
-      });
-
+    it("should call tapGlobalBinding for volume-down on counter-clockwise rotation", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { category: "voice-chat", action: "mute" }, -1) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "numpad_subtract",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "NumpadSubtract",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatVolumeDown");
     });
 
-    it("should send volume-up for master on clockwise rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioMasterVolumeUp: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "numpad_add", modifiers: ["shift", "alt"], code: "NumpadAdd" });
-
+    it("should call tapGlobalBinding for volume-up for master on clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { category: "master", action: "volume-down" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("audioMasterVolumeUp");
     });
 
-    it("should send mute on dial press for voice-chat", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatMute: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: ["shift", "ctrl", "alt"], code: "KeyM" });
-
+    it("should call tapGlobalBinding for mute on dial press for voice-chat", async () => {
       await action.onDialDown(fakeEvent("action-1", { category: "voice-chat", action: "volume-down" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatMute");
     });
 
-    it("should send configured action on dial press for master (no mute)", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioMasterVolumeDown: "bound" });
-      mockParseKeyBinding.mockReturnValue({
-        key: "numpad_subtract",
-        modifiers: ["shift", "alt"],
-        code: "NumpadSubtract",
-      });
-
+    it("should call tapGlobalBinding for configured action on dial press for master (no mute)", async () => {
       await action.onDialDown(fakeEvent("action-1", { category: "master", action: "volume-down" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "numpad_subtract",
-        modifiers: ["shift", "alt"],
-        code: "NumpadSubtract",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("audioMasterVolumeDown");
     });
 
     it("should always control volume on rotation regardless of action setting", async () => {
-      mockGetGlobalSettings.mockReturnValue({ audioVoiceChatVolumeUp: "bound" });
-      mockParseKeyBinding.mockReturnValue({
-        key: "numpad_add",
-        modifiers: ["shift", "ctrl", "alt"],
-        code: "NumpadAdd",
-      });
-
       // Even when action is set to "mute", rotation should send volume-up
       await action.onDialRotate(fakeDialRotateEvent("action-1", { category: "voice-chat", action: "mute" }, 1) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatVolumeUp");
     });
   });
 });

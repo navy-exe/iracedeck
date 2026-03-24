@@ -20,7 +20,9 @@ import type { IDeckPlatformAdapter } from "./types.js";
  * Exported for use by plugins defining their own key binding schemas.
  */
 export const KeyBindingValueSchema = z.object({
-  key: z.string(),
+  // default("keyboard") provides backward compat with persisted values that lack the field
+  type: z.literal("keyboard").default("keyboard"),
+  key: z.string().min(1),
   modifiers: z.array(z.string()).default([]),
   /** KeyboardEvent.code (e.g., "Quote") - identifies the physical key position */
   code: z.string().optional(),
@@ -29,6 +31,29 @@ export const KeyBindingValueSchema = z.object({
 });
 
 export type KeyBindingValue = z.infer<typeof KeyBindingValueSchema>;
+
+/**
+ * Schema for SimHub Control Mapper role bindings.
+ * Stored by the ird-key-binding component when in SimHub mode.
+ */
+export const SimHubBindingValueSchema = z.object({
+  type: z.literal("simhub"),
+  role: z.string().min(1),
+});
+
+export type SimHubBindingValue = z.infer<typeof SimHubBindingValueSchema>;
+
+/**
+ * Union type for all binding values (keyboard shortcut or SimHub role).
+ */
+export type BindingValue = KeyBindingValue | SimHubBindingValue;
+
+/**
+ * Type guard to check if a binding value is a SimHub role binding.
+ */
+export function isSimHubBinding(value: BindingValue | null | undefined): value is SimHubBindingValue {
+  return value != null && value.type === "simhub";
+}
 
 /**
  * Schema for global plugin settings.
@@ -50,6 +75,16 @@ export const GlobalSettingsSchema = z
       .union([z.boolean(), z.string()])
       .transform((val) => val === true || val === "true")
       .default(false),
+    /**
+     * Hostname or IP address of the SimHub instance for Control Mapper integration.
+     * Default: "127.0.0.1"
+     */
+    simHubHost: z.string().default("127.0.0.1"),
+    /**
+     * HTTP port for SimHub's REST API (Control Mapper).
+     * Default: 8888
+     */
+    simHubPort: z.coerce.number().min(1).max(65535).default(8888),
   })
   .passthrough();
 

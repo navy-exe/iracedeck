@@ -73,7 +73,14 @@ import {
   ViewAdjustment,
 } from "@iracedeck/actions";
 import { VSDPlatformAdapter } from "@iracedeck/deck-adapter-mirabox";
-import { initAppMonitor, initGlobalSettings, initializeKeyboard, initializeSDK } from "@iracedeck/deck-core";
+import {
+  initAppMonitor,
+  initGlobalSettings,
+  initializeBindingDispatcher,
+  initializeKeyboard,
+  initializeSDK,
+  initializeSimHub,
+} from "@iracedeck/deck-core";
 import { IRacingNative } from "@iracedeck/iracing-native";
 
 import { focusIRacingIfEnabled, initWindowFocus } from "./shared/window-focus.js";
@@ -149,6 +156,12 @@ adapter.registerAction(VIEW_ADJUSTMENT_UUID, new ViewAdjustment(adapter.createLo
 
 // Initialize global settings listener BEFORE connect - handlers must be registered first
 initGlobalSettings(adapter, adapter.createLogger("GlobalSettings"));
+
+// Initialize SimHub AFTER global settings so health check uses configured host/port
+initializeSimHub(adapter.createLogger("SimHub"));
+
+// Initialize binding dispatcher AFTER SimHub so isReady can check reachability
+initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
 
 // Initialize app monitor for iRacing process detection
 initAppMonitor(adapter, adapter.createLogger("AppMonitor"));

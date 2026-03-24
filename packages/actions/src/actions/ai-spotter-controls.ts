@@ -1,19 +1,10 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -124,28 +115,30 @@ export class AiSpotterControls extends ConnectionStateAwareAction<AiSpotterContr
   override async onWillAppear(ev: IDeckWillAppearEvent<AiSpotterControlsSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(SPOTTER_GLOBAL_KEYS[settings.control]);
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<AiSpotterControlsSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<AiSpotterControlsSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(SPOTTER_GLOBAL_KEYS[settings.control]);
     await this.updateDisplay(ev, settings);
   }
 
   override async onKeyDown(ev: IDeckKeyDownEvent<AiSpotterControlsSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeControl(settings.control);
+
+    const settingKey = SPOTTER_GLOBAL_KEYS[settings.control];
+
+    if (!settingKey) {
+      this.logger.warn(`No global key mapping for ${settings.control}`);
+
+      return;
+    }
+
+    await this.tapBinding(settingKey);
   }
 
   private parseSettings(settings: unknown): AiSpotterControlsSettings {
@@ -154,56 +147,10 @@ export class AiSpotterControls extends ConnectionStateAwareAction<AiSpotterContr
     return parsed.success ? parsed.data : AiSpotterControlsSettings.parse({});
   }
 
-  private async executeControl(control: SpotterControl): Promise<void> {
-    this.logger.info("Control executed");
-    this.logger.debug(`Executing ${control}`);
-
-    const settingKey = SPOTTER_GLOBAL_KEYS[control];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for ${control}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    this.logger.debug(`Key binding for ${settingKey}: ${formatKeyBinding(binding)} (code=${binding.code ?? "none"})`);
-
-    await this.sendKeyBinding(binding);
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
   private async updateDisplay(
     ev: IDeckWillAppearEvent<AiSpotterControlsSettings> | IDeckDidReceiveSettingsEvent<AiSpotterControlsSettings>,
     settings: AiSpotterControlsSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateAiSpotterControlsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

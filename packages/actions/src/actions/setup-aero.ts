@@ -1,21 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -135,21 +126,24 @@ export class SetupAero extends ConnectionStateAwareAction<SetupAeroSettings> {
   override async onWillAppear(ev: IDeckWillAppearEvent<SetupAeroSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = this.resolveGlobalKey(settings.setting, settings.direction);
+
+    if (activeKey) {
+      this.setActiveBinding(activeKey);
+    }
+
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<SetupAeroSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<SetupAeroSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = this.resolveGlobalKey(settings.setting, settings.direction);
+
+    if (activeKey) {
+      this.setActiveBinding(activeKey);
+    }
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -188,9 +182,6 @@ export class SetupAero extends ConnectionStateAwareAction<SetupAeroSettings> {
   }
 
   private async executeSetting(setting: SetupAeroSetting, direction: DirectionType): Promise<void> {
-    this.logger.info("Setting executed");
-    this.logger.debug(`Executing ${setting} ${direction}`);
-
     const settingKey = this.resolveGlobalKey(setting, direction);
 
     if (!settingKey) {
@@ -199,18 +190,7 @@ export class SetupAero extends ConnectionStateAwareAction<SetupAeroSettings> {
       return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    this.logger.debug(`Key binding for ${settingKey}: ${formatKeyBinding(binding)} (code=${binding.code ?? "none"})`);
-
-    await this.sendKeyBinding(binding);
+    await this.tapBinding(settingKey);
   }
 
   private resolveGlobalKey(setting: SetupAeroSetting, direction: DirectionType): string | null {
@@ -223,30 +203,10 @@ export class SetupAero extends ConnectionStateAwareAction<SetupAeroSettings> {
     return SETUP_AERO_GLOBAL_KEYS[setting] ?? null;
   }
 
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
   private async updateDisplay(
     ev: IDeckWillAppearEvent<SetupAeroSettings> | IDeckDidReceiveSettingsEvent<SetupAeroSettings>,
     settings: SetupAeroSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateSetupAeroSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

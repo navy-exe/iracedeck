@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateSetupBrakesSvg, SETUP_BRAKES_GLOBAL_KEYS } from "./setup-brakes.js";
 import { SetupBrakes } from "./setup-brakes.js";
 
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-brakes/abs-toggle.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">abs-toggle {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -43,12 +47,6 @@ vi.mock("@iracedeck/icons/setup-brakes/engine-braking-decrease.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">engine-braking-decrease {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
-  mockSendKeyCombination: vi.fn().mockResolvedValue(true),
-  mockParseKeyBinding: vi.fn(),
-  mockGetGlobalSettings: vi.fn(() => ({})),
-}));
-
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
     extend: (_fields: unknown) => {
@@ -69,6 +67,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
+    updateKeyImage = vi.fn().mockResolvedValue(true);
+    tapBinding = mockTapBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
     async onWillDisappear() {}
@@ -81,12 +84,21 @@ vi.mock("@iracedeck/deck-core", () => ({
     return b.key;
   }),
   getGlobalColors: vi.fn(() => ({})),
-  getGlobalSettings: mockGetGlobalSettings,
+  getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
-    sendKeyCombination: mockSendKeyCombination,
+    sendKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
-  parseKeyBinding: mockParseKeyBinding,
+  parseBinding: vi.fn(),
+  parseKeyBinding: vi.fn(),
+  isSimHubBinding: vi.fn(
+    (v: unknown) => v !== null && typeof v === "object" && (v as Record<string, unknown>).type === "simhub",
+  ),
+  isSimHubInitialized: vi.fn(() => false),
+  getSimHub: vi.fn(() => ({
+    startRole: vi.fn().mockResolvedValue(true),
+    stopRole: vi.fn().mockResolvedValue(true),
+  })),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -333,114 +345,64 @@ describe("SetupBrakes", () => {
       action = new SetupBrakes();
     });
 
-    it("should call sendKeyCombination on keyDown for abs-toggle", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesAbsToggle: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for abs-toggle", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "abs-toggle" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
     });
 
-    it("should call sendKeyCombination for brake-bias increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesBrakeBiasIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for brake-bias increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-bias", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
     });
 
-    it("should call sendKeyCombination for brake-bias decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesBrakeBiasDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for brake-bias decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-bias", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasDecrease");
     });
 
-    it("should call sendKeyCombination for abs-adjust increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesAbsAdjustIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for abs-adjust increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "abs-adjust", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsAdjustIncrease");
     });
 
-    it("should call sendKeyCombination for engine-braking decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesEngineBrakingDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "down", modifiers: [], code: "ArrowDown" });
-
+    it("should call tapGlobalBinding for engine-braking decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "engine-braking", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "down",
-        modifiers: undefined,
-        code: "ArrowDown",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesEngineBrakingDecrease");
     });
 
-    it("should call sendKeyCombination for peak-brake-bias increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesPeakBrakeBiasIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "p", modifiers: ["shift"], code: "KeyP" });
-
+    it("should call tapGlobalBinding for peak-brake-bias increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "peak-brake-bias", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesPeakBrakeBiasIncrease");
     });
 
-    it("should call sendKeyCombination for brake-misc decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesBrakeMiscDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "m", modifiers: [], code: "KeyM" });
-
+    it("should call tapGlobalBinding for brake-misc decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-misc", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeMiscDecrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesAbsToggle: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "abs-toggle" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "abs-toggle" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding for directional controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-bias", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
     });
   });
 
@@ -451,51 +413,34 @@ describe("SetupBrakes", () => {
       action = new SetupBrakes();
     });
 
-    it("should send increase key on clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesBrakeBiasIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "brake-bias", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesBrakeBiasDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "brake-bias", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasDecrease");
     });
 
-    it("should send correct key for engine-braking rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupBrakesEngineBrakingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for engine-braking rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "engine-braking", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesEngineBrakingIncrease");
     });
 
     it("should ignore rotation for non-directional controls (abs-toggle)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "abs-toggle" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
   });
 });

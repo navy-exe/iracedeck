@@ -1,21 +1,13 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -201,21 +193,18 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   override async onWillAppear(ev: IDeckWillAppearEvent<FuelServiceSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = FUEL_SERVICE_GLOBAL_KEYS[settings.mode];
+    this.setActiveBinding(activeKey ?? null);
+
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<FuelServiceSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<FuelServiceSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = FUEL_SERVICE_GLOBAL_KEYS[settings.mode];
+    this.setActiveBinding(activeKey ?? null);
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -270,9 +259,18 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
       // Keyboard-based modes
       case "toggle-autofuel":
       case "lap-margin-increase":
-      case "lap-margin-decrease":
-        await this.executeKeyboardMode(mode);
+      case "lap-margin-decrease": {
+        const settingKey = FUEL_SERVICE_GLOBAL_KEYS[mode];
+
+        if (!settingKey) {
+          this.logger.warn(`No global key mapping for mode: ${mode}`);
+
+          return;
+        }
+
+        await this.tapBinding(settingKey);
         break;
+      }
     }
   }
 
@@ -304,47 +302,10 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     this.logger.debug(`Result: ${success}`);
   }
 
-  private async executeKeyboardMode(mode: FuelServiceMode): Promise<void> {
-    const settingKey = FUEL_SERVICE_GLOBAL_KEYS[mode];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for mode: ${mode}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
   private async updateDisplay(
     ev: IDeckWillAppearEvent<FuelServiceSettings> | IDeckDidReceiveSettingsEvent<FuelServiceSettings>,
     settings: FuelServiceSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateFuelServiceSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

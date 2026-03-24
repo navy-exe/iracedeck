@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generateSetupAeroSvg, SETUP_AERO_GLOBAL_KEYS, SetupAero } from "./setup-aero.js";
 
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-aero/front-wing-decrease.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">front-wing-decrease {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -24,12 +28,6 @@ vi.mock("@iracedeck/icons/setup-aero/rf-brake-attached.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">rf-brake-attached {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-const { mockSendKeyCombination, mockParseKeyBinding, mockGetGlobalSettings } = vi.hoisted(() => ({
-  mockSendKeyCombination: vi.fn().mockResolvedValue(true),
-  mockParseKeyBinding: vi.fn(),
-  mockGetGlobalSettings: vi.fn(() => ({})),
-}));
-
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
     extend: (_fields: unknown) => {
@@ -50,6 +48,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
+    updateKeyImage = vi.fn().mockResolvedValue(true);
+    tapBinding = mockTapBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
     async onWillDisappear() {}
@@ -62,12 +65,21 @@ vi.mock("@iracedeck/deck-core", () => ({
     return b.key;
   }),
   getGlobalColors: vi.fn(() => ({})),
-  getGlobalSettings: mockGetGlobalSettings,
+  getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
-    sendKeyCombination: mockSendKeyCombination,
+    sendKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
-  parseKeyBinding: mockParseKeyBinding,
+  parseBinding: vi.fn(),
+  parseKeyBinding: vi.fn(),
+  isSimHubBinding: vi.fn(
+    (v: unknown) => v !== null && typeof v === "object" && (v as Record<string, unknown>).type === "simhub",
+  ),
+  isSimHubInitialized: vi.fn(() => false),
+  getSimHub: vi.fn(() => ({
+    startRole: vi.fn().mockResolvedValue(true),
+    stopRole: vi.fn().mockResolvedValue(true),
+  })),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -248,96 +260,52 @@ describe("SetupAero", () => {
       action = new SetupAero();
     });
 
-    it("should call sendKeyCombination on keyDown for rf-brake-attached", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRfBrakeAttached: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on keyDown for rf-brake-attached", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "a",
-        modifiers: ["ctrl"],
-        code: "KeyA",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
-    it("should call sendKeyCombination for front-wing increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for front-wing increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
 
-    it("should call sendKeyCombination for front-wing decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for front-wing decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
     });
 
-    it("should call sendKeyCombination for rear-wing increase", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRearWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for rear-wing increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rear-wing", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "up",
-        modifiers: undefined,
-        code: "ArrowUp",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRearWingIncrease");
     });
 
-    it("should call sendKeyCombination for qualifying-tape decrease", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroQualifyingTapeDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "down", modifiers: [], code: "ArrowDown" });
-
+    it("should call tapGlobalBinding for qualifying-tape decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "qualifying-tape", direction: "decrease" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "down",
-        modifiers: undefined,
-        code: "ArrowDown",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroQualifyingTapeDecrease");
     });
 
-    it("should call sendKeyCombination on dialDown", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRfBrakeAttached: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "a", modifiers: ["ctrl"], code: "KeyA" });
-
+    it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
-    it("should handle missing key binding gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
-    it("should handle missing global key mapping gracefully", async () => {
-      mockGetGlobalSettings.mockReturnValue({});
-      mockParseKeyBinding.mockReturnValue(undefined);
-
+    it("should call tapGlobalBinding even when global key mapping exists", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "increase" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
   });
 
@@ -348,51 +316,34 @@ describe("SetupAero", () => {
       action = new SetupAero();
     });
 
-    it("should send increase key on clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "=", modifiers: [], code: "Equal" });
-
+    it("should call tapGlobalBinding for increase on clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "front-wing", direction: "increase" }, 1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "=",
-        modifiers: undefined,
-        code: "Equal",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
 
-    it("should send decrease key on counter-clockwise rotation for directional controls", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroFrontWingDecrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "-", modifiers: [], code: "Minus" });
-
+    it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "front-wing", direction: "increase" }, -1) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledWith({
-        key: "-",
-        modifiers: undefined,
-        code: "Minus",
-      });
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
     });
 
-    it("should send correct key for different settings on rotation", async () => {
-      mockGetGlobalSettings.mockReturnValue({ setupAeroRearWingIncrease: "bound" });
-      mockParseKeyBinding.mockReturnValue({ key: "up", modifiers: [], code: "ArrowUp" });
-
+    it("should call tapGlobalBinding for different settings on rotation", async () => {
       await action.onDialRotate(
         fakeDialRotateEvent("action-1", { setting: "rear-wing", direction: "increase" }, 2) as any,
       );
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRearWingIncrease");
     });
 
     it("should ignore rotation for non-directional controls (rf-brake-attached)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "rf-brake-attached" }, 1) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
   });
 });

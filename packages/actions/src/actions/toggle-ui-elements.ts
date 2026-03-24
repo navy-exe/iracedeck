@@ -1,21 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -136,21 +127,18 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
   override async onWillAppear(ev: IDeckWillAppearEvent<ToggleUiElementsSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = UI_ELEMENT_GLOBAL_KEYS[settings.element];
+    this.setActiveBinding(activeKey ?? null);
+
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<ToggleUiElementsSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<ToggleUiElementsSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = UI_ELEMENT_GLOBAL_KEYS[settings.element];
+    this.setActiveBinding(activeKey ?? null);
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -218,42 +206,13 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
       return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
+    await this.tapBinding(settingKey);
   }
 
   private async updateDisplay(
     ev: IDeckWillAppearEvent<ToggleUiElementsSettings> | IDeckDidReceiveSettingsEvent<ToggleUiElementsSettings>,
     settings: ToggleUiElementsSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateToggleUiElementsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

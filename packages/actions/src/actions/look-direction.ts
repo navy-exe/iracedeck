@@ -1,10 +1,7 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialUpEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -12,11 +9,6 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -93,51 +85,61 @@ export function generateLookDirectionSvg(settings: LookDirectionSettings): strin
 export const LOOK_DIRECTION_UUID = "com.iracedeck.sd.core.look-direction" as const;
 
 export class LookDirection extends ConnectionStateAwareAction<LookDirectionSettings> {
-  /** Currently held key combinations per action context, tracked for cleanup on release/disappear */
-  private heldCombinations = new Map<string, KeyCombination>();
-
   override async onWillAppear(ev: IDeckWillAppearEvent<LookDirectionSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(LOOK_DIRECTION_GLOBAL_KEYS[settings.direction]);
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<LookDirectionSettings>): Promise<void> {
-    await this.releaseHeldKey(ev.action.id);
+    await this.releaseBinding(ev.action.id);
     await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<LookDirectionSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(LOOK_DIRECTION_GLOBAL_KEYS[settings.direction]);
     await this.updateDisplay(ev, settings);
   }
 
   override async onKeyDown(ev: IDeckKeyDownEvent<LookDirectionSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.pressLook(ev.action.id, settings.direction);
+    const settingKey = LOOK_DIRECTION_GLOBAL_KEYS[settings.direction];
+
+    if (!settingKey) {
+      this.logger.warn(`No global key mapping for direction: ${settings.direction}`);
+
+      return;
+    }
+
+    await this.holdBinding(ev.action.id, settingKey);
   }
 
   override async onKeyUp(ev: IDeckKeyUpEvent<LookDirectionSettings>): Promise<void> {
     this.logger.info("Key up received");
-    await this.releaseHeldKey(ev.action.id);
+    await this.releaseBinding(ev.action.id);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<LookDirectionSettings>): Promise<void> {
     this.logger.info("Dial down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.pressLook(ev.action.id, settings.direction);
+    const settingKey = LOOK_DIRECTION_GLOBAL_KEYS[settings.direction];
+
+    if (!settingKey) {
+      this.logger.warn(`No global key mapping for direction: ${settings.direction}`);
+
+      return;
+    }
+
+    await this.holdBinding(ev.action.id, settingKey);
   }
 
   override async onDialUp(ev: IDeckDialUpEvent<LookDirectionSettings>): Promise<void> {
     this.logger.info("Dial up received");
-    await this.releaseHeldKey(ev.action.id);
+    await this.releaseBinding(ev.action.id);
   }
 
   private parseSettings(settings: unknown): LookDirectionSettings {
@@ -146,78 +148,10 @@ export class LookDirection extends ConnectionStateAwareAction<LookDirectionSetti
     return parsed.success ? parsed.data : LookDirectionSettings.parse({});
   }
 
-  private async pressLook(actionId: string, direction: LookDirectionType): Promise<void> {
-    const { combination, binding } = this.resolveCombination(direction) ?? {};
-
-    if (!combination || !binding) {
-      return;
-    }
-
-    const success = await getKeyboard().pressKeyCombination(combination);
-
-    if (success) {
-      this.heldCombinations.set(actionId, combination);
-      this.logger.info("Key pressed (holding)");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to press key");
-    }
-  }
-
-  private async releaseHeldKey(actionId: string): Promise<void> {
-    const combination = this.heldCombinations.get(actionId);
-
-    if (!combination) {
-      return;
-    }
-
-    this.heldCombinations.delete(actionId);
-
-    const success = await getKeyboard().releaseKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key released");
-    } else {
-      this.logger.warn("Failed to release key");
-    }
-  }
-
-  private resolveCombination(
-    direction: LookDirectionType,
-  ): { combination: KeyCombination; binding: KeyBindingValue } | null {
-    const settingKey = LOOK_DIRECTION_GLOBAL_KEYS[direction];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for direction: ${direction}`);
-
-      return null;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return null;
-    }
-
-    return {
-      combination: {
-        key: binding.key as KeyboardKey,
-        modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-        code: binding.code,
-      },
-      binding,
-    };
-  }
-
   private async updateDisplay(
     ev: IDeckWillAppearEvent<LookDirectionSettings> | IDeckDidReceiveSettingsEvent<LookDirectionSettings>,
     settings: LookDirectionSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateLookDirectionSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

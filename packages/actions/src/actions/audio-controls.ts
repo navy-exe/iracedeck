@@ -1,21 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -114,21 +105,24 @@ export class AudioControls extends ConnectionStateAwareAction<AudioControlsSetti
   override async onWillAppear(ev: IDeckWillAppearEvent<AudioControlsSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = this.resolveGlobalKey(settings.category, settings.action);
+
+    if (activeKey) {
+      this.setActiveBinding(activeKey);
+    }
+
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<AudioControlsSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<AudioControlsSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
+    const activeKey = this.resolveGlobalKey(settings.category, settings.action);
+
+    if (activeKey) {
+      this.setActiveBinding(activeKey);
+    }
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -163,9 +157,6 @@ export class AudioControls extends ConnectionStateAwareAction<AudioControlsSetti
   }
 
   private async executeControl(category: AudioCategory, audioAction: AudioAction): Promise<void> {
-    this.logger.info("Control executed");
-    this.logger.debug(`Executing ${category} ${audioAction}`);
-
     const settingKey = this.resolveGlobalKey(category, audioAction);
 
     if (!settingKey) {
@@ -174,18 +165,7 @@ export class AudioControls extends ConnectionStateAwareAction<AudioControlsSetti
       return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    this.logger.debug(`Key binding for ${settingKey}: ${formatKeyBinding(binding)} (code=${binding.code ?? "none"})`);
-
-    await this.sendKeyBinding(binding);
+    await this.tapBinding(settingKey);
   }
 
   private resolveGlobalKey(category: AudioCategory, audioAction: AudioAction): string | null {
@@ -194,30 +174,10 @@ export class AudioControls extends ConnectionStateAwareAction<AudioControlsSetti
     return AUDIO_CONTROLS_GLOBAL_KEYS[key] ?? null;
   }
 
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
   private async updateDisplay(
     ev: IDeckWillAppearEvent<AudioControlsSettings> | IDeckDidReceiveSettingsEvent<AudioControlsSettings>,
     settings: AudioControlsSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateAudioControlsSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);

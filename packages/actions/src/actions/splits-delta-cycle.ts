@@ -1,21 +1,12 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -129,134 +120,64 @@ export const SPLITS_DELTA_CYCLE_UUID = "com.iracedeck.sd.core.splits-delta-cycle
 export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycleSettings> {
   override async onWillAppear(ev: IDeckWillAppearEvent<SplitsDeltaCycleSettings>): Promise<void> {
     await super.onWillAppear(ev);
-    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
-
+    const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(this.resolveSettingKey(settings));
     await this.updateDisplay(ev, settings);
-
-    this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-    });
-  }
-
-  override async onWillDisappear(ev: IDeckWillDisappearEvent<SplitsDeltaCycleSettings>): Promise<void> {
-    await super.onWillDisappear(ev);
-    this.sdkController.unsubscribe(ev.action.id);
   }
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<SplitsDeltaCycleSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
-    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
-
+    const settings = this.parseSettings(ev.payload.settings);
+    this.setActiveBinding(this.resolveSettingKey(settings));
     await this.updateDisplay(ev, settings);
   }
 
   override async onKeyDown(ev: IDeckKeyDownEvent<SplitsDeltaCycleSettings>): Promise<void> {
     this.logger.info("Key down received");
-
-    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
-
-    const settingKey =
-      MODE_KEY_MAP[settings.mode] ??
-      (settings.direction === "next" ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS);
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
+    const settings = this.parseSettings(ev.payload.settings);
+    await this.tapBinding(this.resolveSettingKey(settings));
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<SplitsDeltaCycleSettings>): Promise<void> {
     this.logger.info("Dial down received");
-
-    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
+    const settings = this.parseSettings(ev.payload.settings);
 
     const settingKey = MODE_KEY_MAP[settings.mode];
 
     if (!settingKey) return;
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
+    await this.tapBinding(settingKey);
   }
 
   override async onDialRotate(ev: IDeckDialRotateEvent<SplitsDeltaCycleSettings>): Promise<void> {
-    const parsed = SplitsDeltaCycleSettings.safeParse(ev.payload.settings);
-    const settings = parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
+    const settings = this.parseSettings(ev.payload.settings);
 
     if (settings.mode !== "cycle") return;
 
     this.logger.info(`Dial rotated: ${ev.payload.ticks} ticks`);
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-
-    // Clockwise (ticks > 0) = next, Counter-clockwise (ticks < 0) = previous
     const settingKey = ev.payload.ticks > 0 ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS;
+    await this.tapBinding(settingKey);
+  }
 
-    const binding = parseKeyBinding(globalSettings[settingKey]);
+  private parseSettings(settings: unknown): SplitsDeltaCycleSettings {
+    const parsed = SplitsDeltaCycleSettings.safeParse(settings);
 
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
+    return parsed.success ? parsed.data : SplitsDeltaCycleSettings.parse({});
+  }
 
-      return;
-    }
-
-    await this.sendKeyBinding(binding);
+  private resolveSettingKey(settings: SplitsDeltaCycleSettings): string {
+    return (
+      MODE_KEY_MAP[settings.mode] ?? (settings.direction === "next" ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS)
+    );
   }
 
   private async updateDisplay(
     ev: IDeckWillAppearEvent<SplitsDeltaCycleSettings> | IDeckDidReceiveSettingsEvent<SplitsDeltaCycleSettings>,
     settings: SplitsDeltaCycleSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const svgDataUri = generateSplitsDeltaCycleSvg(settings);
     await ev.action.setTitle("");
     await this.setKeyImage(ev, svgDataUri);
     this.setRegenerateCallback(ev.action.id, () => generateSplitsDeltaCycleSvg(settings));
-  }
-
-  private async sendKeyBinding(binding: KeyBindingValue): Promise<void> {
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    this.logger.debug(`Sending key combination: ${JSON.stringify(combination)}`);
-
-    const keyboard = getKeyboard();
-
-    if (!keyboard) {
-      this.logger.error("Keyboard interface not available");
-
-      return;
-    }
-
-    const success = await keyboard.sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
   }
 }

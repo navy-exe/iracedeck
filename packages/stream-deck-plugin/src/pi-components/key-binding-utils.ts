@@ -12,6 +12,9 @@ export const UI_TEXT = {
   NOT_SET: "Not set",
   PLACEHOLDER: "Click to set...",
   RECORDING: "Press keys...",
+  SIMHUB_PLACEHOLDER: "Type or select a role...",
+  SIMHUB_NOT_REACHABLE: "SimHub not reachable",
+  SIMHUB_NO_ROLES: "No roles configured in SimHub",
 } as const;
 
 /** SDPI theme colors and styles */
@@ -27,6 +30,7 @@ export const SDPI_THEME = {
 } as const;
 
 export interface KeyBindingValue {
+  type?: "keyboard";
   key: string;
   modifiers: Modifier[];
   /** KeyboardEvent.code (e.g., "Quote") - identifies the physical key position */
@@ -126,5 +130,5 @@ export function parseSimpleDefault(value: string): KeyBindingValue | null {
 
   const code = keyToCode(key);
 
-  return code ? { key, modifiers, code } : { key, modifiers };
+  return code ? { type: "keyboard", key, modifiers, code } : { type: "keyboard", key, modifiers };
 }

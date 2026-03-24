@@ -1,10 +1,7 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   getSDK,
   type IDeckDialDownEvent,
   type IDeckDialUpEvent,
@@ -13,11 +10,6 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  type KeyBindingValue,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -345,9 +337,6 @@ function renderDynamicIcon(settings: CarControlSettings, iconContent: string, sh
 export const CAR_CONTROL_UUID = "com.iracedeck.sd.core.car-control" as const;
 
 export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
-  /** Currently held key combinations per action context, tracked for cleanup on release/disappear */
-  private heldCombinations = new Map<string, KeyCombination>();
-
   /** Settings per action context for telemetry-driven updates */
   private activeContexts = new Map<string, CarControlSettings>();
 
@@ -358,11 +347,10 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
+    this.setActiveBinding(CAR_CONTROL_GLOBAL_KEYS[settings.control]);
     await this.updateDisplay(ev, settings);
 
     this.sdkController.subscribe(ev.action.id, (telemetry) => {
-      this.updateConnectionState();
-
       const storedSettings = this.activeContexts.get(ev.action.id);
 
       if (storedSettings) {
@@ -372,7 +360,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<CarControlSettings>): Promise<void> {
-    await this.releaseHeldKey(ev.action.id);
+    await this.releaseBinding(ev.action.id);
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.activeContexts.delete(ev.action.id);
@@ -383,6 +371,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
+    this.setActiveBinding(CAR_CONTROL_GLOBAL_KEYS[settings.control]);
     await this.updateDisplay(ev, settings);
   }
 
@@ -394,7 +383,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   override async onKeyUp(ev: IDeckKeyUpEvent<CarControlSettings>): Promise<void> {
     this.logger.info("Key up received");
-    await this.releaseHeldKey(ev.action.id);
+    await this.releaseBinding(ev.action.id);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<CarControlSettings>): Promise<void> {
@@ -405,7 +394,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   override async onDialUp(ev: IDeckDialUpEvent<CarControlSettings>): Promise<void> {
     this.logger.info("Dial up received");
-    await this.releaseHeldKey(ev.action.id);
+    await this.releaseBinding(ev.action.id);
   }
 
   private parseSettings(settings: unknown): CarControlSettings {
@@ -415,99 +404,19 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   }
 
   private async executeControl(actionId: string, settings: CarControlSettings): Promise<void> {
-    if (HOLD_CONTROLS.has(settings.control)) {
-      await this.pressAndHold(actionId, settings.control);
-    } else {
-      await this.tapControl(settings.control);
-    }
-  }
-
-  private async pressAndHold(actionId: string, control: CarControlType): Promise<void> {
-    const resolved = this.resolveCombination(control);
-
-    if (!resolved) {
-      return;
-    }
-
-    const { combination, binding } = resolved;
-
-    const success = await getKeyboard().pressKeyCombination(combination);
-
-    if (success) {
-      this.heldCombinations.set(actionId, combination);
-      this.logger.info("Key pressed (holding)");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to press key");
-    }
-  }
-
-  private async tapControl(control: CarControlType): Promise<void> {
-    const resolved = this.resolveCombination(control);
-
-    if (!resolved) {
-      return;
-    }
-
-    const { combination, binding } = resolved;
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
-  private async releaseHeldKey(actionId: string): Promise<void> {
-    const combination = this.heldCombinations.get(actionId);
-
-    if (!combination) {
-      return;
-    }
-
-    this.heldCombinations.delete(actionId);
-
-    const success = await getKeyboard().releaseKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key released");
-    } else {
-      this.logger.warn("Failed to release key");
-    }
-  }
-
-  private resolveCombination(
-    control: CarControlType,
-  ): { combination: KeyCombination; binding: KeyBindingValue } | null {
-    const settingKey = CAR_CONTROL_GLOBAL_KEYS[control];
+    const settingKey = CAR_CONTROL_GLOBAL_KEYS[settings.control];
 
     if (!settingKey) {
-      this.logger.warn(`No global key mapping for control: ${control}`);
+      this.logger.warn(`No global key mapping for control: ${settings.control}`);
 
-      return null;
+      return;
     }
 
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return null;
+    if (HOLD_CONTROLS.has(settings.control)) {
+      await this.holdBinding(actionId, settingKey);
+    } else {
+      await this.tapBinding(settingKey);
     }
-
-    return {
-      combination: {
-        key: binding.key as KeyboardKey,
-        modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-        code: binding.code,
-      },
-      binding,
-    };
   }
 
   private getTelemetryState(telemetry: TelemetryData | null, control: CarControlType): CarControlTelemetryState {
@@ -529,8 +438,6 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
     ev: IDeckWillAppearEvent<CarControlSettings> | IDeckDidReceiveSettingsEvent<CarControlSettings>,
     settings: CarControlSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const telemetry = this.sdkController.getCurrentTelemetry();
     const telemetryState = this.getTelemetryState(telemetry, settings.control);
 

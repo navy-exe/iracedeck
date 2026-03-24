@@ -19,6 +19,7 @@ const {
   mockSendKeyCombination,
   mockParseKeyBinding,
   mockGetGlobalSettings,
+  mockTapBinding,
 } = vi.hoisted(() => ({
   mockBeginChat: vi.fn(() => true),
   mockReply: vi.fn(() => true),
@@ -37,6 +38,7 @@ const {
   mockSendKeyCombination: vi.fn().mockResolvedValue(true),
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/chat/open-chat.svg", () => ({
@@ -82,6 +84,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
+    updateKeyImage = vi.fn().mockResolvedValue(true);
+    tapBinding = mockTapBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
     async onWillDisappear() {}
@@ -105,7 +112,16 @@ vi.mock("@iracedeck/deck-core", () => ({
     releaseKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
+  parseBinding: mockParseKeyBinding,
   parseKeyBinding: mockParseKeyBinding,
+  isSimHubBinding: vi.fn(
+    (v: unknown) => v !== null && typeof v === "object" && (v as Record<string, unknown>).type === "simhub",
+  ),
+  isSimHubInitialized: vi.fn(() => false),
+  getSimHub: vi.fn(() => ({
+    startRole: vi.fn().mockResolvedValue(true),
+    stopRole: vi.fn().mockResolvedValue(true),
+  })),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((_template: string, data: Record<string, string>) => {
     return `<svg>${data.iconContent || ""}${data.color || ""}${data.textElement || ""}${data.mainLabel || data.labelLine1 || ""}${data.subLabel || data.labelLine2 || ""}</svg>`;
@@ -521,18 +537,18 @@ describe("Chat", () => {
       });
     });
 
-    it("should call sendKeyCombination for whisper", async () => {
+    it("should call tapGlobalBinding for whisper", async () => {
       await action.onKeyDown(fakeEvent("action-1", { mode: "whisper" }) as any);
 
-      expect(mockSendKeyCombination).toHaveBeenCalledOnce();
+      expect(mockTapBinding).toHaveBeenCalledWith("chatWhisper");
     });
 
-    it("should warn when no key binding configured for whisper", async () => {
+    it("should call tapGlobalBinding even when no key binding is configured for whisper", async () => {
       mockParseKeyBinding.mockReturnValue(null);
 
       await action.onKeyDown(fakeEvent("action-1", { mode: "whisper" }) as any);
 
-      expect(mockSendKeyCombination).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("chatWhisper");
     });
 
     it("should not call SDK commands for keyboard modes", async () => {

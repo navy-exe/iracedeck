@@ -1,22 +1,15 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
-  formatKeyBinding,
   generateIconText,
   getCommands,
   getGlobalColors,
-  getGlobalSettings,
-  getKeyboard,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  type KeyboardKey,
-  type KeyboardModifier,
-  type KeyCombination,
-  parseKeyBinding,
   renderIconTemplate,
   resolveIconColors,
   svgToDataUri,
@@ -300,11 +293,12 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
+    const activeKey = CHAT_GLOBAL_KEYS[settings.mode];
+    this.setActiveBinding(activeKey ?? null);
+
     await this.updateDisplay(ev, settings);
 
     this.sdkController.subscribe(ev.action.id, () => {
-      this.updateConnectionState();
-
       const storedSettings = this.activeContexts.get(ev.action.id);
 
       if (storedSettings && hasTemplateVars(storedSettings)) {
@@ -325,6 +319,9 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
     this.lastRenderedIcon.delete(ev.action.id);
+    const activeKey = CHAT_GLOBAL_KEYS[settings.mode];
+    this.setActiveBinding(activeKey ?? null);
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -373,9 +370,18 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
         break;
 
       // Keyboard-based mode
-      case "whisper":
-        await this.executeKeyboardMode(mode);
+      case "whisper": {
+        const settingKey = CHAT_GLOBAL_KEYS[mode];
+
+        if (!settingKey) {
+          this.logger.warn(`No global key mapping for mode: ${mode}`);
+
+          return;
+        }
+
+        await this.tapBinding(settingKey);
         break;
+      }
     }
   }
 
@@ -432,41 +438,6 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     this.logger.debug(`Macro number: ${macroNumber}, result: ${success}`);
   }
 
-  private async executeKeyboardMode(mode: ChatMode): Promise<void> {
-    const settingKey = CHAT_GLOBAL_KEYS[mode];
-
-    if (!settingKey) {
-      this.logger.warn(`No global key mapping for mode: ${mode}`);
-
-      return;
-    }
-
-    const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseKeyBinding(globalSettings[settingKey]);
-
-    if (!binding?.key) {
-      this.logger.warn(`No key binding configured for ${settingKey}`);
-
-      return;
-    }
-
-    const combination: KeyCombination = {
-      key: binding.key as KeyboardKey,
-      modifiers: binding.modifiers.length > 0 ? (binding.modifiers as KeyboardModifier[]) : undefined,
-      code: binding.code,
-    };
-
-    const success = await getKeyboard().sendKeyCombination(combination);
-
-    if (success) {
-      this.logger.info("Key sent successfully");
-      this.logger.debug(`Key combination: ${formatKeyBinding(binding)}`);
-    } else {
-      this.logger.warn("Failed to send key");
-      this.logger.debug(`Failed key combination: ${formatKeyBinding(binding)}`);
-    }
-  }
-
   /** Resolves template variables for display only (icon rendering).
    *  The send path in executeSdkSendMessage performs its own resolution at send time. */
   private resolveSettingsTemplates(settings: ChatSettings): ChatSettings {
@@ -494,8 +465,6 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     ev: IDeckWillAppearEvent<ChatSettings> | IDeckDidReceiveSettingsEvent<ChatSettings>,
     settings: ChatSettings,
   ): Promise<void> {
-    this.updateConnectionState();
-
     const resolved = this.resolveSettingsTemplates(settings);
     const svgDataUri = generateChatSvg(resolved);
     this.lastRenderedIcon.set(ev.action.id, svgDataUri);
