@@ -63,17 +63,6 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
    */
   private simHubReachabilityUnsubscribe: (() => void) | null = null;
 
-  /**
-   * Tracked action IDs for automatic SDK subscription cleanup.
-   */
-  private readinessSubscriptions = new Set<string>();
-
-  /**
-   * Whether the action has completed initial setup (setActiveBinding called at least once).
-   * Prevents premature readiness evaluation before the action has stored its images.
-   */
-  private readinessInitialized = false;
-
   // --- Lifecycle ---
 
   /**
@@ -84,7 +73,6 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
     await super.onWillAppear(ev);
 
     const subId = READINESS_SUB_PREFIX + ev.action.id;
-    this.readinessSubscriptions.add(subId);
     this.sdkController.subscribe(subId, () => {
       this.evaluateReadiness();
     });
@@ -95,9 +83,7 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
    * Actions that override onWillDisappear MUST call super.onWillDisappear(ev).
    */
   override async onWillDisappear(ev: IDeckWillDisappearEvent<T>): Promise<void> {
-    const subId = READINESS_SUB_PREFIX + ev.action.id;
-    this.readinessSubscriptions.delete(subId);
-    this.sdkController.unsubscribe(subId);
+    this.sdkController.unsubscribe(READINESS_SUB_PREFIX + ev.action.id);
 
     // Clean up listeners to prevent memory leaks
     if (this.globalSettingsUnsubscribe) {
@@ -128,20 +114,32 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
    */
   protected setActiveBinding(settingKey: string | null): void {
     this.activeBindingKey = settingKey;
-    this.readinessInitialized = true;
 
-    // Subscribe to global settings changes (once)
-    if (settingKey && !this.globalSettingsUnsubscribe) {
-      this.globalSettingsUnsubscribe = onGlobalSettingsChange(() => {
-        this.evaluateReadiness();
-      });
-    }
+    if (settingKey) {
+      // Subscribe to global settings changes (once)
+      if (!this.globalSettingsUnsubscribe) {
+        this.globalSettingsUnsubscribe = onGlobalSettingsChange(() => {
+          this.evaluateReadiness();
+        });
+      }
 
-    // Subscribe to SimHub reachability changes (once)
-    if (settingKey && !this.simHubReachabilityUnsubscribe) {
-      this.simHubReachabilityUnsubscribe = onSimHubReachabilityChange(() => {
-        this.evaluateReadiness();
-      });
+      // Subscribe to SimHub reachability changes (once)
+      if (!this.simHubReachabilityUnsubscribe) {
+        this.simHubReachabilityUnsubscribe = onSimHubReachabilityChange(() => {
+          this.evaluateReadiness();
+        });
+      }
+    } else {
+      // Clear binding — unsubscribe from change listeners
+      if (this.globalSettingsUnsubscribe) {
+        this.globalSettingsUnsubscribe();
+        this.globalSettingsUnsubscribe = null;
+      }
+
+      if (this.simHubReachabilityUnsubscribe) {
+        this.simHubReachabilityUnsubscribe();
+        this.simHubReachabilityUnsubscribe = null;
+      }
     }
 
     // Immediately evaluate readiness

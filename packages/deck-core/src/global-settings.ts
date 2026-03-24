@@ -49,8 +49,8 @@ export type BindingValue = KeyBindingValue | SimHubBindingValue;
 /**
  * Type guard to check if a binding value is a SimHub role binding.
  */
-export function isSimHubBinding(value: BindingValue | undefined): value is SimHubBindingValue {
-  return value !== undefined && "type" in value && value.type === "simhub";
+export function isSimHubBinding(value: BindingValue | null | undefined): value is SimHubBindingValue {
+  return value != null && "type" in value && value.type === "simhub";
 }
 
 /**

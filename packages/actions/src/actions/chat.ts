@@ -294,10 +294,7 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
     const activeKey = CHAT_GLOBAL_KEYS[settings.mode];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
 
@@ -323,10 +320,7 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     this.activeContexts.set(ev.action.id, settings);
     this.lastRenderedIcon.delete(ev.action.id);
     const activeKey = CHAT_GLOBAL_KEYS[settings.mode];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }

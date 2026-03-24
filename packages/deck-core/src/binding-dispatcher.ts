@@ -107,8 +107,11 @@ class BindingDispatcher implements IBindingDispatcher {
         return;
       }
 
-      await getSimHub().startRole(binding.role);
-      this.heldBindings.set(actionId, { type: "simhub", role: binding.role });
+      const started = await getSimHub().startRole(binding.role);
+
+      if (started) {
+        this.heldBindings.set(actionId, { type: "simhub", role: binding.role });
+      }
 
       return;
     }

@@ -128,10 +128,7 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = UI_ELEMENT_GLOBAL_KEYS[settings.element];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }
@@ -140,10 +137,7 @@ export class ToggleUiElements extends ConnectionStateAwareAction<ToggleUiElement
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = UI_ELEMENT_GLOBAL_KEYS[settings.element];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }

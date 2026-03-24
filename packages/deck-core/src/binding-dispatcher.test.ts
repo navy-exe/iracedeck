@@ -68,6 +68,12 @@ describe("BindingDispatcher", () => {
     _resetBindingDispatcher();
     vi.clearAllMocks();
     mockIsSimHubInitialized.mockReturnValue(true);
+    mockIsSimHubReachable.mockReturnValue(true);
+    mockStartRole.mockResolvedValue(true);
+    mockStopRole.mockResolvedValue(true);
+    mockSendKeyCombination.mockResolvedValue(true);
+    mockPressKeyCombination.mockResolvedValue(true);
+    mockReleaseKeyCombination.mockResolvedValue(true);
   });
 
   // --- Initialization ---

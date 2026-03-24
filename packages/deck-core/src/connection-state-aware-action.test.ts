@@ -11,6 +11,7 @@ const {
   mockRelease,
   mockIsReady,
   mockOnGlobalSettingsChange,
+  mockOnSimHubReachabilityChange,
 } = vi.hoisted(() => ({
   mockGetConnectionStatus: vi.fn(() => true),
   mockSubscribe: vi.fn(),
@@ -20,6 +21,7 @@ const {
   mockRelease: vi.fn().mockResolvedValue(undefined),
   mockIsReady: vi.fn(() => true),
   mockOnGlobalSettingsChange: vi.fn(() => vi.fn()),
+  mockOnSimHubReachabilityChange: vi.fn(() => vi.fn()),
 }));
 
 vi.mock("./sdk-singleton.js", () => ({
@@ -55,6 +57,10 @@ vi.mock("./base-action.js", () => ({
     async onWillDisappear() {}
     async onDidReceiveSettings() {}
   },
+}));
+
+vi.mock("./simhub-service.js", () => ({
+  onSimHubReachabilityChange: mockOnSimHubReachabilityChange,
 }));
 
 vi.mock("./global-settings.js", async (importOriginal) => {

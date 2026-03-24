@@ -267,6 +267,8 @@ class KeyBindingInput extends HTMLElement {
   }
 
   connectedCallback(): void {
+    if (this.container) return; // Already initialized
+
     // Outer container
     this.container = document.createElement("div");
     Object.assign(this.container.style, {
@@ -688,7 +690,9 @@ class KeyBindingInput extends HTMLElement {
 
 // Register the custom element
 if (typeof customElements !== "undefined") {
-  customElements.define("ird-key-binding", KeyBindingInput);
+  if (!customElements.get("ird-key-binding")) {
+    customElements.define("ird-key-binding", KeyBindingInput);
+  }
 }
 
 export { KeyBindingInput };

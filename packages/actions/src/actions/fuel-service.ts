@@ -194,10 +194,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = FUEL_SERVICE_GLOBAL_KEYS[settings.mode];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }
@@ -206,10 +203,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = FUEL_SERVICE_GLOBAL_KEYS[settings.mode];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }

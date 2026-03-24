@@ -166,11 +166,9 @@ export class SplitsDeltaCycle extends ConnectionStateAwareAction<SplitsDeltaCycl
   }
 
   private resolveSettingKey(settings: SplitsDeltaCycleSettings): string {
-    return settings.mode === "toggle-ref-car"
-      ? GLOBAL_KEY_NAMES.TOGGLE_REF_CAR
-      : settings.direction === "next"
-        ? GLOBAL_KEY_NAMES.NEXT
-        : GLOBAL_KEY_NAMES.PREVIOUS;
+    return (
+      MODE_KEY_MAP[settings.mode] ?? (settings.direction === "next" ? GLOBAL_KEY_NAMES.NEXT : GLOBAL_KEY_NAMES.PREVIOUS)
+    );
   }
 
   private async updateDisplay(

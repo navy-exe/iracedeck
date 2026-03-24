@@ -104,10 +104,7 @@ export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSetting
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = MEDIA_CAPTURE_GLOBAL_KEYS[settings.action];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }
@@ -116,10 +113,7 @@ export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSetting
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = MEDIA_CAPTURE_GLOBAL_KEYS[settings.action];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }

@@ -42,6 +42,8 @@ class AutocompleteInput extends HTMLElement {
   }
 
   connectedCallback(): void {
+    if (this.input) return; // Already initialized
+
     Object.assign(this.style, {
       display: "flex",
       alignItems: "center",
@@ -272,7 +274,9 @@ class AutocompleteInput extends HTMLElement {
 }
 
 if (typeof customElements !== "undefined") {
-  customElements.define("ird-autocomplete", AutocompleteInput);
+  if (!customElements.get("ird-autocomplete")) {
+    customElements.define("ird-autocomplete", AutocompleteInput);
+  }
 }
 
 export { AutocompleteInput };

@@ -96,12 +96,6 @@ initializeKeyboard(
   (scanCodes) => native.sendScanKeyUp(scanCodes),
 );
 
-// Initialize SimHub Control Mapper service
-initializeSimHub(adapter.createLogger("SimHub"));
-
-// Initialize binding dispatcher for centralized keyboard/SimHub/future binding dispatch
-initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
-
 // Initialize window focus service for focusing iRacing before any action
 initWindowFocus(adapter.createLogger("WindowFocus"), () => native.focusIRacingWindow());
 
@@ -158,6 +152,12 @@ adapter.registerAction(VIEW_ADJUSTMENT_UUID, new ViewAdjustment(adapter.createLo
 
 // Initialize global settings listener BEFORE connect - handlers must be registered first
 initGlobalSettings(adapter, adapter.createLogger("GlobalSettings"));
+
+// Initialize SimHub AFTER global settings so health check uses configured host/port
+initializeSimHub(adapter.createLogger("SimHub"));
+
+// Initialize binding dispatcher AFTER SimHub so isReady can check reachability
+initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
 
 // Initialize app monitor for iRacing process detection
 initAppMonitor(adapter, adapter.createLogger("AppMonitor"));
