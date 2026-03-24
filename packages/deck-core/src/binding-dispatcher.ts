@@ -17,10 +17,10 @@
  * // In plugin.ts
  * initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
  *
- * // In action code
- * await getBindingDispatcher().tap("blackBoxLapTiming");
- * await getBindingDispatcher().hold(ev.action.id, "lookDirectionLeft");
- * await getBindingDispatcher().release(ev.action.id);
+ * // In action code (via ConnectionStateAwareAction delegates)
+ * await this.tapBinding("blackBoxLapTiming");
+ * await this.holdBinding(ev.action.id, "lookDirectionLeft");
+ * await this.releaseBinding(ev.action.id);
  */
 import type { ILogger } from "@iracedeck/logger";
 import { silentLogger } from "@iracedeck/logger";
@@ -81,7 +81,6 @@ class BindingDispatcher implements IBindingDispatcher {
       return;
     }
 
-    // Keyboard binding (default)
     await this.tapKeyboard(binding);
   }
 
@@ -97,6 +96,9 @@ class BindingDispatcher implements IBindingDispatcher {
 
     if (!binding) return;
 
+    // Release any existing held binding for this context to prevent stuck keys
+    await this.release(actionId);
+
     if (isSimHubBinding(binding)) {
       this.logger.info("Triggering SimHub role (hold)");
       this.logger.debug(`SimHub role: ${binding.role}`);
@@ -111,12 +113,13 @@ class BindingDispatcher implements IBindingDispatcher {
 
       if (started) {
         this.heldBindings.set(actionId, { type: "simhub", role: binding.role });
+      } else {
+        this.logger.warn("Failed to start SimHub role");
       }
 
       return;
     }
 
-    // Keyboard binding (default)
     const combination = this.toKeyCombination(binding);
     const success = await getKeyboard().pressKeyCombination(combination);
 
@@ -142,34 +145,48 @@ class BindingDispatcher implements IBindingDispatcher {
 
     this.heldBindings.delete(actionId);
 
-    if (held.type === "simhub") {
-      if (isSimHubInitialized()) {
-        await getSimHub().stopRole(held.role);
-        this.logger.info("SimHub role released");
+    switch (held.type) {
+      case "simhub": {
+        if (isSimHubInitialized()) {
+          const stopped = await getSimHub().stopRole(held.role);
+
+          if (stopped) {
+            this.logger.info("SimHub role released");
+          } else {
+            this.logger.warn("Failed to release SimHub role");
+          }
+        } else {
+          this.logger.warn("SimHub service not initialized, cannot release role");
+        }
+
+        break;
       }
 
-      return;
-    }
+      case "keyboard": {
+        const success = await getKeyboard().releaseKeyCombination(held.combination);
 
-    if (held.type === "keyboard") {
-      const success = await getKeyboard().releaseKeyCombination(held.combination);
+        if (success) {
+          this.logger.info("Key released");
+        } else {
+          this.logger.warn("Failed to release key");
+        }
 
-      if (success) {
-        this.logger.info("Key released");
-      } else {
-        this.logger.warn("Failed to release key");
+        break;
+      }
+
+      default: {
+        const _exhaustive: never = held;
+        this.logger.warn(`Unknown held binding type: ${JSON.stringify(_exhaustive)}`);
       }
     }
-
-    // Future binding types: add release logic here
   }
 
   /**
    * Check if a binding at the given setting key is ready to execute.
    * Resolves the binding type and checks the relevant service health.
    *
-   * - Keyboard binding: ready if iRacing SDK is connected
-   * - SimHub binding: ready if SimHub service is initialized
+   * - Keyboard binding: ready when the caller's iRacingConnected parameter is true
+   * - SimHub binding: ready when SimHub is reachable
    * - No binding configured: not ready
    *
    * @param settingKey - The global settings key
@@ -185,7 +202,6 @@ class BindingDispatcher implements IBindingDispatcher {
       return isSimHubReachable();
     }
 
-    // Keyboard binding: depends on iRacing being connected
     return iRacingConnected;
   }
 
@@ -193,15 +209,23 @@ class BindingDispatcher implements IBindingDispatcher {
 
   private resolveGlobalBinding(settingKey: string): BindingValue | undefined {
     const globalSettings = getGlobalSettings() as Record<string, unknown>;
-    const binding = parseBinding(globalSettings[settingKey]);
+    const rawValue = globalSettings[settingKey];
+    const binding = parseBinding(rawValue);
 
     if (!binding) {
-      this.logger.debug(`No binding configured for ${settingKey}`);
+      if (rawValue != null && rawValue !== "") {
+        this.logger.warn(`Corrupt binding value for ${settingKey}`);
+        this.logger.debug(`Raw value: ${JSON.stringify(rawValue)}`);
+      } else {
+        this.logger.debug(`No binding configured for ${settingKey}`);
+      }
     }
 
     return binding;
   }
 
+  // SimHub tap = activate then immediately deactivate (momentary press).
+  // SimHub Control Mapper handles the duration internally.
   private async tapSimHub(role: string): Promise<void> {
     this.logger.info("Triggering SimHub role");
     this.logger.debug(`SimHub role: ${role}`);
@@ -216,7 +240,11 @@ class BindingDispatcher implements IBindingDispatcher {
     const started = await simHub.startRole(role);
 
     if (started) {
-      await simHub.stopRole(role);
+      const stopped = await simHub.stopRole(role);
+
+      if (!stopped) {
+        this.logger.warn("SimHub role started but failed to stop — role may remain active");
+      }
     }
   }
 
@@ -248,7 +276,8 @@ let dispatcher: BindingDispatcher | null = null;
 
 /**
  * Initialize the binding dispatcher singleton.
- * Should be called once at plugin startup after initializeKeyboard and initializeSimHub.
+ * Should be called once at plugin startup after initGlobalSettings(),
+ * initializeKeyboard(), and initializeSimHub().
  *
  * @param logger - Logger instance
  * @returns The initialized dispatcher

@@ -229,6 +229,20 @@ describe("BindingDispatcher", () => {
         expect(mockStartRole).toHaveBeenCalledWith("FailRole");
         expect(mockStopRole).not.toHaveBeenCalled();
       });
+
+      it("should warn when stopRole fails after successful startRole", async () => {
+        mockStartRole.mockResolvedValue(true);
+        mockStopRole.mockResolvedValue(false);
+        mockGetGlobalSettings.mockReturnValue({
+          myKey: JSON.stringify({ type: "simhub", role: "StopFailRole" }),
+        });
+
+        await getBindingDispatcher().tap("myKey");
+
+        expect(mockStartRole).toHaveBeenCalledWith("StopFailRole");
+        expect(mockStopRole).toHaveBeenCalledWith("StopFailRole");
+        expect(mockLogger.warn).toHaveBeenCalledWith("SimHub role started but failed to stop — role may remain active");
+      });
     });
 
     describe("missing bindings", () => {
@@ -298,6 +312,83 @@ describe("BindingDispatcher", () => {
         expect(mockStopRole).not.toHaveBeenCalled();
       });
     });
+
+    describe("failure handling", () => {
+      it("should not track held binding when keyboard press fails", async () => {
+        mockPressKeyCombination.mockResolvedValue(false);
+        mockGetGlobalSettings.mockReturnValue({
+          myKey: JSON.stringify({ key: "f1", modifiers: [], code: "F1" }),
+        });
+
+        await getBindingDispatcher().hold("ctx-1", "myKey");
+        vi.clearAllMocks();
+
+        await getBindingDispatcher().release("ctx-1");
+
+        expect(mockReleaseKeyCombination).not.toHaveBeenCalled();
+      });
+
+      it("should not track held binding when SimHub startRole fails", async () => {
+        mockStartRole.mockResolvedValue(false);
+        mockGetGlobalSettings.mockReturnValue({
+          myKey: JSON.stringify({ type: "simhub", role: "FailRole" }),
+        });
+
+        await getBindingDispatcher().hold("ctx-1", "myKey");
+        vi.clearAllMocks();
+
+        await getBindingDispatcher().release("ctx-1");
+
+        expect(mockStopRole).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("double hold", () => {
+      it("should release previous binding before holding new one", async () => {
+        const callOrder: string[] = [];
+        mockReleaseKeyCombination.mockImplementation(async () => {
+          callOrder.push("release");
+
+          return true;
+        });
+        mockPressKeyCombination.mockImplementation(async () => {
+          callOrder.push("press");
+
+          return true;
+        });
+
+        mockGetGlobalSettings.mockReturnValue({
+          keyA: JSON.stringify({ key: "f1", modifiers: [], code: "F1" }),
+          keyB: JSON.stringify({ key: "f2", modifiers: [], code: "F2" }),
+        });
+
+        await getBindingDispatcher().hold("ctx-1", "keyA");
+        callOrder.length = 0;
+
+        await getBindingDispatcher().hold("ctx-1", "keyB");
+
+        // Release of keyA should happen before press of keyB
+        expect(callOrder).toEqual(["release", "press"]);
+
+        // Verify keyA was released (the first press call's combination)
+        expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
+          key: "f1",
+          modifiers: undefined,
+          code: "F1",
+        });
+
+        vi.clearAllMocks();
+
+        // Release should now release keyB, not keyA
+        await getBindingDispatcher().release("ctx-1");
+
+        expect(mockReleaseKeyCombination).toHaveBeenCalledWith({
+          key: "f2",
+          modifiers: undefined,
+          code: "F2",
+        });
+      });
+    });
   });
 
   // --- release ---
@@ -352,6 +443,22 @@ describe("BindingDispatcher", () => {
 
         expect(mockStopRole).toHaveBeenCalledWith("HoldRole");
         expect(mockReleaseKeyCombination).not.toHaveBeenCalled();
+      });
+
+      it("should warn and skip stopRole when SimHub becomes uninitialized after hold", async () => {
+        mockGetGlobalSettings.mockReturnValue({
+          myKey: JSON.stringify({ type: "simhub", role: "HoldRole" }),
+        });
+
+        await getBindingDispatcher().hold("ctx-1", "myKey");
+        vi.clearAllMocks();
+
+        mockIsSimHubInitialized.mockReturnValue(false);
+
+        await getBindingDispatcher().release("ctx-1");
+
+        expect(mockStopRole).not.toHaveBeenCalled();
+        expect(mockLogger.warn).toHaveBeenCalledWith("SimHub service not initialized, cannot release role");
       });
     });
 
