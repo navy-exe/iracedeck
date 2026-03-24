@@ -14,11 +14,6 @@ export default defineConfig({
       customCss: ["./src/styles/custom.css"],
       social: [
         {
-          icon: "download",
-          label: "Elgato Marketplace",
-          href: "https://marketplace.elgato.com/product/iracedeck-042a0efb-58aa-428c-b1de-8b6169edd21d",
-        },
-        {
           icon: "github",
           label: "GitHub",
           href: "https://github.com/niklam/iracedeck",
@@ -79,7 +74,7 @@ export default defineConfig({
         },
       ],
       sidebar: [
-        { label: "Home", link: "/" },
+        { label: "Home", link: "/docs/" },
         {
           label: "Getting Started",
           items: [
@@ -93,6 +88,7 @@ export default defineConfig({
             { slug: "docs/features/key-bindings" },
             { slug: "docs/features/flags-overlay" },
             { slug: "docs/features/focus-iracing-window" },
+            { slug: "docs/features/icon-colors" },
             { slug: "docs/features/template-variables" },
           ],
         },
@@ -191,6 +187,11 @@ export default defineConfig({
             {
               label: "Elgato Marketplace",
               link: "https://marketplace.elgato.com/product/iracedeck-042a0efb-58aa-428c-b1de-8b6169edd21d",
+              attrs: { target: "_blank", rel: "noopener noreferrer" },
+            },
+            {
+              label: "Mirabox Space",
+              link: "https://space.key123.vip/product?id=20260322000598",
               attrs: { target: "_blank", rel: "noopener noreferrer" },
             },
             {
