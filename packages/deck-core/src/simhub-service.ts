@@ -1,7 +1,7 @@
 /**
  * SimHub Control Mapper Service Singleton
  *
- * Provides a lazy-initialized singleton for triggering SimHub Control Mapper roles
+ * Provides an explicitly initialized singleton for triggering SimHub Control Mapper roles
  * via SimHub's HTTP REST API. This is an optional third control mechanism alongside
  * iRacing SDK commands and keyboard simulation.
  *
@@ -141,7 +141,16 @@ class SimHubService implements ISimHubService {
         return [];
       }
 
-      const roles = (await response.json()) as string[];
+      const json: unknown = await response.json();
+
+      if (!Array.isArray(json) || !json.every((item) => typeof item === "string")) {
+        this.logger.warn("GetRoles returned unexpected response format");
+        this.setReachable(true);
+
+        return [];
+      }
+
+      const roles = json as string[];
       this.logger.debug(`Available roles: ${JSON.stringify(roles)}`);
       this.setReachable(true);
 
@@ -216,6 +225,7 @@ class SimHubService implements ISimHubService {
     this.healthCheckTimer = setInterval(() => void this.checkHealth(), HEALTH_CHECK_INTERVAL_MS);
   }
 
+  // Uses GetRoles as health probe — confirms Control Mapper plugin is active, not just HTTP server
   private async checkHealth(): Promise<void> {
     const { host, port } = getConnectionConfig();
 
@@ -225,7 +235,8 @@ class SimHubService implements ISimHubService {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       this.setReachable(response.ok);
-    } catch {
+    } catch (error) {
+      this.logger.debug(`Health check failed: ${error}`);
       this.setReachable(false);
     }
   }

@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getGlobalSettings } from "./global-settings.js";
-import { _resetSimHub, getSimHub, initializeSimHub, isSimHubInitialized, isSimHubReachable } from "./simhub-service.js";
+import {
+  _resetSimHub,
+  getSimHub,
+  initializeSimHub,
+  isSimHubInitialized,
+  isSimHubReachable,
+  onSimHubReachabilityChange,
+} from "./simhub-service.js";
 
 // Mock global-settings before importing
 vi.mock("./global-settings.js", () => ({
@@ -283,6 +290,126 @@ describe("SimHub Service", () => {
 
       _resetSimHub();
       expect(isSimHubReachable()).toBe(false);
+    });
+  });
+
+  describe("onSimHubReachabilityChange", () => {
+    it("should call listener on reachability transition (false→true)", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }));
+
+      const listener = vi.fn();
+      onSimHubReachabilityChange(listener);
+
+      initializeSimHub(mockLogger);
+      // Initial health check succeeds — transitions from false to true
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith(true);
+    });
+
+    it("should call listener on reachability transition (true→false)", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }));
+
+      const listener = vi.fn();
+      onSimHubReachabilityChange(listener);
+
+      initializeSimHub(mockLogger);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(isSimHubReachable()).toBe(true);
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      // SimHub goes down
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
+      await vi.advanceTimersByTimeAsync(5000);
+
+      expect(listener).toHaveBeenCalledTimes(2);
+      expect(listener).toHaveBeenLastCalledWith(false);
+    });
+
+    it("should NOT call listener when reachability stays the same", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }));
+
+      const listener = vi.fn();
+      onSimHubReachabilityChange(listener);
+
+      initializeSimHub(mockLogger);
+      // First health check — transitions false→true
+      await vi.advanceTimersByTimeAsync(0);
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      // Second health check — still reachable, no transition
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not call listener after unsubscribe", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }));
+
+      const listener = vi.fn();
+      const unsubscribe = onSimHubReachabilityChange(listener);
+
+      // Unsubscribe before any transition
+      unsubscribe();
+
+      initializeSimHub(mockLogger);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it("should not call old listeners after _resetSimHub clears them", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }));
+
+      const listener = vi.fn();
+      onSimHubReachabilityChange(listener);
+
+      initializeSimHub(mockLogger);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      // Reset clears all listeners
+      _resetSimHub();
+      listener.mockClear();
+
+      // Re-initialize — old listener should NOT be called
+      initializeSimHub(mockLogger);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("default host/port fallback", () => {
+    it("should use 127.0.0.1:8888 when global settings are empty", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+      vi.stubGlobal("fetch", mockFetch);
+      mockGetGlobalSettings.mockReturnValue({} as ReturnType<typeof getGlobalSettings>);
+
+      initializeSimHub(mockLogger);
+      await getSimHub().startRole("test");
+
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining("127.0.0.1:8888"), expect.anything());
+    });
+  });
+
+  describe("health check timer disposal", () => {
+    it("should not make fetch calls after _resetSimHub", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }));
+
+      initializeSimHub(mockLogger);
+      await vi.advanceTimersByTimeAsync(0);
+
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
+      vi.stubGlobal("fetch", mockFetch);
+
+      _resetSimHub();
+      mockFetch.mockClear();
+
+      // Advance well past multiple health check intervals
+      await vi.advanceTimersByTimeAsync(10000);
+
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 });
