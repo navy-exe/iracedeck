@@ -202,6 +202,10 @@ class SimHubService implements ISimHubService {
     if (this.reachable !== value) {
       this.reachable = value;
       this.logger.info(`SimHub ${value ? "reachable" : "unreachable"}`);
+
+      for (const listener of reachabilityListeners) {
+        listener(value);
+      }
     }
   }
 
@@ -226,6 +230,12 @@ class SimHubService implements ISimHubService {
     }
   }
 }
+
+/**
+ * Listeners notified when SimHub reachability changes.
+ */
+type ReachabilityListener = (reachable: boolean) => void;
+const reachabilityListeners: Set<ReachabilityListener> = new Set();
 
 // Singleton instance
 let simHubService: SimHubService | null = null;
@@ -283,10 +293,27 @@ export function isSimHubReachable(): boolean {
 }
 
 /**
+ * Subscribe to SimHub reachability changes.
+ * The listener is called whenever reachability transitions between
+ * reachable and unreachable (not on every health check).
+ *
+ * @param listener - Called with true/false when reachability changes
+ * @returns Unsubscribe function
+ */
+export function onSimHubReachabilityChange(listener: (reachable: boolean) => void): () => void {
+  reachabilityListeners.add(listener);
+
+  return () => {
+    reachabilityListeners.delete(listener);
+  };
+}
+
+/**
  * Reset the SimHub service singleton (for testing purposes only).
  * @internal
  */
 export function _resetSimHub(): void {
   simHubService?.dispose();
   simHubService = null;
+  reachabilityListeners.clear();
 }

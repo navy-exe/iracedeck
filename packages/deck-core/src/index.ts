@@ -131,6 +131,7 @@ export {
   getSimHub,
   isSimHubInitialized,
   isSimHubReachable,
+  onSimHubReachabilityChange,
   _resetSimHub,
   type ISimHubService,
 } from "./simhub-service.js";

@@ -22,6 +22,7 @@ import { BaseAction } from "./base-action.js";
 import { getBindingDispatcher } from "./binding-dispatcher.js";
 import { onGlobalSettingsChange } from "./global-settings.js";
 import { getController } from "./sdk-singleton.js";
+import { onSimHubReachabilityChange } from "./simhub-service.js";
 import type { IDeckWillAppearEvent, IDeckWillDisappearEvent } from "./types.js";
 
 /** Prefix for the base class's internal SDK subscription ID */
@@ -58,9 +59,20 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
   private globalSettingsUnsubscribe: (() => void) | null = null;
 
   /**
+   * Unsubscribe function for SimHub reachability change listener.
+   */
+  private simHubReachabilityUnsubscribe: (() => void) | null = null;
+
+  /**
    * Tracked action IDs for automatic SDK subscription cleanup.
    */
   private readinessSubscriptions = new Set<string>();
+
+  /**
+   * Whether the action has completed initial setup (setActiveBinding called at least once).
+   * Prevents premature readiness evaluation before the action has stored its images.
+   */
+  private readinessInitialized = false;
 
   // --- Lifecycle ---
 
@@ -87,10 +99,15 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
     this.readinessSubscriptions.delete(subId);
     this.sdkController.unsubscribe(subId);
 
-    // Clean up global settings listener to prevent memory leaks
+    // Clean up listeners to prevent memory leaks
     if (this.globalSettingsUnsubscribe) {
       this.globalSettingsUnsubscribe();
       this.globalSettingsUnsubscribe = null;
+    }
+
+    if (this.simHubReachabilityUnsubscribe) {
+      this.simHubReachabilityUnsubscribe();
+      this.simHubReachabilityUnsubscribe = null;
     }
 
     await super.onWillDisappear(ev);
@@ -111,10 +128,18 @@ export abstract class ConnectionStateAwareAction<T = Record<string, unknown>> ex
    */
   protected setActiveBinding(settingKey: string | null): void {
     this.activeBindingKey = settingKey;
+    this.readinessInitialized = true;
 
     // Subscribe to global settings changes (once)
     if (settingKey && !this.globalSettingsUnsubscribe) {
       this.globalSettingsUnsubscribe = onGlobalSettingsChange(() => {
+        this.evaluateReadiness();
+      });
+    }
+
+    // Subscribe to SimHub reachability changes (once)
+    if (settingKey && !this.simHubReachabilityUnsubscribe) {
+      this.simHubReachabilityUnsubscribe = onSimHubReachabilityChange(() => {
         this.evaluateReadiness();
       });
     }
