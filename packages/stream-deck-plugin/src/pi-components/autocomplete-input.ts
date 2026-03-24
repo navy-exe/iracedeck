@@ -115,7 +115,7 @@ class AutocompleteInput extends HTMLElement {
     });
 
     this.input.addEventListener("focus", () => {
-      this.showDropdown();
+      this.showAllSuggestions();
     });
 
     this.input.addEventListener("blur", () => {
@@ -188,6 +188,20 @@ class AutocompleteInput extends HTMLElement {
     }
 
     this.filterAndShow(this.input?.value ?? "");
+  }
+
+  private showAllSuggestions(): void {
+    if (this.statusMessage) {
+      this.showMessage(this.statusMessage);
+
+      return;
+    }
+
+    if (this.suggestions.length === 0) {
+      return;
+    }
+
+    this.filterAndShow("");
   }
 
   private filterAndShow(query: string): void {

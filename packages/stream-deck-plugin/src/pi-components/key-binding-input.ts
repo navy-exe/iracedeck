@@ -229,6 +229,13 @@ const MODE_OPTIONS: ModeOption[] = [
   { value: "simhub", label: "SimHub", icon: SIMHUB_ICON_SVG },
 ];
 
+/** Tracks the currently open dropdown so only one can be open at a time. */
+let currentlyOpenDropdown: KeyBindingInput | null = null;
+
+function setCurrentlyOpenDropdown(instance: KeyBindingInput | null): void {
+  currentlyOpenDropdown = instance;
+}
+
 /**
  * KeyBindingInput - Custom element that integrates with sdpi-components
  * via SDPIComponents.useSettings() for proper settings persistence.
@@ -277,6 +284,14 @@ class KeyBindingInput extends HTMLElement {
 
   connectedCallback(): void {
     if (this.container) return; // Already initialized
+
+    // Inject focus reset once for all ird-key-binding instances
+    if (!document.getElementById("ird-key-binding-style")) {
+      const style = document.createElement("style");
+      style.id = "ird-key-binding-style";
+      style.textContent = `ird-key-binding, ird-key-binding *, ird-key-binding input { outline: none !important; }`;
+      document.head.appendChild(style);
+    }
 
     // Outer container
     this.container = document.createElement("div");
@@ -427,6 +442,14 @@ class KeyBindingInput extends HTMLElement {
     this.displayInput.addEventListener("click", this.handleClick);
     this.displayInput.addEventListener("keydown", this.handleKeyDown);
     this.displayInput.addEventListener("blur", this.handleBlur);
+    // Close any open binding type dropdown when either input gets focus
+    const closeOpenDropdown = () => {
+      if (currentlyOpenDropdown) {
+        currentlyOpenDropdown.closeDropdown();
+      }
+    };
+    this.displayInput.addEventListener("focus", closeOpenDropdown);
+    this.simhubAutocomplete.addEventListener("focus", closeOpenDropdown, true);
     this.simhubAutocomplete.addEventListener("change", () => {
       const role = this.simhubAutocomplete!.value.trim();
       this.currentValue = role ? { type: "simhub", role } : null;
@@ -493,8 +516,13 @@ class KeyBindingInput extends HTMLElement {
   private openDropdown(): void {
     if (!this.dropdownPanel) return;
 
+    if (currentlyOpenDropdown && currentlyOpenDropdown !== this) {
+      currentlyOpenDropdown.closeDropdown();
+    }
+
     this.isDropdownOpen = true;
     this.dropdownPanel.style.display = "block";
+    setCurrentlyOpenDropdown(this);
   }
 
   private closeDropdown(): void {
@@ -502,6 +530,10 @@ class KeyBindingInput extends HTMLElement {
 
     this.isDropdownOpen = false;
     this.dropdownPanel.style.display = "none";
+
+    if (currentlyOpenDropdown === this) {
+      setCurrentlyOpenDropdown(null);
+    }
   }
 
   private selectMode(mode: string): void {
