@@ -160,11 +160,9 @@ function subscribeToSimHubSettings(): void {
   window.SDPIComponents.useGlobalSettings(
     "simHubHost",
     (v: string) => {
-      if (v) {
-        simHubHost = v;
-        simHubFetchDone = false;
-        simHubReachable = false;
-      }
+      simHubHost = v || "127.0.0.1";
+      simHubFetchDone = false;
+      simHubReachable = false;
     },
     null,
   );
@@ -172,11 +170,9 @@ function subscribeToSimHubSettings(): void {
   window.SDPIComponents.useGlobalSettings(
     "simHubPort",
     (v: string) => {
-      if (v) {
-        simHubPort = parseInt(v, 10) || 8888;
-        simHubFetchDone = false;
-        simHubReachable = false;
-      }
+      simHubPort = parseInt(v, 10) || 8888;
+      simHubFetchDone = false;
+      simHubReachable = false;
     },
     null,
   );
@@ -205,12 +201,12 @@ async function ensureSimHubRolesFetched(): Promise<void> {
 
         if (Array.isArray(json) && json.every((item) => typeof item === "string")) {
           simHubRoles = json as string[];
+          simHubReachable = true;
         } else {
           console.warn("[ird-key-binding] SimHub GetRoles returned unexpected format");
           simHubRoles = [];
+          simHubReachable = false;
         }
-
-        simHubReachable = true;
       } else {
         simHubRoles = [];
         simHubReachable = false;

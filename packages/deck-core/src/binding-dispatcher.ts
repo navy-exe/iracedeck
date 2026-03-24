@@ -92,12 +92,12 @@ class BindingDispatcher implements IBindingDispatcher {
    * @param settingKey - The global settings key
    */
   async hold(actionId: string, settingKey: string): Promise<void> {
+    // Release any existing held binding for this context to prevent stuck keys
+    await this.release(actionId);
+
     const binding = this.resolveGlobalBinding(settingKey);
 
     if (!binding) return;
-
-    // Release any existing held binding for this context to prevent stuck keys
-    await this.release(actionId);
 
     if (isSimHubBinding(binding)) {
       this.logger.info("Triggering SimHub role (hold)");
@@ -143,19 +143,20 @@ class BindingDispatcher implements IBindingDispatcher {
 
     if (!held) return;
 
-    this.heldBindings.delete(actionId);
-
     switch (held.type) {
       case "simhub": {
         if (isSimHubInitialized()) {
           const stopped = await getSimHub().stopRole(held.role);
 
           if (stopped) {
+            this.heldBindings.delete(actionId);
             this.logger.info("SimHub role released");
           } else {
             this.logger.warn("Failed to release SimHub role");
           }
         } else {
+          // Service gone — drop the entry since we can't release it
+          this.heldBindings.delete(actionId);
           this.logger.warn("SimHub service not initialized, cannot release role");
         }
 
@@ -166,6 +167,7 @@ class BindingDispatcher implements IBindingDispatcher {
         const success = await getKeyboard().releaseKeyCombination(held.combination);
 
         if (success) {
+          this.heldBindings.delete(actionId);
           this.logger.info("Key released");
         } else {
           this.logger.warn("Failed to release key");
@@ -176,6 +178,7 @@ class BindingDispatcher implements IBindingDispatcher {
 
       default: {
         const _exhaustive: never = held;
+        this.heldBindings.delete(actionId);
         this.logger.warn(`Unknown held binding type: ${JSON.stringify(_exhaustive)}`);
       }
     }
