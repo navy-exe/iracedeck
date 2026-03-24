@@ -79,12 +79,15 @@ export const GlobalSettingsSchema = z
      * Hostname or IP address of the SimHub instance for Control Mapper integration.
      * Default: "127.0.0.1"
      */
-    simHubHost: z.string().default("127.0.0.1"),
+    simHubHost: z.preprocess((val) => (val === "" ? undefined : val), z.string().default("127.0.0.1")),
     /**
      * HTTP port for SimHub's REST API (Control Mapper).
      * Default: 8888
      */
-    simHubPort: z.coerce.number().min(1).max(65535).default(8888),
+    simHubPort: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.coerce.number().min(1).max(65535).default(8888),
+    ),
   })
   .passthrough();
 
