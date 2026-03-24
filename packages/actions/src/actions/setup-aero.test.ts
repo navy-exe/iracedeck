@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generateSetupAeroSvg, SETUP_AERO_GLOBAL_KEYS, SetupAero } from "./setup-aero.js";
 
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-aero/front-wing-decrease.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">front-wing-decrease {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -45,7 +49,7 @@ vi.mock("@iracedeck/deck-core", () => ({
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
-    tapBinding = vi.fn().mockResolvedValue(undefined);
+    tapBinding = mockTapBinding;
     holdBinding = vi.fn().mockResolvedValue(undefined);
     releaseBinding = vi.fn().mockResolvedValue(undefined);
     setActiveBinding = vi.fn();
@@ -259,49 +263,49 @@ describe("SetupAero", () => {
     it("should call tapGlobalBinding on keyDown for rf-brake-attached", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
     it("should call tapGlobalBinding for front-wing increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
 
     it("should call tapGlobalBinding for front-wing decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
     });
 
     it("should call tapGlobalBinding for rear-wing increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rear-wing", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroRearWingIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRearWingIncrease");
     });
 
     it("should call tapGlobalBinding for qualifying-tape decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "qualifying-tape", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroQualifyingTapeDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroQualifyingTapeDecrease");
     });
 
     it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
     it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "rf-brake-attached" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRfBrakeAttached");
     });
 
     it("should call tapGlobalBinding even when global key mapping exists", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-wing", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
   });
 
@@ -317,7 +321,7 @@ describe("SetupAero", () => {
         fakeDialRotateEvent("action-1", { setting: "front-wing", direction: "increase" }, 1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingIncrease");
     });
 
     it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
@@ -325,7 +329,7 @@ describe("SetupAero", () => {
         fakeDialRotateEvent("action-1", { setting: "front-wing", direction: "increase" }, -1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroFrontWingDecrease");
     });
 
     it("should call tapGlobalBinding for different settings on rotation", async () => {
@@ -333,13 +337,13 @@ describe("SetupAero", () => {
         fakeDialRotateEvent("action-1", { setting: "rear-wing", direction: "increase" }, 2) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupAeroRearWingIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupAeroRearWingIncrease");
     });
 
     it("should ignore rotation for non-directional controls (rf-brake-attached)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "rf-brake-attached" }, 1) as any);
 
-      expect(action.tapBinding).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
   });
 });

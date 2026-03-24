@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateSetupBrakesSvg, SETUP_BRAKES_GLOBAL_KEYS } from "./setup-brakes.js";
 import { SetupBrakes } from "./setup-brakes.js";
 
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-brakes/abs-toggle.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">abs-toggle {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -64,7 +68,7 @@ vi.mock("@iracedeck/deck-core", () => ({
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
-    tapBinding = vi.fn().mockResolvedValue(undefined);
+    tapBinding = mockTapBinding;
     holdBinding = vi.fn().mockResolvedValue(undefined);
     releaseBinding = vi.fn().mockResolvedValue(undefined);
     setActiveBinding = vi.fn();
@@ -344,61 +348,61 @@ describe("SetupBrakes", () => {
     it("should call tapGlobalBinding on keyDown for abs-toggle", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "abs-toggle" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
     });
 
     it("should call tapGlobalBinding for brake-bias increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-bias", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
     });
 
     it("should call tapGlobalBinding for brake-bias decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-bias", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasDecrease");
     });
 
     it("should call tapGlobalBinding for abs-adjust increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "abs-adjust", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesAbsAdjustIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsAdjustIncrease");
     });
 
     it("should call tapGlobalBinding for engine-braking decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "engine-braking", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesEngineBrakingDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesEngineBrakingDecrease");
     });
 
     it("should call tapGlobalBinding for peak-brake-bias increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "peak-brake-bias", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesPeakBrakeBiasIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesPeakBrakeBiasIncrease");
     });
 
     it("should call tapGlobalBinding for brake-misc decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-misc", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesBrakeMiscDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeMiscDecrease");
     });
 
     it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "abs-toggle" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
     });
 
     it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "abs-toggle" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesAbsToggle");
     });
 
     it("should call tapGlobalBinding for directional controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "brake-bias", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
     });
   });
 
@@ -414,7 +418,7 @@ describe("SetupBrakes", () => {
         fakeDialRotateEvent("action-1", { setting: "brake-bias", direction: "increase" }, 1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasIncrease");
     });
 
     it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
@@ -422,7 +426,7 @@ describe("SetupBrakes", () => {
         fakeDialRotateEvent("action-1", { setting: "brake-bias", direction: "increase" }, -1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesBrakeBiasDecrease");
     });
 
     it("should call tapGlobalBinding for engine-braking rotation", async () => {
@@ -430,13 +434,13 @@ describe("SetupBrakes", () => {
         fakeDialRotateEvent("action-1", { setting: "engine-braking", direction: "increase" }, 2) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupBrakesEngineBrakingIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupBrakesEngineBrakingIncrease");
     });
 
     it("should ignore rotation for non-directional controls (abs-toggle)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "abs-toggle" }, 1) as any);
 
-      expect(action.tapBinding).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
   });
 });

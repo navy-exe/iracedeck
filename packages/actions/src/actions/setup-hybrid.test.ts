@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generateSetupHybridSvg, SETUP_HYBRID_GLOBAL_KEYS, SetupHybrid } from "./setup-hybrid.js";
 
+const { mockTapBinding, mockHoldBinding, mockReleaseBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+  mockHoldBinding: vi.fn().mockResolvedValue(undefined),
+  mockReleaseBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-hybrid/mguk-regen-gain-increase.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -51,9 +57,9 @@ vi.mock("@iracedeck/deck-core", () => ({
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
-    tapBinding = vi.fn().mockResolvedValue(undefined);
-    holdBinding = vi.fn().mockResolvedValue(undefined);
-    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    tapBinding = mockTapBinding;
+    holdBinding = mockHoldBinding;
+    releaseBinding = mockReleaseBinding;
     setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
@@ -311,49 +317,49 @@ describe("SetupHybrid", () => {
     it("should call tapGlobalBinding on keyDown for mguk-regen-gain increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
     it("should call tapGlobalBinding on keyDown for mguk-deploy-mode decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-deploy-mode", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukDeployModeDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukDeployModeDecrease");
     });
 
     it("should call tapGlobalBinding on keyDown for mguk-fixed-deploy increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-fixed-deploy", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukFixedDeployIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukFixedDeployIncrease");
     });
 
     it("should call tapGlobalBinding on keyDown for hys-no-boost (toggle)", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-no-boost" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridHysNoBoost");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridHysNoBoost");
     });
 
     it("should call tapGlobalBinding on dialDown for directional controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
     it("should call tapGlobalBinding on dialDown for toggle control", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "hys-no-boost" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridHysNoBoost");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridHysNoBoost");
     });
 
     it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
     it("should call tapGlobalBinding for toggle settings", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-no-boost" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridHysNoBoost");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridHysNoBoost");
     });
   });
 
@@ -367,42 +373,42 @@ describe("SetupHybrid", () => {
     it("should call holdGlobalBinding on keyDown for hys-boost", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "setupHybridHysBoost");
-      expect(action.tapBinding).not.toHaveBeenCalled();
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "setupHybridHysBoost");
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
 
     it("should call holdGlobalBinding on keyDown for hys-regen", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-regen" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "setupHybridHysRegen");
-      expect(action.tapBinding).not.toHaveBeenCalled();
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "setupHybridHysRegen");
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
 
     it("should call releaseHeldBinding on keyUp after keyDown for hold controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
       await action.onKeyUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should call holdGlobalBinding on dialDown for hold controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledOnce();
+      expect(mockHoldBinding).toHaveBeenCalledOnce();
     });
 
     it("should call releaseHeldBinding on dialUp after dialDown for hold controls", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
       await action.onDialUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should release held key on onWillDisappear", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
       await action.onWillDisappear(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should track multiple action contexts independently", async () => {
@@ -412,31 +418,31 @@ describe("SetupHybrid", () => {
       // Press hys-regen on action-2
       await action.onKeyDown(fakeEvent("action-2", { setting: "hys-regen" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledTimes(2);
+      expect(mockHoldBinding).toHaveBeenCalledTimes(2);
 
       // Release action-1 only
       await action.onKeyUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledTimes(1);
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledTimes(1);
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
 
       // Release action-2
       await action.onKeyUp(fakeEvent("action-2", { setting: "hys-regen" }) as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledTimes(2);
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-2");
+      expect(mockReleaseBinding).toHaveBeenCalledTimes(2);
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-2");
     });
 
     it("should call releaseHeldBinding on keyUp even when no key is held", async () => {
       await action.onKeyUp(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should call holdGlobalBinding even when no key binding is configured for hold controls", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "hys-boost" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "setupHybridHysBoost");
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "setupHybridHysBoost");
     });
   });
 
@@ -452,7 +458,7 @@ describe("SetupHybrid", () => {
         fakeDialRotateEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }, 1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainIncrease");
     });
 
     it("should call tapGlobalBinding for decrease on counter-clockwise rotation for directional controls", async () => {
@@ -460,7 +466,7 @@ describe("SetupHybrid", () => {
         fakeDialRotateEvent("action-1", { setting: "mguk-regen-gain", direction: "increase" }, -1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukRegenGainDecrease");
     });
 
     it("should call tapGlobalBinding for mguk-deploy-mode rotation", async () => {
@@ -468,27 +474,27 @@ describe("SetupHybrid", () => {
         fakeDialRotateEvent("action-1", { setting: "mguk-deploy-mode", direction: "increase" }, 2) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupHybridMgukDeployModeIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupHybridMgukDeployModeIncrease");
     });
 
     it("should ignore rotation for hold controls (hys-boost)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "hys-boost" }, 1) as any);
 
-      expect(action.tapBinding).not.toHaveBeenCalled();
-      expect(action.holdBinding).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
+      expect(mockHoldBinding).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for hold controls (hys-regen)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "hys-regen" }, -1) as any);
 
-      expect(action.tapBinding).not.toHaveBeenCalled();
-      expect(action.holdBinding).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
+      expect(mockHoldBinding).not.toHaveBeenCalled();
     });
 
     it("should ignore rotation for toggle control (hys-no-boost)", async () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { setting: "hys-no-boost" }, 1) as any);
 
-      expect(action.tapBinding).not.toHaveBeenCalled();
+      expect(mockTapBinding).not.toHaveBeenCalled();
     });
   });
 });

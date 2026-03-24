@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generateLookDirectionSvg, LOOK_DIRECTION_GLOBAL_KEYS, LookDirection } from "./look-direction.js";
 
+const { mockHoldBinding, mockReleaseBinding } = vi.hoisted(() => ({
+  mockHoldBinding: vi.fn().mockResolvedValue(undefined),
+  mockReleaseBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/look-direction/look-left.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -37,8 +42,8 @@ vi.mock("@iracedeck/deck-core", () => ({
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
     tapBinding = vi.fn().mockResolvedValue(undefined);
-    holdBinding = vi.fn().mockResolvedValue(undefined);
-    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    holdBinding = mockHoldBinding;
+    releaseBinding = mockReleaseBinding;
     setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
@@ -183,21 +188,21 @@ describe("LookDirection", () => {
     it("should hold key on keyDown and release on keyUp", async () => {
       await action.onKeyDown(fakeEvent("action-1", { direction: "look-left" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
 
       await action.onKeyUp(fakeEvent("action-1") as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should hold key on dialDown and release on dialUp", async () => {
       await action.onDialDown(fakeEvent("action-1", { direction: "look-left" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledOnce();
+      expect(mockHoldBinding).toHaveBeenCalledOnce();
 
       await action.onDialUp(fakeEvent("action-1") as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should track concurrent presses on different action contexts independently", async () => {
@@ -206,50 +211,50 @@ describe("LookDirection", () => {
       // Press right on action-2
       await action.onKeyDown(fakeEvent("action-2", { direction: "look-right" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledTimes(2);
+      expect(mockHoldBinding).toHaveBeenCalledTimes(2);
 
       // Release action-1 — should release action-1's combination only
       await action.onKeyUp(fakeEvent("action-1") as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledTimes(1);
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledTimes(1);
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
 
       // Release action-2
       await action.onKeyUp(fakeEvent("action-2") as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledTimes(2);
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-2");
+      expect(mockReleaseBinding).toHaveBeenCalledTimes(2);
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-2");
     });
 
     it("should release held key on onWillDisappear", async () => {
       await action.onKeyDown(fakeEvent("action-1", { direction: "look-left" }) as any);
       await action.onWillDisappear(fakeEvent("action-1") as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should call releaseHeldBinding on keyUp even when no key is held", async () => {
       await action.onKeyUp(fakeEvent("action-1") as any);
 
-      expect(action.releaseBinding).toHaveBeenCalledWith("action-1");
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
     });
 
     it("should call holdGlobalBinding even when no binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { direction: "look-left" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
     });
 
     it("should call holdGlobalBinding with correct setting key for all directions", async () => {
       await action.onKeyDown(fakeEvent("action-1", { direction: "look-left" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
     });
 
     it("should call holdGlobalBinding with correct setting key", async () => {
       await action.onKeyDown(fakeEvent("action-1", { direction: "look-left" }) as any);
 
-      expect(action.holdBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "lookDirectionLeft");
     });
   });
 });

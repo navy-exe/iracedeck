@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { generateSetupChassisSvg, SETUP_CHASSIS_GLOBAL_KEYS, SetupChassis } from "./setup-chassis.js";
 
+const { mockTapBinding } = vi.hoisted(() => ({
+  mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@iracedeck/icons/setup-chassis/differential-entry-decrease.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">differential-entry-decrease {{mainLabel}} {{subLabel}}</svg>',
 }));
@@ -102,7 +106,7 @@ vi.mock("@iracedeck/deck-core", () => ({
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
-    tapBinding = vi.fn().mockResolvedValue(undefined);
+    tapBinding = mockTapBinding;
     holdBinding = vi.fn().mockResolvedValue(undefined);
     releaseBinding = vi.fn().mockResolvedValue(undefined);
     setActiveBinding = vi.fn();
@@ -461,49 +465,49 @@ describe("SetupChassis", () => {
     it("should call tapGlobalBinding on keyDown for differential-preload increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "differential-preload", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
     it("should call tapGlobalBinding for differential-preload decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "differential-preload", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadDecrease");
     });
 
     it("should call tapGlobalBinding for front-arb increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "front-arb", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisFrontArbIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisFrontArbIncrease");
     });
 
     it("should call tapGlobalBinding for lf-shock increase", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "lf-shock", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisLfShockIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisLfShockIncrease");
     });
 
     it("should call tapGlobalBinding for power-steering decrease", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "power-steering", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisPowerSteeringDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisPowerSteeringDecrease");
     });
 
     it("should call tapGlobalBinding on dialDown", async () => {
       await action.onDialDown(fakeEvent("action-1", { setting: "differential-preload", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
     it("should call tapGlobalBinding even when no key binding is configured", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "differential-preload", direction: "increase" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
     it("should call tapGlobalBinding for all directional settings", async () => {
       await action.onKeyDown(fakeEvent("action-1", { setting: "lf-shock", direction: "decrease" }) as any);
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisLfShockDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisLfShockDecrease");
     });
   });
 
@@ -519,7 +523,7 @@ describe("SetupChassis", () => {
         fakeDialRotateEvent("action-1", { setting: "differential-preload", direction: "increase" }, 1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadIncrease");
     });
 
     it("should call tapGlobalBinding for decrease on counter-clockwise rotation", async () => {
@@ -527,7 +531,7 @@ describe("SetupChassis", () => {
         fakeDialRotateEvent("action-1", { setting: "differential-preload", direction: "increase" }, -1) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadDecrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisDifferentialPreloadDecrease");
     });
 
     it("should call tapGlobalBinding for different settings on rotation", async () => {
@@ -535,7 +539,7 @@ describe("SetupChassis", () => {
         fakeDialRotateEvent("action-1", { setting: "front-arb", direction: "increase" }, 2) as any,
       );
 
-      expect(action.tapBinding).toHaveBeenCalledWith("setupChassisFrontArbIncrease");
+      expect(mockTapBinding).toHaveBeenCalledWith("setupChassisFrontArbIncrease");
     });
   });
 });
