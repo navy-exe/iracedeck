@@ -20,6 +20,7 @@ import type { IDeckPlatformAdapter } from "./types.js";
  * Exported for use by plugins defining their own key binding schemas.
  */
 export const KeyBindingValueSchema = z.object({
+  // default("keyboard") provides backward compat with persisted values that lack the field
   type: z.literal("keyboard").default("keyboard"),
   key: z.string().min(1),
   modifiers: z.array(z.string()).default([]),

@@ -92,7 +92,8 @@ class BindingDispatcher implements IBindingDispatcher {
    * @param settingKey - The global settings key
    */
   async hold(actionId: string, settingKey: string): Promise<void> {
-    // Release any existing held binding for this context to prevent stuck keys
+    // Release before resolve — even if the new binding turns out to be invalid,
+    // the old one must not stay held (would cause a stuck key/role).
     await this.release(actionId);
 
     const binding = this.resolveGlobalBinding(settingKey);
@@ -143,6 +144,8 @@ class BindingDispatcher implements IBindingDispatcher {
 
     if (!held) return;
 
+    // Entry is only removed on successful release. On failure the key/role is
+    // still physically held, so we keep the entry so onWillDisappear can retry.
     switch (held.type) {
       case "simhub": {
         if (isSimHubInitialized()) {
