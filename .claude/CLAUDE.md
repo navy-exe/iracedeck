@@ -21,6 +21,7 @@ High-level guidance
 - Keep rules focused: one topic per markdown file.
 - Use `paths` frontmatter in rules when a rule applies only to certain files.
 - **Keep documentation in sync with reality.** When code changes alter conventions, patterns, APIs, or workflows described in any `CLAUDE.md` or `.claude/rules/` file, update those files in the same change. Stale instructions cause repeated mistakes.
+- **Keep `README.md` in sync with reality.** When changes affect the project structure, action count, features, or development workflow described in `README.md`, update it in the same change.
 
 Cross-platform development
 

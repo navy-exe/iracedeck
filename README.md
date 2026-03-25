@@ -3,27 +3,28 @@
 </p>
 
 <p align="center">
-  Open-source <a href="https://www.elgato.com/stream-deck">Elgato Stream Deck</a> plugin for <a href="https://www.iracing.com/">iRacing</a>. Turn your Stream Deck into a fully-featured button box with live telemetry, pit controls, camera management, and more.
+  Open-source <a href="https://www.elgato.com/stream-deck">Elgato Stream Deck</a> and <a href="https://miraboxbuy.com/">Mirabox</a> plugin for <a href="https://www.iracing.com/">iRacing</a>. Turn your Stream Deck or Mirabox into a fully-featured button box with live telemetry, pit controls, camera management, and more.
 </p>
 
 <p align="center">
+  <a href="https://coderabbit.ai"><img src="https://img.shields.io/coderabbit/prs/github/niklam/iracedeck?utm_source=oss&utm_medium=github&utm_campaign=niklam%2Firacedeck&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews" alt="CodeRabbit Pull Request Reviews"></a>
   <a href="https://discord.gg/c6nRYywpah"><img src="https://img.shields.io/discord/1477659500851888219?logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord"></a>
 </p>
 
 ## Features
 
-**28 actions** across 8 categories, all with Stream Deck+ encoder support:
+**28 actions** with **321 controls** across 8 categories, all with Stream Deck+ encoder support:
 
-| Category | Actions | Examples |
-|----------|---------|---------|
-| **Display & Session** | Session Info | Incidents, lap count, position, fuel, flags |
-| **Driving Controls** | Audio, Black Box, Look Direction, Car Control | Spotter volume, black box cycling, pit limiter, ignition |
-| **Cockpit & Interface** | Cockpit Misc, Splits Delta, Telemetry, Toggle UI | Wipers, FFB, delta modes, HUD elements |
-| **View & Camera** | View Adjustment, Replay (3), Camera (4) | FOV, replay transport, camera focus, broadcast tools |
-| **Media** | Media Capture | Video recording, screenshots |
-| **Pit Service** | Quick Actions, Fuel, Tires | Tearoff, fuel add/reduce, tire compound, fast repair |
-| **Car Setup** | Brakes, Chassis, Aero, Engine, Fuel, Hybrid | Brake bias, ARB, wing, boost, ERS deploy modes |
-| **Chat** | Chat | Open chat, macros, whisper, reply |
+| Category | Actions | Controls | Examples |
+|----------|---------|----------|---------|
+| **Display & Session** | 1 | 6 | Incidents, laps, position, fuel, flags |
+| **Driving Controls** | 5 | 39 | AI spotter, audio, black box cycling, look direction, car control |
+| **Cockpit & Interface** | 4 | 26 | Wipers, FFB, splits & reference, telemetry, UI toggles |
+| **View & Camera** | 5 | 103 | FOV, replay transport, camera focus, broadcast tools |
+| **Media** | 1 | 7 | Video recording, screenshots |
+| **Pit Service** | 3 | 13 | Fuel, tires, compounds, tearoff, fast repair |
+| **Car Setup** | 7 | 79 | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
+| **Chat** | 2 | 48 | Chat, macros, whisper, reply, race admin commands |
 
 **Key highlights:**
 
@@ -51,8 +52,8 @@
 - [Elgato Stream Deck](https://docs.elgato.com/sdk/) software
 
 ```bash
-git clone https://github.com/your-org/iRaceDeck.git
-cd iRaceDeck
+git clone https://github.com/niklam/iracedeck.git
+cd iracedeck
 pnpm install
 pnpm build
 ```
@@ -78,33 +79,50 @@ pnpm format:fix
 
 A pnpm monorepo built with [Turborepo](https://turbo.build/):
 
-```
+```text
 packages/
+  actions/                 Platform-agnostic action implementations
+  deck-adapter-elgato/     Elgato Stream Deck adapter (bridges Elgato SDK to deck-core)
+  deck-adapter-mirabox/    Mirabox VSD Craft adapter (WebSocket protocol to deck-core)
+  deck-core/               Platform-agnostic base classes, types, and shared utilities
+  icons/                   SVG icon templates (Mustache)
   iracing-native/          C++ N-API addon (shared memory, window messaging, scan codes)
   iracing-sdk/             TypeScript SDK (telemetry, broadcast commands, session parsing)
   logger/                  Shared logger interface
-  stream-deck-plugin/ The Stream Deck plugin (actions, icons, Property Inspector, shared utilities)
+  mirabox-plugin/          Mirabox device plugin
+  stream-deck-plugin/      Elgato Stream Deck plugin
+  website/                 Documentation website (iracedeck.com)
 ```
 
 | Package | Role |
 |---------|------|
+| `@iracedeck/actions` | All 28 action implementations, platform-agnostic |
+| `@iracedeck/deck-core` | Base classes, types, keyboard service, icon templates, global settings |
+| `@iracedeck/deck-adapter-elgato` | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface |
+| `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core |
+| `@iracedeck/icons` | SVG icon Mustache templates with colorization support |
 | `@iracedeck/iracing-native` | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging, scan-code input) |
 | `@iracedeck/iracing-sdk` | TypeScript SDK for reading telemetry and sending iRacing broadcast commands |
 | `@iracedeck/logger` | Shared logging interface with scoped loggers |
-| `@iracedeck/stream-deck-plugin` | The Stream Deck plugin: 28 actions with icons, Property Inspector UIs, and shared utilities (base classes, icon generation, keyboard service, PI components, global settings) |
+| `@iracedeck/stream-deck-plugin` | Elgato Stream Deck plugin — registers actions, PI templates, manifest |
+| `@iracedeck/mirabox-plugin` | Mirabox plugin — registers the same actions for Mirabox devices |
+| `@iracedeck/website` | Documentation website at [iracedeck.com](https://iracedeck.com) |
 
 ### How it fits together
 
-```
-Stream Deck button press
-  -> stream-deck-plugin (action handler + keyboard service / SDK commands)
-    -> iracing-sdk (broadcast command) or iracing-native (scan-code keystroke)
-      -> iRacing
+```text
+Button press (Stream Deck or Mirabox)
+  -> adapter (deck-adapter-elgato or deck-adapter-mirabox)
+    -> actions (platform-agnostic action handler)
+      -> deck-core (keyboard service / SDK commands)
+        -> iracing-sdk (broadcast command) or iracing-native (scan-code keystroke)
+          -> iRacing
 
 iRacing telemetry (shared memory)
   -> iracing-native (reads memory-mapped file)
     -> iracing-sdk (parses telemetry buffer, 4 Hz update loop)
-      -> stream-deck-plugin (updates button display)
+      -> deck-core (notifies subscribers)
+        -> actions (updates button display via adapter)
 ```
 
 ## Releasing
@@ -151,16 +169,16 @@ Contributions are welcome! Here's how to get started:
 
 ### Adding a new action
 
-Actions live in `packages/stream-deck-plugin/src/actions/`. Each action needs:
+Actions live in `packages/actions/src/actions/`. Each action needs:
 
-1. An action class extending `ConnectionStateAwareAction`
-2. Registration in `plugin.ts`
-3. An entry in `manifest.json`
-4. Category icon (20x20 SVG) and key icon (72x72 SVG)
-5. A Property Inspector template (EJS -> HTML)
+1. An action class extending `ConnectionStateAwareAction` from `@iracedeck/deck-core`
+2. Icons in `packages/icons/`
+3. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
+4. Manifest entry in each plugin's `manifest.json`
+5. A Property Inspector template (EJS -> HTML) in `stream-deck-plugin/src/pi/`
 6. Unit tests
 
-See the existing actions for reference, or check the package-level docs in `packages/stream-deck-plugin/`.
+See the existing actions for reference, or check `packages/stream-deck-plugin/CLAUDE.md` for step-by-step instructions.
 
 ## Troubleshooting
 
