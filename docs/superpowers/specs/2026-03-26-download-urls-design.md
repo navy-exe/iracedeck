@@ -56,14 +56,20 @@ on:
   push:
     tags: ["v*"]
 
+permissions:
+  contents: write
+
 jobs:
   build-streamdeck:
     uses: ./.github/workflows/release-pack.yml
+    secrets: inherit
   build-mirabox:
     uses: ./.github/workflows/release-pack-dock.yml
+    secrets: inherit
   deploy-website:
     needs: [build-streamdeck, build-mirabox]
     uses: ./.github/workflows/firebase-hosting-release.yml
+    secrets: inherit
     with:
       version: ${{ github.ref_name }}
 ```
@@ -71,6 +77,8 @@ jobs:
 - `build-streamdeck` and `build-mirabox` run in parallel
 - `deploy-website` waits for both to complete, ensuring download URLs resolve before the site goes live
 - The orchestrator passes the tag name (e.g., `v1.7.0`) as the `version` input
+- `secrets: inherit` is required so child workflows can access `FIREBASE_SERVICE_ACCOUNT_IRACEDECK` and `GITHUB_TOKEN`
+- If either build job fails, the website deploy is skipped — this is acceptable since the GitHub Release assets are uploaded independently by each build job
 
 ### 3. Child Workflow Trigger Changes
 
@@ -108,7 +116,7 @@ The website build step uses this input as an environment variable:
 - name: Build website
   run: pnpm --filter @iracedeck/website build
   env:
-    IRACEDECK_VERSION: ${{ inputs.version || '' }}
+    PUBLIC_IRACEDECK_VERSION: ${{ inputs.version || '' }}
 ```
 
 ### 4. Downloads Page
@@ -117,7 +125,7 @@ New Starlight page at `packages/website/src/content/docs/downloads.mdx` (renders
 
 Content:
 - Heading: "Download iRaceDeck"
-- Version badge displaying the build-time version (e.g., "v1.7.0"), read from `import.meta.env.IRACEDECK_VERSION`
+- Version badge displaying the build-time version (e.g., "v1.7.0"), read from `import.meta.env.PUBLIC_IRACEDECK_VERSION`
 - Falls back gracefully when no version is set (manual/dispatch builds)
 - Two download sections:
   - **Stream Deck** — button to `/downloads/plugin/latest/streamdeck`, note about Stream Deck software 7.1+ requirement
