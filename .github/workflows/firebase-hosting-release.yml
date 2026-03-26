@@ -10,6 +10,7 @@ on:
       version:
         description: "Release version tag (e.g., v1.7.0)"
         type: string
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
