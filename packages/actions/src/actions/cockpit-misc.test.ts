@@ -1,17 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  COCKPIT_MISC_GLOBAL_KEYS,
-  CockpitMisc,
-  generateCockpitMiscSvg,
-  generateEnterExitTowSvg,
-  getEnterExitTowState,
-} from "./cockpit-misc.js";
+import { COCKPIT_MISC_GLOBAL_KEYS, CockpitMisc, generateCockpitMiscSvg } from "./cockpit-misc.js";
 
-const { mockTapBinding, mockHoldBinding, mockReleaseBinding } = vi.hoisted(() => ({
+const { mockTapBinding } = vi.hoisted(() => ({
   mockTapBinding: vi.fn().mockResolvedValue(undefined),
-  mockHoldBinding: vi.fn().mockResolvedValue(undefined),
-  mockReleaseBinding: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/cockpit-misc/toggle-wipers.svg", () => ({
@@ -44,18 +36,6 @@ vi.mock("@iracedeck/icons/cockpit-misc/dash-page-2-decrease.svg", () => ({
 vi.mock("@iracedeck/icons/cockpit-misc/in-lap-mode.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">in-lap-mode {{mainLabel}} {{subLabel}}</svg>',
 }));
-vi.mock("@iracedeck/icons/cockpit-misc/enter-car.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">enter-car {{mainLabel}} {{subLabel}}</svg>',
-}));
-vi.mock("@iracedeck/icons/cockpit-misc/exit-car.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">exit-car {{mainLabel}} {{subLabel}}</svg>',
-}));
-vi.mock("@iracedeck/icons/cockpit-misc/reset-to-pits.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">reset-to-pits {{mainLabel}} {{subLabel}}</svg>',
-}));
-vi.mock("@iracedeck/icons/cockpit-misc/tow.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">tow {{mainLabel}} {{subLabel}}</svg>',
-}));
 
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
@@ -73,19 +53,14 @@ vi.mock("@iracedeck/deck-core", () => ({
   },
   ConnectionStateAwareAction: class MockConnectionStateAwareAction {
     logger = { trace: vi.fn(), debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
-    sdkController = {
-      subscribe: vi.fn(),
-      unsubscribe: vi.fn(),
-      getCurrentTelemetry: vi.fn(),
-      getSessionInfo: vi.fn(() => null),
-    };
+    sdkController = { subscribe: vi.fn(), unsubscribe: vi.fn(), getCurrentTelemetry: vi.fn() };
     updateConnectionState = vi.fn();
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
     tapBinding = mockTapBinding;
-    holdBinding = mockHoldBinding;
-    releaseBinding = mockReleaseBinding;
+    holdBinding = vi.fn().mockResolvedValue(undefined);
+    releaseBinding = vi.fn().mockResolvedValue(undefined);
     setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
@@ -189,8 +164,8 @@ describe("CockpitMisc", () => {
       expect(COCKPIT_MISC_GLOBAL_KEYS["toggle-wipers"]).toBe("cockpitMiscToggleWipers");
     });
 
-    it("should have exactly 11 entries", () => {
-      expect(Object.keys(COCKPIT_MISC_GLOBAL_KEYS)).toHaveLength(11);
+    it("should have exactly 10 entries", () => {
+      expect(Object.keys(COCKPIT_MISC_GLOBAL_KEYS)).toHaveLength(10);
     });
   });
 
@@ -246,7 +221,6 @@ describe("CockpitMisc", () => {
         "dash-page-1",
         "dash-page-2",
         "in-lap-mode",
-        "enter-exit-tow",
       ] as const;
       const directions = ["increase", "decrease"] as const;
 
@@ -357,10 +331,6 @@ describe("CockpitMisc", () => {
           increase: { mainLabel: "IN LAP", subLabel: "MODE" },
           decrease: { mainLabel: "IN LAP", subLabel: "MODE" },
         },
-        "enter-exit-tow": {
-          increase: { mainLabel: "ENTER", subLabel: "" },
-          decrease: { mainLabel: "ENTER", subLabel: "" },
-        },
       };
 
       for (const [control, directions] of Object.entries(expectedLabels)) {
@@ -375,148 +345,6 @@ describe("CockpitMisc", () => {
           expect(decoded).toContain(labels.subLabel);
         }
       }
-    });
-
-    it("should generate a valid data URI for enter-exit-tow", () => {
-      const result = generateCockpitMiscSvg({ control: "enter-exit-tow", direction: "increase" });
-      expect(result).toContain("data:image/svg+xml");
-    });
-
-    it("should include ENTER label for enter-exit-tow", () => {
-      const result = generateCockpitMiscSvg({ control: "enter-exit-tow", direction: "increase" });
-      const decoded = decodeURIComponent(result);
-      expect(decoded).toContain("ENTER");
-    });
-  });
-
-  describe("getEnterExitTowState", () => {
-    it("should return enter-car when telemetry is null", () => {
-      expect(getEnterExitTowState(null, null)).toBe("enter-car");
-    });
-
-    it("should return enter-car when IsOnTrack is false", () => {
-      expect(getEnterExitTowState({ IsOnTrack: false }, null)).toBe("enter-car");
-    });
-
-    it("should return enter-car when IsOnTrack is undefined", () => {
-      expect(getEnterExitTowState({}, null)).toBe("enter-car");
-    });
-
-    it("should return exit-car when on track and in pit stall", () => {
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: true }, null)).toBe("exit-car");
-    });
-
-    it("should return reset-to-pits when on track, not in pit stall, and session is Practice", () => {
-      const sessionInfo = {
-        SessionInfo: {
-          Sessions: [{ SessionNum: 0, SessionType: "Practice" }],
-        },
-      };
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
-        "reset-to-pits",
-      );
-    });
-
-    it("should return tow when on track, not in pit stall, and session is Race", () => {
-      const sessionInfo = {
-        SessionInfo: {
-          Sessions: [{ SessionNum: 0, SessionType: "Race" }],
-        },
-      };
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
-        "tow",
-      );
-    });
-
-    it("should return reset-to-pits when on track, not in pit stall, and session is Qualifying", () => {
-      const sessionInfo = {
-        SessionInfo: {
-          Sessions: [{ SessionNum: 0, SessionType: "Qualifying" }],
-        },
-      };
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
-        "reset-to-pits",
-      );
-    });
-
-    it("should return reset-to-pits when on track, not in pit stall, and sessionInfo is null", () => {
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, null)).toBe(
-        "reset-to-pits",
-      );
-    });
-
-    it("should return reset-to-pits when SessionNum doesn't match any session", () => {
-      const sessionInfo = {
-        SessionInfo: {
-          Sessions: [{ SessionNum: 0, SessionType: "Race" }],
-        },
-      };
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 5 }, sessionInfo)).toBe(
-        "reset-to-pits",
-      );
-    });
-
-    it("should select the correct session when there are multiple sessions", () => {
-      const sessionInfo = {
-        SessionInfo: {
-          Sessions: [
-            { SessionNum: 0, SessionType: "Practice" },
-            { SessionNum: 1, SessionType: "Qualifying" },
-            { SessionNum: 2, SessionType: "Race" },
-          ],
-        },
-      };
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 2 }, sessionInfo)).toBe(
-        "tow",
-      );
-      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
-        "reset-to-pits",
-      );
-    });
-  });
-
-  describe("generateEnterExitTowSvg", () => {
-    it("should produce different icons for all 4 states", () => {
-      const enterCar = generateEnterExitTowSvg("enter-car", undefined);
-      const exitCar = generateEnterExitTowSvg("exit-car", undefined);
-      const resetToPits = generateEnterExitTowSvg("reset-to-pits", undefined);
-      const tow = generateEnterExitTowSvg("tow", undefined);
-
-      expect(enterCar).not.toBe(exitCar);
-      expect(enterCar).not.toBe(resetToPits);
-      expect(enterCar).not.toBe(tow);
-      expect(exitCar).not.toBe(resetToPits);
-      expect(exitCar).not.toBe(tow);
-      expect(resetToPits).not.toBe(tow);
-    });
-
-    it("should include ENTER label for enter-car state", () => {
-      const result = generateEnterExitTowSvg("enter-car", undefined);
-      const decoded = decodeURIComponent(result);
-      expect(decoded).toContain("ENTER");
-    });
-
-    it("should include EXIT label for exit-car state", () => {
-      const result = generateEnterExitTowSvg("exit-car", undefined);
-      const decoded = decodeURIComponent(result);
-      expect(decoded).toContain("EXIT");
-    });
-
-    it("should include RESET label for reset-to-pits state", () => {
-      const result = generateEnterExitTowSvg("reset-to-pits", undefined);
-      const decoded = decodeURIComponent(result);
-      expect(decoded).toContain("RESET");
-    });
-
-    it("should include TOW label for tow state", () => {
-      const result = generateEnterExitTowSvg("tow", undefined);
-      const decoded = decodeURIComponent(result);
-      expect(decoded).toContain("TOW");
-    });
-
-    it("should return a valid data URI", () => {
-      const result = generateEnterExitTowSvg("enter-car", undefined);
-      expect(result).toContain("data:image/svg+xml");
     });
   });
 
@@ -591,103 +419,6 @@ describe("CockpitMisc", () => {
       await action.onKeyDown(fakeEvent("action-1", { control: "report-latency" }) as any);
 
       expect(mockTapBinding).toHaveBeenCalledWith("cockpitMiscReportLatency");
-    });
-  });
-
-  describe("enter-exit-tow telemetry subscription", () => {
-    let action: CockpitMisc;
-
-    beforeEach(() => {
-      action = new CockpitMisc();
-    });
-
-    it("should subscribe to telemetry on willAppear for enter-exit-tow", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(action.sdkController.subscribe).toHaveBeenCalledWith("action-1", expect.any(Function));
-    });
-
-    it("should not subscribe to telemetry for non-enter-exit-tow controls", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
-
-      expect(action.sdkController.subscribe).not.toHaveBeenCalled();
-    });
-
-    it("should unsubscribe on willDisappear when subscribed", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-      await action.onWillDisappear(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(action.sdkController.unsubscribe).toHaveBeenCalledWith("action-1");
-    });
-
-    it("should not unsubscribe on willDisappear for non-enter-exit-tow controls", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
-      await action.onWillDisappear(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
-
-      expect(action.sdkController.unsubscribe).not.toHaveBeenCalled();
-    });
-
-    it("should subscribe when switching to enter-exit-tow via settings change", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
-      await action.onDidReceiveSettings(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(action.sdkController.subscribe).toHaveBeenCalledWith("action-1", expect.any(Function));
-    });
-
-    it("should unsubscribe when switching away from enter-exit-tow via settings change", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-      await action.onDidReceiveSettings(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
-
-      expect(action.sdkController.unsubscribe).toHaveBeenCalledWith("action-1");
-    });
-  });
-
-  describe("enter-exit-tow hold/release behavior", () => {
-    let action: CockpitMisc;
-
-    beforeEach(() => {
-      action = new CockpitMisc();
-    });
-
-    it("should use holdBinding on keyDown for enter-exit-tow", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "cockpitMiscEnterExitTow");
-      expect(mockTapBinding).not.toHaveBeenCalled();
-    });
-
-    it("should use releaseBinding on keyUp for enter-exit-tow", async () => {
-      await action.onKeyUp(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
-    });
-
-    it("should still use tapBinding on keyDown for non-enter-exit-tow controls", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { control: "toggle-wipers" }) as any);
-
-      expect(mockTapBinding).toHaveBeenCalledWith("cockpitMiscToggleWipers");
-      expect(mockHoldBinding).not.toHaveBeenCalled();
-    });
-
-    it("should release binding on willDisappear for enter-exit-tow", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-      await action.onWillDisappear(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
-    });
-
-    it("should ignore dial rotation for enter-exit-tow", async () => {
-      await action.onDialRotate(fakeDialRotateEvent("action-1", { control: "enter-exit-tow" }, 1) as any);
-
-      expect(mockTapBinding).not.toHaveBeenCalled();
-      expect(mockHoldBinding).not.toHaveBeenCalled();
-    });
-
-    it("should use holdBinding on dialDown for enter-exit-tow", async () => {
-      await action.onDialDown(fakeEvent("action-1", { control: "enter-exit-tow" }) as any);
-
-      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "cockpitMiscEnterExitTow");
-      expect(mockTapBinding).not.toHaveBeenCalled();
     });
   });
 
