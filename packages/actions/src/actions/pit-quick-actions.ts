@@ -22,9 +22,6 @@ import { statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "request-fast-repair";
 
 /**
- * Standalone SVG templates for static pit quick action modes (imported from @iracedeck/icons)
- */
-/**
  * Standalone SVG templates for static pit quick action modes (imported from @iracedeck/icons).
  * Telemetry-aware modes (windshield-tearoff, request-fast-repair) use the dynamic template instead.
  */
