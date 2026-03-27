@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
+  <g filter="url(#activity-state)">
+    <!-- Main background -->
+    <rect x="0" y="0" width="144" height="144" fill="#2a2a3a"/>
+
+    <!-- Icon content area: car body side-view with outward arrow -->
+    <!-- Car body outline -->
+    <path d="M22 66 L22 56 L40 56 L52 42 L92 42 L104 56 L122 56 L122 66 Z"
+          fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Windshield -->
+    <path d="M55 56 L62 45 L85 45 L92 56 Z"
+          fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Rear wheel -->
+    <circle cx="45" cy="68" r="10" fill="none" stroke="#ffffff" stroke-width="4"/>
+    <circle cx="45" cy="68" r="4" fill="#ffffff"/>
+    <!-- Front wheel -->
+    <circle cx="100" cy="68" r="10" fill="none" stroke="#ffffff" stroke-width="4"/>
+    <circle cx="100" cy="68" r="4" fill="#ffffff"/>
+    <!-- Door line -->
+    <line x1="72" y1="56" x2="72" y2="66" stroke="#ffffff" stroke-width="2" opacity="0.5"/>
+
+    <!-- Outward arrow (red - exit) pointing away from car to the right -->
+    <line x1="116" y1="52" x2="136" y2="52" stroke="#e74c3c" stroke-width="5" stroke-linecap="round"/>
+    <polyline points="130,44 136,52 130,60" fill="none" stroke="#e74c3c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Two-line label -->
+    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+          fill="#ffffff" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
+    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+          fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
+  </g>
+</svg>

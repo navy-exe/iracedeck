@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
+  <g filter="url(#activity-state)">
+    <!-- Main background -->
+    <rect x="0" y="0" width="144" height="144" fill="#2a2a3a"/>
+
+    <!-- Tow hook - thick, bold, immediately recognizable -->
+    <!-- Horizontal bar (the hook attachment arm) -->
+    <line x1="20" y1="52" x2="88" y2="52"
+          stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+    <!-- Vertical drop of hook -->
+    <line x1="88" y1="52" x2="88" y2="72"
+          stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+    <!-- Hook curve (the actual hook shape) -->
+    <path d="M88 72 A18 18 0 0 1 70 90 L56 90"
+          fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+    <!-- Hook tip curl -->
+    <path d="M56 90 A10 10 0 0 0 56 70"
+          fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+
+    <!-- Warning triangle with "!" (yellow) -->
+    <polygon points="116,22 138,60 94,60"
+             fill="none" stroke="#f39c12" stroke-width="4" stroke-linejoin="round"/>
+    <text x="116" y="55" text-anchor="middle" dominant-baseline="central"
+          fill="#f39c12" font-family="Arial, sans-serif" font-size="22" font-weight="bold">!</text>
+
+    <!-- Two-line label -->
+    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+          fill="#ffffff" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
+    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+          fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
+  </g>
+</svg>
