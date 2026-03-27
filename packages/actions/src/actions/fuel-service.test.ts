@@ -2,14 +2,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   buildFuelMacro,
+  formatFuelFillAmount,
   FUEL_SERVICE_GLOBAL_KEYS,
   FuelService,
+  type FuelServiceTelemetryState,
   generateFuelServiceSvg,
+  getFuelAmount,
   getFuelServiceLabels,
+  isFuelFillOn,
 } from "./fuel-service.js";
 
 const {
   mockPitClearFuel,
+  mockPitFuel,
   mockSendMessage,
   mockGetCommands,
   mockParseKeyBinding,
@@ -17,10 +22,12 @@ const {
   mockTapBinding,
 } = vi.hoisted(() => ({
   mockPitClearFuel: vi.fn(() => true),
+  mockPitFuel: vi.fn(() => true),
   mockSendMessage: vi.fn(() => true),
   mockGetCommands: vi.fn(() => ({
     pit: {
       clearFuel: mockPitClearFuel,
+      fuel: mockPitFuel,
     },
     chat: {
       sendMessage: mockSendMessage,
@@ -29,6 +36,20 @@ const {
   mockParseKeyBinding: vi.fn(),
   mockGetGlobalSettings: vi.fn(() => ({})),
   mockTapBinding: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@iracedeck/iracing-sdk", () => ({
+  PitSvFlags: { FuelFill: 0x0010 },
+  hasFlag: (value: number | undefined, flag: number) => value !== undefined && (value & flag) !== 0,
+}));
+
+vi.mock("../../icons/fuel-service.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">{{iconContent}} {{backgroundColor}}</svg>',
+}));
+
+vi.mock("../icons/status-bar.js", () => ({
+  statusBarOn: () => '<rect class="status-on"/>',
+  statusBarOff: () => '<rect class="status-off"/>',
 }));
 
 vi.mock("@iracedeck/icons/fuel-service/add-fuel.svg", () => ({
@@ -56,7 +77,7 @@ vi.mock("@iracedeck/icons/fuel-service/lap-margin-decrease.svg", () => ({
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
     extend: () => {
-      const defaults = { mode: "add-fuel", amount: 1, unit: "l" };
+      const defaults = { mode: "toggle-fuel-fill", amount: 1, unit: "l" };
       const schema = {
         parse: (data: Record<string, unknown>) => ({ ...defaults, ...data }),
         safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...defaults, ...data } }),
@@ -108,7 +129,15 @@ vi.mock("@iracedeck/deck-core", () => ({
     startRole: vi.fn().mockResolvedValue(true),
     stopRole: vi.fn().mockResolvedValue(true),
   })),
-  resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
+  fuelToDisplayUnits: vi.fn((liters: number, displayUnits: number | undefined) => {
+    // 0 = English (gallons), 1 = Metric (liters)
+    if (displayUnits === 1) return liters;
+
+    return liters * 0.264172;
+  }),
+  resolveIconColors: vi.fn((_svg: string, _global: unknown, _overrides: unknown) => ({
+    graphic1Color: "#ffffff",
+  })),
   renderIconTemplate: vi.fn((_template: string, data: Record<string, string>) => {
     return `<svg>${data.iconContent || ""}${data.mainLabel || data.labelLine1 || ""}${data.subLabel || data.labelLine2 || ""}</svg>`;
   }),
@@ -211,12 +240,10 @@ describe("FuelService", () => {
       expect(setResult).toContain("50 KG");
     });
 
-    it("should fall back to add-fuel defaults for unspecified settings", () => {
+    it("should fall back to toggle-fuel-fill for unspecified settings", () => {
       const result = generateFuelServiceSvg({} as any);
-      const decoded = decodeURIComponent(result);
 
       expect(result).toContain("data:image/svg+xml");
-      expect(decoded).toContain("ADD FUEL");
     });
   });
 
@@ -331,10 +358,11 @@ describe("FuelService", () => {
       expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it("should default to add-fuel when no mode is specified", async () => {
+    it("should default to toggle-fuel-fill when no mode is specified", async () => {
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
       await action.onKeyDown(fakeEvent("action-1", {}) as any);
 
-      expect(mockSendMessage).toHaveBeenCalledWith("#fuel +1l$");
+      expect(mockPitFuel).toHaveBeenCalledWith(0);
     });
   });
 
@@ -454,6 +482,154 @@ describe("FuelService", () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { mode: "toggle-autofuel" }, 1) as any);
 
       expect(mockTapBinding).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("isFuelFillOn", () => {
+    it("returns true when FuelFill flag is set", () => {
+      expect(isFuelFillOn({ PitSvFlags: 0x0010 } as any)).toBe(true);
+    });
+
+    it("returns false when FuelFill flag is not set", () => {
+      expect(isFuelFillOn({ PitSvFlags: 0 } as any)).toBe(false);
+    });
+
+    it("returns false when telemetry is null", () => {
+      expect(isFuelFillOn(null)).toBe(false);
+    });
+
+    it("returns false when PitSvFlags is undefined", () => {
+      expect(isFuelFillOn({} as any)).toBe(false);
+    });
+  });
+
+  describe("getFuelAmount", () => {
+    it("returns fuel amount from telemetry", () => {
+      expect(getFuelAmount({ PitSvFuel: 50.0 } as any)).toBe(50.0);
+    });
+
+    it("returns 0 when telemetry is null", () => {
+      expect(getFuelAmount(null)).toBe(0);
+    });
+
+    it("returns 0 when PitSvFuel is undefined", () => {
+      expect(getFuelAmount({} as any)).toBe(0);
+    });
+  });
+
+  describe("formatFuelFillAmount", () => {
+    it("formats metric amount with L suffix", () => {
+      expect(formatFuelFillAmount(50, 1)).toBe("+50 L");
+    });
+
+    it("formats imperial amount with gal suffix", () => {
+      const result = formatFuelFillAmount(50, 0);
+
+      expect(result).toContain("g");
+      expect(result).toContain("+");
+    });
+
+    it("formats zero", () => {
+      expect(formatFuelFillAmount(0, 1)).toBe("+0 L");
+    });
+  });
+
+  describe("toggle-fuel-fill mode", () => {
+    describe("generateFuelServiceSvg", () => {
+      it("should generate valid data URI for toggle-fuel-fill", () => {
+        const result = generateFuelServiceSvg({ mode: "toggle-fuel-fill", amount: 1, unit: "l" });
+
+        expect(result).toContain("data:image/svg+xml");
+      });
+
+      it("should show ON status bar and fuel amount in metric", () => {
+        const telemetryState: FuelServiceTelemetryState = { fuelFillOn: true, fuelAmount: 50.0, displayUnits: 1 };
+        const result = generateFuelServiceSvg({ mode: "toggle-fuel-fill", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-on");
+        expect(decoded).toContain("+50 L");
+      });
+
+      it("should show OFF status bar and 0 fuel when fuel fill is off", () => {
+        const telemetryState: FuelServiceTelemetryState = { fuelFillOn: false, fuelAmount: 0, displayUnits: 1 };
+        const result = generateFuelServiceSvg({ mode: "toggle-fuel-fill", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-off");
+        expect(decoded).toContain("+0 L");
+      });
+
+      it("should show fuel amount in gallons for imperial units", () => {
+        const telemetryState: FuelServiceTelemetryState = { fuelFillOn: true, fuelAmount: 50.0, displayUnits: 0 };
+        const result = generateFuelServiceSvg({ mode: "toggle-fuel-fill", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("g");
+        expect(decoded).toContain("+");
+      });
+
+      it("should use static icon for non-telemetry modes regardless of state", () => {
+        const telemetryState: FuelServiceTelemetryState = { fuelFillOn: true };
+        const result = generateFuelServiceSvg({ mode: "clear-fuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).not.toContain("status-on");
+        expect(decoded).not.toContain("status-off");
+      });
+    });
+
+    describe("key press behavior", () => {
+      let action: FuelService;
+
+      beforeEach(() => {
+        action = new FuelService();
+      });
+
+      it("should call pit.fuel(0) on keyDown when fuel fill is not set", async () => {
+        action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+        await action.onKeyDown(fakeEvent("action-1", { mode: "toggle-fuel-fill" }) as any);
+
+        expect(mockPitFuel).toHaveBeenCalledWith(0);
+        expect(mockPitClearFuel).not.toHaveBeenCalled();
+      });
+
+      it("should call pit.clearFuel() on keyDown when fuel fill is already set", async () => {
+        action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0010 });
+        await action.onKeyDown(fakeEvent("action-1", { mode: "toggle-fuel-fill" }) as any);
+
+        expect(mockPitClearFuel).toHaveBeenCalledOnce();
+        expect(mockPitFuel).not.toHaveBeenCalled();
+      });
+
+      it("should not call any pit command when telemetry is null", async () => {
+        action.sdkController.getCurrentTelemetry.mockReturnValue(null);
+        await action.onKeyDown(fakeEvent("action-1", { mode: "toggle-fuel-fill" }) as any);
+
+        expect(mockPitFuel).not.toHaveBeenCalled();
+        expect(mockPitClearFuel).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("telemetry subscription lifecycle", () => {
+      let action: FuelService;
+
+      beforeEach(() => {
+        action = new FuelService();
+      });
+
+      it("should subscribe to telemetry on onWillAppear", async () => {
+        await action.onWillAppear(fakeEvent("action-1", { mode: "toggle-fuel-fill" }) as any);
+
+        expect(action.sdkController.subscribe).toHaveBeenCalledWith("action-1", expect.any(Function));
+      });
+
+      it("should unsubscribe from telemetry on onWillDisappear", async () => {
+        await action.onWillAppear(fakeEvent("action-1", { mode: "toggle-fuel-fill" }) as any);
+        await action.onWillDisappear(fakeEvent("action-1") as any);
+
+        expect(action.sdkController.unsubscribe).toHaveBeenCalledWith("action-1");
+      });
     });
   });
 });

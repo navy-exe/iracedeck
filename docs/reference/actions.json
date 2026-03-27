@@ -485,6 +485,7 @@
           "encoder": true,
           "settingsKey": "mode",
           "modes": [
+            { "value": "toggle-fuel-fill", "label": "Toggle Fuel Fill" },
             { "value": "add-fuel", "label": "Add Fuel" },
             { "value": "reduce-fuel", "label": "Reduce Fuel" },
             { "value": "set-fuel-amount", "label": "Set Fuel Amount" },
