@@ -165,6 +165,12 @@
       "label": "In Lap Mode",
       "default": "Shift+Alt+L",
       "setting": "cockpitMiscInLapMode"
+    },
+    {
+      "id": "enterExitTow",
+      "label": "Enter / Exit / Tow Car",
+      "default": "Shift+R",
+      "setting": "cockpitMiscEnterExitTow"
     }
   ],
   "fuelService": [
