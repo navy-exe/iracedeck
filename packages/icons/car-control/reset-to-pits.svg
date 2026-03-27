@@ -4,26 +4,13 @@
     <!-- Main background -->
     <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
 
-    <!-- Icon content area: car body side-view with circular reset arrow (yellow) -->
-    <!-- Car body outline (slightly smaller/repositioned to leave room for reset arrow) -->
-    <path d="M18 68 L18 58 L36 58 L48 44 L88 44 L100 58 L118 58 L118 68 Z"
-          fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Windshield -->
-    <path d="M51 58 L58 47 L81 47 L88 58 Z"
-          fill="none" stroke="{{graphic1Color}}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Rear wheel -->
-    <circle cx="41" cy="70" r="9" fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>
-    <circle cx="41" cy="70" r="3.5" fill="{{graphic1Color}}"/>
-    <!-- Front wheel -->
-    <circle cx="96" cy="70" r="9" fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>
-    <circle cx="96" cy="70" r="3.5" fill="{{graphic1Color}}"/>
-
-    <!-- Circular reset arrow (yellow) - above car, right side -->
-    <!-- Arc: 270 degrees (almost full circle) with gap at top-right -->
-    <path d="M128 26 A16 16 0 1 0 134 36"
-          fill="none" stroke="#f39c12" stroke-width="5" stroke-linecap="round"/>
-    <!-- Arrowhead at end of arc -->
-    <polyline points="128,28 134,36 124,38" fill="none" stroke="#f39c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Reset arrow (scaled from 21x21 reference) -->
+    <g transform="translate(30, 11) scale(4)">
+      <g fill="none" stroke="{{graphic1Color}}" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0 1 1 0 2.5 2.5)">
+        <path d="m3.98652376 1.07807068c-2.38377179 1.38514556-3.98652376 3.96636605-3.98652376 6.92192932 0 4.418278 3.581722 8 8 8s8-3.581722 8-8-3.581722-8-8-8" stroke-width="1.5"/>
+        <path d="m4 1v4h-4" transform="matrix(1 0 0 -1 0 6)" stroke-width="1.5"/>
+      </g>
+    </g>
 
     <!-- Two-line label -->
     <text x="72" y="104" text-anchor="middle" dominant-baseline="central"

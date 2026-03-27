@@ -72,7 +72,7 @@ const ENTER_EXIT_TOW_ICONS: Record<EnterExitTowState, string> = {
 };
 
 const ENTER_EXIT_TOW_LABELS: Record<EnterExitTowState, { line1: string; line2: string }> = {
-  "enter-car": { line1: "ENTER", line2: "" },
+  "enter-car": { line1: "DRIVE", line2: "" },
   "exit-car": { line1: "EXIT", line2: "" },
   "reset-to-pits": { line1: "RESET", line2: "" },
   tow: { line1: "TOW", line2: "" },
