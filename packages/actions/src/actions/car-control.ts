@@ -24,11 +24,11 @@ import { EngineWarnings, hasFlag, type TelemetryData } from "@iracedeck/iracing-
 import z from "zod";
 
 import carControlTemplate from "../../icons/car-control.svg";
+import { statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 const WHITE = "#ffffff";
 const GRAY = "#888888";
 const RED = "#e74c3c";
-const GREEN = "#2ecc71";
 const BLUE = "#3498db";
 
 type CarControlType =
@@ -118,29 +118,7 @@ export function pitLimiterInactiveIcon(speed: number): string {
           fill="#2a3a2a" font-family="Arial, sans-serif" font-size="28" font-weight="bold">${speed}</text>`;
 }
 
-/**
- * @internal Exported for testing
- *
- * Status bar showing ON state — full-width green bar with "ON" text at the bottom.
- */
-export function statusBarOn(): string {
-  return `
-    <rect x="0" y="100" width="144" height="44" fill="${GREEN}"/>
-    <text x="72" y="129" text-anchor="middle" dominant-baseline="central"
-          fill="${WHITE}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">ON</text>`;
-}
-
-/**
- * @internal Exported for testing
- *
- * Status bar showing OFF state — full-width dark gray bar with "OFF" text at the bottom.
- */
-export function statusBarOff(): string {
-  return `
-    <rect x="0" y="100" width="144" height="44" fill="${RED}"/>
-    <text x="72" y="129" text-anchor="middle" dominant-baseline="central"
-          fill="${WHITE}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">OFF</text>`;
-}
+export { statusBarOff, statusBarOn };
 
 /**
  * @internal Exported for testing
