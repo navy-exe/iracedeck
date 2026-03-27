@@ -298,6 +298,7 @@ starlight-theme-select label select {
 .download-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  align-items: stretch;
   gap: 1.5rem;
   margin: 2rem 0;
 }
@@ -312,6 +313,7 @@ starlight-theme-select label select {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100%;
   padding: 2rem 1.5rem;
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 0.75rem;
@@ -339,25 +341,32 @@ starlight-theme-select label select {
 }
 
 .download-button {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background: var(--sl-color-accent);
-  color: var(--sl-color-white) !important;
-  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.9375rem 1.25rem;
+  background: var(--sl-color-text-accent);
+  border: 1px solid var(--sl-color-text-accent);
+  color: var(--sl-color-black) !important;
+  border-radius: 999rem;
   text-decoration: none;
   font-weight: 600;
-  font-size: 1rem;
-  transition: opacity 0.2s;
+  font-size: var(--sl-text-base);
+  line-height: 1.1875;
+  margin-top: auto;
   margin-bottom: 1rem;
 }
 
 .download-button:hover {
-  opacity: 0.85;
+  color: var(--sl-color-black) !important;
 }
 
 .download-alt {
   font-size: 0.8rem;
   color: var(--sl-color-gray-3);
+}
+
+.download-alt a {
+  color: var(--sl-color-text-accent);
 }
 
 .download-help {
