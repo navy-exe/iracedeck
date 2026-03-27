@@ -15,12 +15,17 @@ import dashPage1DecreaseSvg from "@iracedeck/icons/cockpit-misc/dash-page-1-decr
 import dashPage1IncreaseSvg from "@iracedeck/icons/cockpit-misc/dash-page-1-increase.svg";
 import dashPage2DecreaseSvg from "@iracedeck/icons/cockpit-misc/dash-page-2-decrease.svg";
 import dashPage2IncreaseSvg from "@iracedeck/icons/cockpit-misc/dash-page-2-increase.svg";
+import enterCarSvg from "@iracedeck/icons/cockpit-misc/enter-car.svg";
+import exitCarSvg from "@iracedeck/icons/cockpit-misc/exit-car.svg";
 import ffbMaxForceDecreaseSvg from "@iracedeck/icons/cockpit-misc/ffb-max-force-decrease.svg";
 import ffbMaxForceIncreaseSvg from "@iracedeck/icons/cockpit-misc/ffb-max-force-increase.svg";
 import inLapModeSvg from "@iracedeck/icons/cockpit-misc/in-lap-mode.svg";
 import reportLatencySvg from "@iracedeck/icons/cockpit-misc/report-latency.svg";
+import resetToPitsSvg from "@iracedeck/icons/cockpit-misc/reset-to-pits.svg";
 import toggleWipersSvg from "@iracedeck/icons/cockpit-misc/toggle-wipers.svg";
+import towSvg from "@iracedeck/icons/cockpit-misc/tow.svg";
 import triggerWipersSvg from "@iracedeck/icons/cockpit-misc/trigger-wipers.svg";
+import type { SessionInfo, TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
 type CockpitMiscControl =
@@ -30,12 +35,30 @@ type CockpitMiscControl =
   | "report-latency"
   | "dash-page-1"
   | "dash-page-2"
-  | "in-lap-mode";
+  | "in-lap-mode"
+  | "enter-exit-tow";
 
 type DirectionType = "increase" | "decrease";
 
 /** Controls that have +/- direction */
 const DIRECTIONAL_CONTROLS: Set<CockpitMiscControl> = new Set(["ffb-max-force", "dash-page-1", "dash-page-2"]);
+
+/** @internal Exported for testing */
+export type EnterExitTowState = "enter-car" | "exit-car" | "reset-to-pits" | "tow";
+
+const ENTER_EXIT_TOW_SVGS: Record<EnterExitTowState, string> = {
+  "enter-car": enterCarSvg,
+  "exit-car": exitCarSvg,
+  "reset-to-pits": resetToPitsSvg,
+  tow: towSvg,
+};
+
+const ENTER_EXIT_TOW_LABELS: Record<EnterExitTowState, string> = {
+  "enter-car": "ENTER",
+  "exit-car": "EXIT",
+  "reset-to-pits": "RESET",
+  tow: "TOW",
+};
 
 /**
  * Label configuration for each control + direction combination.
@@ -61,6 +84,7 @@ const COCKPIT_MISC_LABELS: Record<
     decrease: { mainLabel: "DASH PG 2", subLabel: "PREVIOUS" },
   },
   "in-lap-mode": { mainLabel: "IN LAP", subLabel: "MODE" },
+  "enter-exit-tow": { mainLabel: "ENTER", subLabel: "" },
 };
 
 /**
@@ -84,6 +108,7 @@ const COCKPIT_MISC_SVGS: Record<CockpitMiscControl, Record<DirectionType, string
     decrease: dashPage2DecreaseSvg,
   },
   "in-lap-mode": inLapModeSvg,
+  "enter-exit-tow": enterCarSvg,
 };
 
 /**
@@ -103,6 +128,7 @@ export const COCKPIT_MISC_GLOBAL_KEYS: Record<string, string> = {
   "dash-page-2-increase": "cockpitMiscDashPage2Increase",
   "dash-page-2-decrease": "cockpitMiscDashPage2Decrease",
   "in-lap-mode": "cockpitMiscInLapMode",
+  "enter-exit-tow": "cockpitMiscEnterExitTow",
 };
 
 const CockpitMiscSettings = CommonSettings.extend({
@@ -115,12 +141,67 @@ const CockpitMiscSettings = CommonSettings.extend({
       "dash-page-1",
       "dash-page-2",
       "in-lap-mode",
+      "enter-exit-tow",
     ])
     .default("toggle-wipers"),
   direction: z.enum(["increase", "decrease"]).default("increase"),
 });
 
 type CockpitMiscSettings = z.infer<typeof CockpitMiscSettings>;
+
+/**
+ * @internal Exported for testing
+ *
+ * Determines the Enter/Exit/Tow state based on telemetry and session info.
+ * Priority order: enter-car → exit-car → reset-to-pits/tow (based on session type).
+ */
+export function getEnterExitTowState(
+  telemetry: TelemetryData | null | Record<string, unknown>,
+  sessionInfo: SessionInfo | null | Record<string, unknown>,
+): EnterExitTowState {
+  if (!telemetry || !(telemetry as Record<string, unknown>).IsOnTrack) {
+    return "enter-car";
+  }
+
+  if ((telemetry as Record<string, unknown>).PlayerCarInPitStall) {
+    return "exit-car";
+  }
+
+  // On track, not in pit stall — check session type
+  const sessionNum = ((telemetry as Record<string, unknown>).SessionNum as number | undefined) ?? 0;
+  const sessions = ((sessionInfo as Record<string, unknown> | null)?.SessionInfo as Record<string, unknown> | undefined)
+    ?.Sessions as Array<Record<string, unknown>> | undefined;
+  const currentSession = sessions?.find((s) => s.SessionNum === sessionNum);
+  const sessionType = currentSession?.SessionType as string | undefined;
+
+  if (sessionType === "Race") {
+    return "tow";
+  }
+
+  return "reset-to-pits";
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Generates an SVG data URI icon for a specific Enter/Exit/Tow state.
+ */
+export function generateEnterExitTowSvg(
+  state: EnterExitTowState,
+  colorOverrides: Record<string, string> | undefined,
+): string {
+  const iconSvg = ENTER_EXIT_TOW_SVGS[state];
+  const mainLabel = ENTER_EXIT_TOW_LABELS[state];
+
+  const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+  const svg = renderIconTemplate(iconSvg, {
+    mainLabel,
+    subLabel: "",
+    ...colors,
+  });
+
+  return svgToDataUri(svg);
+}
 
 /**
  * @internal Exported for testing

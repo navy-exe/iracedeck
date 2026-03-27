@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { COCKPIT_MISC_GLOBAL_KEYS, CockpitMisc, generateCockpitMiscSvg } from "./cockpit-misc.js";
+import {
+  COCKPIT_MISC_GLOBAL_KEYS,
+  CockpitMisc,
+  generateCockpitMiscSvg,
+  generateEnterExitTowSvg,
+  getEnterExitTowState,
+} from "./cockpit-misc.js";
 
 const { mockTapBinding } = vi.hoisted(() => ({
   mockTapBinding: vi.fn().mockResolvedValue(undefined),
@@ -35,6 +41,18 @@ vi.mock("@iracedeck/icons/cockpit-misc/dash-page-2-decrease.svg", () => ({
 }));
 vi.mock("@iracedeck/icons/cockpit-misc/in-lap-mode.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">in-lap-mode {{mainLabel}} {{subLabel}}</svg>',
+}));
+vi.mock("@iracedeck/icons/cockpit-misc/enter-car.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">enter-car {{mainLabel}} {{subLabel}}</svg>',
+}));
+vi.mock("@iracedeck/icons/cockpit-misc/exit-car.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">exit-car {{mainLabel}} {{subLabel}}</svg>',
+}));
+vi.mock("@iracedeck/icons/cockpit-misc/reset-to-pits.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">reset-to-pits {{mainLabel}} {{subLabel}}</svg>',
+}));
+vi.mock("@iracedeck/icons/cockpit-misc/tow.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">tow {{mainLabel}} {{subLabel}}</svg>',
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
@@ -164,8 +182,8 @@ describe("CockpitMisc", () => {
       expect(COCKPIT_MISC_GLOBAL_KEYS["toggle-wipers"]).toBe("cockpitMiscToggleWipers");
     });
 
-    it("should have exactly 10 entries", () => {
-      expect(Object.keys(COCKPIT_MISC_GLOBAL_KEYS)).toHaveLength(10);
+    it("should have exactly 11 entries", () => {
+      expect(Object.keys(COCKPIT_MISC_GLOBAL_KEYS)).toHaveLength(11);
     });
   });
 
@@ -221,6 +239,7 @@ describe("CockpitMisc", () => {
         "dash-page-1",
         "dash-page-2",
         "in-lap-mode",
+        "enter-exit-tow",
       ] as const;
       const directions = ["increase", "decrease"] as const;
 
@@ -331,6 +350,10 @@ describe("CockpitMisc", () => {
           increase: { mainLabel: "IN LAP", subLabel: "MODE" },
           decrease: { mainLabel: "IN LAP", subLabel: "MODE" },
         },
+        "enter-exit-tow": {
+          increase: { mainLabel: "ENTER", subLabel: "" },
+          decrease: { mainLabel: "ENTER", subLabel: "" },
+        },
       };
 
       for (const [control, directions] of Object.entries(expectedLabels)) {
@@ -345,6 +368,148 @@ describe("CockpitMisc", () => {
           expect(decoded).toContain(labels.subLabel);
         }
       }
+    });
+
+    it("should generate a valid data URI for enter-exit-tow", () => {
+      const result = generateCockpitMiscSvg({ control: "enter-exit-tow", direction: "increase" });
+      expect(result).toContain("data:image/svg+xml");
+    });
+
+    it("should include ENTER label for enter-exit-tow", () => {
+      const result = generateCockpitMiscSvg({ control: "enter-exit-tow", direction: "increase" });
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("ENTER");
+    });
+  });
+
+  describe("getEnterExitTowState", () => {
+    it("should return enter-car when telemetry is null", () => {
+      expect(getEnterExitTowState(null, null)).toBe("enter-car");
+    });
+
+    it("should return enter-car when IsOnTrack is false", () => {
+      expect(getEnterExitTowState({ IsOnTrack: false }, null)).toBe("enter-car");
+    });
+
+    it("should return enter-car when IsOnTrack is undefined", () => {
+      expect(getEnterExitTowState({}, null)).toBe("enter-car");
+    });
+
+    it("should return exit-car when on track and in pit stall", () => {
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: true }, null)).toBe("exit-car");
+    });
+
+    it("should return reset-to-pits when on track, not in pit stall, and session is Practice", () => {
+      const sessionInfo = {
+        SessionInfo: {
+          Sessions: [{ SessionNum: 0, SessionType: "Practice" }],
+        },
+      };
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
+        "reset-to-pits",
+      );
+    });
+
+    it("should return tow when on track, not in pit stall, and session is Race", () => {
+      const sessionInfo = {
+        SessionInfo: {
+          Sessions: [{ SessionNum: 0, SessionType: "Race" }],
+        },
+      };
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
+        "tow",
+      );
+    });
+
+    it("should return reset-to-pits when on track, not in pit stall, and session is Qualifying", () => {
+      const sessionInfo = {
+        SessionInfo: {
+          Sessions: [{ SessionNum: 0, SessionType: "Qualifying" }],
+        },
+      };
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
+        "reset-to-pits",
+      );
+    });
+
+    it("should return reset-to-pits when on track, not in pit stall, and sessionInfo is null", () => {
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, null)).toBe(
+        "reset-to-pits",
+      );
+    });
+
+    it("should return reset-to-pits when SessionNum doesn't match any session", () => {
+      const sessionInfo = {
+        SessionInfo: {
+          Sessions: [{ SessionNum: 0, SessionType: "Race" }],
+        },
+      };
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 5 }, sessionInfo)).toBe(
+        "reset-to-pits",
+      );
+    });
+
+    it("should select the correct session when there are multiple sessions", () => {
+      const sessionInfo = {
+        SessionInfo: {
+          Sessions: [
+            { SessionNum: 0, SessionType: "Practice" },
+            { SessionNum: 1, SessionType: "Qualifying" },
+            { SessionNum: 2, SessionType: "Race" },
+          ],
+        },
+      };
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 2 }, sessionInfo)).toBe(
+        "tow",
+      );
+      expect(getEnterExitTowState({ IsOnTrack: true, PlayerCarInPitStall: false, SessionNum: 0 }, sessionInfo)).toBe(
+        "reset-to-pits",
+      );
+    });
+  });
+
+  describe("generateEnterExitTowSvg", () => {
+    it("should produce different icons for all 4 states", () => {
+      const enterCar = generateEnterExitTowSvg("enter-car", undefined);
+      const exitCar = generateEnterExitTowSvg("exit-car", undefined);
+      const resetToPits = generateEnterExitTowSvg("reset-to-pits", undefined);
+      const tow = generateEnterExitTowSvg("tow", undefined);
+
+      expect(enterCar).not.toBe(exitCar);
+      expect(enterCar).not.toBe(resetToPits);
+      expect(enterCar).not.toBe(tow);
+      expect(exitCar).not.toBe(resetToPits);
+      expect(exitCar).not.toBe(tow);
+      expect(resetToPits).not.toBe(tow);
+    });
+
+    it("should include ENTER label for enter-car state", () => {
+      const result = generateEnterExitTowSvg("enter-car", undefined);
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("ENTER");
+    });
+
+    it("should include EXIT label for exit-car state", () => {
+      const result = generateEnterExitTowSvg("exit-car", undefined);
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("EXIT");
+    });
+
+    it("should include RESET label for reset-to-pits state", () => {
+      const result = generateEnterExitTowSvg("reset-to-pits", undefined);
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("RESET");
+    });
+
+    it("should include TOW label for tow state", () => {
+      const result = generateEnterExitTowSvg("tow", undefined);
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("TOW");
+    });
+
+    it("should return a valid data URI", () => {
+      const result = generateEnterExitTowSvg("enter-car", undefined);
+      expect(result).toContain("data:image/svg+xml");
     });
   });
 
