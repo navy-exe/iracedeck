@@ -195,7 +195,7 @@ describe("CarControl", () => {
         starter: { line1: "START", line2: "ENGINE" },
         ignition: { line1: "IGNITION", line2: "ON/OFF" },
         "pit-speed-limiter": { line1: "PIT", line2: "LIMITER" },
-        "enter-exit-tow": { line1: "ENTER", line2: "" },
+        "enter-exit-tow": { line1: "DRIVE", line2: "" },
         "pause-sim": { line1: "PAUSE", line2: "SIM" },
       };
 
@@ -600,7 +600,7 @@ describe("CarControl", () => {
       const result = generateCarControlSvg({ control: "enter-exit-tow" }, { enterExitTowState: "enter-car" });
       const decoded = decodeURIComponent(result);
       expect(decoded).toContain("enter-car");
-      expect(decoded).toContain("ENTER");
+      expect(decoded).toContain("DRIVE");
     });
 
     it("should generate state-specific icon for enter-exit-tow with exit-car state", () => {
@@ -628,7 +628,7 @@ describe("CarControl", () => {
       const result = generateCarControlSvg({ control: "enter-exit-tow" });
       const decoded = decodeURIComponent(result);
       expect(decoded).toContain("enter-car");
-      expect(decoded).toContain("ENTER");
+      expect(decoded).toContain("DRIVE");
     });
 
     it("should produce different icons for each enter-exit-tow state", () => {
