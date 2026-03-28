@@ -622,14 +622,16 @@ describe("ReplayControl", () => {
       expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBeNull();
     });
 
-    it("should return null when camera car has no valid track position", () => {
-      // camCarIdx=99 is beyond the array — lapDistPct[99] is undefined
+    it("should fall back when camera car index is beyond the array", () => {
+      // camCarIdx=99 is beyond the array — falls back to car closest to S/F
+      // Car 1 at 0.8 is 0.2 from S/F, car 2 at 0.5 is 0.5 from S/F
       const telemetry = makeTelemetry(99, [
         { idx: 1, laps: 5, dist: 0.8 },
         { idx: 2, laps: 5, dist: 0.5 },
       ]);
 
-      expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBeNull();
+      expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(1);
+      expect(findAdjacentCarOnTrack(telemetry, "behind")).toBe(1);
     });
 
     it("should use physical proximity regardless of lap count", () => {
@@ -679,32 +681,46 @@ describe("ReplayControl", () => {
       expect(findAdjacentCarOnTrack(telemetry, "behind")).toBe(2);
     });
 
+    it("should fall back to car closest to start/finish when camera car has no position", () => {
+      // Camera car (idx=5) has dist=-1 (disconnected), no directional reference
+      // Car 3 at dist=0.95 is 0.05 from S/F, car 1 at dist=0.1 is 0.1 from S/F
+      const telemetry = makeTelemetry(5, [
+        { idx: 1, laps: 5, dist: 0.1 },
+        { idx: 2, laps: 5, dist: 0.5 },
+        { idx: 3, laps: 5, dist: 0.95 },
+      ]);
+
+      // Both directions return the same car (closest to S/F line)
+      expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(3);
+      expect(findAdjacentCarOnTrack(telemetry, "behind")).toBe(3);
+    });
+
     it("should match real telemetry — camera on #15 Niklas", () => {
-      // From telemetry-snapshot-20260328-211129.json
-      // #15 (idx=15) at dist=0.2654, camera target
-      // #17 (idx=17) at dist=0.2645 — closest behind (gap=0.0009)
-      // #19 (idx=19) at dist=0.3391 — closest ahead (gap=0.0737)
+      // From telemetry-snapshot-20260328-211129.json (full float64 precision)
+      // #15 (idx=15) camera target
+      // #17 (idx=17) — closest behind
+      // #19 (idx=19) — closest ahead
       // #17 and #19 have CarIdxOnPitRoad=true but are on track (TrackSurface=3)
       const telemetry = makeTelemetry(15, [
-        { idx: 2, laps: 11, dist: 0.3895 },
-        { idx: 3, laps: 12, dist: 0.5192 },
-        { idx: 5, laps: 9, dist: 0.486 },
-        { idx: 6, laps: 12, dist: 0.4321 },
-        { idx: 8, laps: 12, dist: 0.1411 },
-        { idx: 9, laps: 12, dist: 0.5138 },
-        { idx: 11, laps: 12, dist: 0.4496 },
-        { idx: 12, laps: 12, dist: 0.2256 },
-        { idx: 13, laps: 12, dist: 0.2613 },
-        { idx: 14, laps: 12, dist: 0.3689 },
-        { idx: 15, laps: 12, dist: 0.2654 },
-        { idx: 16, laps: 4, dist: 0.0444 },
-        { idx: 17, laps: 12, dist: 0.2645 },
-        { idx: 18, laps: 12, dist: 0.4522 },
-        { idx: 19, laps: 12, dist: 0.3391 },
-        { idx: 20, laps: 12, dist: 0.3965 },
-        { idx: 22, laps: 12, dist: 0.2501 },
-        { idx: 23, laps: 5, dist: 0.0572 },
-        { idx: 24, laps: 12, dist: 0.5042 },
+        { idx: 2, laps: 11, dist: 0.38954538106918335 },
+        { idx: 3, laps: 12, dist: 0.5192081332206726 },
+        { idx: 5, laps: 9, dist: 0.48601317405700684 },
+        { idx: 6, laps: 12, dist: 0.43214255571365356 },
+        { idx: 8, laps: 12, dist: 0.14112484455108643 },
+        { idx: 9, laps: 12, dist: 0.5137969255447388 },
+        { idx: 11, laps: 12, dist: 0.44958096742630005 },
+        { idx: 12, laps: 12, dist: 0.2255899459123611 },
+        { idx: 13, laps: 12, dist: 0.2612520456314087 },
+        { idx: 14, laps: 12, dist: 0.36889901757240295 },
+        { idx: 15, laps: 12, dist: 0.265424907207489 },
+        { idx: 16, laps: 4, dist: 0.04441389814019203 },
+        { idx: 17, laps: 12, dist: 0.26450181007385254 },
+        { idx: 18, laps: 12, dist: 0.45216333866119385 },
+        { idx: 19, laps: 12, dist: 0.3390771448612213 },
+        { idx: 20, laps: 12, dist: 0.39654332399368286 },
+        { idx: 22, laps: 12, dist: 0.25014644861221313 },
+        { idx: 23, laps: 5, dist: 0.05720538645982742 },
+        { idx: 24, laps: 12, dist: 0.5042067170143127 },
       ]);
 
       expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(19);
@@ -712,32 +728,47 @@ describe("ReplayControl", () => {
     });
 
     it("should match real telemetry — camera on #16 near start/finish", () => {
-      // #16 (idx=16) at dist=0.0444, near start/finish line
-      // Ahead: #23 (idx=23) at dist=0.0572 (gap=0.0128)
-      // Behind: #3 (idx=3) at dist=0.5192 (gap=0.5252, wrapping past start/finish)
+      // #16 (idx=16) near start/finish line
+      // Ahead: #23 (idx=23), Behind: #3 (idx=3) wrapping past start/finish
       const telemetry = makeTelemetry(16, [
-        { idx: 2, laps: 11, dist: 0.3895 },
-        { idx: 3, laps: 12, dist: 0.5192 },
-        { idx: 5, laps: 9, dist: 0.486 },
-        { idx: 6, laps: 12, dist: 0.4321 },
-        { idx: 8, laps: 12, dist: 0.1411 },
-        { idx: 9, laps: 12, dist: 0.5138 },
-        { idx: 11, laps: 12, dist: 0.4496 },
-        { idx: 12, laps: 12, dist: 0.2256 },
-        { idx: 13, laps: 12, dist: 0.2613 },
-        { idx: 14, laps: 12, dist: 0.3689 },
-        { idx: 15, laps: 12, dist: 0.2654 },
-        { idx: 16, laps: 4, dist: 0.0444 },
-        { idx: 17, laps: 12, dist: 0.2645 },
-        { idx: 18, laps: 12, dist: 0.4522 },
-        { idx: 19, laps: 12, dist: 0.3391 },
-        { idx: 20, laps: 12, dist: 0.3965 },
-        { idx: 22, laps: 12, dist: 0.2501 },
-        { idx: 23, laps: 5, dist: 0.0572 },
-        { idx: 24, laps: 12, dist: 0.5042 },
+        { idx: 2, laps: 11, dist: 0.38954538106918335 },
+        { idx: 3, laps: 12, dist: 0.5192081332206726 },
+        { idx: 5, laps: 9, dist: 0.48601317405700684 },
+        { idx: 6, laps: 12, dist: 0.43214255571365356 },
+        { idx: 8, laps: 12, dist: 0.14112484455108643 },
+        { idx: 9, laps: 12, dist: 0.5137969255447388 },
+        { idx: 11, laps: 12, dist: 0.44958096742630005 },
+        { idx: 12, laps: 12, dist: 0.2255899459123611 },
+        { idx: 13, laps: 12, dist: 0.2612520456314087 },
+        { idx: 14, laps: 12, dist: 0.36889901757240295 },
+        { idx: 15, laps: 12, dist: 0.265424907207489 },
+        { idx: 16, laps: 4, dist: 0.04441389814019203 },
+        { idx: 17, laps: 12, dist: 0.26450181007385254 },
+        { idx: 18, laps: 12, dist: 0.45216333866119385 },
+        { idx: 19, laps: 12, dist: 0.3390771448612213 },
+        { idx: 20, laps: 12, dist: 0.39654332399368286 },
+        { idx: 22, laps: 12, dist: 0.25014644861221313 },
+        { idx: 23, laps: 5, dist: 0.05720538645982742 },
+        { idx: 24, laps: 12, dist: 0.5042067170143127 },
       ]);
 
       expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(23);
+      expect(findAdjacentCarOnTrack(telemetry, "behind")).toBe(3);
+    });
+
+    it("should match real telemetry — camera on disconnected #10, fall back to closest to S/F", () => {
+      // From telemetry-snapshot-20260328-213841.json
+      // #10 (idx=10) has dist=-1 (disconnected), laps=-1
+      // Fallback: #3 (idx=3) at dist=0.995 is closest to S/F (0.005 away)
+      const telemetry = makeTelemetry(10, [
+        { idx: 3, laps: 2, dist: 0.9950405955314636 },
+        { idx: 11, laps: 1, dist: 0.08401884138584137 },
+        { idx: 12, laps: 0, dist: 0.9472545981407166 },
+        { idx: 14, laps: 2, dist: 0.15486976504325867 },
+        { idx: 16, laps: 1, dist: 0.08401890844106674 },
+      ]);
+
+      expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(3);
       expect(findAdjacentCarOnTrack(telemetry, "behind")).toBe(3);
     });
   });

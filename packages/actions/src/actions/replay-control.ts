@@ -296,8 +296,7 @@ export function findAdjacentCarOnTrack(telemetry: TelemetryData | null, directio
   const lapDistPct = telemetry.CarIdxLapDistPct as number[];
 
   const currentDist = lapDistPct[camCarIdx];
-
-  if (currentDist === undefined || currentDist < 0) return null;
+  const hasValidPosition = currentDist !== undefined && currentDist >= 0;
 
   let bestIdx: number | null = null;
   let bestDist = Infinity;
@@ -309,12 +308,24 @@ export function findAdjacentCarOnTrack(telemetry: TelemetryData | null, directio
 
     if (lapDistPct[idx] === undefined || lapDistPct[idx] < 0) continue;
 
-    const dist =
-      direction === "ahead" ? (lapDistPct[idx] - currentDist + 1.0) % 1.0 : (currentDist - lapDistPct[idx] + 1.0) % 1.0;
+    if (hasValidPosition) {
+      const dist =
+        direction === "ahead"
+          ? (lapDistPct[idx] - currentDist + 1.0) % 1.0
+          : (currentDist - lapDistPct[idx] + 1.0) % 1.0;
 
-    if (dist > 0 && dist < bestDist) {
-      bestDist = dist;
-      bestIdx = idx;
+      if (dist > 0 && dist < bestDist) {
+        bestDist = dist;
+        bestIdx = idx;
+      }
+    } else {
+      // No reference position — fall back to car closest to start/finish line
+      const distToSF = Math.min(lapDistPct[idx], 1.0 - lapDistPct[idx]);
+
+      if (distToSF < bestDist) {
+        bestDist = distToSF;
+        bestIdx = idx;
+      }
     }
   }
 
