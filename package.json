@@ -13,6 +13,7 @@
     "build": "node scripts/build.mjs",
     "install:stream-deck": "pnpm --filter \"@iracedeck/iracing-sdk\" --filter \"@iracedeck/stream-deck-*\" install",
     "build:ts": "turbo run build --filter=!@iracedeck/iracing-native --filter=!@iracedeck/website",
+    "build:force": "turbo run build --force",
     "build:native": "pnpm --filter @iracedeck/iracing-native build",
     "build:with-restart": "node scripts/build-with-restart.mjs",
     "build:stream-deck": "pnpm install && pnpm build:ts && pnpm restart:stream-deck",
@@ -54,7 +55,7 @@
     "node-gyp": "12.2.0",
     "prettier": "3.8.1",
     "release-it": "19.2.4",
-    "turbo": "2.8.20",
+    "turbo": "2.8.21",
     "typescript": "5.9.3",
     "vitest": "4.1.2"
   },
