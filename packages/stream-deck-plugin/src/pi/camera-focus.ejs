@@ -140,7 +140,7 @@
 					"Blimp", "Chase", "Far Chase", "Rear Chase"
 				];
 				var DEFAULT_ENABLED = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3"];
-				var GLOBAL_KEY = "cameraGroupSubset";
+				var SETTING_KEY = "cameraGroupSubset";
 				var CYCLE_TARGETS = ["cycle-camera", "cycle-sub-camera", "cycle-car", "cycle-driving"];
 
 				var currentGroups = {};
@@ -270,7 +270,7 @@
 
 					// Set up global settings hooks for camera groups
 					if (window.SDPIComponents) {
-						var subsetHook = window.SDPIComponents.useGlobalSettings(GLOBAL_KEY, function (value) {
+						var subsetHook = window.SDPIComponents.useSettings(SETTING_KEY, function (value) {
 							if (value) {
 								try {
 									var parsed = JSON.parse(value);
