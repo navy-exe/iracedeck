@@ -140,7 +140,7 @@
 					"Blimp", "Chase", "Far Chase", "Rear Chase"
 				];
 				var DEFAULT_ENABLED = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3"];
-				var GLOBAL_KEY = "cameraGroupSubset";
+				var SETTING_KEY = "cameraGroupSubset";
 				var CYCLE_TARGETS = ["cycle-camera", "cycle-sub-camera", "cycle-car", "cycle-driving"];
 
 				var currentGroups = {};
@@ -268,9 +268,24 @@
 
 					await customElements.whenDefined("sdpi-select");
 
-					// Set up global settings hooks for camera groups
+					// Set up per-action settings for camera groups, with legacy global fallback
+					var legacyGroups = null;
 					if (window.SDPIComponents) {
-						var subsetHook = window.SDPIComponents.useGlobalSettings(GLOBAL_KEY, function (value) {
+						// Read legacy global setting (for users upgrading from shared selection)
+						window.SDPIComponents.useGlobalSettings(SETTING_KEY, function (value) {
+							if (value) {
+								try {
+									var parsed = JSON.parse(value);
+									if (parsed && parsed.groups) {
+										legacyGroups = parsed.groups;
+									}
+								} catch (e) {
+									// ignore
+								}
+							}
+						});
+
+						var subsetHook = window.SDPIComponents.useSettings(SETTING_KEY, function (value) {
 							if (value) {
 								try {
 									var parsed = JSON.parse(value);
@@ -282,6 +297,9 @@
 								} catch (e) {
 									currentGroups = {};
 								}
+							} else if (legacyGroups) {
+								// No per-action value yet — seed from legacy global setting
+								currentGroups = legacyGroups;
 							} else {
 								currentGroups = {};
 							}
