@@ -90,9 +90,9 @@ function isCycleTarget(target: Target): target is CycleTarget {
 /**
  * @internal Exported for testing
  *
- * Global settings key for camera group subset selection
+ * Per-action settings key for camera group subset selection
  */
-export const CAMERA_GROUPS_GLOBAL_KEY = "cameraGroupSubset";
+export const CAMERA_GROUPS_SETTING_KEY = "cameraGroupSubset";
 
 /**
  * @internal Exported for testing
@@ -125,7 +125,7 @@ export const DEFAULT_CAMERA_GROUPS = [
 /**
  * @internal Exported for testing
  *
- * Default enabled camera groups (used when no global setting is saved)
+ * Default enabled camera groups (used when no per-action or legacy global setting is saved)
  */
 export const DEFAULT_ENABLED_GROUPS = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3"];
 
@@ -135,6 +135,7 @@ const CameraControlsSettings = CommonSettings.extend({
   target: z.enum(TARGET_VALUES).default("change-camera"),
   // Cycle-specific
   direction: z.enum(["next", "previous"]).default("next"),
+  cameraGroupSubset: z.string().optional(),
   // Focus-specific
   position: z.coerce.number().int().min(1).default(1),
   carNumber: z.coerce.number().int().min(0).default(0),
@@ -318,28 +319,25 @@ function generateCameraSelectSvg(
 /**
  * @internal Exported for testing
  *
- * Get the list of enabled camera group names from global settings.
- * Falls back to DEFAULT_ENABLED_GROUPS when no setting is stored.
+ * Parse a camera group subset value (JSON string or object) into a list of enabled group names.
+ * Returns undefined when the value is missing or unparseable, so the caller can distinguish
+ * "no setting stored" from "all groups disabled".
  */
-export function getEnabledGroupNames(): string[] {
-  const globalSettings = getGlobalSettings() as Record<string, unknown>;
-  const raw = globalSettings[CAMERA_GROUPS_GLOBAL_KEY];
-
-  // Value may be a JSON string (from PI) or an already-parsed object
+export function parseGroupSubset(raw: string | Record<string, unknown> | undefined): string[] | undefined {
   let subset: Record<string, unknown> | undefined;
 
   if (typeof raw === "string" && raw) {
     try {
       subset = JSON.parse(raw) as Record<string, unknown>;
     } catch {
-      return DEFAULT_ENABLED_GROUPS;
+      return undefined;
     }
   } else if (typeof raw === "object" && raw !== null) {
     subset = raw as Record<string, unknown>;
   }
 
   if (!subset?.groups) {
-    return DEFAULT_ENABLED_GROUPS;
+    return undefined;
   }
 
   const groups = subset.groups as Record<string, boolean>;
@@ -350,6 +348,29 @@ export function getEnabledGroupNames(): string[] {
   return Object.entries(groups)
     .filter(([, isEnabled]) => isEnabled)
     .map(([name]) => LEGACY_NAMES[name] ?? name);
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Get the list of enabled camera group names from per-action settings.
+ * Falls back to the legacy global setting (for users upgrading from older versions),
+ * then to DEFAULT_ENABLED_GROUPS.
+ */
+export function getEnabledGroupNames(raw: string | Record<string, unknown> | undefined): string[] {
+  // Try per-action setting first
+  const fromAction = parseGroupSubset(raw);
+
+  if (fromAction !== undefined) return fromAction;
+
+  // Fall back to legacy global setting (migration path for existing users)
+  const globalSettings = getGlobalSettings() as Record<string, unknown>;
+  const globalRaw = globalSettings[CAMERA_GROUPS_SETTING_KEY] as string | Record<string, unknown> | undefined;
+  const fromGlobal = parseGroupSubset(globalRaw);
+
+  if (fromGlobal !== undefined) return fromGlobal;
+
+  return DEFAULT_ENABLED_GROUPS;
 }
 
 /**
@@ -452,7 +473,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     const settings = this.parseSettings(ev.payload.settings);
 
     if (isCycleTarget(settings.target)) {
-      this.executeCycle(settings.target, settings.direction);
+      this.executeCycle(settings.target, settings.direction, settings.cameraGroupSubset);
     } else if (settings.target === "change-camera") {
       this.executeChangeCamera(settings.cameraGroup);
     } else {
@@ -465,7 +486,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     const settings = this.parseSettings(ev.payload.settings);
 
     if (isCycleTarget(settings.target)) {
-      this.executeCycle(settings.target, settings.direction);
+      this.executeCycle(settings.target, settings.direction, settings.cameraGroupSubset);
     } else if (settings.target === "change-camera") {
       this.executeChangeCamera(settings.cameraGroup);
     } else {
@@ -480,7 +501,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
 
     this.logger.info("Dial rotated");
     const direction: Direction = ev.payload.ticks > 0 ? "next" : "previous";
-    this.executeCycle(settings.target, direction);
+    this.executeCycle(settings.target, direction, settings.cameraGroupSubset);
   }
 
   private parseSettings(settings: unknown): CameraControlsSettings {
@@ -489,7 +510,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     return parsed.success ? parsed.data : CameraControlsSettings.parse({});
   }
 
-  private executeCycle(target: CycleTarget, direction: Direction): void {
+  private executeCycle(target: CycleTarget, direction: Direction, cameraGroupSubset?: string): void {
     const telemetry = this.sdkController.getCurrentTelemetry();
 
     if (!telemetry) {
@@ -516,7 +537,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
           break;
         }
 
-        const enabledNames = getEnabledGroupNames();
+        const enabledNames = getEnabledGroupNames(cameraGroupSubset);
         const nextEntry = getNextSelectedGroupEntry(groupNum, enabledNames, sessionGroups, dir);
 
         if (nextEntry === null) {
@@ -683,7 +704,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
 
     const groupNum = telemetry.CamGroupNumber ?? 1;
     const dir = settings.direction === "next" ? 1 : -1;
-    const enabledNames = getEnabledGroupNames();
+    const enabledNames = getEnabledGroupNames(settings.cameraGroupSubset);
     const nextEntry = getNextSelectedGroupEntry(groupNum, enabledNames, sessionGroups, dir);
 
     if (!nextEntry) return;
