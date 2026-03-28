@@ -1,5 +1,12 @@
+import { readFileSync } from "fs";
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+
+// Fallback: read version from root package.json if env var not set
+if (!process.env.PUBLIC_IRACEDECK_VERSION) {
+  const rootPkg = JSON.parse(readFileSync("../../package.json", "utf-8"));
+  process.env.PUBLIC_IRACEDECK_VERSION = rootPkg.version;
+}
 
 export default defineConfig({
   site: "https://iracedeck.com",
