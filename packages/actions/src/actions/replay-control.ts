@@ -280,9 +280,10 @@ export function generateReplayControlSvg(
 /**
  * @internal Exported for testing
  *
- * Find the nearest car on track ahead or behind the currently viewed car (CamCarIdx).
- * Uses CarIdxLapCompleted + CarIdxLapDistPct for track progress.
- * Skips inactive cars (lap < 0) and cars on pit road.
+ * Find the physically closest car ahead or behind the currently viewed car (CamCarIdx).
+ * Uses circular track distance based on CarIdxLapDistPct (0.0–1.0) to find the nearest
+ * car in the specified direction, regardless of lap count.
+ * Skips inactive cars (lap < 0) but includes all others (even those flagged on pit road).
  */
 export function findAdjacentCarOnTrack(telemetry: TelemetryData | null, direction: "ahead" | "behind"): number | null {
   if (!telemetry?.CarIdxLapCompleted || !telemetry?.CarIdxLapDistPct) return null;
@@ -293,40 +294,31 @@ export function findAdjacentCarOnTrack(telemetry: TelemetryData | null, directio
 
   const lapCompleted = telemetry.CarIdxLapCompleted as number[];
   const lapDistPct = telemetry.CarIdxLapDistPct as number[];
-  const onPitRoad = telemetry.CarIdxOnPitRoad as boolean[] | undefined;
 
-  // Build sorted list of active on-track cars by track progress
-  const activeCars: Array<{ carIdx: number; progress: number }> = [];
+  const currentDist = lapDistPct[camCarIdx];
+
+  if (currentDist === undefined || currentDist < 0) return null;
+
+  let bestIdx: number | null = null;
+  let bestDist = Infinity;
 
   for (let idx = 0; idx < lapCompleted.length; idx++) {
-    if (lapCompleted[idx] === undefined || lapCompleted[idx] < 0) continue;
+    if (idx === camCarIdx) continue;
 
-    if (onPitRoad?.[idx]) continue;
+    if (lapCompleted[idx] === undefined || lapCompleted[idx] < 0) continue;
 
     if (lapDistPct[idx] === undefined || lapDistPct[idx] < 0) continue;
 
-    const progress = lapCompleted[idx] + lapDistPct[idx];
-    activeCars.push({ carIdx: idx, progress });
+    const dist =
+      direction === "ahead" ? (lapDistPct[idx] - currentDist + 1.0) % 1.0 : (currentDist - lapDistPct[idx] + 1.0) % 1.0;
+
+    if (dist > 0 && dist < bestDist) {
+      bestDist = dist;
+      bestIdx = idx;
+    }
   }
 
-  // Sort by progress descending (highest first = most laps/distance)
-  activeCars.sort((a, b) => b.progress - a.progress);
-
-  const currentIndex = activeCars.findIndex((c) => c.carIdx === camCarIdx);
-
-  if (currentIndex === -1) return null;
-
-  if (direction === "ahead") {
-    // Car ahead = higher progress = lower index in sorted array (wraps around)
-    const aheadIndex = currentIndex === 0 ? activeCars.length - 1 : currentIndex - 1;
-
-    return activeCars[aheadIndex].carIdx;
-  } else {
-    // Car behind = lower progress = higher index in sorted array (wraps around)
-    const behindIndex = currentIndex === activeCars.length - 1 ? 0 : currentIndex + 1;
-
-    return activeCars[behindIndex].carIdx;
-  }
+  return bestIdx;
 }
 
 /**
