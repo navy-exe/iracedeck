@@ -41,6 +41,7 @@ import speedDisplayIconSvg from "@iracedeck/icons/replay-control/speed-display.s
 import speedIncreaseIconSvg from "@iracedeck/icons/replay-control/speed-increase.svg";
 import stopIconSvg from "@iracedeck/icons/replay-control/stop.svg";
 import {
+  findNearestCarOnTrack,
   getAllCarNumbers,
   getCarNumberFromSessionInfo,
   getCarNumberRawFromSessionInfo,
@@ -281,55 +282,12 @@ export function generateReplayControlSvg(
  * @internal Exported for testing
  *
  * Find the physically closest car ahead or behind the currently viewed car (CamCarIdx).
- * Uses circular track distance based on CarIdxLapDistPct (0.0–1.0) to find the nearest
- * car in the specified direction, regardless of lap count.
- * Skips inactive cars (lap < 0) but includes all others (even those flagged on pit road).
+ * Delegates to the shared findNearestCarOnTrack from @iracedeck/iracing-sdk.
  */
 export function findAdjacentCarOnTrack(telemetry: TelemetryData | null, direction: "ahead" | "behind"): number | null {
-  if (!telemetry?.CarIdxLapCompleted || !telemetry?.CarIdxLapDistPct) return null;
+  const camCarIdx = (telemetry?.CamCarIdx as number) ?? -1;
 
-  const camCarIdx = (telemetry.CamCarIdx as number) ?? -1;
-
-  if (camCarIdx < 0) return null;
-
-  const lapCompleted = telemetry.CarIdxLapCompleted as number[];
-  const lapDistPct = telemetry.CarIdxLapDistPct as number[];
-
-  const currentDist = lapDistPct[camCarIdx];
-  const hasValidPosition = currentDist !== undefined && currentDist >= 0;
-
-  let bestIdx: number | null = null;
-  let bestDist = Infinity;
-
-  for (let idx = 0; idx < lapCompleted.length; idx++) {
-    if (idx === camCarIdx) continue;
-
-    if (lapCompleted[idx] === undefined || lapCompleted[idx] < 0) continue;
-
-    if (lapDistPct[idx] === undefined || lapDistPct[idx] < 0) continue;
-
-    if (hasValidPosition) {
-      const dist =
-        direction === "ahead"
-          ? (lapDistPct[idx] - currentDist + 1.0) % 1.0
-          : (currentDist - lapDistPct[idx] + 1.0) % 1.0;
-
-      if (dist > 0 && dist < bestDist) {
-        bestDist = dist;
-        bestIdx = idx;
-      }
-    } else {
-      // No reference position — fall back to car closest to start/finish line
-      const distToSF = Math.min(lapDistPct[idx], 1.0 - lapDistPct[idx]);
-
-      if (distToSF < bestDist) {
-        bestDist = distToSF;
-        bestIdx = idx;
-      }
-    }
-  }
-
-  return bestIdx;
+  return findNearestCarOnTrack(telemetry, camCarIdx, direction);
 }
 
 /**

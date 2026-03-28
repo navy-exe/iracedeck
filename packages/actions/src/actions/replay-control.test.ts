@@ -91,11 +91,16 @@ vi.mock("@iracedeck/icons/replay-control/prev-car-number.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">prev-car-number {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-vi.mock("@iracedeck/iracing-sdk", () => ({
-  getCarNumberFromSessionInfo: vi.fn(),
-  getCarNumberRawFromSessionInfo: vi.fn(),
-  getAllCarNumbers: vi.fn(() => []),
-}));
+vi.mock("@iracedeck/iracing-sdk", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@iracedeck/iracing-sdk")>();
+
+  return {
+    ...actual,
+    getCarNumberFromSessionInfo: vi.fn(),
+    getCarNumberRawFromSessionInfo: vi.fn(),
+    getAllCarNumbers: vi.fn(() => []),
+  };
+});
 
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
