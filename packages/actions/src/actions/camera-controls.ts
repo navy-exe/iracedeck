@@ -344,9 +344,12 @@ export function getEnabledGroupNames(): string[] {
 
   const groups = subset.groups as Record<string, boolean>;
 
+  // Normalize legacy name variants to canonical names
+  const LEGACY_NAMES: Record<string, string> = { "Pit Lane2": "Pit Lane 2" };
+
   return Object.entries(groups)
     .filter(([, isEnabled]) => isEnabled)
-    .map(([name]) => name);
+    .map(([name]) => LEGACY_NAMES[name] ?? name);
 }
 
 /**
