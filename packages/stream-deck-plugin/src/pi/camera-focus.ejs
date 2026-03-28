@@ -268,8 +268,23 @@
 
 					await customElements.whenDefined("sdpi-select");
 
-					// Set up global settings hooks for camera groups
+					// Set up per-action settings for camera groups, with legacy global fallback
+					var legacyGroups = null;
 					if (window.SDPIComponents) {
+						// Read legacy global setting (for users upgrading from shared selection)
+						window.SDPIComponents.useGlobalSettings(SETTING_KEY, function (value) {
+							if (value) {
+								try {
+									var parsed = JSON.parse(value);
+									if (parsed && parsed.groups) {
+										legacyGroups = parsed.groups;
+									}
+								} catch (e) {
+									// ignore
+								}
+							}
+						});
+
 						var subsetHook = window.SDPIComponents.useSettings(SETTING_KEY, function (value) {
 							if (value) {
 								try {
@@ -282,6 +297,9 @@
 								} catch (e) {
 									currentGroups = {};
 								}
+							} else if (legacyGroups) {
+								// No per-action value yet — seed from legacy global setting
+								currentGroups = legacyGroups;
 							} else {
 								currentGroups = {};
 							}
