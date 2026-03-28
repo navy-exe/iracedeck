@@ -2,6 +2,7 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getKeyboard,
   getSDK,
   type IDeckDialDownEvent,
   type IDeckDialUpEvent,
@@ -16,6 +17,7 @@ import {
 } from "@iracedeck/deck-core";
 import enterCarIcon from "@iracedeck/icons/car-control/enter-car.svg";
 import enterExitTowIcon from "@iracedeck/icons/car-control/enter-exit-tow.svg";
+import escapeIcon from "@iracedeck/icons/car-control/escape.svg";
 import exitCarIcon from "@iracedeck/icons/car-control/exit-car.svg";
 import headlightFlashIcon from "@iracedeck/icons/car-control/headlight-flash.svg";
 import ignitionIcon from "@iracedeck/icons/car-control/ignition.svg";
@@ -44,7 +46,8 @@ type CarControlType =
   | "headlight-flash"
   | "push-to-pass"
   | "drs"
-  | "tear-off-visor";
+  | "tear-off-visor"
+  | "escape";
 
 /**
  * Label configuration for each car control (line1 bold, line2 subdued)
@@ -59,6 +62,7 @@ const CAR_CONTROL_LABELS: Record<CarControlType, { line1: string; line2: string 
   "push-to-pass": { line1: "PUSH TO", line2: "PASS" },
   drs: { line1: "DRS", line2: "TOGGLE" },
   "tear-off-visor": { line1: "TEAR OFF", line2: "VISOR" },
+  escape: { line1: "ESCAPE", line2: "" },
 };
 
 /** @internal Exported for testing */
@@ -93,6 +97,12 @@ const TELEMETRY_AWARE_CONTROLS = new Set<CarControlType>([
 
 /** Controls that use hold pattern (press on keyDown, release on keyUp) */
 const HOLD_CONTROLS = new Set<CarControlType>(["starter", "headlight-flash", "enter-exit-tow"]);
+
+/** Hardcoded ESC key combination (not configurable — ESC is always ESC in iRacing) */
+const ESC_KEY = { key: "escape", code: "Escape" } as const;
+
+/** Auto-hold duration in milliseconds */
+const AUTO_HOLD_DURATION = 1500;
 
 /**
  * @internal Exported for testing
@@ -184,6 +194,7 @@ const STATIC_CAR_CONTROL_ICONS: Partial<Record<CarControlType, string>> = {
   "pause-sim": pauseSimIcon,
   "headlight-flash": headlightFlashIcon,
   "tear-off-visor": tearOffVisorIcon,
+  escape: escapeIcon,
 };
 
 /**
@@ -201,6 +212,7 @@ export const CAR_CONTROL_GLOBAL_KEYS: Record<CarControlType, string> = {
   "push-to-pass": "carControlPushToPass",
   drs: "carControlDrs",
   "tear-off-visor": "carControlTearOffVisor",
+  escape: "",
 };
 
 /**
@@ -285,17 +297,22 @@ export type CarControlTelemetryState = {
 const CarControlSettings = CommonSettings.extend({
   control: z
     .enum([
-      "starter",
-      "ignition",
       "pit-speed-limiter",
-      "enter-exit-tow",
-      "pause-sim",
-      "headlight-flash",
       "push-to-pass",
       "drs",
+      "headlight-flash",
       "tear-off-visor",
+      "ignition",
+      "starter",
+      "enter-exit-tow",
+      "escape",
+      "pause-sim",
     ])
-    .default("starter"),
+    .default("pit-speed-limiter"),
+  autoHold: z
+    .union([z.boolean(), z.string()])
+    .transform((val) => val === true || val === "true")
+    .default(false),
 });
 
 type CarControlSettings = z.infer<typeof CarControlSettings>;
@@ -383,8 +400,9 @@ function renderDynamicIcon(settings: CarControlSettings, iconContent: string, sh
 /**
  * Car Control Action
  * Provides core car operation controls (starter, ignition, pit limiter, enter/exit/tow, pause,
- * headlight flash, push to pass, DRS, tear off visor).
+ * headlight flash, push to pass, DRS, tear off visor, escape).
  * Starter, headlight flash, and enter/exit/tow use long-press (hold while pressed); all others use tap.
+ * Escape uses direct keyboard (hardcoded ESC key) with optional auto-hold.
  */
 export const CAR_CONTROL_UUID = "com.iracedeck.sd.core.car-control" as const;
 
@@ -395,11 +413,19 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   /** State hash cache to prevent re-rendering every telemetry tick */
   private lastState = new Map<string, string>();
 
+  /** Auto-hold release timers per action context (escape auto-hold mode) */
+  private autoHoldTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
   override async onWillAppear(ev: IDeckWillAppearEvent<CarControlSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
-    this.setActiveBinding(CAR_CONTROL_GLOBAL_KEYS[settings.control]);
+    const globalKey = CAR_CONTROL_GLOBAL_KEYS[settings.control];
+
+    if (globalKey) {
+      this.setActiveBinding(globalKey);
+    }
+
     await this.updateDisplay(ev, settings);
 
     this.sdkController.subscribe(ev.action.id, (telemetry) => {
@@ -412,7 +438,15 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<CarControlSettings>): Promise<void> {
-    await this.releaseBinding(ev.action.id);
+    const settings = this.parseSettings(ev.payload.settings);
+
+    if (settings.control === "escape") {
+      this.clearAutoHoldTimer(ev.action.id);
+      await getKeyboard().releaseKeyCombination(ESC_KEY);
+    } else {
+      await this.releaseBinding(ev.action.id);
+    }
+
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.activeContexts.delete(ev.action.id);
@@ -423,7 +457,12 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
-    this.setActiveBinding(CAR_CONTROL_GLOBAL_KEYS[settings.control]);
+    const globalKey = CAR_CONTROL_GLOBAL_KEYS[settings.control];
+
+    if (globalKey) {
+      this.setActiveBinding(globalKey);
+    }
+
     await this.updateDisplay(ev, settings);
   }
 
@@ -435,6 +474,16 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   override async onKeyUp(ev: IDeckKeyUpEvent<CarControlSettings>): Promise<void> {
     this.logger.info("Key up received");
+    const settings = this.parseSettings(ev.payload.settings);
+
+    if (settings.control === "escape") {
+      if (!settings.autoHold) {
+        await getKeyboard().releaseKeyCombination(ESC_KEY);
+      }
+
+      return;
+    }
+
     await this.releaseBinding(ev.action.id);
   }
 
@@ -446,6 +495,16 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   override async onDialUp(ev: IDeckDialUpEvent<CarControlSettings>): Promise<void> {
     this.logger.info("Dial up received");
+    const settings = this.parseSettings(ev.payload.settings);
+
+    if (settings.control === "escape") {
+      if (!settings.autoHold) {
+        await getKeyboard().releaseKeyCombination(ESC_KEY);
+      }
+
+      return;
+    }
+
     await this.releaseBinding(ev.action.id);
   }
 
@@ -456,6 +515,12 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   }
 
   private async executeControl(actionId: string, settings: CarControlSettings): Promise<void> {
+    if (settings.control === "escape") {
+      await this.executeEscape(actionId, settings);
+
+      return;
+    }
+
     const settingKey = CAR_CONTROL_GLOBAL_KEYS[settings.control];
 
     if (!settingKey) {
@@ -468,6 +533,48 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
       await this.holdBinding(actionId, settingKey);
     } else {
       await this.tapBinding(settingKey);
+    }
+  }
+
+  private async executeEscape(actionId: string, settings: CarControlSettings): Promise<void> {
+    const keyboard = getKeyboard();
+
+    if (settings.autoHold) {
+      // Second press while timer running: cancel and release immediately
+      if (this.autoHoldTimers.has(actionId)) {
+        this.logger.info("Escape auto-hold cancelled");
+        this.clearAutoHoldTimer(actionId);
+        await keyboard.releaseKeyCombination(ESC_KEY);
+
+        return;
+      }
+
+      // First press: hold ESC, auto-release after timeout
+      this.logger.info("Escape auto-hold started");
+      await keyboard.pressKeyCombination(ESC_KEY);
+      this.autoHoldTimers.set(
+        actionId,
+        setTimeout(() => {
+          this.logger.info("Escape auto-hold released");
+          void keyboard
+            .releaseKeyCombination(ESC_KEY)
+            .catch((err) => this.logger.error(`Escape auto-hold release failed: ${err}`))
+            .finally(() => this.autoHoldTimers.delete(actionId));
+        }, AUTO_HOLD_DURATION),
+      );
+    } else {
+      // Manual hold: press on keyDown, release on keyUp
+      this.logger.info("Escape pressed");
+      await keyboard.pressKeyCombination(ESC_KEY);
+    }
+  }
+
+  private clearAutoHoldTimer(actionId: string): void {
+    const timer = this.autoHoldTimers.get(actionId);
+
+    if (timer) {
+      clearTimeout(timer);
+      this.autoHoldTimers.delete(actionId);
     }
   }
 
