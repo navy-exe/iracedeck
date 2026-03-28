@@ -114,7 +114,7 @@ export const DEFAULT_CAMERA_GROUPS = [
   "TV2",
   "TV3",
   "Pit Lane",
-  "Pit Lane2",
+  "Pit Lane 2",
   "Chopper",
   "Blimp",
   "Chase",
@@ -203,7 +203,7 @@ const CAMERA_SELECT_ICONS: Record<string, string> = {
   TV2: tv2Svg,
   TV3: tv3Svg,
   "Pit Lane": pitLaneSvg,
-  "Pit Lane2": pitLane2Svg,
+  "Pit Lane 2": pitLane2Svg,
   Chopper: chopperSvg,
   Blimp: blimpSvg,
   Chase: chaseSvg,
@@ -232,7 +232,7 @@ export const CAMERA_GROUP_MAP: Record<number, { name: string; icon: string }> = 
   13: { name: "Far Chase", icon: farChaseSvg },
   14: { name: "Rear Chase", icon: rearChaseSvg },
   15: { name: "Pit Lane", icon: pitLaneSvg },
-  16: { name: "Pit Lane2", icon: pitLane2Svg },
+  16: { name: "Pit Lane 2", icon: pitLane2Svg },
   17: { name: "TV1", icon: tv1Svg },
   18: { name: "TV2", icon: tv2Svg },
   19: { name: "TV3", icon: tv3Svg },
@@ -342,9 +342,12 @@ export function parseGroupSubset(raw: string | Record<string, unknown> | undefin
 
   const groups = subset.groups as Record<string, boolean>;
 
+  // Normalize legacy name variants to canonical names
+  const LEGACY_NAMES: Record<string, string> = { "Pit Lane2": "Pit Lane 2" };
+
   return Object.entries(groups)
     .filter(([, isEnabled]) => isEnabled)
-    .map(([name]) => name);
+    .map(([name]) => LEGACY_NAMES[name] ?? name);
 }
 
 /**
