@@ -47,6 +47,11 @@ const sdPlugin = "com.iracedeck.sd.core.sdPlugin";
  */
 const config = {
 	input: "src/plugin.ts",
+	onwarn(warning, warn) {
+		// Suppress circular dependency warnings from zod internals
+		if (warning.code === "CIRCULAR_DEPENDENCY" && warning.ids?.some(id => id.includes("node_modules\\zod\\") || id.includes("node_modules/zod/"))) return;
+		warn(warning);
+	},
 	output: {
 		file: `${sdPlugin}/bin/plugin.js`,
 		sourcemap: isWatching,
