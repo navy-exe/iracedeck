@@ -6,9 +6,6 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "packageManager": "pnpm@10.0.0",
-  "bin": {
-    "telemetry-snapshot": "dist/cli/telemetry-snapshot.js"
-  },
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
