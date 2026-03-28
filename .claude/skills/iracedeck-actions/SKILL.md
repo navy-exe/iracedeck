@@ -36,14 +36,14 @@ When asked about actions or controls:
 | Category | Actions | Controls | Description |
 |----------|---------|----------|-------------|
 | Display & Session | 2 | 7 | Live session data: incidents, laps, position, fuel, flags |
-| Driving Controls | 5 | 39 | AI spotter, audio, black boxes, look direction, car control |
+| Driving Controls | 5 | 40 | AI spotter, audio, black boxes, look direction, car control |
 | Cockpit & Interface | 4 | 30 | Wipers, FFB, splits & reference, telemetry, UI toggles |
 | View & Camera | 8 | 124 | FOV, replay, camera controls, broadcast tools |
 | Media | 1 | 7 | Video recording, screenshots, texture management |
 | Pit Service | 3 | 15 | Fuel, tires, compounds, tearoff, fast repair |
 | Car Setup | 7 | 79 | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
 | Chat | 2 | 48 | Chat, macros (15), whisper, reply, race admin commands |
-| **Total** | **32** | **349** | |
+| **Total** | **32** | **350** | |
 
 ## Actions by Category
 

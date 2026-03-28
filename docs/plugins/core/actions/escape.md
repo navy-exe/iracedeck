@@ -15,7 +15,7 @@ Sends the ESC key to iRacing. Used to exit the car or dismiss dialogs.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Control | Dropdown | Starter | Set to "Escape" for this feature |
+| Control | Dropdown | Pit Speed Limiter | Set to "Escape" for this feature |
 | Auto Hold | Checkbox | Off | When enabled, a single tap simulates a 1.5s long press |
 
 The Auto Hold checkbox is only visible when the Escape control is selected.

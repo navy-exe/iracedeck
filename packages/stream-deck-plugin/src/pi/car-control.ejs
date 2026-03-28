@@ -41,6 +41,7 @@
 					updateAutoHoldVisibility(ev.target.value);
 				});
 
+				// Polling fallback: sdpi-select events can be unreliable on programmatic value restores
 				let lastControl = controlSelect.value || "pit-speed-limiter";
 				setInterval(() => {
 					const currentControl = controlSelect.value;
