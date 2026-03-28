@@ -1,27 +1,28 @@
 ---
 title: Car Control
-description: Control car functions including starter, ignition, pit limiter, headlights, DRS, and more
+description: Control car functions including starter, ignition, pit limiter, headlights, DRS, escape, and more
 sidebar:
   badge:
-    text: "9 modes"
+    text: "10 modes"
     variant: tip
 ---
 
-The Car Control action provides quick access to essential car functions. Toggle the starter, ignition, pit speed limiter, headlights, Push To Pass, DRS, or tear off your visor — all from a single button.
+The Car Control action provides quick access to essential car functions. Toggle the pit speed limiter, headlights, Push To Pass, DRS, starter, ignition, or tear off your visor — plus exit the car with Escape — all from a single button.
 
 ## Modes
 
 | Mode | Description |
 |------|-------------|
-| Starter | Engages the car starter. Hold button to crank. |
-| Ignition | Toggles the ignition on or off. |
 | Pit Speed Limiter | Toggles the pit speed limiter. Icon updates based on telemetry to reflect current state. |
-| Enter/Exit/Tow | Context-aware car entry, exit, pit reset, or tow. Icon updates dynamically based on telemetry. Hold button to confirm. |
-| Pause Sim | Pauses the simulation. |
-| Headlight Flash | Flashes headlights while held. Useful for multi-class racing communication. |
 | Push To Pass | Activates Push To Pass / Overtake (IndyCar, Super Formula, LMDh, and other cars with OTP). Icon shows ON/OFF status from telemetry (`P2P_Status`). |
 | DRS | Toggles DRS (Formula cars). Icon shows ON/OFF status from telemetry (`DRS_Status`). |
+| Headlight Flash | Flashes headlights while held. Useful for multi-class racing communication. |
 | Tear Off Visor | Tears off visor film in open-wheel cars, clearing the view. |
+| Ignition | Toggles the ignition on or off. |
+| Starter | Engages the car starter. Hold button to crank. |
+| Enter/Exit/Tow | Context-aware car entry, exit, pit reset, or tow. Icon updates dynamically based on telemetry. Hold button to confirm. |
+| Escape | Sends the ESC key to exit the car or dismiss dialogs. Supports manual hold or auto-hold (1.5s timed hold with tap-to-cancel). |
+| Pause Sim | Pauses the simulation. |
 
 ## Encoder Support
 
@@ -39,7 +40,7 @@ The Enter/Exit/Tow mode dynamically changes its icon based on your current state
 | Tow | On track, race session | Tow hook |
 
 :::note
-Pit Speed Limiter, Push To Pass, DRS, and Enter/Exit/Tow modes feature telemetry-aware icons that reflect the current state in real time. Push To Pass reads the `P2P_Status` variable (not the momentary button press), so it accurately shows whether overtake power is currently active. Enter/Exit/Tow, Headlight Flash, and Starter use a hold pattern — the action is active while the button is pressed.
+Pit Speed Limiter, Push To Pass, DRS, and Enter/Exit/Tow modes feature telemetry-aware icons that reflect the current state in real time. Push To Pass reads the `P2P_Status` variable (not the momentary button press), so it accurately shows whether overtake power is currently active. Enter/Exit/Tow, Headlight Flash, and Starter use a hold pattern — the action is active while the button is pressed. Escape also uses a hold pattern by default, with an optional auto-hold mode that holds ESC for 1.5 seconds on a single tap (press again to cancel early).
 :::
 
 :::caution
