@@ -7,7 +7,7 @@ description: Use when looking up Stream Deck actions, sub-actions, modes, catego
 
 ## Data File
 
-Complete action definitions (32 actions, 349 controls): `docs/reference/actions.json`
+Complete action definitions (32 actions, 350 controls): `docs/reference/actions.json`
 
 Each action entry:
 ```json
@@ -61,7 +61,7 @@ When asked about actions or controls:
 | Audio Controls | 6 | 2 categories (voice-chat, master) x 3 actions (volume-up, volume-down, mute) |
 | Black Box Selector | 13 | 11 direct selections + next/previous cycle |
 | Look Direction | 4 | look-left, look-right, look-up, look-down (hold pattern) |
-| Car Control | 9 | starter (hold), ignition, pit-speed-limiter (telemetry-aware), enter-exit-tow (hold), pause-sim, headlight-flash (hold), push-to-pass (telemetry-aware), drs (telemetry-aware), tear-off-visor |
+| Car Control | 10 | starter (hold), ignition, pit-speed-limiter (telemetry-aware), enter-exit-tow (hold), pause-sim, headlight-flash (hold), push-to-pass (telemetry-aware), drs (telemetry-aware), tear-off-visor, escape (hold, direct keyboard, auto-hold option) |
 
 ### Cockpit & Interface
 
