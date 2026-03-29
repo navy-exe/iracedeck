@@ -168,16 +168,20 @@ describe("AiSpotterControls", () => {
   });
 
   describe("SPOTTER_LABELS", () => {
-    it("should have SPOTTER as subLabel for all controls", () => {
-      for (const labels of Object.values(SPOTTER_LABELS)) {
-        expect(labels.subLabel).toBe("SPOTTER");
-      }
+    it("should have correct subLabels for all controls", () => {
+      expect(SPOTTER_LABELS["damage-report"].subLabel).toBe("REPORT");
+      expect(SPOTTER_LABELS["weather-report"].subLabel).toBe("REPORT");
+      expect(SPOTTER_LABELS["toggle-report-laps"].subLabel).toBe("REPORT");
+      expect(SPOTTER_LABELS["announce-leader"].subLabel).toBe("SPOTTER");
+      expect(SPOTTER_LABELS["louder"].subLabel).toBe("SPOTTER");
+      expect(SPOTTER_LABELS["quieter"].subLabel).toBe("SPOTTER");
+      expect(SPOTTER_LABELS["silence"].subLabel).toBe("SPOTTER");
     });
 
     it("should have correct mainLabels", () => {
       expect(SPOTTER_LABELS["damage-report"].mainLabel).toBe("DAMAGE");
       expect(SPOTTER_LABELS["weather-report"].mainLabel).toBe("WEATHER");
-      expect(SPOTTER_LABELS["toggle-report-laps"].mainLabel).toBe("RPT LAPS");
+      expect(SPOTTER_LABELS["toggle-report-laps"].mainLabel).toBe("LAPS");
       expect(SPOTTER_LABELS["announce-leader"].mainLabel).toBe("LEADER");
       expect(SPOTTER_LABELS["louder"].mainLabel).toBe("LOUDER");
       expect(SPOTTER_LABELS["quieter"].mainLabel).toBe("QUIETER");
@@ -217,7 +221,7 @@ describe("AiSpotterControls", () => {
       const result = generateAiSpotterControlsSvg({ control: "damage-report" });
       const decoded = decodeURIComponent(result);
 
-      expect(decoded).toContain("SPOTTER");
+      expect(decoded).toContain("REPORT");
       expect(decoded).toContain("DAMAGE");
     });
 

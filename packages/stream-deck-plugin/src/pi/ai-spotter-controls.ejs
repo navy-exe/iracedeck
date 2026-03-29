@@ -5,7 +5,7 @@
 	</head>
 	<body>
 		<sdpi-item label="Control">
-			<sdpi-select setting="control" default="damage-report">
+			<sdpi-select id="control-select" setting="control" default="damage-report">
 				<option value="damage-report">Damage Report</option>
 				<option value="weather-report">Weather Report</option>
 				<option value="toggle-report-laps">Toggle Report Laps</option>
@@ -18,7 +18,7 @@
 
 		<%- include('common-settings') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['ai-spotter-controls'] }) %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color', 'graphic2Color'], defaults: require('./data/color-defaults.json')['ai-spotter-controls'] }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').aiSpotterControls
@@ -29,5 +29,66 @@
 		<%- include('docs-link') %>
 
 		<%- include('version') %>
+
+		<script>
+		// Per-control color defaults (from each icon's <desc> metadata)
+		var controlColors = {
+			"damage-report":      { bg: "#3a4a5a", text: "#ffffff", g1: "#ed2224",  g2: "#000001" },
+			"weather-report":     { bg: "#3a4a5a", text: "#ffffff", g1: "#ffffff",  g2: "#ffd318" },
+			"toggle-report-laps": { bg: "#3a4a5a", text: "#ffffff", g1: "#f2f2f2",  g2: "#000001" },
+			"announce-leader":    { bg: "#3a4a5a", text: "#ffffff", g1: "#ffffff",  g2: "#000001" },
+			"louder":             { bg: "#3a4a5a", text: "#ffffff", g1: "#ffffff",  g2: "#000001" },
+			"quieter":            { bg: "#3a4a5a", text: "#ffffff", g1: "#ffffff",  g2: "#000001" },
+			"silence":            { bg: "#3a4a5a", text: "#ffffff", g1: "#ffffff",  g2: "#000001" }
+		};
+
+		var g2Controls = { "weather-report": true };
+
+		function updateColorDefaults(control) {
+			var colors = controlColors[control];
+			if (!colors) return;
+
+			// Update "Default" preset button data attributes
+			var defaultBtn = document.querySelector(".ird-override-preset");
+			if (defaultBtn) {
+				defaultBtn.setAttribute("data-bg", colors.bg);
+				defaultBtn.setAttribute("data-text", colors.text);
+				defaultBtn.setAttribute("data-g1", colors.g1);
+				defaultBtn.setAttribute("data-g2", colors.g2);
+			}
+
+			// Show/hide graphic2Color picker
+			var g2Input = document.getElementById("color-override-graphic2Color");
+			if (g2Input) {
+				var g2Container = g2Input.closest("sdpi-item");
+				if (g2Container) {
+					g2Container.style.display = g2Controls[control] ? "" : "none";
+				}
+			}
+		}
+
+		async function initControlColorSync() {
+			await customElements.whenDefined("sdpi-select");
+			var select = document.getElementById("control-select");
+			if (!select) return;
+
+			updateColorDefaults(select.value || "damage-report");
+
+			select.addEventListener("change", function(ev) { updateColorDefaults(ev.target.value); });
+			select.addEventListener("input", function(ev) { updateColorDefaults(ev.target.value); });
+
+			var last = select.value || "damage-report";
+			setInterval(function() {
+				var cur = select.value;
+				if (cur && cur !== last) { last = cur; updateColorDefaults(cur); }
+			}, 100);
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", initControlColorSync);
+		} else {
+			initControlColorSync();
+		}
+		</script>
 	</body>
 </html>

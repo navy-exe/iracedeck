@@ -2,7 +2,8 @@
   "ai-spotter-controls": {
     "backgroundColor": "#3a4a5a",
     "textColor": "#ffffff",
-    "graphic1Color": "#ffffff"
+    "graphic1Color": "#ffffff",
+    "graphic2Color": "#ffd318"
   },
   "audio-controls": {
     "backgroundColor": "#2a3a4a",
