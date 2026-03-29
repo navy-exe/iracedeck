@@ -73,8 +73,20 @@ Icons support up to 4 customizable color slots via Mustache placeholders. Each S
 Colors resolve at render time via `resolveIconColors()`:
 
 1. **Per-action override** — user sets in Color Overrides PI section
-2. **Global default** — user sets in Global Settings PI section
+2. **Global default** — user sets in Global Settings PI section (skipped for locked slots)
 3. **Icon `<desc>` default** — fallback from SVG metadata
+
+### Locked slots
+
+Icons can declare slots as `"locked"` in their `<desc>` metadata to protect them from global color overrides:
+
+```json
+{"colors":{"backgroundColor":"#3a4a5a","graphic1Color":"#ffffff"},"locked":["graphic1Color"]}
+```
+
+- Locked slots skip the global default step — they use the icon default unless the user sets a per-action override
+- Use `"locked"` when an icon mixes a colorizable slot (e.g., white outlines via `{{graphic1Color}}`) with hardcoded semantic colors (green arrows, red indicators) that would visually clash under global presets
+- Omitting `"locked"` or using `[]` means all slots are globally overridable (backward compatible)
 
 ### What stays fixed (never colorizable)
 
