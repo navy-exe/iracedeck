@@ -508,12 +508,16 @@ describe("FuelService", () => {
       expect(getFuelAmount({ PitSvFuel: 50.0 } as any)).toBe(50.0);
     });
 
-    it("returns 0 when telemetry is null", () => {
-      expect(getFuelAmount(null)).toBe(0);
+    it("returns 0 when PitSvFuel is 0", () => {
+      expect(getFuelAmount({ PitSvFuel: 0 } as any)).toBe(0);
     });
 
-    it("returns 0 when PitSvFuel is undefined", () => {
-      expect(getFuelAmount({} as any)).toBe(0);
+    it("returns undefined when telemetry is null", () => {
+      expect(getFuelAmount(null)).toBeUndefined();
+    });
+
+    it("returns undefined when PitSvFuel is undefined", () => {
+      expect(getFuelAmount({} as any)).toBeUndefined();
     });
   });
 
@@ -558,6 +562,24 @@ describe("FuelService", () => {
 
         expect(decoded).toContain("status-off");
         expect(decoded).toContain("+0 L");
+      });
+
+      it("should show '--' placeholder when no telemetry is available", () => {
+        const telemetryState: FuelServiceTelemetryState = {};
+        const result = generateFuelServiceSvg({ mode: "toggle-fuel-fill", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("--");
+        expect(decoded).not.toContain("+0");
+        expect(decoded).toContain("status-off");
+      });
+
+      it("should show '--' placeholder when fuelAmount is undefined but fuelFillOn is set", () => {
+        const telemetryState: FuelServiceTelemetryState = { fuelFillOn: false };
+        const result = generateFuelServiceSvg({ mode: "toggle-fuel-fill", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("--");
       });
 
       it("should show fuel amount in gallons for imperial units", () => {
