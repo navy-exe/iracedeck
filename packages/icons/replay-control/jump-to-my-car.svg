@@ -12,7 +12,7 @@
     </g>
 
     <!-- Heart cutout (background color = hole effect) -->
-    <path d="M 72,62 C 67,57 60,53 60,48 C 60,44 63,42 67,42 C 69,42 71,43 72,45 C 73,43 75,42 77,42 C 81,42 84,44 84,48 C 84,53 77,57 72,62 Z" fill="#2a3a4a"/>
+    <path d="M 72,62 C 67,57 60,53 60,48 C 60,44 63,42 67,42 C 69,42 71,43 72,45 C 73,43 75,42 77,42 C 81,42 84,44 84,48 C 84,53 77,57 72,62 Z" fill="{{backgroundColor}}"/>
 
     <!-- Two-line label -->
     <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
