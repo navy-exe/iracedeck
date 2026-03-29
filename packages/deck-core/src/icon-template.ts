@@ -100,7 +100,7 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
 export function parseIconLocked(svgTemplate: string): Set<string> {
   const parsed = parseDescMetadata(svgTemplate);
 
-  return new Set((parsed.locked as string[]) ?? []);
+  return new Set(Array.isArray(parsed.locked) ? (parsed.locked as string[]) : []);
 }
 
 /**
@@ -123,7 +123,7 @@ export function resolveIconColors(
 ): Record<string, string> {
   const parsed = parseDescMetadata(svgTemplate);
   const defaults = (parsed.colors ?? {}) as ColorSlots;
-  const locked = new Set((parsed.locked as string[]) ?? []);
+  const locked = new Set(Array.isArray(parsed.locked) ? (parsed.locked as string[]) : []);
   const result: Record<string, string> = {};
 
   for (const key of Object.keys(defaults) as (keyof ColorSlots)[]) {
