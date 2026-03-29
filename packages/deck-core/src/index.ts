@@ -46,6 +46,7 @@ export {
   escapeXml,
   generateIconText,
   parseIconDefaults,
+  parseIconLocked,
   renderIconTemplate,
   resolveIconColors,
   validateIconTemplate,

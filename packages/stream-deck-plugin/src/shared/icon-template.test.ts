@@ -2,6 +2,7 @@ import {
   escapeXml,
   generateIconText,
   parseIconDefaults,
+  parseIconLocked,
   renderIconTemplate,
   resolveIconColors,
   validateIconTemplate,
@@ -311,6 +312,44 @@ describe("icon-template", () => {
     });
   });
 
+  describe("parseIconLocked", () => {
+    it("should return locked slot names as a Set", () => {
+      const svg = `<svg><desc>{"colors":{"backgroundColor":"#412244","graphic1Color":"#ffffff"},"locked":["graphic1Color"]}</desc></svg>`;
+      const locked = parseIconLocked(svg);
+      expect(locked).toEqual(new Set(["graphic1Color"]));
+    });
+
+    it("should return empty Set when no locked field", () => {
+      const svg = `<svg><desc>{"colors":{"backgroundColor":"#412244"}}</desc></svg>`;
+      const locked = parseIconLocked(svg);
+      expect(locked).toEqual(new Set());
+    });
+
+    it("should return empty Set when locked is empty array", () => {
+      const svg = `<svg><desc>{"colors":{"backgroundColor":"#412244"},"locked":[]}</desc></svg>`;
+      const locked = parseIconLocked(svg);
+      expect(locked).toEqual(new Set());
+    });
+
+    it("should return empty Set when no <desc> element", () => {
+      const svg = `<svg></svg>`;
+      const locked = parseIconLocked(svg);
+      expect(locked).toEqual(new Set());
+    });
+
+    it("should return empty Set for invalid JSON", () => {
+      const svg = `<svg><desc>not json</desc></svg>`;
+      const locked = parseIconLocked(svg);
+      expect(locked).toEqual(new Set());
+    });
+
+    it("should handle multiple locked slots", () => {
+      const svg = `<svg><desc>{"colors":{"backgroundColor":"#412244","graphic1Color":"#ffffff","graphic2Color":"#ffd318"},"locked":["graphic1Color","graphic2Color"]}</desc></svg>`;
+      const locked = parseIconLocked(svg);
+      expect(locked).toEqual(new Set(["graphic1Color", "graphic2Color"]));
+    });
+  });
+
   describe("resolveIconColors", () => {
     const templateWithAllSlots = `<svg>
       <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
@@ -381,6 +420,51 @@ describe("icon-template", () => {
       expect(colors.backgroundColor).toBe("#global"); // global (no action override)
       expect(colors.textColor).toBe("#action-text"); // action override
       expect(colors.graphic1Color).toBe("#ffffff"); // icon default (no global or action)
+    });
+
+    const templateWithLockedSlot = `<svg>
+      <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"]}</desc>
+    </svg>`;
+
+    it("should skip global color for locked slot", () => {
+      const colors = resolveIconColors(templateWithLockedSlot, {
+        backgroundColor: "#111111",
+        graphic1Color: "#000000",
+      });
+      expect(colors.backgroundColor).toBe("#111111");
+      expect(colors.graphic1Color).toBe("#ffffff");
+    });
+
+    it("should allow per-action override on locked slot", () => {
+      const colors = resolveIconColors(
+        templateWithLockedSlot,
+        { graphic1Color: "#000000" },
+        { graphic1Color: "#ff0000" },
+      );
+      expect(colors.graphic1Color).toBe("#ff0000");
+    });
+
+    it("should handle template with no locked field (backward compatible)", () => {
+      const colors = resolveIconColors(templateWithAllSlots, {
+        graphic1Color: "#aaaaaa",
+      });
+      expect(colors.graphic1Color).toBe("#aaaaaa");
+    });
+
+    it("should handle multiple locked slots", () => {
+      const templateMultiLocked = `<svg>
+        <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff","graphic2Color":"#ffd318"},"locked":["graphic1Color","graphic2Color"]}</desc>
+      </svg>`;
+      const colors = resolveIconColors(templateMultiLocked, {
+        backgroundColor: "#111111",
+        textColor: "#eeeeee",
+        graphic1Color: "#000000",
+        graphic2Color: "#000000",
+      });
+      expect(colors.backgroundColor).toBe("#111111");
+      expect(colors.textColor).toBe("#eeeeee");
+      expect(colors.graphic1Color).toBe("#ffffff");
+      expect(colors.graphic2Color).toBe("#ffd318");
     });
   });
 });

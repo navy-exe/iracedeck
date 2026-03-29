@@ -56,6 +56,24 @@ export function renderIconTemplate(template: string, values: Record<string, stri
 }
 
 /**
+ * Parses the <desc> element from an SVG template and returns its JSON content.
+ * Returns an empty object if the element is missing or its content is not valid JSON.
+ */
+function parseDescMetadata(svgTemplate: string): Record<string, unknown> {
+  const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
+
+  if (!descMatch) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(descMatch[1]) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+/**
  * Parses color slot defaults from an SVG template's <desc> metadata.
  * The <desc> element should contain JSON: {"colors":{"backgroundColor":"#412244",...}}
  *
@@ -65,19 +83,24 @@ export function renderIconTemplate(template: string, values: Record<string, stri
  * @internal Exported for testing
  */
 export function parseIconDefaults(svgTemplate: string): ColorSlots {
-  const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
+  const parsed = parseDescMetadata(svgTemplate);
 
-  if (!descMatch) {
-    return {};
-  }
+  return (parsed.colors ?? {}) as ColorSlots;
+}
 
-  try {
-    const parsed = JSON.parse(descMatch[1]) as { colors?: ColorSlots };
+/**
+ * Parses locked color slots from an SVG template's <desc> metadata.
+ * Locked slots skip global color overrides but still accept per-action overrides.
+ *
+ * @param svgTemplate - SVG template string containing a <desc> element
+ * @returns Set of slot names that are locked, or empty Set if none
+ *
+ * @internal Exported for testing
+ */
+export function parseIconLocked(svgTemplate: string): Set<string> {
+  const parsed = parseDescMetadata(svgTemplate);
 
-    return parsed.colors ?? {};
-  } catch {
-    return {};
-  }
+  return new Set(Array.isArray(parsed.locked) ? (parsed.locked as string[]) : []);
 }
 
 /**
@@ -98,7 +121,9 @@ export function resolveIconColors(
   globalColors: ColorSlots,
   actionOverrides?: ColorSlots,
 ): Record<string, string> {
-  const defaults = parseIconDefaults(svgTemplate);
+  const parsed = parseDescMetadata(svgTemplate);
+  const defaults = (parsed.colors ?? {}) as ColorSlots;
+  const locked = new Set(Array.isArray(parsed.locked) ? (parsed.locked as string[]) : []);
   const result: Record<string, string> = {};
 
   for (const key of Object.keys(defaults) as (keyof ColorSlots)[]) {
@@ -111,7 +136,9 @@ export function resolveIconColors(
     // Filter empty strings and #000001 sentinel (means "not set" — used by reset buttons)
     const pick = (v: string | undefined) => (v && v.length > 0 && v !== "#000001" ? v : undefined);
 
-    result[key] = pick(actionOverrides?.[key]) ?? pick(globalColors[key]) ?? defaultValue;
+    const globalValue = locked.has(key) ? undefined : pick(globalColors[key]);
+
+    result[key] = pick(actionOverrides?.[key]) ?? globalValue ?? defaultValue;
   }
 
   return result;
