@@ -153,10 +153,10 @@ describe("icon-template", () => {
   });
 
   describe("generateIconText", () => {
-    it("should generate single line text at y=124 by default", () => {
+    it("should generate single line text at y=136 by default", () => {
       const result = generateIconText({ text: "+5 L" });
 
-      expect(result).toContain('y="124"');
+      expect(result).toContain('y="136"');
       expect(result).toContain(">+5 L</text>");
       expect(result).toContain('class="title"');
       expect(result).toContain('font-size="28"');

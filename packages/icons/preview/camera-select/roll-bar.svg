@@ -8,7 +8,7 @@
       stroke="#ffffff" fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
 
     <!-- Label -->
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
           fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
   </g>
 </svg>

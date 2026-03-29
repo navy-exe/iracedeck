@@ -23,15 +23,15 @@ The standard layout for most action icons.
     {icon content using {{graphic1Color}} for eligible artwork}
 
     <!-- Two-line label area -->
-    <text x="72" y="104" fill="{{textColor}}" ...>{{subLabel}}</text>
-    <text x="72" y="126" fill="{{textColor}}" ...>{{mainLabel}}</text>
+    <text x="72" y="116" fill="{{textColor}}" ...>{{subLabel}}</text>
+    <text x="72" y="138" fill="{{textColor}}" ...>{{mainLabel}}</text>
   </g>
 </svg>
 ```
 
 - **Background**: No rounded corners, color varies by category (declared in `<desc>` metadata)
 - **Icon area**: y=18 to y=86 (68px height)
-- **Text area**: y=100 to y=136
+- **Text area**: y=112 to y=148
 
 ### Two-Line Label System
 
@@ -48,12 +48,12 @@ There are two label layouts:
 
 **Standard** (mainLabel on top, subLabel on bottom):
 - Used when the category/name is the most important info (e.g., "STARTER" / "car control")
-- `{{mainLabel}}` at y=104 (primary), `{{subLabel}}` at y=126 (secondary)
+- `{{mainLabel}}` at y=116 (primary), `{{subLabel}}` at y=138 (secondary)
 - Reference: `packages/icons/car-control/starter.svg`
 
 **Inverted** (subLabel on top, mainLabel on bottom):
 - Used when the action/direction word is more important than the category (e.g., "splits delta" / "NEXT")
-- `{{subLabel}}` at y=104 (secondary), `{{mainLabel}}` at y=126 (primary)
+- `{{subLabel}}` at y=116 (secondary), `{{mainLabel}}` at y=138 (primary)
 - Reference: `packages/icons/splits-delta-cycle/next.svg`
 
 ### Background Colors
@@ -94,9 +94,9 @@ Use these colors consistently across all icons (literal hex values in SVG, no co
     <!-- ... artwork using {{graphic1Color}} ... -->
 
     <!-- Two-line label: mainLabel primary on top, subLabel secondary on bottom -->
-    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
           fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
           fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
   </g>
 </svg>
@@ -116,9 +116,9 @@ Used when the action word (e.g., NEXT/PREVIOUS) should be more prominent than th
     <!-- ... artwork using {{graphic1Color}} ... -->
 
     <!-- Inverted label: subLabel secondary on top, mainLabel primary on bottom -->
-    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
           fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
           fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
   </g>
 </svg>
