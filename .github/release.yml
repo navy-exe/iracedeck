@@ -9,6 +9,9 @@ changelog:
     - title: Features
       labels:
         - "type: feature"
+    - title: Improvements
+      labels:
+        - "type: improvement"
     - title: Bug Fixes
       labels:
         - "type: bug"

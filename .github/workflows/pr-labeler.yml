@@ -21,6 +21,7 @@ jobs:
 
           case "$PR_TITLE" in
             feat\(*|feat:*) LABEL="type: feature" ;;
+            improve\(*|improve:*) LABEL="type: improvement" ;;
             fix\(*|fix:*)   LABEL="type: bug" ;;
             perf\(*|perf:*) LABEL="type: performance" ;;
             refactor\(*|refactor:*) LABEL="type: refactor" ;;

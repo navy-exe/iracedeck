@@ -150,6 +150,7 @@ PR labels are used to categorize entries in GitHub's auto-generated release note
 | PR title prefix | Label applied |
 |-----------------|---------------|
 | `feat(` / `feat:` | `type: feature` |
+| `improve(` / `improve:` | `type: improvement` |
 | `fix(` / `fix:` | `type: bug` |
 | `perf(` / `perf:` | `type: performance` |
 | `refactor(` / `refactor:` | `type: refactor` |
