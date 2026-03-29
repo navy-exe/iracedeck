@@ -56,6 +56,24 @@ export function renderIconTemplate(template: string, values: Record<string, stri
 }
 
 /**
+ * Parses the <desc> element from an SVG template and returns its JSON content.
+ * Returns an empty object if the element is missing or its content is not valid JSON.
+ */
+function parseDescMetadata(svgTemplate: string): Record<string, unknown> {
+  const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
+
+  if (!descMatch) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(descMatch[1]) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+/**
  * Parses color slot defaults from an SVG template's <desc> metadata.
  * The <desc> element should contain JSON: {"colors":{"backgroundColor":"#412244",...}}
  *
@@ -65,19 +83,9 @@ export function renderIconTemplate(template: string, values: Record<string, stri
  * @internal Exported for testing
  */
 export function parseIconDefaults(svgTemplate: string): ColorSlots {
-  const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
+  const parsed = parseDescMetadata(svgTemplate);
 
-  if (!descMatch) {
-    return {};
-  }
-
-  try {
-    const parsed = JSON.parse(descMatch[1]) as { colors?: ColorSlots };
-
-    return parsed.colors ?? {};
-  } catch {
-    return {};
-  }
+  return (parsed.colors ?? {}) as ColorSlots;
 }
 
 /**
@@ -90,19 +98,9 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
  * @internal Exported for testing
  */
 export function parseIconLocked(svgTemplate: string): Set<string> {
-  const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
+  const parsed = parseDescMetadata(svgTemplate);
 
-  if (!descMatch) {
-    return new Set();
-  }
-
-  try {
-    const parsed = JSON.parse(descMatch[1]) as { locked?: string[] };
-
-    return new Set(parsed.locked ?? []);
-  } catch {
-    return new Set();
-  }
+  return new Set((parsed.locked as string[]) ?? []);
 }
 
 /**
@@ -123,8 +121,9 @@ export function resolveIconColors(
   globalColors: ColorSlots,
   actionOverrides?: ColorSlots,
 ): Record<string, string> {
-  const defaults = parseIconDefaults(svgTemplate);
-  const locked = parseIconLocked(svgTemplate);
+  const parsed = parseDescMetadata(svgTemplate);
+  const defaults = (parsed.colors ?? {}) as ColorSlots;
+  const locked = new Set((parsed.locked as string[]) ?? []);
   const result: Record<string, string> = {};
 
   for (const key of Object.keys(defaults) as (keyof ColorSlots)[]) {
