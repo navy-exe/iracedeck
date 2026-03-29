@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { formatKeyBinding, type KeyBindingValue, parseKeyBinding, parseSimpleDefault } from "./key-binding-utils.js";
 import { resolveEventCode } from "./key-maps.js";
@@ -138,18 +138,22 @@ describe("key-binding-input", () => {
     });
 
     it("should return null for invalid JSON", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(parseKeyBinding("not json")).toBeNull();
     });
 
     it("should return null for missing key property", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(parseKeyBinding('{"modifiers":["ctrl"]}')).toBeNull();
     });
 
     it("should return null for non-string key", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(parseKeyBinding('{"key":123,"modifiers":[]}')).toBeNull();
     });
 
     it("should return null for non-array modifiers", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(parseKeyBinding('{"key":"a","modifiers":"ctrl"}')).toBeNull();
     });
 
@@ -247,10 +251,12 @@ describe("key-binding-input", () => {
     });
 
     it("should return null for invalid key", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(parseSimpleDefault("InvalidKey")).toBeNull();
     });
 
     it("should return null for modifier-only input", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(parseSimpleDefault("Ctrl+Shift")).toBeNull();
     });
 
