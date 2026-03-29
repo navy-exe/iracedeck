@@ -238,13 +238,13 @@ export function generateTireServiceSvg(
 
       if (isChanging) {
         textElement = [
-          generateIconText({ text: `Change to`, fontSize: 18, fill: YELLOW, baseY: 100, centerX: 72 }),
-          generateIconText({ text: compoundType, fontSize: 24, fill: YELLOW, baseY: 126, centerX: 72 }),
+          generateIconText({ text: `Change to`, fontSize: 18, fill: YELLOW, baseY: 112, centerX: 72 }),
+          generateIconText({ text: compoundType, fontSize: 24, fill: YELLOW, baseY: 138, centerX: 72 }),
         ].join("\n");
       } else {
         textElement = [
-          generateIconText({ text: `Stay on`, fontSize: 18, fill: "#ffffff", baseY: 100, centerX: 72 }),
-          generateIconText({ text: compoundType, fontSize: 24, fill: "#ffffff", baseY: 126, centerX: 72 }),
+          generateIconText({ text: `Stay on`, fontSize: 18, fill: "#ffffff", baseY: 112, centerX: 72 }),
+          generateIconText({ text: compoundType, fontSize: 24, fill: "#ffffff", baseY: 138, centerX: 72 }),
         ].join("\n");
       }
 

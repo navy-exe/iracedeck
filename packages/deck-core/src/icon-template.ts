@@ -130,7 +130,7 @@ export interface GenerateIconTextOptions {
    */
   fontSize?: number;
   /**
-   * Base Y position for single line or bottom line of multi-line text. Default: 124
+   * Base Y position for single line or bottom line of multi-line text. Default: 136
    */
   baseY?: number;
   /**
@@ -151,7 +151,7 @@ export interface GenerateIconTextOptions {
  * Generates SVG text element(s) for icon display.
  * Supports multi-line text by splitting on "\n".
  *
- * For single line: places text at baseY (default 62)
+ * For single line: places text at baseY (default 136)
  * For multiple lines: centers the text block vertically around baseY
  * (each additional line shifts the block up by half the line height)
  *
@@ -161,7 +161,7 @@ export interface GenerateIconTextOptions {
  * @example
  * // Single line
  * generateIconText({ text: "+5 L" })
- * // Returns: <text class="title" x="72" y="124" ...>+5 L</text>
+ * // Returns: <text class="title" x="72" y="136" ...>+5 L</text>
  *
  * @example
  * // Multi-line
@@ -169,7 +169,7 @@ export interface GenerateIconTextOptions {
  * // Returns two <text> elements centered around baseY
  */
 export function generateIconText(options: GenerateIconTextOptions): string {
-  const { text, fontSize = 28, baseY = 124, centerX = 72, lineHeightMultiplier = 1, fill = "#ffffff" } = options;
+  const { text, fontSize = 28, baseY = 136, centerX = 72, lineHeightMultiplier = 1, fill = "#ffffff" } = options;
 
   const lines = text.split("\n");
   const lineHeight = fontSize * lineHeightMultiplier;

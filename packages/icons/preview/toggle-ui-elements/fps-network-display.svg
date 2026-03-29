@@ -14,9 +14,9 @@
     <text x="84" y="68" fill="#2ecc71" font-family="Arial, sans-serif" font-size="12">100%</text>
 
     <!-- Two-line label -->
-    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
           fill="#ffffff" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
           fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
   </g>
 </svg>

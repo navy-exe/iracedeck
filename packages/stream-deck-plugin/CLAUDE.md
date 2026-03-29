@@ -157,9 +157,9 @@ Standalone 144x144 SVGs with Mustache label placeholders and `<desc>` color meta
     <!-- ... artwork using {{graphic1Color}} for strokes/fills ... -->
 
     <!-- Labels -->
-    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
           fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
           fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
   </g>
 </svg>

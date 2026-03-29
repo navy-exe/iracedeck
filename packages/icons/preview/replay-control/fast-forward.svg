@@ -9,9 +9,9 @@
     <polygon points="72,28 104,52 72,76" fill="#ffffff"/>
 
     <!-- Two-line label (subLabel on top subdued, mainLabel on bottom prominent) -->
-    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
           fill="#ffffff" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
+    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
           fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
   </g>
 </svg>
