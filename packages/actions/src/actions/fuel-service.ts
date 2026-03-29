@@ -140,10 +140,11 @@ export function isFuelFillOn(telemetry: TelemetryData | null): boolean {
 /**
  * @internal Exported for testing
  *
- * Returns the pit service fuel amount (liters) from telemetry.
+ * Returns the pit service fuel amount (liters) from telemetry,
+ * or undefined when no telemetry is available.
  */
-export function getFuelAmount(telemetry: TelemetryData | null): number {
-  if (!telemetry || telemetry.PitSvFuel === undefined) return 0;
+export function getFuelAmount(telemetry: TelemetryData | null): number | undefined {
+  if (!telemetry || telemetry.PitSvFuel === undefined) return undefined;
 
   return telemetry.PitSvFuel;
 }
@@ -170,7 +171,10 @@ export function formatFuelFillAmount(liters: number, displayUnits: number | unde
  */
 function fuelFillDynamicIcon(telemetryState: FuelServiceTelemetryState, graphic1Color: string): string {
   const statusBar = telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
-  const fuelText = formatFuelFillAmount(telemetryState.fuelAmount ?? 0, telemetryState.displayUnits);
+  const fuelText =
+    telemetryState.fuelAmount === undefined
+      ? "--"
+      : formatFuelFillAmount(telemetryState.fuelAmount, telemetryState.displayUnits);
 
   return `
     <text x="72" y="24" text-anchor="middle" dominant-baseline="central"
@@ -496,7 +500,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
 
   private buildStateKey(settings: FuelServiceSettings, telemetryState: FuelServiceTelemetryState): string {
     if (settings.mode === "toggle-fuel-fill") {
-      return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? 0}|${telemetryState.displayUnits ?? 0}`;
+      return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}`;
     }
 
     return settings.mode;
