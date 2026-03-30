@@ -332,6 +332,78 @@ export function extractIconArtwork(svgTemplate: string): string {
     .trim();
 }
 
+/**
+ * @internal Exported for testing
+ */
+export interface ThumbnailPosition {
+  x: number;
+  y: number;
+  size: number;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Compute grid positions for thumbnail icons within the content area (y=18 to y=86).
+ * Returns positions for up to 6 thumbnails (capped at 6 for counts above 6).
+ */
+export function computeGridPositions(count: number): ThumbnailPosition[] {
+  const CONTENT_TOP = 18;
+  const CONTENT_LEFT = 4;
+  const CONTENT_WIDTH = 136;
+  const CONTENT_HEIGHT = 68;
+  const GAP = 4;
+
+  // Row configuration: how many items per row
+  let rows: number[];
+
+  switch (Math.min(count, 6)) {
+    case 1:
+      rows = [1];
+      break;
+    case 2:
+      rows = [2];
+      break;
+    case 3:
+      rows = [1, 2];
+      break;
+    case 4:
+      rows = [2, 2];
+      break;
+    case 5:
+      rows = [2, 3];
+      break;
+    default:
+      rows = [3, 3];
+      break;
+  }
+
+  const numRows = rows.length;
+  const maxCols = Math.max(...rows);
+  const sizeByHeight = Math.floor((CONTENT_HEIGHT - GAP * (numRows - 1)) / numRows);
+  const sizeByWidth = Math.floor((CONTENT_WIDTH - GAP * (maxCols - 1)) / maxCols);
+  const cellSize = Math.min(sizeByHeight, sizeByWidth);
+
+  const positions: ThumbnailPosition[] = [];
+
+  for (let r = 0; r < numRows; r++) {
+    const cols = rows[r];
+    const rowWidth = cols * cellSize + (cols - 1) * GAP;
+    const startX = CONTENT_LEFT + (CONTENT_WIDTH - rowWidth) / 2;
+    const startY = CONTENT_TOP + r * (cellSize + GAP);
+
+    for (let c = 0; c < cols; c++) {
+      positions.push({
+        x: Math.round(startX + c * (cellSize + GAP)),
+        y: startY,
+        size: cellSize,
+      });
+    }
+  }
+
+  return positions;
+}
+
 // --- Camera group subset helpers ---
 
 /**

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CAMERA_GROUP_MAP,
   CAMERA_GROUPS_SETTING_KEY,
+  computeGridPositions,
   DEFAULT_CAMERA_GROUPS,
   DEFAULT_ENABLED_GROUPS,
   extractIconArtwork,
@@ -532,6 +533,88 @@ describe("CameraControls", () => {
 </svg>`;
       const result = extractIconArtwork(input);
       expect(result.trim()).toBe("");
+    });
+  });
+
+  describe("computeGridPositions", () => {
+    it("should return 1 position for count 1", () => {
+      const positions = computeGridPositions(1);
+      expect(positions).toHaveLength(1);
+      expect(positions[0].size).toBeGreaterThan(40);
+    });
+
+    it("should return 2 positions for count 2", () => {
+      const positions = computeGridPositions(2);
+      expect(positions).toHaveLength(2);
+      // Side by side: different x, same y
+      expect(positions[0].y).toBe(positions[1].y);
+      expect(positions[0].x).not.toBe(positions[1].x);
+    });
+
+    it("should return 3 positions in pyramid layout for count 3", () => {
+      const positions = computeGridPositions(3);
+      expect(positions).toHaveLength(3);
+      // 1 on top row, 2 on bottom row
+      expect(positions[0].y).toBeLessThan(positions[1].y);
+      expect(positions[1].y).toBe(positions[2].y);
+    });
+
+    it("should return 4 positions in 2x2 grid for count 4", () => {
+      const positions = computeGridPositions(4);
+      expect(positions).toHaveLength(4);
+      // 2 on top, 2 on bottom
+      expect(positions[0].y).toBe(positions[1].y);
+      expect(positions[2].y).toBe(positions[3].y);
+      expect(positions[0].y).toBeLessThan(positions[2].y);
+    });
+
+    it("should return 5 positions in 2+3 layout for count 5", () => {
+      const positions = computeGridPositions(5);
+      expect(positions).toHaveLength(5);
+      // 2 on top row, 3 on bottom row
+      expect(positions[0].y).toBe(positions[1].y);
+      expect(positions[2].y).toBe(positions[3].y);
+      expect(positions[3].y).toBe(positions[4].y);
+      expect(positions[0].y).toBeLessThan(positions[2].y);
+    });
+
+    it("should return 6 positions in 3+3 layout for count 6", () => {
+      const positions = computeGridPositions(6);
+      expect(positions).toHaveLength(6);
+      // 3 on top row, 3 on bottom row
+      expect(positions[0].y).toBe(positions[1].y);
+      expect(positions[1].y).toBe(positions[2].y);
+      expect(positions[3].y).toBe(positions[4].y);
+      expect(positions[4].y).toBe(positions[5].y);
+      expect(positions[0].y).toBeLessThan(positions[3].y);
+    });
+
+    it("should cap at 6 positions for counts above 6", () => {
+      expect(computeGridPositions(7)).toHaveLength(6);
+      expect(computeGridPositions(10)).toHaveLength(6);
+      expect(computeGridPositions(20)).toHaveLength(6);
+    });
+
+    it("should keep all positions within content area (y=18 to y=86)", () => {
+      for (let count = 1; count <= 7; count++) {
+        const positions = computeGridPositions(count);
+
+        for (const pos of positions) {
+          expect(pos.y).toBeGreaterThanOrEqual(18);
+          expect(pos.y + pos.size).toBeLessThanOrEqual(90);
+        }
+      }
+    });
+
+    it("should keep all positions within horizontal bounds (x=4 to x=140)", () => {
+      for (let count = 1; count <= 7; count++) {
+        const positions = computeGridPositions(count);
+
+        for (const pos of positions) {
+          expect(pos.x).toBeGreaterThanOrEqual(4);
+          expect(pos.x + pos.size).toBeLessThanOrEqual(140);
+        }
+      }
     });
   });
 });
