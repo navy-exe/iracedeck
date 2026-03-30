@@ -271,6 +271,21 @@ describe("findDriverByRacePosition", () => {
 
     expect(findDriverByRacePosition(0, drivers, telemetry, -1)).toBeNull();
   });
+
+  it("should use provided positions array instead of CarIdxPosition", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Actually First" }),
+      makeDriver({ CarIdx: 2, UserName: "Actually Third" }),
+    ];
+
+    const telemetry = makeTelemetry({ CarIdxPosition: [2, 1, 3] });
+    const calculatedPositions = [2, 3, 1]; // Car 2 is P1, Car 0 is P2, Car 1 is P3
+
+    const result = findDriverByRacePosition(0, drivers, telemetry, -1, calculatedPositions);
+
+    expect(result?.UserName).toBe("Actually Third"); // Car 2 at P1, ahead of player at P2
+  });
 });
 
 describe("prefixKeys", () => {
@@ -371,9 +386,13 @@ describe("buildTemplateContextFromData", () => {
     expect(ctx["race_behind.name"]).toBe("P3 Driver");
   });
 
-  it("should use player-specific telemetry for self fields", () => {
+  it("should use player-specific telemetry for self fields in non-race sessions", () => {
     const drivers = [makeDriver({ CarIdx: 0, UserName: "Player" })];
-    const sessionInfo = makeSessionInfo(drivers, 0);
+    const sessionInfo = {
+      DriverInfo: { DriverCarIdx: 0, Drivers: drivers },
+      WeekendInfo: { TrackDisplayName: "Spa", TrackDisplayShortName: "Spa" },
+      SessionInfo: { Sessions: [{ SessionType: "Practice", SessionName: "PRACTICE" }] },
+    } as unknown as SessionInfo;
     const telemetry = makeTelemetry({
       PlayerCarPosition: 5,
       PlayerCarClassPosition: 3,
@@ -390,6 +409,54 @@ describe("buildTemplateContextFromData", () => {
     expect(ctx["self.lap"]).toBe("12");
     expect(ctx["self.laps_completed"]).toBe("11");
     expect(ctx["self.incidents"]).toBe("7");
+  });
+
+  it("should use calculated positions for race sessions", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Leader" }),
+      makeDriver({ CarIdx: 2, UserName: "Behind" }),
+    ];
+
+    const sessionInfo = makeSessionInfo(drivers, 0);
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 2,
+      CarIdxPosition: [2, 1, 3],
+      CarIdxLapCompleted: [10, 5, 3],
+      CarIdxLapDistPct: [0.9, 0.1, 0.3],
+      // Calculated: Car 0 = 10.9 → P1, Car 1 = 5.1 → P2, Car 2 = 3.3 → P3
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // self.position should reflect calculated P1, not PlayerCarPosition (2)
+    expect(ctx["self.position"]).toBe("1");
+    expect(ctx["race_behind.name"]).toBe("Leader"); // Car 1 at P2 is behind player at P1
+  });
+
+  it("should use native CarIdxPosition for non-race sessions", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Other" }),
+    ];
+
+    const sessionInfo = {
+      DriverInfo: { DriverCarIdx: 0, Drivers: drivers },
+      WeekendInfo: { TrackDisplayName: "Spa", TrackDisplayShortName: "Spa" },
+      SessionInfo: { Sessions: [{ SessionType: "Practice", SessionName: "PRACTICE" }] },
+    } as unknown as SessionInfo;
+
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 2,
+      CarIdxPosition: [2, 1],
+      CarIdxLapCompleted: [10, 5],
+      CarIdxLapDistPct: [0.9, 0.1],
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // Non-race: should use PlayerCarPosition (2), not calculated (1)
+    expect(ctx["self.position"]).toBe("2");
   });
 
   it("should include telemetry with prefix and formatted values", () => {
