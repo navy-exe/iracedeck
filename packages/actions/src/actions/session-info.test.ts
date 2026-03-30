@@ -633,5 +633,177 @@ describe("SessionInfo", () => {
       expect(action["flagPulseTimers"].has("action-1")).toBe(false);
       clearInterval(timer);
     });
+
+    describe("position mode with calculated positions", () => {
+      function makeRaceSessionInfo(driverCarIdx: number) {
+        return {
+          SessionInfo: {
+            Sessions: [{ SessionType: "Race" }],
+          },
+          DriverInfo: {
+            DriverCarIdx: driverCarIdx,
+          },
+        };
+      }
+
+      function makePracticeSessionInfo(driverCarIdx: number) {
+        return {
+          SessionInfo: {
+            Sessions: [{ SessionType: "Practice" }],
+          },
+          DriverInfo: {
+            DriverCarIdx: driverCarIdx,
+          },
+        };
+      }
+
+      /**
+       * Helper: start with null telemetry so initial state is "P-",
+       * then fire the callback with real telemetry to trigger a state change and updateKeyImage call.
+       */
+      async function triggerPositionUpdate(sessionInfo: unknown, telemetry: Record<string, unknown>): Promise<string> {
+        // onWillAppear with no telemetry → initial state "P-" via setKeyImage
+        action["sdkController"].getCurrentTelemetry = vi.fn().mockReturnValue(null);
+        action["sdkController"].getSessionInfo = vi.fn().mockReturnValue(sessionInfo);
+
+        await action.onWillAppear(fakeEvent("action-1", { mode: "position" }) as any);
+
+        // Now switch to real telemetry and fire the callback
+        action["sdkController"].getCurrentTelemetry = vi.fn().mockReturnValue(telemetry);
+
+        const subscribeCall = action["sdkController"].subscribe.mock.calls[0];
+        const telemetryCallback = subscribeCall[1];
+
+        await telemetryCallback(telemetry);
+
+        const calls = action["updateKeyImage"].mock.calls;
+        expect(calls.length).toBeGreaterThan(0);
+        const lastCall = calls[calls.length - 1];
+
+        return decodeURIComponent(lastCall[1] as string);
+      }
+
+      it("should use calculateRacePositions in race session (shows P1 when car has more laps)", async () => {
+        // Car 0 has more laps completed (10 vs 5) so is P1, but PlayerCarPosition=2
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 2,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
+
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
+
+        expect(decoded).toContain("P1");
+        expect(decoded).not.toContain("P2");
+      });
+
+      it("should use PlayerCarPosition in non-race session", async () => {
+        // Same telemetry — car 0 would be P1 by laps, but session is Practice so use PlayerCarPosition=2
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 2,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
+
+        const decoded = await triggerPositionUpdate(makePracticeSessionInfo(0), telemetry);
+
+        expect(decoded).toContain("P2");
+      });
+
+      it("should fall back to PlayerCarPosition when player carIdx is out of bounds in race session", async () => {
+        // carIdx=5 but only 2 entries → calculated positions[5] is undefined → falls back to PlayerCarPosition
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 3,
+          OnPitRoad: false,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
+
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(5), telemetry);
+
+        // calculated[5] is undefined → falls back to PlayerCarPosition=3
+        expect(decoded).toContain("P3");
+      });
+
+      it("should use PlayerCarPosition when player is on pit road in race session", async () => {
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 2,
+          OnPitRoad: true,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
+
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
+
+        // On pit road: should use PlayerCarPosition=2, not calculated P1
+        expect(decoded).toContain("P2");
+      });
+
+      it("should use calculated position when player is NOT on pit road in race session", async () => {
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 2,
+          OnPitRoad: false,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
+
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
+
+        // Not on pit road: should use calculated P1
+        expect(decoded).toContain("P1");
+        expect(decoded).not.toContain("P2");
+      });
+
+      it("should fall back to PlayerCarPosition when calculated position is 0 (inactive) in race session", async () => {
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 3,
+          OnPitRoad: false,
+          CarIdxLapCompleted: [-1, 5, 4],
+          CarIdxLapDistPct: [-1, 0.7, 0.3],
+        };
+
+        // Car 0 is inactive (lapCompleted=-1) → calculated position = 0
+        // Should fall back to PlayerCarPosition=3
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
+
+        expect(decoded).toContain("P3");
+      });
+
+      it("should fall back to PlayerCarPosition when session info is null", async () => {
+        // No session info → isRaceSession returns false → use PlayerCarPosition=3
+        const initialTelemetry = { SessionNum: 0, PlayerCarPosition: 5 };
+        const realTelemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 3,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
+
+        // Start with P5 as initial state, then change to P3
+        action["sdkController"].getCurrentTelemetry = vi.fn().mockReturnValue(initialTelemetry);
+        action["sdkController"].getSessionInfo = vi.fn().mockReturnValue(null);
+
+        await action.onWillAppear(fakeEvent("action-1", { mode: "position" }) as any);
+
+        const subscribeCall = action["sdkController"].subscribe.mock.calls[0];
+        const telemetryCallback = subscribeCall[1];
+
+        await telemetryCallback(realTelemetry);
+
+        const calls = action["updateKeyImage"].mock.calls;
+        expect(calls.length).toBeGreaterThan(0);
+        const lastCall = calls[calls.length - 1];
+        const decoded = decodeURIComponent(lastCall[1] as string);
+
+        // Falls back to PlayerCarPosition=3
+        expect(decoded).toContain("P3");
+      });
+    });
   });
 });

@@ -10,6 +10,7 @@ import {
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import {
+  calculateRacePositions,
   DisplayUnits,
   type FlagInfo,
   type SessionInfo as IRacingSessionInfo,
@@ -289,7 +290,23 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     }
 
     if (settings.mode === "position") {
-      const pos = telemetry.PlayerCarPosition;
+      let pos: number | undefined;
+
+      if (this.isRaceSession(telemetry)) {
+        if (telemetry.OnPitRoad) {
+          // In pits: use official position
+          pos = telemetry.PlayerCarPosition;
+        } else {
+          // On track: use calculated, fall back to official
+          const positions = calculateRacePositions(telemetry);
+          const playerCarIdx = this.getPlayerCarIdx();
+          const calculated = playerCarIdx >= 0 ? positions[playerCarIdx] : undefined;
+
+          pos = calculated && calculated > 0 ? calculated : telemetry.PlayerCarPosition;
+        }
+      } else {
+        pos = telemetry.PlayerCarPosition;
+      }
 
       if (pos === undefined) return settings.positionShowTotal ? "P-/-" : "P-";
 
@@ -336,6 +353,29 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
 
   private countActiveCars(): number {
     return countActiveDrivers(this.sdkController.getSessionInfo());
+  }
+
+  private isRaceSession(telemetry: TelemetryData | null): boolean {
+    const sessionInfo = this.sdkController.getSessionInfo();
+
+    if (!sessionInfo) return false;
+
+    const sessions = (sessionInfo as Record<string, unknown>).SessionInfo as Record<string, unknown> | undefined;
+    const sessionList = sessions?.Sessions as Array<Record<string, unknown>> | undefined;
+    const sessionNum = telemetry?.SessionNum ?? 0;
+    const currentSession = sessionList?.[sessionNum as number];
+
+    return (currentSession?.SessionType as string) === "Race";
+  }
+
+  private getPlayerCarIdx(): number {
+    const sessionInfo = this.sdkController.getSessionInfo();
+
+    if (!sessionInfo) return -1;
+
+    const driverInfo = (sessionInfo as Record<string, unknown>).DriverInfo as Record<string, unknown> | undefined;
+
+    return (driverInfo?.DriverCarIdx as number) ?? -1;
   }
 
   private resolveFlagColorOverride(

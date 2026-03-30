@@ -4,6 +4,7 @@
  * Assembles a template variable context from iRacing telemetry and session data.
  * Used by resolveTemplate() to hydrate {{variable}} placeholders.
  */
+import { calculateRacePositions } from "./position-utils.js";
 import type { SDKController } from "./SDKController.js";
 import { findNearestCarOnTrack } from "./track-utils.js";
 import type { SessionInfo, TelemetryData } from "./types.js";
@@ -176,13 +177,17 @@ export function buildTemplateContextFromData(
   const drivers = extractDrivers(sessionInfo);
   const playerCarIdx = extractPlayerCarIdx(sessionInfo);
 
+  // Use calculated positions for race sessions, native for non-race.
+  // Cars on pit road or with unavailable calculated positions fall back to official.
+  const positions = isRaceSession(sessionInfo, telemetry) ? resolveRacePositions(telemetry) : undefined;
+
   const selfDriver = drivers.find((d) => d.CarIdx === playerCarIdx);
-  const selfFields = buildSelfFields(selfDriver, playerCarIdx, telemetry);
+  const selfFields = buildSelfFields(selfDriver, playerCarIdx, telemetry, positions);
 
   const trackAhead = findNearestDriverOnTrack(playerCarIdx, drivers, telemetry, "ahead");
   const trackBehind = findNearestDriverOnTrack(playerCarIdx, drivers, telemetry, "behind");
-  const raceAhead = findDriverByRacePosition(playerCarIdx, drivers, telemetry, -1);
-  const raceBehind = findDriverByRacePosition(playerCarIdx, drivers, telemetry, +1);
+  const raceAhead = findDriverByRacePosition(playerCarIdx, drivers, telemetry, -1, positions);
+  const raceBehind = findDriverByRacePosition(playerCarIdx, drivers, telemetry, +1, positions);
 
   const sessionFields = buildSessionFields(sessionInfo, telemetry);
   const trackFields = buildTrackFields(sessionInfo);
@@ -191,31 +196,27 @@ export function buildTemplateContextFromData(
     ...prefixKeys("self", selfFields as unknown as Record<string, string>),
     ...prefixKeys(
       "track_ahead",
-      (trackAhead ? buildDriverFields(trackAhead, telemetry) : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<
-        string,
-        string
-      >,
+      (trackAhead
+        ? buildDriverFields(trackAhead, telemetry, positions)
+        : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<string, string>,
     ),
     ...prefixKeys(
       "track_behind",
-      (trackBehind ? buildDriverFields(trackBehind, telemetry) : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<
-        string,
-        string
-      >,
+      (trackBehind
+        ? buildDriverFields(trackBehind, telemetry, positions)
+        : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<string, string>,
     ),
     ...prefixKeys(
       "race_ahead",
-      (raceAhead ? buildDriverFields(raceAhead, telemetry) : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<
-        string,
-        string
-      >,
+      (raceAhead
+        ? buildDriverFields(raceAhead, telemetry, positions)
+        : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<string, string>,
     ),
     ...prefixKeys(
       "race_behind",
-      (raceBehind ? buildDriverFields(raceBehind, telemetry) : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<
-        string,
-        string
-      >,
+      (raceBehind
+        ? buildDriverFields(raceBehind, telemetry, positions)
+        : { ...EMPTY_DRIVER_FIELDS }) as unknown as Record<string, string>,
     ),
     ...prefixKeys("session", sessionFields),
     ...prefixKeys("track", trackFields),
@@ -286,11 +287,13 @@ export function findDriverByRacePosition(
   drivers: DriverEntry[],
   telemetry: TelemetryData | null,
   offset: number,
+  positions?: number[],
 ): DriverEntry | null {
-  if (!telemetry?.CarIdxPosition) return null;
+  const posArray = positions ?? telemetry?.CarIdxPosition;
 
-  const positions = telemetry.CarIdxPosition;
-  const playerPosition = positions[playerCarIdx];
+  if (!posArray) return null;
+
+  const playerPosition = posArray[playerCarIdx];
 
   if (!playerPosition || playerPosition < 1) return null;
 
@@ -298,9 +301,8 @@ export function findDriverByRacePosition(
 
   if (targetPosition < 1) return null;
 
-  // Find the car at the target position
   for (const driver of drivers) {
-    if (positions[driver.CarIdx] === targetPosition) {
+    if (posArray[driver.CarIdx] === targetPosition) {
       return driver;
     }
   }
@@ -308,7 +310,37 @@ export function findDriverByRacePosition(
   return null;
 }
 
-function buildDriverFields(driver: DriverEntry, telemetry: TelemetryData | null): DriverFields {
+/**
+ * @internal Exported for testing
+ *
+ * Builds a resolved positions array for a race session.
+ * For each car: if on pit road or calculated position is unavailable, uses official CarIdxPosition.
+ * Otherwise uses the calculated position.
+ */
+export function resolveRacePositions(telemetry: TelemetryData | null): number[] | undefined {
+  const calculated = calculateRacePositions(telemetry);
+
+  if (calculated.length === 0) return undefined;
+
+  const official = telemetry?.CarIdxPosition as number[] | undefined;
+  const onPitRoad = telemetry?.CarIdxOnPitRoad as boolean[] | undefined;
+
+  if (!official) return calculated;
+
+  const resolved = new Array<number>(calculated.length).fill(0);
+
+  for (let i = 0; i < calculated.length; i++) {
+    if (onPitRoad?.[i] || !calculated[i] || calculated[i] < 1) {
+      resolved[i] = official[i] ?? 0;
+    } else {
+      resolved[i] = calculated[i];
+    }
+  }
+
+  return resolved;
+}
+
+function buildDriverFields(driver: DriverEntry, telemetry: TelemetryData | null, positions?: number[]): DriverFields {
   const { firstName, lastName } = splitDriverName(driver.UserName);
 
   return {
@@ -317,7 +349,7 @@ function buildDriverFields(driver: DriverEntry, telemetry: TelemetryData | null)
     last_name: lastName,
     abbrev_name: driver.AbbrevName,
     car_number: driver.CarNumber,
-    position: telemetry?.CarIdxPosition?.[driver.CarIdx]?.toString() ?? "",
+    position: positions?.[driver.CarIdx]?.toString() ?? telemetry?.CarIdxPosition?.[driver.CarIdx]?.toString() ?? "",
     class_position: telemetry?.CarIdxClassPosition?.[driver.CarIdx]?.toString() ?? "",
     lap: telemetry?.CarIdxLap?.[driver.CarIdx]?.toString() ?? "",
     laps_completed: telemetry?.CarIdxLapCompleted?.[driver.CarIdx]?.toString() ?? "",
@@ -330,15 +362,17 @@ function buildSelfFields(
   driver: DriverEntry | undefined,
   playerCarIdx: number,
   telemetry: TelemetryData | null,
+  positions?: number[],
 ): SelfDriverFields {
   if (!driver) return { ...EMPTY_SELF_FIELDS };
 
-  const base = buildDriverFields(driver, telemetry);
+  const base = buildDriverFields(driver, telemetry, positions);
 
-  // Use player-specific telemetry fields when available (more accurate)
   return {
     ...base,
-    position: telemetry?.PlayerCarPosition?.toString() ?? base.position,
+    position: telemetry?.OnPitRoad
+      ? (telemetry?.PlayerCarPosition?.toString() ?? base.position)
+      : (positions?.[playerCarIdx]?.toString() ?? telemetry?.PlayerCarPosition?.toString() ?? base.position),
     class_position: telemetry?.PlayerCarClassPosition?.toString() ?? base.class_position,
     lap: telemetry?.Lap?.toString() ?? base.lap,
     laps_completed: telemetry?.LapCompleted?.toString() ?? base.laps_completed,
@@ -346,15 +380,25 @@ function buildSelfFields(
   };
 }
 
-function buildSessionFields(sessionInfo: SessionInfo | null, telemetry: TelemetryData | null): Record<string, string> {
-  if (!sessionInfo) return { type: "", laps_remaining: "", time_remaining: "" };
+function getCurrentSession(
+  sessionInfo: SessionInfo | null,
+  telemetry: TelemetryData | null,
+): Record<string, unknown> | undefined {
+  if (!sessionInfo) return undefined;
 
   const sessions = (sessionInfo as Record<string, unknown>).SessionInfo as Record<string, unknown> | undefined;
   const sessionList = sessions?.Sessions as Array<Record<string, unknown>> | undefined;
-
-  // Get current session number from telemetry
   const sessionNum = telemetry?.SessionNum ?? 0;
-  const currentSession = sessionList?.[sessionNum as number];
+
+  return sessionList?.[sessionNum];
+}
+
+function isRaceSession(sessionInfo: SessionInfo | null, telemetry: TelemetryData | null): boolean {
+  return (getCurrentSession(sessionInfo, telemetry)?.SessionType as string) === "Race";
+}
+
+function buildSessionFields(sessionInfo: SessionInfo | null, telemetry: TelemetryData | null): Record<string, string> {
+  const currentSession = getCurrentSession(sessionInfo, telemetry);
 
   const lapsRemaining = telemetry?.SessionLapsRemainEx;
   const timeRemaining = telemetry?.SessionTimeRemain;

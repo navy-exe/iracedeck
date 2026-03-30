@@ -7,6 +7,7 @@ import {
   flattenForDisplay,
   formatTimeRemaining,
   prefixKeys,
+  resolveRacePositions,
   splitDriverName,
 } from "./template-context.js";
 import type { SessionInfo } from "./types.js";
@@ -271,6 +272,21 @@ describe("findDriverByRacePosition", () => {
 
     expect(findDriverByRacePosition(0, drivers, telemetry, -1)).toBeNull();
   });
+
+  it("should use provided positions array instead of CarIdxPosition", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Actually First" }),
+      makeDriver({ CarIdx: 2, UserName: "Actually Third" }),
+    ];
+
+    const telemetry = makeTelemetry({ CarIdxPosition: [2, 1, 3] });
+    const calculatedPositions = [2, 3, 1]; // Car 2 is P1, Car 0 is P2, Car 1 is P3
+
+    const result = findDriverByRacePosition(0, drivers, telemetry, -1, calculatedPositions);
+
+    expect(result?.UserName).toBe("Actually Third"); // Car 2 at P1, ahead of player at P2
+  });
 });
 
 describe("prefixKeys", () => {
@@ -371,9 +387,13 @@ describe("buildTemplateContextFromData", () => {
     expect(ctx["race_behind.name"]).toBe("P3 Driver");
   });
 
-  it("should use player-specific telemetry for self fields", () => {
+  it("should use player-specific telemetry for self fields in non-race sessions", () => {
     const drivers = [makeDriver({ CarIdx: 0, UserName: "Player" })];
-    const sessionInfo = makeSessionInfo(drivers, 0);
+    const sessionInfo = {
+      DriverInfo: { DriverCarIdx: 0, Drivers: drivers },
+      WeekendInfo: { TrackDisplayName: "Spa", TrackDisplayShortName: "Spa" },
+      SessionInfo: { Sessions: [{ SessionType: "Practice", SessionName: "PRACTICE" }] },
+    } as unknown as SessionInfo;
     const telemetry = makeTelemetry({
       PlayerCarPosition: 5,
       PlayerCarClassPosition: 3,
@@ -390,6 +410,128 @@ describe("buildTemplateContextFromData", () => {
     expect(ctx["self.lap"]).toBe("12");
     expect(ctx["self.laps_completed"]).toBe("11");
     expect(ctx["self.incidents"]).toBe("7");
+  });
+
+  it("should use calculated positions for race sessions", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Leader" }),
+      makeDriver({ CarIdx: 2, UserName: "Behind" }),
+    ];
+
+    const sessionInfo = makeSessionInfo(drivers, 0);
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 2,
+      CarIdxPosition: [2, 1, 3],
+      CarIdxLapCompleted: [10, 5, 3],
+      CarIdxLapDistPct: [0.9, 0.1, 0.3],
+      // Calculated: Car 0 = 10.9 → P1, Car 1 = 5.1 → P2, Car 2 = 3.3 → P3
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // self.position should reflect calculated P1, not PlayerCarPosition (2)
+    expect(ctx["self.position"]).toBe("1");
+    expect(ctx["race_behind.name"]).toBe("Leader"); // Car 1 at P2 is behind player at P1
+  });
+
+  it("should use native CarIdxPosition for non-race sessions", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Other" }),
+    ];
+
+    const sessionInfo = {
+      DriverInfo: { DriverCarIdx: 0, Drivers: drivers },
+      WeekendInfo: { TrackDisplayName: "Spa", TrackDisplayShortName: "Spa" },
+      SessionInfo: { Sessions: [{ SessionType: "Practice", SessionName: "PRACTICE" }] },
+    } as unknown as SessionInfo;
+
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 2,
+      CarIdxPosition: [2, 1],
+      CarIdxLapCompleted: [10, 5],
+      CarIdxLapDistPct: [0.9, 0.1],
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // Non-race: should use PlayerCarPosition (2), not calculated (1)
+    expect(ctx["self.position"]).toBe("2");
+  });
+
+  it("should use official position for player on pit road in race session", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Leader" }),
+    ];
+
+    const sessionInfo = makeSessionInfo(drivers, 0);
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 2,
+      OnPitRoad: true,
+      CarIdxPosition: [2, 1],
+      CarIdxLapCompleted: [10, 5],
+      CarIdxLapDistPct: [0.9, 0.1],
+      CarIdxOnPitRoad: [true, false],
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // Player on pit road: self.position should use PlayerCarPosition=2, not calculated P1
+    expect(ctx["self.position"]).toBe("2");
+  });
+
+  it("should use official position for other car on pit road in race session", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Pit Car" }),
+      makeDriver({ CarIdx: 2, UserName: "Third" }),
+    ];
+
+    const sessionInfo = makeSessionInfo(drivers, 0);
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 1,
+      CarIdxPosition: [1, 2, 3],
+      CarIdxClassPosition: [1, 2, 3],
+      CarIdxLap: [5, 10, 3],
+      CarIdxLapCompleted: [5, 10, 3],
+      CarIdxLapDistPct: [0.5, 0.9, 0.3],
+      CarIdxOnPitRoad: [false, true, false],
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // Car 1 on pit road: calculated would be P1 (10.9), but official is P2
+    // Player (car 0) calculated is P2 (5.5), race_ahead should be car 1 at resolved P2? No...
+    // Resolved: car 0=P2 (calculated), car 1=P2 (official, on pit road), car 2=P3 (calculated)
+    // Player position is P2, so race_ahead is position 1 → no driver has position 1 in resolved
+    // Let's check: player is at resolved[0]=P2, race_behind is position 3 = car 2
+    expect(ctx["race_behind.name"]).toBe("Third");
+    expect(ctx["race_behind.position"]).toBe("3");
+  });
+
+  it("should fall back to official position when calculated is unavailable in race session", () => {
+    const drivers = [
+      makeDriver({ CarIdx: 0, UserName: "Player" }),
+      makeDriver({ CarIdx: 1, UserName: "Other" }),
+    ];
+
+    const sessionInfo = makeSessionInfo(drivers, 0);
+    const telemetry = makeTelemetry({
+      PlayerCarPosition: 2,
+      OnPitRoad: false,
+      CarIdxPosition: [2, 1],
+      CarIdxLapCompleted: [-1, 5],
+      CarIdxLapDistPct: [-1, 0.7],
+      CarIdxOnPitRoad: [false, false],
+    });
+
+    const ctx = buildTemplateContextFromData(telemetry, sessionInfo);
+
+    // Car 0 is inactive (calculated=0), falls back to official CarIdxPosition=2
+    // PlayerCarPosition is also used for self.position fallback
+    expect(ctx["self.position"]).toBe("2");
   });
 
   it("should include telemetry with prefix and formatted values", () => {
@@ -426,6 +568,67 @@ describe("buildTemplateContextFromData", () => {
 
     expect(ctx["telemetry.Speed"]).toBeUndefined();
     expect(ctx["sessionInfo.WeekendInfo.TrackDisplayName"]).toBeUndefined();
+  });
+});
+
+describe("resolveRacePositions", () => {
+  it("should use calculated positions for cars not on pit road", () => {
+    const telemetry = makeTelemetry({
+      CarIdxLapCompleted: [10, 5, 3],
+      CarIdxLapDistPct: [0.9, 0.1, 0.3],
+      CarIdxPosition: [1, 2, 3],
+      CarIdxOnPitRoad: [false, false, false],
+    });
+
+    const result = resolveRacePositions(telemetry);
+
+    // Calculated: Car 0=10.9→P1, Car 1=5.1→P2, Car 2=3.3→P3
+    expect(result).toEqual([1, 2, 3]);
+  });
+
+  it("should use official position for cars on pit road", () => {
+    const telemetry = makeTelemetry({
+      CarIdxLapCompleted: [10, 5, 3],
+      CarIdxLapDistPct: [0.9, 0.1, 0.3],
+      CarIdxPosition: [2, 1, 3],
+      CarIdxOnPitRoad: [true, false, false],
+    });
+
+    const result = resolveRacePositions(telemetry);
+
+    // Car 0 on pit road → uses official P2; Car 1 calculated P2; Car 2 calculated P3
+    expect(result![0]).toBe(2);
+    expect(result![1]).toBe(2);
+    expect(result![2]).toBe(3);
+  });
+
+  it("should fall back to official for inactive cars (calculated=0)", () => {
+    const telemetry = makeTelemetry({
+      CarIdxLapCompleted: [-1, 5, 3],
+      CarIdxLapDistPct: [-1, 0.7, 0.3],
+      CarIdxPosition: [4, 1, 2],
+      CarIdxOnPitRoad: [false, false, false],
+    });
+
+    const result = resolveRacePositions(telemetry);
+
+    // Car 0 inactive (calculated=0) → falls back to official P4
+    expect(result![0]).toBe(4);
+    expect(result![1]).toBe(1);
+    expect(result![2]).toBe(2);
+  });
+
+  it("should return undefined for null telemetry", () => {
+    expect(resolveRacePositions(null)).toBeUndefined();
+  });
+
+  it("should return undefined when lap data is missing", () => {
+    const telemetry = makeTelemetry({
+      CarIdxLapCompleted: undefined,
+      CarIdxLapDistPct: undefined,
+    });
+
+    expect(resolveRacePositions(telemetry)).toBeUndefined();
   });
 });
 
