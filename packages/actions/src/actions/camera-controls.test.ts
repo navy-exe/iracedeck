@@ -335,8 +335,6 @@ describe("CameraControls", () => {
   describe("generateCameraControlsSvg", () => {
     describe("cycle targets", () => {
       const CYCLE_COMBINATIONS = [
-        { target: "cycle-camera", direction: "next" },
-        { target: "cycle-camera", direction: "previous" },
         { target: "cycle-sub-camera", direction: "next" },
         { target: "cycle-sub-camera", direction: "previous" },
         { target: "cycle-car", direction: "next" },
@@ -353,7 +351,7 @@ describe("CameraControls", () => {
         },
       );
 
-      it("should produce different icons for all 8 cycle combinations", () => {
+      it("should produce different icons for all 6 non-camera cycle combinations", () => {
         const results = CYCLE_COMBINATIONS.map(({ target, direction }) =>
           generateCameraControlsSvg({ target, direction }),
         );
@@ -361,18 +359,32 @@ describe("CameraControls", () => {
         expect(uniqueResults.size).toBe(CYCLE_COMBINATIONS.length);
       });
 
-      it("should include NEXT CAMERA labels for cycle-camera/next", () => {
+      it("should generate grid icon for cycle-camera/next with default groups", () => {
+        mockGetGlobalSettings.mockReturnValue({});
         const decoded = decodeURIComponent(generateCameraControlsSvg({ target: "cycle-camera", direction: "next" }));
         expect(decoded).toContain("NEXT");
         expect(decoded).toContain("CAMERA");
+        // Grid contains camera-select artwork (from default enabled groups)
+        expect(decoded).toContain("nose-artwork");
+        expect(decoded).toContain("cockpit-artwork");
       });
 
-      it("should include PREV CAMERA labels for cycle-camera/previous", () => {
+      it("should generate grid icon for cycle-camera/previous with default groups", () => {
         const decoded = decodeURIComponent(
           generateCameraControlsSvg({ target: "cycle-camera", direction: "previous" }),
         );
         expect(decoded).toContain("PREV");
         expect(decoded).toContain("CAMERA");
+      });
+
+      it("should respect cameraGroupSubset in cycle-camera grid", () => {
+        const subset = JSON.stringify({ groups: { Nose: true, TV1: true } });
+        const decoded = decodeURIComponent(
+          generateCameraControlsSvg({ target: "cycle-camera", direction: "next", cameraGroupSubset: subset }),
+        );
+        expect(decoded).toContain("nose-artwork");
+        expect(decoded).toContain("tv1-artwork");
+        expect(decoded).not.toContain("cockpit-artwork");
       });
 
       it("should include correct icon template for driving/previous", () => {
@@ -651,12 +663,17 @@ describe("CameraControls", () => {
       expect(decoded).toContain("data:image/svg+xml");
       expect(decoded).toContain("NEXT");
       expect(decoded).toContain("CAMERA");
+      // Should NOT contain grid thumbnails
+      expect(decoded).not.toContain("-artwork");
     });
 
     it("should fall back to static cycle icon for empty group list", () => {
       const result = generateCycleCameraGridSvg([], "next");
       const decoded = decodeURIComponent(result);
       expect(decoded).toContain("data:image/svg+xml");
+      expect(decoded).toContain("NEXT");
+      // Should NOT contain grid thumbnails
+      expect(decoded).not.toContain("-artwork");
     });
 
     it("should produce different results for different group selections", () => {

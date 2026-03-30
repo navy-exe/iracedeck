@@ -267,7 +267,12 @@ const FOCUS_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
  * Generates an SVG data URI icon for the camera controls action.
  */
 export function generateCameraControlsSvg(
-  settings: { target: Target; direction?: Direction; cameraGroup?: number } & Partial<CommonSettings>,
+  settings: {
+    target: Target;
+    direction?: Direction;
+    cameraGroup?: number;
+    cameraGroupSubset?: string;
+  } & Partial<CommonSettings>,
 ): string {
   const { target, direction = "next" } = settings;
 
@@ -275,6 +280,12 @@ export function generateCameraControlsSvg(
   let labels: { mainLabel: string; subLabel: string };
 
   if (isCycleTarget(target)) {
+    if (target === "cycle-camera") {
+      const enabledNames = getEnabledGroupNames(settings.cameraGroupSubset);
+
+      return generateCycleCameraGridSvg(enabledNames, direction, settings.colorOverrides);
+    }
+
     iconSvg = CYCLE_ICONS[target]?.[direction] || CYCLE_ICONS["cycle-camera"]["next"];
     labels = CYCLE_LABELS[target]?.[direction] || CYCLE_LABELS["cycle-camera"]["next"];
   } else if (target === "change-camera") {
@@ -418,9 +429,15 @@ export function generateCycleCameraGridSvg(
   // Resolve which groups have icons
   const groupsWithIcons = enabledGroupNames.filter((name) => CAMERA_SELECT_ICONS[name]);
 
-  // Fall back to static cycle icon if no groups have icons
+  // Fall back to static cycle icon if no groups have icons (direct render, no recursion)
   if (groupsWithIcons.length === 0) {
-    return generateCameraControlsSvg({ target: "cycle-camera", direction });
+    const iconSvg = CYCLE_ICONS["cycle-camera"][direction];
+    const labels = CYCLE_LABELS["cycle-camera"][direction];
+    const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+
+    return svgToDataUri(
+      renderIconTemplate(iconSvg, { mainLabel: labels.mainLabel, subLabel: labels.subLabel, ...colors }),
+    );
   }
 
   const displayGroups = groupsWithIcons.slice(0, 6);
