@@ -338,7 +338,9 @@ export function extractIconArtwork(svgTemplate: string): string {
     .replace(/<desc>[\s\S]*?<\/desc>/g, "")
     .replace(/<rect x="0" y="0" width="144" height="144"[^/]*\/>/g, "")
     .replace(/<g filter="url\(#activity-state\)">/g, "")
-    .replace(/<text[^>]*>[\s\S]*?<\/text>/g, "")
+    .replace(/<text[^>]*y="138"[^>]*>[\s\S]*?<\/text>/g, "")
+    .replace(/<text[^>]*y="116"[^>]*>[\s\S]*?<\/text>/g, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<\/g>\s*$/g, "")
     .trim();
 }

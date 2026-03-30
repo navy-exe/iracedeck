@@ -495,8 +495,25 @@ describe("CameraControls", () => {
       expect(result).not.toContain("<svg");
       expect(result).not.toContain("<desc>");
       expect(result).not.toContain("<rect");
-      expect(result).not.toContain("<text");
+      // Label text at y=138 should be stripped
+      expect(result).not.toContain('y="138"');
       expect(result).not.toContain("activity-state");
+    });
+
+    it("should preserve artwork text elements that are not labels", () => {
+      const input = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <desc>{"colors":{}}</desc>
+  <g filter="url(#activity-state)">
+    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+    <rect x="36" y="19" width="72" height="52" fill="#333"/>
+    <text x="72" y="67" text-anchor="middle" fill="#2a4a5a" font-size="28" font-weight="bold">TV1</text>
+    <text x="72" y="138" text-anchor="middle" fill="#fff">{{mainLabel}}</text>
+  </g>
+</svg>`;
+      const result = extractIconArtwork(input);
+      expect(result).toContain("TV1");
+      expect(result).toContain('y="67"');
+      expect(result).not.toContain('y="138"');
     });
 
     it("should handle multiple artwork groups", () => {
