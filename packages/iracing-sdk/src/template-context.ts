@@ -177,8 +177,9 @@ export function buildTemplateContextFromData(
   const drivers = extractDrivers(sessionInfo);
   const playerCarIdx = extractPlayerCarIdx(sessionInfo);
 
-  // Use calculated positions for race sessions, native for non-race
-  const positions = isRaceSession(sessionInfo, telemetry) ? calculateRacePositions(telemetry) : undefined;
+  // Use calculated positions for race sessions, native for non-race.
+  // Cars on pit road or with unavailable calculated positions fall back to official.
+  const positions = isRaceSession(sessionInfo, telemetry) ? resolveRacePositions(telemetry) : undefined;
 
   const selfDriver = drivers.find((d) => d.CarIdx === playerCarIdx);
   const selfFields = buildSelfFields(selfDriver, playerCarIdx, telemetry, positions);
@@ -309,6 +310,36 @@ export function findDriverByRacePosition(
   return null;
 }
 
+/**
+ * @internal Exported for testing
+ *
+ * Builds a resolved positions array for a race session.
+ * For each car: if on pit road or calculated position is unavailable, uses official CarIdxPosition.
+ * Otherwise uses the calculated position.
+ */
+export function resolveRacePositions(telemetry: TelemetryData | null): number[] | undefined {
+  const calculated = calculateRacePositions(telemetry);
+
+  if (calculated.length === 0) return undefined;
+
+  const official = telemetry?.CarIdxPosition as number[] | undefined;
+  const onPitRoad = telemetry?.CarIdxOnPitRoad as boolean[] | undefined;
+
+  if (!official) return calculated;
+
+  const resolved = new Array<number>(calculated.length).fill(0);
+
+  for (let i = 0; i < calculated.length; i++) {
+    if (onPitRoad?.[i] || !calculated[i] || calculated[i] < 1) {
+      resolved[i] = official[i] ?? 0;
+    } else {
+      resolved[i] = calculated[i];
+    }
+  }
+
+  return resolved;
+}
+
 function buildDriverFields(driver: DriverEntry, telemetry: TelemetryData | null, positions?: number[]): DriverFields {
   const { firstName, lastName } = splitDriverName(driver.UserName);
 
@@ -339,7 +370,9 @@ function buildSelfFields(
 
   return {
     ...base,
-    position: positions?.[playerCarIdx]?.toString() ?? telemetry?.PlayerCarPosition?.toString() ?? base.position,
+    position: telemetry?.OnPitRoad
+      ? (telemetry?.PlayerCarPosition?.toString() ?? base.position)
+      : (positions?.[playerCarIdx]?.toString() ?? telemetry?.PlayerCarPosition?.toString() ?? base.position),
     class_position: telemetry?.PlayerCarClassPosition?.toString() ?? base.class_position,
     lap: telemetry?.Lap?.toString() ?? base.lap,
     laps_completed: telemetry?.LapCompleted?.toString() ?? base.laps_completed,

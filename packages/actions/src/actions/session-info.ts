@@ -293,12 +293,17 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
       let pos: number | undefined;
 
       if (this.isRaceSession(telemetry)) {
-        const positions = calculateRacePositions(telemetry);
-        const playerCarIdx = this.getPlayerCarIdx();
+        if (telemetry.OnPitRoad) {
+          // In pits: use official position
+          pos = telemetry.PlayerCarPosition;
+        } else {
+          // On track: use calculated, fall back to official
+          const positions = calculateRacePositions(telemetry);
+          const playerCarIdx = this.getPlayerCarIdx();
+          const calculated = playerCarIdx >= 0 ? positions[playerCarIdx] : undefined;
 
-        pos = playerCarIdx >= 0 ? positions[playerCarIdx] : undefined;
-
-        if (pos === 0) pos = undefined; // 0 means inactive
+          pos = calculated && calculated > 0 ? calculated : telemetry.PlayerCarPosition;
+        }
       } else {
         pos = telemetry.PlayerCarPosition;
       }

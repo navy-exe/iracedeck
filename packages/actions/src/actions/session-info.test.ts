@@ -712,44 +712,67 @@ describe("SessionInfo", () => {
         expect(decoded).toContain("P2");
       });
 
-      it("should show P- when player carIdx is out of bounds in race session", async () => {
-        // Start with initial race position (to establish non-"P-" state),
-        // then switch to a race where the carIdx is beyond the array bounds.
-        const telemetryWithPosition = {
+      it("should fall back to PlayerCarPosition when player carIdx is out of bounds in race session", async () => {
+        // carIdx=5 but only 2 entries → calculated positions[5] is undefined → falls back to PlayerCarPosition
+        const telemetry = {
           SessionNum: 0,
-          PlayerCarPosition: 1,
-          CarIdxLapCompleted: [10, 5],
-          CarIdxLapDistPct: [0.9, 0.1],
-        };
-        // carIdx=5 but only 2 entries → positions[5] is undefined → pos = undefined → "P-"
-        const telemetryWithNoPosition = {
-          SessionNum: 0,
-          PlayerCarPosition: 1,
+          PlayerCarPosition: 3,
+          OnPitRoad: false,
           CarIdxLapCompleted: [10, 5],
           CarIdxLapDistPct: [0.9, 0.1],
         };
 
-        // Start with carIdx=0 (positions[0]=1, "P1") to create a non-"P-" initial state
-        action["sdkController"].getCurrentTelemetry = vi.fn().mockReturnValue(telemetryWithPosition);
-        action["sdkController"].getSessionInfo = vi.fn().mockReturnValue(makeRaceSessionInfo(0));
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(5), telemetry);
 
-        await action.onWillAppear(fakeEvent("action-1", { mode: "position" }) as any);
+        // calculated[5] is undefined → falls back to PlayerCarPosition=3
+        expect(decoded).toContain("P3");
+      });
 
-        // Now switch to carIdx=5 (out of bounds) → should produce "P-"
-        action["sdkController"].getSessionInfo = vi.fn().mockReturnValue(makeRaceSessionInfo(5));
+      it("should use PlayerCarPosition when player is on pit road in race session", async () => {
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 2,
+          OnPitRoad: true,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
 
-        const subscribeCall = action["sdkController"].subscribe.mock.calls[0];
-        const telemetryCallback = subscribeCall[1];
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
 
-        await telemetryCallback(telemetryWithNoPosition);
+        // On pit road: should use PlayerCarPosition=2, not calculated P1
+        expect(decoded).toContain("P2");
+      });
 
-        const calls = action["updateKeyImage"].mock.calls;
-        expect(calls.length).toBeGreaterThan(0);
-        const lastCall = calls[calls.length - 1];
-        const decoded = decodeURIComponent(lastCall[1] as string);
+      it("should use calculated position when player is NOT on pit road in race session", async () => {
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 2,
+          OnPitRoad: false,
+          CarIdxLapCompleted: [10, 5],
+          CarIdxLapDistPct: [0.9, 0.1],
+        };
 
-        // positions[5] is undefined → treated as inactive → "P-"
-        expect(decoded).toContain("P-");
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
+
+        // Not on pit road: should use calculated P1
+        expect(decoded).toContain("P1");
+        expect(decoded).not.toContain("P2");
+      });
+
+      it("should fall back to PlayerCarPosition when calculated position is 0 (inactive) in race session", async () => {
+        const telemetry = {
+          SessionNum: 0,
+          PlayerCarPosition: 3,
+          OnPitRoad: false,
+          CarIdxLapCompleted: [-1, 5, 4],
+          CarIdxLapDistPct: [-1, 0.7, 0.3],
+        };
+
+        // Car 0 is inactive (lapCompleted=-1) → calculated position = 0
+        // Should fall back to PlayerCarPosition=3
+        const decoded = await triggerPositionUpdate(makeRaceSessionInfo(0), telemetry);
+
+        expect(decoded).toContain("P3");
       });
 
       it("should fall back to PlayerCarPosition when session info is null", async () => {
