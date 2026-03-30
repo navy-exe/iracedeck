@@ -404,6 +404,62 @@ export function computeGridPositions(count: number): ThumbnailPosition[] {
   return positions;
 }
 
+/**
+ * @internal Exported for testing
+ *
+ * Generate an SVG data URI showing a grid of miniaturized camera-select icons
+ * for the selected camera groups. Used as the default icon for cycle-camera actions.
+ */
+export function generateCycleCameraGridSvg(
+  enabledGroupNames: string[],
+  direction: Direction,
+  colorOverrides?: Record<string, string>,
+): string {
+  // Resolve which groups have icons
+  const groupsWithIcons = enabledGroupNames.filter((name) => CAMERA_SELECT_ICONS[name]);
+
+  // Fall back to static cycle icon if no groups have icons
+  if (groupsWithIcons.length === 0) {
+    return generateCameraControlsSvg({ target: "cycle-camera", direction });
+  }
+
+  const displayGroups = groupsWithIcons.slice(0, 6);
+  const positions = computeGridPositions(displayGroups.length);
+  const labels = CYCLE_LABELS["cycle-camera"][direction];
+
+  // Resolve colors from the cycle-camera base icon
+  const baseSvg = CYCLE_ICONS["cycle-camera"][direction];
+  const colors = resolveIconColors(baseSvg, getGlobalColors(), colorOverrides);
+  const bgColor = colors.backgroundColor || "#2a3a4a";
+  const textColor = colors.textColor || "#ffffff";
+
+  // Build thumbnail SVGs
+  let thumbnails = "";
+
+  for (let i = 0; i < displayGroups.length; i++) {
+    const groupName = displayGroups[i];
+    const iconSvg = CAMERA_SELECT_ICONS[groupName];
+    const artColors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+    const rendered = renderIconTemplate(iconSvg, { mainLabel: "", ...artColors });
+    const artwork = extractIconArtwork(rendered);
+    const pos = positions[i];
+
+    thumbnails += `<svg x="${pos.x}" y="${pos.y}" width="${pos.size}" height="${pos.size}" viewBox="0 0 144 144">${artwork}</svg>`;
+  }
+
+  // "+" indicator for groups beyond 6
+  let plusIndicator = "";
+
+  if (groupsWithIcons.length > 6) {
+    const extra = groupsWithIcons.length - 6;
+    plusIndicator = `<text x="138" y="98" text-anchor="end" fill="${textColor}" font-family="Arial, sans-serif" font-size="14" font-weight="bold">+${extra}</text>`;
+  }
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" fill="${bgColor}"/>${thumbnails}${plusIndicator}<text x="72" y="116" text-anchor="middle" dominant-baseline="central" fill="${textColor}" font-family="Arial, sans-serif" font-size="16">${labels.subLabel}</text><text x="72" y="138" text-anchor="middle" dominant-baseline="central" fill="${textColor}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">${labels.mainLabel}</text></g></svg>`;
+
+  return svgToDataUri(svg);
+}
+
 // --- Camera group subset helpers ---
 
 /**

@@ -8,6 +8,7 @@ import {
   DEFAULT_ENABLED_GROUPS,
   extractIconArtwork,
   generateCameraControlsSvg,
+  generateCycleCameraGridSvg,
   getEnabledGroupNames,
   getNextSelectedGroup,
   parseGroupSubset,
@@ -39,53 +40,31 @@ vi.mock("@iracedeck/icons/camera-cycle/driving-previous.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">driving-previous {{mainLabel}} {{subLabel}}</svg>',
 }));
 
-// Camera select icon mocks
-vi.mock("@iracedeck/icons/camera-select/blimp.svg", () => ({ default: "<svg>blimp {{mainLabel}} {{subLabel}}</svg>" }));
-vi.mock("@iracedeck/icons/camera-select/chase.svg", () => ({ default: "<svg>chase {{mainLabel}} {{subLabel}}</svg>" }));
-vi.mock("@iracedeck/icons/camera-select/chopper.svg", () => ({
-  default: "<svg>chopper {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/cockpit.svg", () => ({
-  default: "<svg>cockpit {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/far-chase.svg", () => ({
-  default: "<svg>far-chase {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/gearbox.svg", () => ({
-  default: "<svg>gearbox {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/gyro.svg", () => ({ default: "<svg>gyro {{mainLabel}} {{subLabel}}</svg>" }));
-vi.mock("@iracedeck/icons/camera-select/lf-susp.svg", () => ({
-  default: "<svg>lf-susp {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/lr-susp.svg", () => ({
-  default: "<svg>lr-susp {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/nose.svg", () => ({ default: "<svg>nose {{mainLabel}} {{subLabel}}</svg>" }));
-vi.mock("@iracedeck/icons/camera-select/pit-lane-2.svg", () => ({
-  default: "<svg>pit-lane-2 {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/pit-lane.svg", () => ({
-  default: "<svg>pit-lane {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/rear-chase.svg", () => ({
-  default: "<svg>rear-chase {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/rf-susp.svg", () => ({
-  default: "<svg>rf-susp {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/roll-bar.svg", () => ({
-  default: "<svg>roll-bar {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/rr-susp.svg", () => ({
-  default: "<svg>rr-susp {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/scenic.svg", () => ({
-  default: "<svg>scenic {{mainLabel}} {{subLabel}}</svg>",
-}));
-vi.mock("@iracedeck/icons/camera-select/tv1.svg", () => ({ default: "<svg>tv1 {{mainLabel}} {{subLabel}}</svg>" }));
-vi.mock("@iracedeck/icons/camera-select/tv2.svg", () => ({ default: "<svg>tv2 {{mainLabel}} {{subLabel}}</svg>" }));
-vi.mock("@iracedeck/icons/camera-select/tv3.svg", () => ({ default: "<svg>tv3 {{mainLabel}} {{subLabel}}</svg>" }));
+// Camera select icon mocks — structured SVGs for artwork extraction
+function mockCameraSelectSvg(name: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc><g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/><g class="${name}-artwork"><path d="M0 0" fill="{{graphic1Color}}"/></g><text x="72" y="116" text-anchor="middle" fill="{{textColor}}">{{subLabel}}</text><text x="72" y="138" text-anchor="middle" fill="{{textColor}}">{{mainLabel}}</text></g></svg>`;
+}
+
+vi.mock("@iracedeck/icons/camera-select/blimp.svg", () => ({ default: mockCameraSelectSvg("blimp") }));
+vi.mock("@iracedeck/icons/camera-select/chase.svg", () => ({ default: mockCameraSelectSvg("chase") }));
+vi.mock("@iracedeck/icons/camera-select/chopper.svg", () => ({ default: mockCameraSelectSvg("chopper") }));
+vi.mock("@iracedeck/icons/camera-select/cockpit.svg", () => ({ default: mockCameraSelectSvg("cockpit") }));
+vi.mock("@iracedeck/icons/camera-select/far-chase.svg", () => ({ default: mockCameraSelectSvg("far-chase") }));
+vi.mock("@iracedeck/icons/camera-select/gearbox.svg", () => ({ default: mockCameraSelectSvg("gearbox") }));
+vi.mock("@iracedeck/icons/camera-select/gyro.svg", () => ({ default: mockCameraSelectSvg("gyro") }));
+vi.mock("@iracedeck/icons/camera-select/lf-susp.svg", () => ({ default: mockCameraSelectSvg("lf-susp") }));
+vi.mock("@iracedeck/icons/camera-select/lr-susp.svg", () => ({ default: mockCameraSelectSvg("lr-susp") }));
+vi.mock("@iracedeck/icons/camera-select/nose.svg", () => ({ default: mockCameraSelectSvg("nose") }));
+vi.mock("@iracedeck/icons/camera-select/pit-lane-2.svg", () => ({ default: mockCameraSelectSvg("pit-lane-2") }));
+vi.mock("@iracedeck/icons/camera-select/pit-lane.svg", () => ({ default: mockCameraSelectSvg("pit-lane") }));
+vi.mock("@iracedeck/icons/camera-select/rear-chase.svg", () => ({ default: mockCameraSelectSvg("rear-chase") }));
+vi.mock("@iracedeck/icons/camera-select/rf-susp.svg", () => ({ default: mockCameraSelectSvg("rf-susp") }));
+vi.mock("@iracedeck/icons/camera-select/roll-bar.svg", () => ({ default: mockCameraSelectSvg("roll-bar") }));
+vi.mock("@iracedeck/icons/camera-select/rr-susp.svg", () => ({ default: mockCameraSelectSvg("rr-susp") }));
+vi.mock("@iracedeck/icons/camera-select/scenic.svg", () => ({ default: mockCameraSelectSvg("scenic") }));
+vi.mock("@iracedeck/icons/camera-select/tv1.svg", () => ({ default: mockCameraSelectSvg("tv1") }));
+vi.mock("@iracedeck/icons/camera-select/tv2.svg", () => ({ default: mockCameraSelectSvg("tv2") }));
+vi.mock("@iracedeck/icons/camera-select/tv3.svg", () => ({ default: mockCameraSelectSvg("tv3") }));
 
 // Focus icon mocks
 vi.mock("@iracedeck/icons/camera-focus/focus-your-car.svg", () => ({
@@ -615,6 +594,75 @@ describe("CameraControls", () => {
           expect(pos.x + pos.size).toBeLessThanOrEqual(140);
         }
       }
+    });
+  });
+
+  describe("generateCycleCameraGridSvg", () => {
+    it("should produce a valid data URI", () => {
+      const result = generateCycleCameraGridSvg(["Nose", "Cockpit", "Chase"], "next");
+      expect(result).toContain("data:image/svg+xml");
+    });
+
+    it("should include nested SVGs for each selected group", () => {
+      const groups = ["Nose", "Cockpit", "Chase"];
+      const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
+
+      // Each group gets a nested <svg> thumbnail
+      for (const name of groups) {
+        expect(decoded).toContain(`${name.toLowerCase().replaceAll(" ", "-")}-artwork`);
+      }
+    });
+
+    it("should include NEXT CAMERA labels for next direction", () => {
+      const decoded = decodeURIComponent(generateCycleCameraGridSvg(["Nose"], "next"));
+      expect(decoded).toContain("NEXT");
+      expect(decoded).toContain("CAMERA");
+    });
+
+    it("should include PREV CAMERA labels for previous direction", () => {
+      const decoded = decodeURIComponent(generateCycleCameraGridSvg(["Nose"], "previous"));
+      expect(decoded).toContain("PREV");
+      expect(decoded).toContain("CAMERA");
+    });
+
+    it("should show '+' indicator when more than 6 groups", () => {
+      const groups = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3", "Blimp"];
+      const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
+      expect(decoded).toContain("+1");
+    });
+
+    it("should show '+N' for N groups beyond 6", () => {
+      const groups = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3", "Blimp", "Chopper", "Scenic"];
+      const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
+      expect(decoded).toContain("+3");
+    });
+
+    it("should only include first 6 groups artwork when more than 6", () => {
+      const groups = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3", "Blimp"];
+      const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
+      expect(decoded).toContain("nose-artwork");
+      expect(decoded).toContain("tv3-artwork");
+      expect(decoded).not.toContain("blimp-artwork");
+    });
+
+    it("should fall back to static cycle icon when no groups have icons", () => {
+      const result = generateCycleCameraGridSvg(["NonExistent"], "next");
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("data:image/svg+xml");
+      expect(decoded).toContain("NEXT");
+      expect(decoded).toContain("CAMERA");
+    });
+
+    it("should fall back to static cycle icon for empty group list", () => {
+      const result = generateCycleCameraGridSvg([], "next");
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toContain("data:image/svg+xml");
+    });
+
+    it("should produce different results for different group selections", () => {
+      const result1 = generateCycleCameraGridSvg(["Nose", "Cockpit"], "next");
+      const result2 = generateCycleCameraGridSvg(["Chase", "TV1"], "next");
+      expect(result1).not.toBe(result2);
     });
   });
 });
