@@ -362,8 +362,7 @@ describe("CameraControls", () => {
       it("should generate grid icon for cycle-camera/next with default groups", () => {
         mockGetGlobalSettings.mockReturnValue({});
         const decoded = decodeURIComponent(generateCameraControlsSvg({ target: "cycle-camera", direction: "next" }));
-        expect(decoded).toContain("NEXT");
-        expect(decoded).toContain("CAMERA");
+        expect(decoded).toContain("CYCLE CAM");
         // Grid contains camera-select artwork (from default enabled groups)
         expect(decoded).toContain("nose-artwork");
         expect(decoded).toContain("cockpit-artwork");
@@ -373,8 +372,7 @@ describe("CameraControls", () => {
         const decoded = decodeURIComponent(
           generateCameraControlsSvg({ target: "cycle-camera", direction: "previous" }),
         );
-        expect(decoded).toContain("PREV");
-        expect(decoded).toContain("CAMERA");
+        expect(decoded).toContain("CYCLE CAM");
       });
 
       it("should respect cameraGroupSubset in cycle-camera grid", () => {
@@ -545,10 +543,12 @@ describe("CameraControls", () => {
   });
 
   describe("computeGridPositions", () => {
-    it("should return 1 position for count 1", () => {
+    it("should return 1 position at full size for count 1", () => {
       const positions = computeGridPositions(1);
       expect(positions).toHaveLength(1);
-      expect(positions[0].size).toBeGreaterThan(40);
+      expect(positions[0].size).toBe(144);
+      expect(positions[0].x).toBe(0);
+      expect(positions[0].y).toBe(0);
     });
 
     it("should return 2 positions for count 2", () => {
@@ -603,26 +603,20 @@ describe("CameraControls", () => {
       expect(computeGridPositions(20)).toHaveLength(6);
     });
 
-    it("should keep all positions within content area (y=18 to y=86)", () => {
-      for (let count = 1; count <= 7; count++) {
+    it("should produce consistent sizes within each count", () => {
+      for (let count = 2; count <= 7; count++) {
         const positions = computeGridPositions(count);
-
-        for (const pos of positions) {
-          expect(pos.y).toBeGreaterThanOrEqual(18);
-          expect(pos.y + pos.size).toBeLessThanOrEqual(86);
-        }
+        const sizes = new Set(positions.map((p) => p.size));
+        expect(sizes.size).toBe(1);
       }
     });
 
-    it("should keep all positions within horizontal bounds (x=4 to x=140)", () => {
-      for (let count = 1; count <= 7; count++) {
-        const positions = computeGridPositions(count);
-
-        for (const pos of positions) {
-          expect(pos.x).toBeGreaterThanOrEqual(4);
-          expect(pos.x + pos.size).toBeLessThanOrEqual(140);
-        }
-      }
+    it("should produce larger icons for fewer items", () => {
+      const size2 = computeGridPositions(2)[0].size;
+      const size4 = computeGridPositions(4)[0].size;
+      const size6 = computeGridPositions(6)[0].size;
+      expect(size2).toBeGreaterThan(size4);
+      expect(size4).toBeGreaterThan(size6);
     });
   });
 
@@ -636,35 +630,27 @@ describe("CameraControls", () => {
       const groups = ["Nose", "Cockpit", "Chase"];
       const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
 
-      // Each group gets a nested <svg> thumbnail
+      // Each group gets a <g transform> thumbnail
       for (const name of groups) {
         expect(decoded).toContain(`${name.toLowerCase().replaceAll(" ", "-")}-artwork`);
       }
     });
 
-    it("should include NEXT CAMERA labels for next direction", () => {
+    it("should include CYCLE CAM label", () => {
       const decoded = decodeURIComponent(generateCycleCameraGridSvg(["Nose"], "next"));
-      expect(decoded).toContain("NEXT");
-      expect(decoded).toContain("CAMERA");
+      expect(decoded).toContain("CYCLE CAM");
     });
 
-    it("should include PREV CAMERA labels for previous direction", () => {
+    it("should include CYCLE CAM label for previous direction", () => {
       const decoded = decodeURIComponent(generateCycleCameraGridSvg(["Nose"], "previous"));
-      expect(decoded).toContain("PREV");
-      expect(decoded).toContain("CAMERA");
+      expect(decoded).toContain("CYCLE CAM");
       expect(decoded).toContain("nose-artwork");
     });
 
-    it("should show '+' indicator when more than 6 groups", () => {
+    it("should not show +N indicator when more than 6 groups", () => {
       const groups = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3", "Blimp"];
       const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
-      expect(decoded).toContain("+1");
-    });
-
-    it("should show '+N' for N groups beyond 6", () => {
-      const groups = ["Nose", "Cockpit", "Chase", "TV1", "TV2", "TV3", "Blimp", "Chopper", "Scenic"];
-      const decoded = decodeURIComponent(generateCycleCameraGridSvg(groups, "next"));
-      expect(decoded).toContain("+3");
+      expect(decoded).not.toContain("+1");
     });
 
     it("should only include first 6 groups artwork when more than 6", () => {

@@ -363,60 +363,101 @@ export interface ThumbnailPosition {
 export function computeGridPositions(count: number): ThumbnailPosition[] {
   if (count <= 0) return [];
 
-  const CONTENT_TOP = 18;
-  const CONTENT_LEFT = 4;
-  const CONTENT_WIDTH = 136;
-  const CONTENT_HEIGHT = 68;
-  const GAP = 4;
-
-  // Row configuration: how many items per row
-  let rows: number[];
-
-  switch (Math.min(count, 6)) {
-    case 1:
-      rows = [1];
-      break;
-    case 2:
-      rows = [2];
-      break;
-    case 3:
-      rows = [1, 2];
-      break;
-    case 4:
-      rows = [2, 2];
-      break;
-    case 5:
-      rows = [2, 3];
-      break;
-    default:
-      rows = [3, 3];
-      break;
+  // 1 icon: full original size and position
+  if (count === 1) {
+    return [{ x: 0, y: 0, size: 144 }];
   }
 
-  const numRows = rows.length;
-  const maxCols = Math.max(...rows);
-  const sizeByHeight = Math.floor((CONTENT_HEIGHT - GAP * (numRows - 1)) / numRows);
-  const sizeByWidth = Math.floor((CONTENT_WIDTH - GAP * (maxCols - 1)) / maxCols);
-  const cellSize = Math.min(sizeByHeight, sizeByWidth);
+  // 2 icons: 70% size, tight and lowered
+  if (count === 2) {
+    const size = 100;
+    const gap = -30;
+    const totalWidth = size * 2 + gap;
+    const startX = Math.round((144 - totalWidth) / 2);
+    const y = 16;
 
-  const positions: ThumbnailPosition[] = [];
-
-  for (let r = 0; r < numRows; r++) {
-    const cols = rows[r];
-    const rowWidth = cols * cellSize + (cols - 1) * GAP;
-    const startX = CONTENT_LEFT + (CONTENT_WIDTH - rowWidth) / 2;
-    const startY = CONTENT_TOP + r * (cellSize + GAP);
-
-    for (let c = 0; c < cols; c++) {
-      positions.push({
-        x: Math.round(startX + c * (cellSize + GAP)),
-        y: startY,
-        size: cellSize,
-      });
-    }
+    return [
+      { x: startX, y, size },
+      { x: startX + size + gap, y, size },
+    ];
   }
 
-  return positions;
+  // 3 icons: 60% size, 1 on top centered, 2 on bottom with -40 gap
+  if (count === 3) {
+    const size = 86;
+    const topX = Math.round((144 - size) / 2);
+    const topY = -2;
+    const bottomGap = -15;
+    const bottomTotalWidth = size * 2 + bottomGap;
+    const bottomStartX = Math.round((144 - bottomTotalWidth) / 2);
+    const bottomY = size - 35;
+
+    return [
+      { x: topX, y: topY, size },
+      { x: bottomStartX, y: bottomY, size },
+      { x: bottomStartX + size + bottomGap, y: bottomY, size },
+    ];
+  }
+
+  // 4 icons: 60% size, 2x2 grid using same positions as 3-icon layout
+  if (count === 4) {
+    const size = 86;
+    const gap = -15;
+    const totalWidth = size * 2 + gap;
+    const startX = Math.round((144 - totalWidth) / 2);
+    const topY = -2;
+    const bottomY = size - 35;
+
+    return [
+      { x: startX, y: topY, size },
+      { x: startX + size + gap, y: topY, size },
+      { x: startX, y: bottomY, size },
+      { x: startX + size + gap, y: bottomY, size },
+    ];
+  }
+
+  // 5 icons: 50% size, 2 on top, 3 on bottom
+  if (count === 5) {
+    const size = 72;
+    const topGap = -15;
+    const bottomGap = -25;
+    const topY = 5;
+    const bottomY = size - 20;
+
+    const topTotalWidth = size * 2 + topGap;
+    const topStartX = Math.round((144 - topTotalWidth) / 2);
+
+    const bottomTotalWidth = size * 3 + bottomGap * 2;
+    const bottomStartX = Math.round((144 - bottomTotalWidth) / 2);
+
+    return [
+      { x: topStartX, y: topY, size },
+      { x: topStartX + size + topGap, y: topY, size },
+      { x: bottomStartX, y: bottomY, size },
+      { x: bottomStartX + size + bottomGap, y: bottomY, size },
+      { x: bottomStartX + (size + bottomGap) * 2, y: bottomY, size },
+    ];
+  }
+
+  // 6+ icons: 50% size, 3x2 grid, x from 5's bottom row, y from 5
+  {
+    const size = 72;
+    const gap = -25;
+    const topY = 5;
+    const bottomY = size - 20;
+
+    const totalWidth = size * 3 + gap * 2;
+    const startX = Math.round((144 - totalWidth) / 2);
+
+    return [
+      { x: startX, y: topY, size },
+      { x: startX + size + gap, y: topY, size },
+      { x: startX + (size + gap) * 2, y: topY, size },
+      { x: startX, y: bottomY, size },
+      { x: startX + size + gap, y: bottomY, size },
+      { x: startX + (size + gap) * 2, y: bottomY, size },
+    ];
+  }
 }
 
 /**
@@ -446,7 +487,6 @@ export function generateCycleCameraGridSvg(
 
   const displayGroups = groupsWithIcons.slice(0, 6);
   const positions = computeGridPositions(displayGroups.length);
-  const labels = CYCLE_LABELS["cycle-camera"][direction];
 
   // Resolve colors from the cycle-camera base icon
   const baseSvg = CYCLE_ICONS["cycle-camera"][direction];
@@ -465,18 +505,13 @@ export function generateCycleCameraGridSvg(
     const artwork = extractIconArtwork(rendered);
     const pos = positions[i];
 
-    thumbnails += `<svg x="${pos.x}" y="${pos.y}" width="${pos.size}" height="${pos.size}" viewBox="0 0 144 144">${artwork}</svg>`;
+    const scale = pos.size / 144;
+    thumbnails += `<g transform="translate(${pos.x}, ${pos.y}) scale(${scale})">${artwork}</g>`;
   }
 
-  // "+" indicator for groups beyond 6
-  let plusIndicator = "";
+  const plusIndicator = "";
 
-  if (groupsWithIcons.length > 6) {
-    const extra = groupsWithIcons.length - 6;
-    plusIndicator = `<text x="138" y="98" text-anchor="end" fill="${textColor}" font-family="Arial, sans-serif" font-size="14" font-weight="bold">+${extra}</text>`;
-  }
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" fill="${bgColor}"/>${thumbnails}${plusIndicator}<text x="72" y="116" text-anchor="middle" dominant-baseline="central" fill="${textColor}" font-family="Arial, sans-serif" font-size="16">${labels.subLabel}</text><text x="72" y="138" text-anchor="middle" dominant-baseline="central" fill="${textColor}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">${labels.mainLabel}</text></g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" fill="${bgColor}"/>${thumbnails}${plusIndicator}<text x="72" y="138" text-anchor="middle" dominant-baseline="central" fill="${textColor}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">CYCLE CAM</text></g></svg>`;
 
   return svgToDataUri(svg);
 }
