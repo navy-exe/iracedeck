@@ -135,7 +135,7 @@ const CameraControlsSettings = CommonSettings.extend({
   target: z.enum(TARGET_VALUES).default("change-camera"),
   // Cycle-specific
   direction: z.enum(["next", "previous"]).default("next"),
-  cameraGroupSubset: z.string().optional(),
+  cameraGroupSubset: z.union([z.string(), z.record(z.string(), z.unknown())]).optional(),
   // Focus-specific
   position: z.coerce.number().int().min(1).default(1),
   carNumber: z.coerce.number().int().min(0).default(0),
@@ -271,7 +271,7 @@ export function generateCameraControlsSvg(
     target: Target;
     direction?: Direction;
     cameraGroup?: number;
-    cameraGroupSubset?: string;
+    cameraGroupSubset?: string | Record<string, unknown>;
   } & Partial<CommonSettings>,
 ): string {
   const { target, direction = "next" } = settings;
@@ -361,6 +361,8 @@ export interface ThumbnailPosition {
  * Returns positions for up to 6 thumbnails (capped at 6 for counts above 6).
  */
 export function computeGridPositions(count: number): ThumbnailPosition[] {
+  if (count <= 0) return [];
+
   const CONTENT_TOP = 18;
   const CONTENT_LEFT = 4;
   const CONTENT_WIDTH = 136;
@@ -675,7 +677,11 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     return parsed.success ? parsed.data : CameraControlsSettings.parse({});
   }
 
-  private executeCycle(target: CycleTarget, direction: Direction, cameraGroupSubset?: string): void {
+  private executeCycle(
+    target: CycleTarget,
+    direction: Direction,
+    cameraGroupSubset?: string | Record<string, unknown>,
+  ): void {
     const telemetry = this.sdkController.getCurrentTelemetry();
 
     if (!telemetry) {

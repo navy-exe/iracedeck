@@ -609,7 +609,7 @@ describe("CameraControls", () => {
 
         for (const pos of positions) {
           expect(pos.y).toBeGreaterThanOrEqual(18);
-          expect(pos.y + pos.size).toBeLessThanOrEqual(90);
+          expect(pos.y + pos.size).toBeLessThanOrEqual(86);
         }
       }
     });
@@ -652,6 +652,7 @@ describe("CameraControls", () => {
       const decoded = decodeURIComponent(generateCycleCameraGridSvg(["Nose"], "previous"));
       expect(decoded).toContain("PREV");
       expect(decoded).toContain("CAMERA");
+      expect(decoded).toContain("nose-artwork");
     });
 
     it("should show '+' indicator when more than 6 groups", () => {
