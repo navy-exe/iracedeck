@@ -116,6 +116,9 @@ export {
 // Track utilities
 export { findNearestCarOnTrack, type FindNearestCarOptions } from "./track-utils.js";
 
+// Position utilities
+export { calculateRacePositions } from "./position-utils.js";
+
 // Flag utilities
 export { type FlagInfo, FLAG_DEFINITIONS, resolveActiveFlag, resolveAllActiveFlags } from "./flag-utils.js";
 
