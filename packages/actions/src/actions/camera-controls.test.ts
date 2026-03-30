@@ -5,6 +5,7 @@ import {
   CAMERA_GROUPS_SETTING_KEY,
   DEFAULT_CAMERA_GROUPS,
   DEFAULT_ENABLED_GROUPS,
+  extractIconArtwork,
   generateCameraControlsSvg,
   getEnabledGroupNames,
   getNextSelectedGroup,
@@ -483,6 +484,54 @@ describe("CameraControls", () => {
         expect(decoded).toContain("CAM STATE");
         expect(decoded).toContain("SET");
       });
+    });
+  });
+
+  describe("extractIconArtwork", () => {
+    it("should strip svg wrapper, desc, background rect, filter group, and label text", () => {
+      const input = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <desc>{"colors":{"backgroundColor":"#2a4a5a"}}</desc>
+  <g filter="url(#activity-state)">
+    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+    <g transform="translate(40, 27)"><path d="M10 10" fill="#fff"/></g>
+    <text x="72" y="138" text-anchor="middle" fill="#fff">NOSE</text>
+  </g>
+</svg>`;
+      const result = extractIconArtwork(input);
+      expect(result).toContain('<g transform="translate(40, 27)">');
+      expect(result).toContain('<path d="M10 10" fill="#fff"/>');
+      expect(result).not.toContain("<svg");
+      expect(result).not.toContain("<desc>");
+      expect(result).not.toContain("<rect");
+      expect(result).not.toContain("<text");
+      expect(result).not.toContain("activity-state");
+    });
+
+    it("should handle multiple artwork groups", () => {
+      const input = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <desc>{"colors":{}}</desc>
+  <g filter="url(#activity-state)">
+    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+    <g transform="translate(27, 36)"><path d="M1 1" fill="#fff"/></g>
+    <g transform="translate(116, 66)"><path d="M2 2" fill="#fff"/></g>
+    <text x="72" y="138" text-anchor="middle" fill="#fff">LABEL</text>
+  </g>
+</svg>`;
+      const result = extractIconArtwork(input);
+      expect(result).toContain("M1 1");
+      expect(result).toContain("M2 2");
+    });
+
+    it("should return empty string for minimal SVG with no artwork", () => {
+      const input = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <desc>{"colors":{}}</desc>
+  <g filter="url(#activity-state)">
+    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+    <text x="72" y="138" fill="#fff">LABEL</text>
+  </g>
+</svg>`;
+      const result = extractIconArtwork(input);
+      expect(result.trim()).toBe("");
     });
   });
 });

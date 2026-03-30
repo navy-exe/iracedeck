@@ -314,6 +314,24 @@ function generateCameraSelectSvg(
   return svgToDataUri(svg);
 }
 
+/**
+ * @internal Exported for testing
+ *
+ * Extract artwork elements from a camera-select SVG template.
+ * Strips the outer SVG, desc, background rect, filter group wrapper, and label text.
+ */
+export function extractIconArtwork(svgTemplate: string): string {
+  return svgTemplate
+    .replace(/<svg[^>]*>/g, "")
+    .replace(/<\/svg>\s*/g, "")
+    .replace(/<desc>[\s\S]*?<\/desc>/g, "")
+    .replace(/<rect x="0" y="0" width="144" height="144"[^/]*\/>/g, "")
+    .replace(/<g filter="url\(#activity-state\)">/g, "")
+    .replace(/<text[^>]*>[\s\S]*?<\/text>/g, "")
+    .replace(/<\/g>\s*$/g, "")
+    .trim();
+}
+
 // --- Camera group subset helpers ---
 
 /**
