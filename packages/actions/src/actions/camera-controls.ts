@@ -901,7 +901,27 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
 
     const telemetry = this.sdkController.getCurrentTelemetry();
 
-    if (!telemetry) return;
+    if (!telemetry) {
+      // Connection lost — restore grid icon if we were showing a telemetry-driven icon
+      if (this.lastDisplayedGroup.has(contextId)) {
+        this.lastDisplayedGroup.delete(contextId);
+        const svgDataUri = generateCycleCameraGridSvg(
+          getEnabledGroupNames(settings.cameraGroupSubset),
+          settings.direction,
+          settings.colorOverrides,
+        );
+        await this.updateKeyImage(contextId, svgDataUri);
+        this.setRegenerateCallback(contextId, () =>
+          generateCycleCameraGridSvg(
+            getEnabledGroupNames(settings.cameraGroupSubset),
+            settings.direction,
+            settings.colorOverrides,
+          ),
+        );
+      }
+
+      return;
+    }
 
     const sessionInfo = this.sdkController.getSessionInfo();
     const sessionGroups = sessionInfo ? getCameraGroupsFromSessionInfo(sessionInfo) : [];
