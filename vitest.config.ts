@@ -39,6 +39,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@iracedeck/deck-core": resolve(__dirname, "packages/deck-core/src/index.ts"),
+      "@iracedeck/iracing-sdk": resolve(__dirname, "packages/iracing-sdk/src/index.ts"),
+      "@iracedeck/iracing-native": resolve(__dirname, "packages/iracing-native/src/index.ts"),
+      "@iracedeck/logger": resolve(__dirname, "packages/logger/src/index.ts"),
     },
   },
   test: {
