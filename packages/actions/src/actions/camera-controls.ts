@@ -135,7 +135,7 @@ const CameraControlsSettings = CommonSettings.extend({
   target: z.enum(TARGET_VALUES).default("change-camera"),
   // Cycle-specific
   direction: z.enum(["next", "previous"]).default("next"),
-  cameraGroupSubset: z.string().optional(),
+  cameraGroupSubset: z.union([z.string(), z.record(z.string(), z.unknown())]).optional(),
   // Focus-specific
   position: z.coerce.number().int().min(1).default(1),
   carNumber: z.coerce.number().int().min(0).default(0),
@@ -267,7 +267,12 @@ const FOCUS_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
  * Generates an SVG data URI icon for the camera controls action.
  */
 export function generateCameraControlsSvg(
-  settings: { target: Target; direction?: Direction; cameraGroup?: number } & Partial<CommonSettings>,
+  settings: {
+    target: Target;
+    direction?: Direction;
+    cameraGroup?: number;
+    cameraGroupSubset?: string | Record<string, unknown>;
+  } & Partial<CommonSettings>,
 ): string {
   const { target, direction = "next" } = settings;
 
@@ -275,6 +280,12 @@ export function generateCameraControlsSvg(
   let labels: { mainLabel: string; subLabel: string };
 
   if (isCycleTarget(target)) {
+    if (target === "cycle-camera") {
+      const enabledNames = getEnabledGroupNames(settings.cameraGroupSubset);
+
+      return generateCycleCameraGridSvg(enabledNames, direction, settings.colorOverrides);
+    }
+
     iconSvg = CYCLE_ICONS[target]?.[direction] || CYCLE_ICONS["cycle-camera"]["next"];
     labels = CYCLE_LABELS[target]?.[direction] || CYCLE_LABELS["cycle-camera"]["next"];
   } else if (target === "change-camera") {
@@ -310,6 +321,197 @@ function generateCameraSelectSvg(
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
   const svg = renderIconTemplate(iconSvg, { mainLabel: groupName.toUpperCase(), ...colors });
+
+  return svgToDataUri(svg);
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Extract artwork elements from a camera-select SVG template.
+ * Strips the outer SVG, desc, background rect, filter group wrapper, and label text.
+ */
+export function extractIconArtwork(svgTemplate: string): string {
+  return svgTemplate
+    .replace(/<svg[^>]*>/g, "")
+    .replace(/<\/svg>\s*/g, "")
+    .replace(/<desc>[\s\S]*?<\/desc>/g, "")
+    .replace(/<rect x="0" y="0" width="144" height="144"[^/]*\/>/g, "")
+    .replace(/<g filter="url\(#activity-state\)">/g, "")
+    .replace(/<text[^>]*y="138"[^>]*>[\s\S]*?<\/text>/g, "")
+    .replace(/<text[^>]*y="116"[^>]*>[\s\S]*?<\/text>/g, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<\/g>\s*$/g, "")
+    .trim();
+}
+
+/**
+ * @internal Exported for testing
+ */
+export interface ThumbnailPosition {
+  x: number;
+  y: number;
+  size: number;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Compute grid positions for thumbnail icons within the content area (y=18 to y=86).
+ * Returns positions for up to 6 thumbnails (capped at 6 for counts above 6).
+ */
+export function computeGridPositions(count: number): ThumbnailPosition[] {
+  if (count <= 0) return [];
+
+  // 1 icon: full original size and position
+  if (count === 1) {
+    return [{ x: 0, y: 0, size: 144 }];
+  }
+
+  // 2 icons: 70% size, tight and lowered
+  if (count === 2) {
+    const size = 100;
+    const gap = -30;
+    const totalWidth = size * 2 + gap;
+    const startX = Math.round((144 - totalWidth) / 2);
+    const y = 16;
+
+    return [
+      { x: startX, y, size },
+      { x: startX + size + gap, y, size },
+    ];
+  }
+
+  // 3 icons: 60% size, 1 on top centered, 2 on bottom with -40 gap
+  if (count === 3) {
+    const size = 86;
+    const topX = Math.round((144 - size) / 2);
+    const topY = -2;
+    const bottomGap = -15;
+    const bottomTotalWidth = size * 2 + bottomGap;
+    const bottomStartX = Math.round((144 - bottomTotalWidth) / 2);
+    const bottomY = size - 35;
+
+    return [
+      { x: topX, y: topY, size },
+      { x: bottomStartX, y: bottomY, size },
+      { x: bottomStartX + size + bottomGap, y: bottomY, size },
+    ];
+  }
+
+  // 4 icons: 60% size, 2x2 grid using same positions as 3-icon layout
+  if (count === 4) {
+    const size = 86;
+    const gap = -15;
+    const totalWidth = size * 2 + gap;
+    const startX = Math.round((144 - totalWidth) / 2);
+    const topY = -2;
+    const bottomY = size - 35;
+
+    return [
+      { x: startX, y: topY, size },
+      { x: startX + size + gap, y: topY, size },
+      { x: startX, y: bottomY, size },
+      { x: startX + size + gap, y: bottomY, size },
+    ];
+  }
+
+  // 5 icons: 50% size, 2 on top, 3 on bottom
+  if (count === 5) {
+    const size = 72;
+    const topGap = -15;
+    const bottomGap = -25;
+    const topY = 5;
+    const bottomY = size - 20;
+
+    const topTotalWidth = size * 2 + topGap;
+    const topStartX = Math.round((144 - topTotalWidth) / 2);
+
+    const bottomTotalWidth = size * 3 + bottomGap * 2;
+    const bottomStartX = Math.round((144 - bottomTotalWidth) / 2);
+
+    return [
+      { x: topStartX, y: topY, size },
+      { x: topStartX + size + topGap, y: topY, size },
+      { x: bottomStartX, y: bottomY, size },
+      { x: bottomStartX + size + bottomGap, y: bottomY, size },
+      { x: bottomStartX + (size + bottomGap) * 2, y: bottomY, size },
+    ];
+  }
+
+  // 6+ icons: 50% size, 3x2 grid, x from 5's bottom row, y from 5
+  {
+    const size = 72;
+    const gap = -25;
+    const topY = 5;
+    const bottomY = size - 20;
+
+    const totalWidth = size * 3 + gap * 2;
+    const startX = Math.round((144 - totalWidth) / 2);
+
+    return [
+      { x: startX, y: topY, size },
+      { x: startX + size + gap, y: topY, size },
+      { x: startX + (size + gap) * 2, y: topY, size },
+      { x: startX, y: bottomY, size },
+      { x: startX + size + gap, y: bottomY, size },
+      { x: startX + (size + gap) * 2, y: bottomY, size },
+    ];
+  }
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Generate an SVG data URI showing a grid of miniaturized camera-select icons
+ * for the selected camera groups. Used as the default icon for cycle-camera actions.
+ */
+export function generateCycleCameraGridSvg(
+  enabledGroupNames: string[],
+  direction: Direction,
+  colorOverrides?: Record<string, string>,
+): string {
+  // Resolve which groups have icons
+  const groupsWithIcons = enabledGroupNames.filter((name) => CAMERA_SELECT_ICONS[name]);
+
+  // Fall back to static cycle icon if no groups have icons (direct render, no recursion)
+  if (groupsWithIcons.length === 0) {
+    const iconSvg = CYCLE_ICONS["cycle-camera"][direction];
+    const labels = CYCLE_LABELS["cycle-camera"][direction];
+    const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+
+    return svgToDataUri(
+      renderIconTemplate(iconSvg, { mainLabel: labels.mainLabel, subLabel: labels.subLabel, ...colors }),
+    );
+  }
+
+  const displayGroups = groupsWithIcons.slice(0, 6);
+  const positions = computeGridPositions(displayGroups.length);
+
+  // Resolve colors from the cycle-camera base icon
+  const baseSvg = CYCLE_ICONS["cycle-camera"][direction];
+  const colors = resolveIconColors(baseSvg, getGlobalColors(), colorOverrides);
+  const bgColor = colors.backgroundColor || "#2a3a4a";
+  const textColor = colors.textColor || "#ffffff";
+
+  // Build thumbnail SVGs
+  let thumbnails = "";
+
+  for (let i = 0; i < displayGroups.length; i++) {
+    const groupName = displayGroups[i];
+    const iconSvg = CAMERA_SELECT_ICONS[groupName];
+    const artColors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+    const rendered = renderIconTemplate(iconSvg, { mainLabel: "", ...artColors });
+    const artwork = extractIconArtwork(rendered);
+    const pos = positions[i];
+
+    const scale = pos.size / 144;
+    thumbnails += `<g transform="translate(${pos.x}, ${pos.y}) scale(${scale})">${artwork}</g>`;
+  }
+
+  const plusIndicator = "";
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" fill="${bgColor}"/>${thumbnails}${plusIndicator}<text x="72" y="138" text-anchor="middle" dominant-baseline="central" fill="${textColor}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">CYCLE CAM</text></g></svg>`;
 
   return svgToDataUri(svg);
 }
@@ -510,7 +712,11 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     return parsed.success ? parsed.data : CameraControlsSettings.parse({});
   }
 
-  private executeCycle(target: CycleTarget, direction: Direction, cameraGroupSubset?: string): void {
+  private executeCycle(
+    target: CycleTarget,
+    direction: Direction,
+    cameraGroupSubset?: string | Record<string, unknown>,
+  ): void {
     const telemetry = this.sdkController.getCurrentTelemetry();
 
     if (!telemetry) {
@@ -695,7 +901,27 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
 
     const telemetry = this.sdkController.getCurrentTelemetry();
 
-    if (!telemetry) return;
+    if (!telemetry) {
+      // Connection lost — restore grid icon if we were showing a telemetry-driven icon
+      if (this.lastDisplayedGroup.has(contextId)) {
+        this.lastDisplayedGroup.delete(contextId);
+        const svgDataUri = generateCycleCameraGridSvg(
+          getEnabledGroupNames(settings.cameraGroupSubset),
+          settings.direction,
+          settings.colorOverrides,
+        );
+        await this.updateKeyImage(contextId, svgDataUri);
+        this.setRegenerateCallback(contextId, () =>
+          generateCycleCameraGridSvg(
+            getEnabledGroupNames(settings.cameraGroupSubset),
+            settings.direction,
+            settings.colorOverrides,
+          ),
+        );
+      }
+
+      return;
+    }
 
     const sessionInfo = this.sdkController.getSessionInfo();
     const sessionGroups = sessionInfo ? getCameraGroupsFromSessionInfo(sessionInfo) : [];
