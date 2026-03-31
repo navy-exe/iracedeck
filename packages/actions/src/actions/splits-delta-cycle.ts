@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import activeResetRunIconSvg from "@iracedeck/icons/splits-delta-cycle/active-reset-run.svg";
 import activeResetSetIconSvg from "@iracedeck/icons/splits-delta-cycle/active-reset-set.svg";
@@ -25,11 +26,18 @@ const DIRECTION_ICONS: Record<string, string> = {
   previous: previousIconSvg,
 };
 
-const MODE_ICONS: Record<string, { svg: string; mainLabel: string; subLabel: string }> = {
-  "custom-sector-start": { svg: customSectorStartIconSvg, mainLabel: "START", subLabel: "SECTOR" },
-  "custom-sector-end": { svg: customSectorEndIconSvg, mainLabel: "END", subLabel: "SECTOR" },
-  "active-reset-set": { svg: activeResetSetIconSvg, mainLabel: "SET", subLabel: "RESET POINT" },
-  "active-reset-run": { svg: activeResetRunIconSvg, mainLabel: "RESET", subLabel: "TO START" },
+const MODE_ICONS: Record<string, string> = {
+  "custom-sector-start": customSectorStartIconSvg,
+  "custom-sector-end": customSectorEndIconSvg,
+  "active-reset-set": activeResetSetIconSvg,
+  "active-reset-run": activeResetRunIconSvg,
+};
+
+const MODE_TITLES: Record<string, string> = {
+  "custom-sector-start": "SECTOR\nSTART",
+  "custom-sector-end": "SECTOR\nEND",
+  "active-reset-set": "RESET POINT\nSET",
+  "active-reset-run": "TO START\nRESET",
 };
 
 const SplitsDeltaCycleSettings = CommonSettings.extend({
@@ -78,37 +86,36 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
   // toggle-ref-car uses an icon from toggle-ui-elements, not splits-delta-cycle
   if (mode === "toggle-ref-car") {
     const colors = resolveIconColors(displayRefCarIconSvg, getGlobalColors(), settings.colorOverrides);
-    const svg = renderIconTemplate(displayRefCarIconSvg, {
-      mainLabel: "REFERENCE",
-      subLabel: "CAR",
-      ...colors,
-    });
+    const title = resolveTitleSettings(
+      displayRefCarIconSvg,
+      getGlobalTitleSettings(),
+      settings.titleOverrides,
+      "CAR\nREFERENCE",
+    );
 
-    return svgToDataUri(svg);
+    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title });
   }
 
-  const modeIcon = MODE_ICONS[mode];
+  const modeIconSvg = MODE_ICONS[mode];
 
-  if (modeIcon) {
-    const colors = resolveIconColors(modeIcon.svg, getGlobalColors(), settings.colorOverrides);
-    const svg = renderIconTemplate(modeIcon.svg, {
-      mainLabel: modeIcon.mainLabel,
-      subLabel: modeIcon.subLabel,
-      ...colors,
-    });
+  if (modeIconSvg) {
+    const colors = resolveIconColors(modeIconSvg, getGlobalColors(), settings.colorOverrides);
+    const title = resolveTitleSettings(
+      modeIconSvg,
+      getGlobalTitleSettings(),
+      settings.titleOverrides,
+      MODE_TITLES[mode],
+    );
 
-    return svgToDataUri(svg);
+    return assembleIcon({ graphicSvg: modeIconSvg, colors, title });
   }
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS.next;
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: direction === "next" ? "NEXT" : "PREVIOUS",
-    subLabel: "SPLITS DELTA",
-    ...colors,
-  });
+  const defaultTitle = direction === "next" ? "SPLITS DELTA\nNEXT" : "SPLITS DELTA\nPREVIOUS";
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

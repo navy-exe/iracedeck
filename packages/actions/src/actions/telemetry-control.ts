@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import markEventIconSvg from "@iracedeck/icons/telemetry-control/mark-event.svg";
 import restartRecordingIconSvg from "@iracedeck/icons/telemetry-control/restart-recording.svg";
@@ -37,14 +38,14 @@ const ACTION_ICONS: Record<TelemetryControlAction, string> = {
 };
 
 /**
- * Label configuration for each telemetry control action
+ * Title configuration for each telemetry control action
  */
-const TELEMETRY_CONTROL_LABELS: Record<TelemetryControlAction, { mainLabel: string; subLabel: string }> = {
-  "toggle-logging": { mainLabel: "LOGGING", subLabel: "TOGGLE" },
-  "mark-event": { mainLabel: "MARK", subLabel: "EVENT" },
-  "start-recording": { mainLabel: "RECORDING", subLabel: "START" },
-  "stop-recording": { mainLabel: "RECORDING", subLabel: "STOP" },
-  "restart-recording": { mainLabel: "RECORDING", subLabel: "RESTART" },
+const TELEMETRY_CONTROL_TITLES: Record<TelemetryControlAction, string> = {
+  "toggle-logging": "TOGGLE\nLOGGING",
+  "mark-event": "EVENT\nMARK",
+  "start-recording": "RECORDING\nSTART",
+  "stop-recording": "RECORDING\nSTOP",
+  "restart-recording": "RECORDING\nRESTART",
 };
 
 /**
@@ -73,16 +74,12 @@ export function generateTelemetryControlSvg(settings: TelemetryControlSettings):
   const { action: actionType } = settings;
 
   const iconSvg = ACTION_ICONS[actionType] || ACTION_ICONS["toggle-logging"];
-  const labels = TELEMETRY_CONTROL_LABELS[actionType] || TELEMETRY_CONTROL_LABELS["toggle-logging"];
+  const defaultTitle = TELEMETRY_CONTROL_TITLES[actionType] || TELEMETRY_CONTROL_TITLES["toggle-logging"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
