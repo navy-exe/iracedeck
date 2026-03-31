@@ -53,7 +53,10 @@ export const TitleOverridesSchema = z
         return val === true || val === "true";
       })
       .optional(),
-    fontSize: z.coerce.number().min(5).max(50).optional(),
+    fontSize: z.preprocess(
+      (val) => (val === "" || val === null || val === undefined ? undefined : val),
+      z.coerce.number().min(5).max(100).optional(),
+    ),
     position: z
       .union([z.enum(["top", "middle", "bottom", "custom", "inherit"]), z.string()])
       .transform((val) => {
@@ -62,7 +65,7 @@ export const TitleOverridesSchema = z
         return val as "top" | "middle" | "bottom" | "custom";
       })
       .optional(),
-    customPosition: z.coerce.number().min(-50).max(50).optional(),
+    customPosition: z.coerce.number().min(-100).max(100).optional(),
   })
   .optional();
 

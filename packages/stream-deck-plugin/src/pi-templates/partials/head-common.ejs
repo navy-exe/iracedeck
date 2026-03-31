@@ -245,6 +245,137 @@
     }
   })();
 
+  // Bidirectional sync between sdpi-range and number input
+  function syncRangeAndInput(rangeId, inputId) {
+    var range = document.getElementById(rangeId);
+    var input = document.getElementById(inputId);
+    if (!range || !input) return;
+
+    // Range → Input
+    range.addEventListener('input', function() { input.value = range.value; });
+    range.addEventListener('change', function() { input.value = range.value; });
+
+    // Input → Range (also trigger change for sdpi persistence)
+    input.addEventListener('change', function() {
+      var val = Math.min(Math.max(Number(input.value), Number(input.min)), Number(input.max));
+      input.value = val;
+      range.value = val;
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // Initialize input from range on load
+    if (range.value) input.value = range.value;
+  }
+
+  (function() {
+    function initRangeSyncs() {
+      syncRangeAndInput('title-override-customPosition', 'title-override-customPosition-input');
+      syncRangeAndInput('global-title-fontSize', 'global-title-fontSize-input');
+      syncRangeAndInput('global-title-customPosition', 'global-title-customPosition-input');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initRangeSyncs);
+    } else {
+      initRangeSyncs();
+    }
+  })();
+
+  // Font Size checkbox gate: plain HTML checkbox + sdpi-range + number input.
+  // sdpi-range handles persistence via its `setting` attribute.
+  // When unchecked: set range to "" and dispatch change → schema treats "" as undefined → inherits.
+  // When checked: show range, user interacts normally, sdpi persists the value.
+  (function() {
+    function initFontSizeToggle() {
+      var toggle = document.getElementById('title-override-fontSize-toggle');
+      var item = document.getElementById('title-fontSize-item');
+      var range = document.getElementById('title-override-fontSize');
+      var input = document.getElementById('title-override-fontSize-input');
+      if (!toggle || !item || !range || !input) return;
+
+      function showControls(show) {
+        if (show) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+
+      // Checkbox toggle
+      toggle.addEventListener('change', function() {
+        var checked = toggle.checked;
+        showControls(checked);
+        if (!checked) {
+          range.value = '';
+          range.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (!range.value || range.value === '') {
+          range.value = '18';
+          input.value = '18';
+          range.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+
+      // Sync range → input
+      range.addEventListener('input', function() { input.value = range.value; });
+      range.addEventListener('change', function() { if (range.value) input.value = range.value; });
+
+      // Input → range
+      input.addEventListener('change', function() {
+        var val = Math.min(Math.max(Number(input.value), 5), 100);
+        input.value = val;
+        range.value = val;
+        range.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+
+      // Initialize from stored settings
+      document.addEventListener('settingsLoaded', function(e) {
+        if (!e.detail) return;
+        var overrides = e.detail.titleOverrides;
+        var val = overrides && overrides.fontSize;
+        if (val !== undefined && val !== null && val !== '' && val !== 0) {
+          toggle.checked = true;
+          input.value = val;
+          showControls(true);
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initFontSizeToggle);
+    } else {
+      initFontSizeToggle();
+    }
+  })();
+
+  // Global title defaults Reset button
+  document.addEventListener('click', function(ev) {
+    var btn = ev.target.closest('.ird-title-global-reset');
+    if (!btn) return;
+
+    var defaults = {
+      'titleShowTitle': 'true',
+      'titleShowGraphics': 'true',
+      'titleBold': 'true',
+      'titleFontSize': '18',
+      'titlePosition': 'bottom',
+      'titleCustomPosition': '0'
+    };
+
+    Object.entries(defaults).forEach(function([setting, value]) {
+      var el = document.querySelector('[setting="' + setting + '"]');
+      if (el) {
+        el.value = value;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    // Also sync the number inputs
+    var fontInput = document.getElementById('global-title-fontSize-input');
+    if (fontInput) fontInput.value = '18';
+    var posInput = document.getElementById('global-title-customPosition-input');
+    if (posInput) posInput.value = '0';
+  });
+
   // Textarea persistence for titleOverrides.titleText
   // Raw <textarea data-setting="..."> is not handled by sdpi-components, so we manually
   // dispatch sdpi-store-value events and populate from settings on load.
