@@ -476,12 +476,11 @@ export function generateCycleCameraGridSvg(
   // Fall back to static cycle icon if no groups have icons (direct render, no recursion)
   if (groupsWithIcons.length === 0) {
     const iconSvg = CYCLE_ICONS["cycle-camera"][direction];
-    const labels = CYCLE_LABELS["cycle-camera"][direction];
+    const titleText = CYCLE_TITLES["cycle-camera"][direction];
+    const [subLabel = "", mainLabel = ""] = titleText.split("\n");
     const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
 
-    return svgToDataUri(
-      renderIconTemplate(iconSvg, { mainLabel: labels.mainLabel, subLabel: labels.subLabel, ...colors }),
-    );
+    return svgToDataUri(renderIconTemplate(iconSvg, { mainLabel, subLabel, ...colors }));
   }
 
   const displayGroups = groupsWithIcons.slice(0, 6);

@@ -77,17 +77,24 @@ vi.mock("@iracedeck/deck-core", () => ({
     startRole: vi.fn().mockResolvedValue(true),
     stopRole: vi.fn().mockResolvedValue(true),
   })),
+  getGlobalTitleSettings: vi.fn(() => ({})),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
-  renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
-    let result = template;
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
 
-    for (const [key, value] of Object.entries(data)) {
-      result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
-    }
-
-    return result;
-  }),
-  svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
 }));
 
 /** Create a minimal fake event with the given action ID and settings. */
@@ -183,11 +190,12 @@ describe("AudioControls", () => {
       expect(volumeDown).not.toBe(mute);
     });
 
-    it("should fall back to volume-up display for master with mute action", () => {
+    it("should fall back to volume-up icon for master with mute action", () => {
       const masterMute = generateAudioControlsSvg({ category: "master", action: "mute" });
-      const masterVolumeUp = generateAudioControlsSvg({ category: "master", action: "volume-up" });
-
-      expect(masterMute).toBe(masterVolumeUp);
+      // The mute action uses the volume-up icon (falls back to master-volume-up SVG)
+      // but has its own title "VOLUME\nMASTER"
+      expect(masterMute).toContain("data:image/svg+xml");
+      expect(decodeURIComponent(masterMute)).toContain("MASTER");
     });
 
     it("should include correct labels for voice-chat volume-up", () => {
@@ -224,8 +232,8 @@ describe("AudioControls", () => {
         master: {
           "volume-up": { mainLabel: "MASTER", subLabel: "VOL UP" },
           "volume-down": { mainLabel: "MASTER", subLabel: "VOL DOWN" },
-          // master-mute falls back to volume-up
-          mute: { mainLabel: "MASTER", subLabel: "VOL UP" },
+          // master-mute uses volume-up icon but has its own title "VOLUME\nMASTER"
+          mute: { mainLabel: "MASTER", subLabel: "VOLUME" },
         },
       };
 

@@ -5,7 +5,7 @@ import {
   generateAiSpotterControlsSvg,
   SPOTTER_GLOBAL_KEYS,
   SPOTTER_ICONS,
-  SPOTTER_LABELS,
+  SPOTTER_TITLES,
 } from "./ai-spotter-controls.js";
 
 const { mockTapBinding } = vi.hoisted(() => ({
@@ -85,17 +85,24 @@ vi.mock("@iracedeck/deck-core", () => ({
     startRole: vi.fn().mockResolvedValue(true),
     stopRole: vi.fn().mockResolvedValue(true),
   })),
+  getGlobalTitleSettings: vi.fn(() => ({})),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
-  renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
-    let result = template;
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
 
-    for (const [key, value] of Object.entries(data)) {
-      result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
-    }
-
-    return result;
-  }),
-  svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
 }));
 
 /** Create a minimal fake event with the given action ID and settings. */
@@ -167,25 +174,25 @@ describe("AiSpotterControls", () => {
     });
   });
 
-  describe("SPOTTER_LABELS", () => {
-    it("should have correct subLabels for all controls", () => {
-      expect(SPOTTER_LABELS["damage-report"].subLabel).toBe("REPORT");
-      expect(SPOTTER_LABELS["weather-report"].subLabel).toBe("REPORT");
-      expect(SPOTTER_LABELS["toggle-report-laps"].subLabel).toBe("REPORT");
-      expect(SPOTTER_LABELS["announce-leader"].subLabel).toBe("SPOTTER");
-      expect(SPOTTER_LABELS["louder"].subLabel).toBe("SPOTTER");
-      expect(SPOTTER_LABELS["quieter"].subLabel).toBe("SPOTTER");
-      expect(SPOTTER_LABELS["silence"].subLabel).toBe("SPOTTER");
+  describe("SPOTTER_TITLES", () => {
+    it("should have correct first-line labels (subLabel) for all controls", () => {
+      expect(SPOTTER_TITLES["damage-report"]).toContain("REPORT");
+      expect(SPOTTER_TITLES["weather-report"]).toContain("REPORT");
+      expect(SPOTTER_TITLES["toggle-report-laps"]).toContain("REPORT");
+      expect(SPOTTER_TITLES["announce-leader"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["louder"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["quieter"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["silence"]).toContain("SPOTTER");
     });
 
-    it("should have correct mainLabels", () => {
-      expect(SPOTTER_LABELS["damage-report"].mainLabel).toBe("DAMAGE");
-      expect(SPOTTER_LABELS["weather-report"].mainLabel).toBe("WEATHER");
-      expect(SPOTTER_LABELS["toggle-report-laps"].mainLabel).toBe("LAPS");
-      expect(SPOTTER_LABELS["announce-leader"].mainLabel).toBe("LEADER");
-      expect(SPOTTER_LABELS["louder"].mainLabel).toBe("LOUDER");
-      expect(SPOTTER_LABELS["quieter"].mainLabel).toBe("QUIETER");
-      expect(SPOTTER_LABELS["silence"].mainLabel).toBe("SILENCE");
+    it("should have correct second-line labels (mainLabel) for all controls", () => {
+      expect(SPOTTER_TITLES["damage-report"]).toContain("DAMAGE");
+      expect(SPOTTER_TITLES["weather-report"]).toContain("WEATHER");
+      expect(SPOTTER_TITLES["toggle-report-laps"]).toContain("LAPS");
+      expect(SPOTTER_TITLES["announce-leader"]).toContain("LEADER");
+      expect(SPOTTER_TITLES["louder"]).toContain("LOUDER");
+      expect(SPOTTER_TITLES["quieter"]).toContain("QUIETER");
+      expect(SPOTTER_TITLES["silence"]).toContain("SILENCE");
     });
   });
 
@@ -242,12 +249,14 @@ describe("AiSpotterControls", () => {
     });
 
     it("should include correct labels for all controls", () => {
-      for (const [control, labels] of Object.entries(SPOTTER_LABELS)) {
+      for (const [control, titleText] of Object.entries(SPOTTER_TITLES)) {
         const result = generateAiSpotterControlsSvg({ control: control as any });
         const decoded = decodeURIComponent(result);
+        const lines = titleText.split("\n");
 
-        expect(decoded).toContain(labels.mainLabel);
-        expect(decoded).toContain(labels.subLabel);
+        for (const line of lines) {
+          expect(decoded).toContain(line);
+        }
       }
     });
   });

@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateTelemetryDisplaySvg, generateValueContent } from "./telemetry-display.js";
 
 vi.mock("../../icons/telemetry-display.svg", () => ({
-  default:
-    '<svg xmlns="http://www.w3.org/2000/svg">{{backgroundColor}} {{titleColor}} {{titleLabel}} {{valueContent}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">{{backgroundColor}} {{titleContent}} {{valueContent}}</svg>',
 }));
 
 vi.mock("@iracedeck/iracing-sdk", () => ({
@@ -41,6 +40,21 @@ vi.mock("@iracedeck/deck-core", () => ({
   escapeXml: vi.fn((str: string) => str),
   getGlobalColors: vi.fn(() => ({})),
   LogLevel: { Info: 2 },
+  generateTitleText: vi.fn(({ text, fill }: { text: string; fill: string }) => {
+    if (!text) return "";
+
+    return `<text fill="${fill}">${text}</text>`;
+  }),
+  getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
   resolveIconColors: vi.fn((_svg: string, _global: unknown, overrides: Record<string, string> | undefined) => ({
     backgroundColor: overrides?.backgroundColor || "#2a3444",
     textColor: overrides?.textColor || "#ffffff",

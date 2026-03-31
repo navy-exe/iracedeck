@@ -135,6 +135,23 @@ vi.mock("@iracedeck/deck-core", () => ({
 
     return liters * 0.264172;
   }),
+  getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
+
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
   resolveIconColors: vi.fn((_svg: string, _global: unknown, _overrides: unknown) => ({
     graphic1Color: "#ffffff",
   })),
