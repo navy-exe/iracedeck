@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import masterMuteIconSvg from "@iracedeck/icons/audio-controls/master-mute.svg";
 import masterVolumeDownIconSvg from "@iracedeck/icons/audio-controls/master-volume-down.svg";
@@ -38,19 +39,15 @@ const AUDIO_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each category + action combination.
+ * Title text for each category + action combination (format: "subLabel\nmainLabel")
  */
-const AUDIO_CONTROLS_LABELS: Record<AudioCategory, Record<AudioAction, { mainLabel: string; subLabel: string }>> = {
-  "voice-chat": {
-    "volume-up": { mainLabel: "VOICE", subLabel: "VOL UP" },
-    "volume-down": { mainLabel: "VOICE", subLabel: "VOL DOWN" },
-    mute: { mainLabel: "VOICE", subLabel: "MUTE" },
-  },
-  master: {
-    "volume-up": { mainLabel: "MASTER", subLabel: "VOL UP" },
-    "volume-down": { mainLabel: "MASTER", subLabel: "VOL DOWN" },
-    mute: { mainLabel: "MASTER", subLabel: "VOLUME" },
-  },
+const AUDIO_CONTROLS_TITLES: Record<string, string> = {
+  "voice-chat-volume-up": "VOL UP\nVOICE",
+  "voice-chat-volume-down": "VOL DOWN\nVOICE",
+  "voice-chat-mute": "MUTE\nVOICE",
+  "master-volume-up": "VOL UP\nMASTER",
+  "master-volume-down": "VOL DOWN\nMASTER",
+  "master-mute": "VOLUME\nMASTER",
 };
 
 /**
@@ -86,12 +83,13 @@ export function generateAudioControlsSvg(settings: AudioControlsSettings): strin
 
   const iconKey = `${category}-${effectiveAction}`;
   const iconSvg = AUDIO_ICONS[iconKey] || AUDIO_ICONS["voice-chat-volume-up"];
-  const labels = AUDIO_CONTROLS_LABELS[category][effectiveAction];
+  const defaultTitle =
+    AUDIO_CONTROLS_TITLES[`${category}-${audioAction}`] || AUDIO_CONTROLS_TITLES[iconKey] || "AUDIO\nCONTROLS";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, { mainLabel: labels.mainLabel, subLabel: labels.subLabel, ...colors });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
