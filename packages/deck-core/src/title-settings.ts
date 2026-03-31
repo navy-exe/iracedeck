@@ -1,4 +1,5 @@
 import type { TitleOverrides } from "./common-settings.js";
+import { getGlobalSettings } from "./global-settings.js";
 import { extractGraphicContent, ICON_BASE_TEMPLATE } from "./icon-base.js";
 import { escapeXml, parseIconTitleDefault, renderIconTemplate } from "./icon-template.js";
 import { svgToDataUri } from "./overlay-utils.js";
@@ -115,6 +116,71 @@ function calculateYPositions(
   }
 
   return positions;
+}
+
+/**
+ * Reads plugin-level global title settings from the global settings store.
+ * Keys are flat with a `title` prefix (e.g., `titleFontSize`, `titleBold`).
+ */
+export function getGlobalTitleSettings(): GlobalTitleSettings {
+  const settings = getGlobalSettings() as Record<string, unknown>;
+  const result: GlobalTitleSettings = {};
+
+  const bool = (key: string): boolean | undefined => {
+    const val = settings[key];
+
+    if (val === true || val === "true") return true;
+
+    if (val === false || val === "false") return false;
+
+    return undefined;
+  };
+
+  const num = (key: string): number | undefined => {
+    const val = settings[key];
+
+    if (typeof val === "number") return val;
+
+    if (typeof val === "string" && val.length > 0) {
+      const n = Number(val);
+
+      return Number.isFinite(n) ? n : undefined;
+    }
+
+    return undefined;
+  };
+
+  const str = (key: string): string | undefined => {
+    const val = settings[key];
+
+    return typeof val === "string" && val.length > 0 ? val : undefined;
+  };
+
+  const showTitle = bool("titleShowTitle");
+
+  if (showTitle !== undefined) result.showTitle = showTitle;
+
+  const showGraphics = bool("titleShowGraphics");
+
+  if (showGraphics !== undefined) result.showGraphics = showGraphics;
+
+  const bold = bool("titleBold");
+
+  if (bold !== undefined) result.bold = bold;
+
+  const fontSize = num("titleFontSize");
+
+  if (fontSize !== undefined) result.fontSize = fontSize;
+
+  const position = str("titlePosition") as GlobalTitleSettings["position"];
+
+  if (position !== undefined) result.position = position;
+
+  const customPosition = num("titleCustomPosition");
+
+  if (customPosition !== undefined) result.customPosition = customPosition;
+
+  return result;
 }
 
 /**

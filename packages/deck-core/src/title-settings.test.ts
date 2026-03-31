@@ -1,13 +1,23 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { TitleOverrides } from "./common-settings.js";
-import { assembleIcon, generateTitleText, resolveTitleSettings } from "./title-settings.js";
+import { getGlobalSettings } from "./global-settings.js";
+import type { GlobalSettings } from "./global-settings.js";
+import { assembleIcon, generateTitleText, getGlobalTitleSettings, resolveTitleSettings } from "./title-settings.js";
 import type { GlobalTitleSettings } from "./title-settings.js";
+
+vi.mock("./global-settings.js", () => ({
+  getGlobalSettings: vi.fn(() => ({})),
+}));
 
 const GRAPHIC_WITH_TITLE = `<svg><desc>{"colors":{},"title":{"text":"TOGGLE\\nLAP TIMING"}}</desc></svg>`;
 const GRAPHIC_NO_TITLE = `<svg><desc>{"colors":{}}</desc></svg>`;
 
 const MOCK_GRAPHIC = `<svg><desc>{"colors":{"backgroundColor":"#2a3444","textColor":"#ffffff"},"title":{"text":"TOGGLE\\nLAP TIMING"}}</desc><rect x="22" y="12" width="100" height="80" fill="{{graphic1Color}}"/></svg>`;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("resolveTitleSettings", () => {
   it("should return defaults when no overrides", () => {
@@ -275,5 +285,42 @@ describe("assembleIcon", () => {
     const svg = decodeDataUri(result);
     expect(svg).not.toContain("TOGGLE");
     expect(svg).toContain('width="100"');
+  });
+});
+
+describe("getGlobalTitleSettings", () => {
+  it("should return empty object when no global title settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = getGlobalTitleSettings();
+    expect(result).toEqual({});
+  });
+
+  it("should extract title settings from global settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      titleFontSize: 24,
+      titleBold: true,
+      titlePosition: "middle",
+      titleShowTitle: false,
+      titleShowGraphics: true,
+      titleCustomPosition: -10,
+    } as unknown as GlobalSettings);
+    const result = getGlobalTitleSettings();
+    expect(result).toEqual({
+      fontSize: 24,
+      bold: true,
+      position: "middle",
+      showTitle: false,
+      showGraphics: true,
+      customPosition: -10,
+    });
+  });
+
+  it("should ignore non-title global settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      colorBackgroundColor: "#fff",
+      titleFontSize: 20,
+    } as unknown as GlobalSettings);
+    const result = getGlobalTitleSettings();
+    expect(result).toEqual({ fontSize: 20 });
   });
 });
