@@ -1,8 +1,10 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
@@ -10,6 +12,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import clearAllCheckboxesIconSvg from "@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg";
@@ -137,15 +140,10 @@ export function generatePitQuickActionsSvg(
   // Static mode: clear-all-checkboxes (no telemetry)
   if (!TELEMETRY_AWARE_ACTIONS.has(actionType)) {
     const iconSvg = STATIC_ACTION_ICONS[actionType] ?? STATIC_ACTION_ICONS["clear-all-checkboxes"]!;
-    const labels = PIT_QUICK_ACTION_LABELS[actionType] || PIT_QUICK_ACTION_LABELS["clear-all-checkboxes"];
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-    const svg = renderIconTemplate(iconSvg, {
-      mainLabel: labels.mainLabel,
-      subLabel: labels.subLabel,
-      ...colors,
-    });
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PIT\nCLEAR ALL");
 
-    return svgToDataUri(svg);
+    return assembleIcon({ graphicSvg: iconSvg, colors, title });
   }
 
   // Dynamic telemetry-driven modes

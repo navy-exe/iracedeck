@@ -1,7 +1,9 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   getKeyboard,
   getSDK,
   type IDeckDialDownEvent,
@@ -13,6 +15,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import enterCarIcon from "@iracedeck/icons/car-control/enter-car.svg";
@@ -75,11 +78,20 @@ const ENTER_EXIT_TOW_ICONS: Record<EnterExitTowState, string> = {
   tow: towIcon,
 };
 
-const ENTER_EXIT_TOW_LABELS: Record<EnterExitTowState, { line1: string; line2: string }> = {
-  "enter-car": { line1: "DRIVE", line2: "" },
-  "exit-car": { line1: "EXIT", line2: "" },
-  "reset-to-pits": { line1: "RESET", line2: "" },
-  tow: { line1: "TOW", line2: "" },
+const ENTER_EXIT_TOW_TITLES: Record<EnterExitTowState, string> = {
+  "enter-car": "DRIVE",
+  "exit-car": "EXIT",
+  "reset-to-pits": "RESET",
+  tow: "TOW",
+};
+
+const CAR_CONTROL_STATIC_TITLES: Partial<Record<CarControlType, string>> = {
+  starter: "ENGINE\nSTART",
+  ignition: "ON/OFF\nIGNITION",
+  "pause-sim": "SIM\nPAUSE",
+  "headlight-flash": "FLASH\nHEADLIGHT",
+  "tear-off-visor": "VISOR\nTEAR OFF",
+  escape: "ESCAPE",
 };
 
 const DEFAULT_PIT_SPEED = 80;
@@ -355,30 +367,22 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   if (control === "enter-exit-tow") {
     const towState = telemetryState?.enterExitTowState ?? "enter-car";
     const iconSvg = ENTER_EXIT_TOW_ICONS[towState];
-    const labels = ENTER_EXIT_TOW_LABELS[towState];
+    const defaultTitle = ENTER_EXIT_TOW_TITLES[towState];
 
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-    const svg = renderIconTemplate(iconSvg, {
-      mainLabel: labels.line1,
-      subLabel: labels.line2,
-      ...colors,
-    });
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-    return svgToDataUri(svg);
+    return assembleIcon({ graphicSvg: iconSvg, colors, title });
   }
 
   // Static modes use standalone SVGs from @iracedeck/icons
   const iconSvg = STATIC_CAR_CONTROL_ICONS[control] || starterIcon;
-  const labels = CAR_CONTROL_LABELS[control] || CAR_CONTROL_LABELS["starter"];
+  const defaultTitle = CAR_CONTROL_STATIC_TITLES[control] ?? CAR_CONTROL_STATIC_TITLES["starter"]!;
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.line1,
-    subLabel: labels.line2,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 function renderDynamicIcon(settings: CarControlSettings, iconContent: string, showLabels = true): string {

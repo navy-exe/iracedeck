@@ -1,9 +1,11 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   fuelToDisplayUnits,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -13,6 +15,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import addFuelIcon from "@iracedeck/icons/fuel-service/add-fuel.svg";
@@ -275,16 +278,14 @@ export function generateFuelServiceSvg(
 
   // Static modes
   const iconSvg = FUEL_SERVICE_ICONS[mode] ?? FUEL_SERVICE_ICONS["add-fuel"]!;
-  const labels = getFuelServiceLabels(settings);
+  const { line1, line2 } = getFuelServiceLabels(settings);
+  // Convert inverted layout (line2=subLabel/top, line1=mainLabel/bottom) to title format (top\nbottom)
+  const defaultTitle = line2 ? `${line2}\n${line1}` : line1;
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.line1,
-    subLabel: labels.line2,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
