@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nRF SUSP"}}</desc>
 
-    <!-- Car top view (svgrepo, scaled to icon content area) -->
     <g transform="translate(38, 28) scale(1.447)">
       <path d="M29.395,0H17.636c-3.117,0-5.643,3.467-5.643,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759
         c3.116,0,5.644-2.527,5.644-5.644V6.584C35.037,3.467,32.511,0,29.395,0z M34.05,14.188v11.665l-2.729,0.351v-4.806L34.05,14.188z
@@ -13,14 +10,9 @@
         fill="#ffffff"/>
     </g>
 
-    <!-- Small camera rotated 90° CW, positioned at right front tire -->
     <g transform="translate(102, 42) rotate(-90) scale(1.2) translate(-12, -12.5)">
       <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 7H15.5C16.3284 7 17 7.67157 17 8.5V10.5L19.2764 9.3618C19.6088 9.19558 20 9.43733 20 9.80902V15.2785C20 15.6276 19.6513 15.8692 19.3244 15.7467L17 14.875V16.5C17 17.3284 16.3284 18 15.5 18H5.5C4.67157 18 4 17.3284 4 16.5V8.5C4 7.67157 4.67157 7 5.5 7Z"
         fill="#ffffff"/>
     </g>
 
-    <!-- Label -->
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>
