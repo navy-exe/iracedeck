@@ -26,7 +26,7 @@
 
     '<div class="ird-section-subtitle">Text</div>' +
     '<sdpi-item label="Title Text">' +
-      '<textarea data-setting="titleOverrides.titleText" rows="3" style="width:100%;box-sizing:border-box;background:#2a2a2a;color:#ffffff;border:1px solid #555;border-radius:4px;padding:4px 6px;font-size:11px;resize:vertical;" placeholder="Leave empty for default"></textarea>' +
+      '<sdpi-textarea setting="titleOverrides.titleText" rows="3"></sdpi-textarea>' +
     '</sdpi-item>' +
     '<sdpi-item label="Bold">' +
       '<sdpi-select setting="titleOverrides.bold" default="inherit">' +
@@ -36,15 +36,12 @@
       '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item label="Custom Font Size">' +
-      '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;">' +
-        '<input type="checkbox" id="title-override-fontSize-toggle" />' +
-        '<span>Override font size</span>' +
-      '</label>' +
+      '<sdpi-checkbox id="title-override-fontSize-toggle" setting="titleOverrides.fontSizeEnabled" label="Override font size"></sdpi-checkbox>' +
     '</sdpi-item>' +
     '<sdpi-item id="title-fontSize-item" class="hidden" label="Font Size">' +
       '<div style="display:flex;align-items:center;gap:6px;">' +
         '<sdpi-range id="title-override-fontSize" setting="titleOverrides.fontSize" min="5" max="100" style="flex:1;"></sdpi-range>' +
-        '<input type="number" id="title-override-fontSize-input" min="5" max="100" value="18" style="width:48px;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:11px;text-align:center;" />' +
+        '<input type="number" id="title-override-fontSize-input" min="5" max="100" style="width:48px;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:11px;text-align:center;" />' +
       '</div>' +
     '</sdpi-item>' +
 

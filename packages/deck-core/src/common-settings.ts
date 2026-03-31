@@ -53,6 +53,10 @@ export const TitleOverridesSchema = z
         return val === true || val === "true";
       })
       .optional(),
+    fontSizeEnabled: z
+      .union([z.boolean(), z.string()])
+      .transform((val) => val === true || val === "true")
+      .optional(),
     fontSize: z.preprocess(
       (val) => (val === "" || val === null || val === undefined ? undefined : val),
       z.coerce.number().min(5).max(100).optional(),

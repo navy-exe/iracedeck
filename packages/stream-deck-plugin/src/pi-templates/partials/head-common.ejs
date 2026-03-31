@@ -281,38 +281,43 @@
     }
   })();
 
-  // Font Size checkbox gate: plain HTML checkbox + sdpi-range + number input.
-  // sdpi-range handles persistence via its `setting` attribute.
-  // When unchecked: set range to "" and dispatch change → schema treats "" as undefined → inherits.
-  // When checked: show range, user interacts normally, sdpi persists the value.
+  // Font Size checkbox gate: sdpi-checkbox (persists via setting attribute) + sdpi-range.
+  // When unchecked: hide range, clear fontSize setting.
+  // When checked: show range, sdpi persists fontSize normally.
   (function() {
-    function initFontSizeToggle() {
+    async function initFontSizeToggle() {
+      await customElements.whenDefined('sdpi-checkbox');
       var toggle = document.getElementById('title-override-fontSize-toggle');
       var item = document.getElementById('title-fontSize-item');
       var range = document.getElementById('title-override-fontSize');
       var input = document.getElementById('title-override-fontSize-input');
       if (!toggle || !item || !range || !input) return;
 
+      function isChecked() {
+        // sdpi-checkbox may use .checked or .value
+        return toggle.checked === true || toggle.value === true || toggle.value === 'true';
+      }
+
       function showControls(show) {
         if (show) {
           item.classList.remove('hidden');
+          // Set default value if range is empty
+          if (!range.value || range.value === '') {
+            range.value = '18';
+            input.value = '18';
+            range.dispatchEvent(new Event('change', { bubbles: true }));
+          }
         } else {
           item.classList.add('hidden');
+          // Clear fontSize so it inherits
+          range.value = '';
+          range.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
 
-      // Checkbox toggle
+      // Listen for checkbox changes
       toggle.addEventListener('change', function() {
-        var checked = toggle.checked;
-        showControls(checked);
-        if (!checked) {
-          range.value = '';
-          range.dispatchEvent(new Event('change', { bubbles: true }));
-        } else if (!range.value || range.value === '') {
-          range.value = '18';
-          input.value = '18';
-          range.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+        showControls(isChecked());
       });
 
       // Sync range → input
@@ -327,17 +332,32 @@
         range.dispatchEvent(new Event('change', { bubbles: true }));
       });
 
-      // Initialize from stored settings
-      document.addEventListener('settingsLoaded', function(e) {
-        if (!e.detail) return;
-        var overrides = e.detail.titleOverrides;
-        var val = overrides && overrides.fontSize;
-        if (val !== undefined && val !== null && val !== '' && val !== 0) {
-          toggle.checked = true;
-          input.value = val;
-          showControls(true);
-        }
+      // Sync input: poll the range value since sdpi-range loads asynchronously
+      var settingsHaveLoaded = false;
+      document.addEventListener('settingsLoaded', function() {
+        settingsHaveLoaded = true;
+        showControls(isChecked());
       });
+
+      var syncInterval = setInterval(function() {
+        if (range.value && range.value !== '' && input.value !== range.value) {
+          input.value = range.value;
+        }
+        // Only stop polling after settings have loaded AND values are synced
+        if (settingsHaveLoaded && range.value && input.value === range.value) {
+          clearInterval(syncInterval);
+        }
+      }, 200);
+
+      // Polling fallback for checkbox state
+      var lastChecked = isChecked();
+      setInterval(function() {
+        var cur = isChecked();
+        if (cur !== lastChecked) {
+          lastChecked = cur;
+          showControls(cur);
+        }
+      }, 100);
     }
 
     if (document.readyState === 'loading') {
@@ -376,37 +396,6 @@
     if (posInput) posInput.value = '0';
   });
 
-  // Textarea persistence for titleOverrides.titleText
-  // Raw <textarea data-setting="..."> is not handled by sdpi-components, so we manually
-  // dispatch sdpi-store-value events and populate from settings on load.
-  (function() {
-    var TEXTAREA_SETTING = 'titleOverrides.titleText';
-
-    function getTextarea() {
-      return document.querySelector('[data-setting="' + TEXTAREA_SETTING + '"]');
-    }
-
-    // Populate textarea when sdpi-components has loaded settings
-    document.addEventListener('settingsLoaded', function(e) {
-      var textarea = getTextarea();
-      if (!textarea || !e.detail) return;
-      var keys = TEXTAREA_SETTING.split('.');
-      var val = e.detail;
-      for (var i = 0; i < keys.length; i++) {
-        val = val && val[keys[i]];
-      }
-      if (val !== undefined && val !== null) {
-        textarea.value = val;
-      }
-    });
-
-    // Persist textarea changes to Stream Deck settings via sdpi-store-value event
-    document.addEventListener('input', function(ev) {
-      if (!ev.target.matches('[data-setting="' + TEXTAREA_SETTING + '"]')) return;
-      ev.target.dispatchEvent(new CustomEvent('sdpi-store-value', {
-        bubbles: true,
-        detail: { key: TEXTAREA_SETTING, value: ev.target.value }
-      }));
-    });
-  })();
+  // Note: titleOverrides.titleText uses sdpi-textarea with setting attribute.
+  // Persistence is handled automatically by sdpi-components.
 </script>
