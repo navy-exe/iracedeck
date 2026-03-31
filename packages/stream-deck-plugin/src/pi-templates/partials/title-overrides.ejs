@@ -2,26 +2,26 @@
   Title Overrides Component
 
   Provides per-action overrides for Stream Deck title settings.
+  "Inherit" (default) means the field is unset and falls through to global → hardcoded defaults.
 -->
 <%- include('accordion', {
   title: 'Title Overrides',
   open: false,
   content:
-    '<sdpi-item label="Presets">' +
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
-    '<button class="ird-title-preset" data-preset="default"' +
-      ' style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#808080;">Default</button>' +
-    '<button class="ird-title-preset" data-preset="global"' +
-      ' style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#808080;">Global</button>' +
-    '</div>' +
-    '</sdpi-item>' +
-
     '<div class="ird-section-subtitle">Visibility</div>' +
     '<sdpi-item label="Show Title">' +
-      '<sdpi-checkbox setting="titleOverrides.showTitle" label="Show title text on key" default="true"></sdpi-checkbox>' +
+      '<sdpi-select setting="titleOverrides.showTitle" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item label="Show Graphics">' +
-      '<sdpi-checkbox setting="titleOverrides.showGraphics" label="Show graphics on key" default="true"></sdpi-checkbox>' +
+      '<sdpi-select setting="titleOverrides.showGraphics" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
     '</sdpi-item>' +
 
     '<div class="ird-section-subtitle">Text</div>' +
@@ -29,7 +29,11 @@
       '<textarea data-setting="titleOverrides.titleText" rows="3" style="width:100%;box-sizing:border-box;background:#2a2a2a;color:#ffffff;border:1px solid #555;border-radius:4px;padding:4px 6px;font-size:11px;resize:vertical;" placeholder="Leave empty for default"></textarea>' +
     '</sdpi-item>' +
     '<sdpi-item label="Bold">' +
-      '<sdpi-checkbox setting="titleOverrides.bold" label="Bold text" default="true"></sdpi-checkbox>' +
+      '<sdpi-select setting="titleOverrides.bold" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item label="Font Size">' +
       '<sdpi-range setting="titleOverrides.fontSize" min="5" max="50" default="18"></sdpi-range>' +
@@ -37,7 +41,8 @@
 
     '<div class="ird-section-subtitle">Position</div>' +
     '<sdpi-item label="Position">' +
-      '<sdpi-select id="title-override-position" setting="titleOverrides.position" default="bottom">' +
+      '<sdpi-select id="title-override-position" setting="titleOverrides.position" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
         '<option value="top">Top</option>' +
         '<option value="middle">Middle</option>' +
         '<option value="bottom">Bottom</option>' +

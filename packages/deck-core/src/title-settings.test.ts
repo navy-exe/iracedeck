@@ -69,6 +69,35 @@ describe("resolveTitleSettings", () => {
     const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, {}, action, "CODE\nDEFAULT");
     expect(result.titleText).toBe("CODE\nDEFAULT");
   });
+
+  it("should treat 'inherit' as unset for boolean fields (falls through to global)", () => {
+    const action = { showTitle: undefined, bold: undefined } as TitleOverrides;
+    const global: GlobalTitleSettings = { showTitle: false, bold: false };
+    const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, global, action);
+    expect(result.showTitle).toBe(false);
+    expect(result.bold).toBe(false);
+  });
+
+  it("should treat 'inherit' as unset for position (falls through to global)", () => {
+    const action = { position: undefined } as TitleOverrides;
+    const global: GlobalTitleSettings = { position: "top" };
+    const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, global, action);
+    expect(result.position).toBe("top");
+  });
+
+  it("should treat 'inherit' as unset and fall through to hardcoded defaults when no global set", () => {
+    const action = {
+      showTitle: undefined,
+      showGraphics: undefined,
+      bold: undefined,
+      position: undefined,
+    } as TitleOverrides;
+    const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, {}, action);
+    expect(result.showTitle).toBe(true);
+    expect(result.showGraphics).toBe(true);
+    expect(result.bold).toBe(true);
+    expect(result.position).toBe("bottom");
+  });
 });
 
 describe("generateTitleText", () => {

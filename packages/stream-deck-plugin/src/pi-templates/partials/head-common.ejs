@@ -173,34 +173,6 @@
     }
   });
 
-  // Title preset buttons — "default" and "global" both clear all title override fields
-  // (clearing causes the action to fall through to global/icon defaults)
-  document.addEventListener('click', function(ev) {
-    var btn = ev.target.closest('.ird-title-preset');
-    if (!btn) return;
-    var titleFields = [
-      'titleOverrides.showTitle',
-      'titleOverrides.showGraphics',
-      'titleOverrides.bold',
-      'titleOverrides.fontSize',
-      'titleOverrides.position',
-      'titleOverrides.customPosition'
-    ];
-    titleFields.forEach(function(settingKey) {
-      var el = document.querySelector('[setting="' + settingKey + '"]');
-      if (el) {
-        el.value = '';
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-    // Also clear the textarea (data-setting)
-    var textarea = document.querySelector('[data-setting="titleOverrides.titleText"]');
-    if (textarea) {
-      textarea.value = '';
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  });
-
   // Custom position visibility: per-action title position select
   (function() {
     function updateTitleCustomPosition(value) {
@@ -217,10 +189,10 @@
       await customElements.whenDefined('sdpi-select');
       var select = document.getElementById('title-override-position');
       if (!select) return;
-      updateTitleCustomPosition(select.value || 'bottom');
+      updateTitleCustomPosition(select.value || 'inherit');
       select.addEventListener('change', function(e) { updateTitleCustomPosition(e.target.value); });
       select.addEventListener('input', function(e) { updateTitleCustomPosition(e.target.value); });
-      var lastVal = select.value || 'bottom';
+      var lastVal = select.value || 'inherit';
       setInterval(function() {
         var cur = select.value;
         if (cur && cur !== lastVal) {

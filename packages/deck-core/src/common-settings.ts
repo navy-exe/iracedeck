@@ -30,19 +30,38 @@ export const TitleOverridesSchema = z
   .object({
     showTitle: z
       .union([z.boolean(), z.string()])
-      .transform((val) => val === true || val === "true")
+      .transform((val) => {
+        if (val === "inherit" || val === "") return undefined;
+
+        return val === true || val === "true";
+      })
       .optional(),
     showGraphics: z
       .union([z.boolean(), z.string()])
-      .transform((val) => val === true || val === "true")
+      .transform((val) => {
+        if (val === "inherit" || val === "") return undefined;
+
+        return val === true || val === "true";
+      })
       .optional(),
     titleText: z.string().optional(),
     bold: z
       .union([z.boolean(), z.string()])
-      .transform((val) => val === true || val === "true")
+      .transform((val) => {
+        if (val === "inherit" || val === "") return undefined;
+
+        return val === true || val === "true";
+      })
       .optional(),
     fontSize: z.coerce.number().min(5).max(50).optional(),
-    position: z.enum(["top", "middle", "bottom", "custom"]).optional(),
+    position: z
+      .union([z.enum(["top", "middle", "bottom", "custom", "inherit"]), z.string()])
+      .transform((val) => {
+        if (val === "inherit" || val === "") return undefined;
+
+        return val as "top" | "middle" | "bottom" | "custom";
+      })
+      .optional(),
     customPosition: z.coerce.number().min(-50).max(50).optional(),
   })
   .optional();
