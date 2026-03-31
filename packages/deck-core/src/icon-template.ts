@@ -58,8 +58,10 @@ export function renderIconTemplate(template: string, values: Record<string, stri
 /**
  * Parses the <desc> element from an SVG template and returns its JSON content.
  * Returns an empty object if the element is missing or its content is not valid JSON.
+ *
+ * @internal Exported for testing and use by icon-related utilities
  */
-function parseDescMetadata(svgTemplate: string): Record<string, unknown> {
+export function parseDescMetadata(svgTemplate: string): Record<string, unknown> {
   const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
 
   if (!descMatch) {
@@ -86,6 +88,25 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
   const parsed = parseDescMetadata(svgTemplate);
 
   return (parsed.colors ?? {}) as ColorSlots;
+}
+
+/**
+ * Parses the default title text from an SVG template's <desc> metadata.
+ * The <desc> element should contain JSON with a "title" object: {"title":{"text":"LINE1\\nLINE2"}}
+ *
+ * @param svgTemplate - SVG template string containing a <desc> element
+ * @returns The default title text, or undefined if not declared in metadata
+ *
+ * @internal Exported for testing and use by title-settings utilities
+ */
+export function parseIconTitleDefault(svgTemplate: string): string | undefined {
+  const meta = parseDescMetadata(svgTemplate);
+
+  if (!meta) return undefined;
+
+  const title = meta.title as { text?: string } | undefined;
+
+  return title?.text;
 }
 
 /**
