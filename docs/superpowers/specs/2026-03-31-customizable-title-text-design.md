@@ -66,7 +66,7 @@ Flat keys in global settings (matching the color pattern):
 - `titleShowGraphics` (boolean, default: true)
 - `titleBold` (boolean, default: true)
 - `titleFontSize` (number, default: 18)
-- `titlePosition` (string: "top" | "middle" | "bottom" | "custom", default: "top")
+- `titlePosition` (string: "top" | "middle" | "bottom" | "custom", default: "bottom")
 - `titleCustomPosition` (number, default: 0)
 
 No global `titleText` — each action has its own default text.
@@ -100,7 +100,7 @@ Per field, resolution order:
 
 1. Per-action override (`settings.titleOverrides.*`)
 2. Global default (`getGlobalTitleSettings().*`)
-3. Hardcoded default (true, true, 18, "top", 0, true)
+3. Hardcoded default (true, true, 18, "bottom", 0, true)
 
 Special case for `titleText`:
 
