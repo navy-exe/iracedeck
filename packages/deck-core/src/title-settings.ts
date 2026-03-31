@@ -1,5 +1,5 @@
 import type { TitleOverrides } from "./common-settings.js";
-import { parseIconTitleDefault } from "./icon-template.js";
+import { escapeXml, parseIconTitleDefault } from "./icon-template.js";
 
 export interface ResolvedTitleSettings {
   showTitle: boolean;
@@ -33,6 +33,87 @@ export { TITLE_DEFAULTS };
 
 // Ensure the TitleOverrides import is used (type-only import for future use)
 export type { TitleOverrides };
+
+export interface GenerateTitleTextOptions {
+  text: string;
+  fontSize: number;
+  bold: boolean;
+  position: "top" | "middle" | "bottom" | "custom";
+  customPosition: number;
+  fill: string;
+}
+
+export function generateTitleText(options: GenerateTitleTextOptions): string {
+  const { text, fontSize, bold, position, customPosition, fill } = options;
+
+  if (!text) return "";
+
+  const lines = text.split("\n");
+  const lineHeight = fontSize * 1.2;
+  const weight = bold ? "bold" : "normal";
+
+  const makeTextEl = (content: string, y: number): string =>
+    `<text x="72" y="${y}" text-anchor="middle" dominant-baseline="central" fill="${fill}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="${weight}">${escapeXml(content)}</text>`;
+
+  const yPositions = calculateYPositions(lines.length, fontSize, lineHeight, position, customPosition);
+
+  return lines.map((line, i) => makeTextEl(line, yPositions[i])).join("\n  ");
+}
+
+function calculateYPositions(
+  lineCount: number,
+  fontSize: number,
+  lineHeight: number,
+  position: "top" | "middle" | "bottom" | "custom",
+  customPosition: number,
+): number[] {
+  const positions: number[] = [];
+  const totalHeight = (lineCount - 1) * lineHeight;
+
+  switch (position) {
+    case "top": {
+      const startY = fontSize + 4;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+    case "middle": {
+      const centerY = 72;
+      const startY = centerY - totalHeight / 2;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+    case "bottom": {
+      const endY = 140;
+      const startY = endY - totalHeight;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+    case "custom": {
+      const centerY = 72 + customPosition;
+      const startY = centerY - totalHeight / 2;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+  }
+
+  return positions;
+}
 
 /**
  * Resolves title settings by merging per-action overrides, global settings, and defaults.

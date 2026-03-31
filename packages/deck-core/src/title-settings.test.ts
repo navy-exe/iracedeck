@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { TitleOverrides } from "./common-settings.js";
-import { resolveTitleSettings } from "./title-settings.js";
+import { generateTitleText, resolveTitleSettings } from "./title-settings.js";
 import type { GlobalTitleSettings } from "./title-settings.js";
 
 const GRAPHIC_WITH_TITLE = `<svg><desc>{"colors":{},"title":{"text":"TOGGLE\\nLAP TIMING"}}</desc></svg>`;
@@ -56,5 +56,144 @@ describe("resolveTitleSettings", () => {
     const action: TitleOverrides = { titleText: "" };
     const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, {}, action, "CODE\nDEFAULT");
     expect(result.titleText).toBe("CODE\nDEFAULT");
+  });
+});
+
+describe("generateTitleText", () => {
+  const defaults = { fill: "#ffffff" };
+
+  it("should generate single-line text at bottom position", () => {
+    const result = generateTitleText({
+      text: "NEXT",
+      fontSize: 20,
+      bold: true,
+      position: "bottom",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toContain("NEXT");
+    expect(result).toContain('font-size="20"');
+    expect(result).toContain('font-weight="bold"');
+    expect(result).toContain('y="140"');
+  });
+
+  it("should generate single-line text at top position", () => {
+    const result = generateTitleText({
+      text: "NEXT",
+      fontSize: 20,
+      bold: true,
+      position: "top",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toContain('y="24"');
+  });
+
+  it("should generate single-line text at middle position", () => {
+    const result = generateTitleText({
+      text: "NEXT",
+      fontSize: 20,
+      bold: true,
+      position: "middle",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toContain('y="72"');
+  });
+
+  it("should generate multiline text at bottom position", () => {
+    const result = generateTitleText({
+      text: "CAMERA\nNEXT",
+      fontSize: 18,
+      bold: true,
+      position: "bottom",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toContain("CAMERA");
+    expect(result).toContain("NEXT");
+    const lines = result.match(/y="(\d+\.?\d*)"/g);
+    expect(lines).toHaveLength(2);
+  });
+
+  it("should generate multiline text at top position", () => {
+    const result = generateTitleText({
+      text: "CAMERA\nNEXT",
+      fontSize: 18,
+      bold: true,
+      position: "top",
+      customPosition: 0,
+      ...defaults,
+    });
+    const lines = result.match(/y="(\d+\.?\d*)"/g);
+    expect(lines).toHaveLength(2);
+    const y1 = parseFloat(lines![0].match(/(\d+\.?\d*)/)![1]);
+    const y2 = parseFloat(lines![1].match(/(\d+\.?\d*)/)![1]);
+    expect(y1).toBeLessThan(y2);
+    expect(y1).toBe(18 + 4);
+  });
+
+  it("should use custom position as offset from middle", () => {
+    const result = generateTitleText({
+      text: "NEXT",
+      fontSize: 20,
+      bold: true,
+      position: "custom",
+      customPosition: -30,
+      ...defaults,
+    });
+    expect(result).toContain('y="42"');
+  });
+
+  it("should render normal weight when bold is false", () => {
+    const result = generateTitleText({
+      text: "NEXT",
+      fontSize: 20,
+      bold: false,
+      position: "bottom",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toContain('font-weight="normal"');
+  });
+
+  it("should return empty string for empty text", () => {
+    const result = generateTitleText({
+      text: "",
+      fontSize: 20,
+      bold: true,
+      position: "bottom",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toBe("");
+  });
+
+  it("should escape XML entities in text", () => {
+    const result = generateTitleText({
+      text: "A&B",
+      fontSize: 20,
+      bold: true,
+      position: "bottom",
+      customPosition: 0,
+      ...defaults,
+    });
+    expect(result).toContain("A&amp;B");
+  });
+
+  it("should handle three lines at middle position", () => {
+    const result = generateTitleText({
+      text: "LINE1\nLINE2\nLINE3",
+      fontSize: 16,
+      bold: true,
+      position: "middle",
+      customPosition: 0,
+      ...defaults,
+    });
+    const lines = result.match(/y="(\d+\.?\d*)"/g);
+    expect(lines).toHaveLength(3);
+    const ys = lines!.map((l) => parseFloat(l.match(/(\d+\.?\d*)/)![1]));
+    const avg = ys.reduce((a, b) => a + b, 0) / ys.length;
+    expect(Math.abs(avg - 72)).toBeLessThan(2);
   });
 });
