@@ -2,9 +2,12 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  extractGraphicContent,
+  generateTitleText,
   getCommands,
   getGlobalColors,
   getGlobalTitleSettings,
+  ICON_BASE_TEMPLATE,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -257,20 +260,58 @@ export function generateReplayControlSvg(
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
 
-  // speed-display: dynamic template variable (speedText), keep renderIconTemplate
+  // speed-display: dynamic template variable (speedText) embedded in the graphic snippet
   if (mode === "speed-display") {
     const speed = replaySpeed ?? 0;
     const slowMo = replaySlowMotion ?? false;
-    const svg = renderIconTemplate(iconSvg, { speedText: formatSpeedDisplay(speed, slowMo), ...colors });
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+    const rawGraphic = extractGraphicContent(iconSvg);
+    const graphicContent = title.showGraphics
+      ? renderIconTemplate(rawGraphic, { speedText: formatSpeedDisplay(speed, slowMo), ...colors })
+      : "";
+    const titleContent = title.showTitle
+      ? generateTitleText({
+          text: title.titleText,
+          fontSize: title.fontSize,
+          bold: title.bold,
+          position: title.position,
+          customPosition: title.customPosition,
+          fill: colors.textColor ?? "#ffffff",
+        })
+      : "";
+    const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+      backgroundColor: colors.backgroundColor ?? "#000000",
+      graphicContent,
+      titleContent,
+    });
 
     return svgToDataUri(svg);
   }
 
-  // set-speed: dynamic template variable (needleAngle), keep renderIconTemplate
+  // set-speed: dynamic template variable (needleAngle) embedded in the graphic snippet
   if (mode === "set-speed" && settings.speed) {
     const mainLabel = formatSetSpeedLabel(settings.speed);
     const needleAngle = String(calculateNeedleAngle(settings.speed));
-    const svg = renderIconTemplate(iconSvg, { mainLabel, subLabel: "", needleAngle, ...colors });
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+    const rawGraphic = extractGraphicContent(iconSvg);
+    const graphicContent = title.showGraphics
+      ? renderIconTemplate(rawGraphic, { mainLabel, needleAngle, ...colors })
+      : "";
+    const titleContent = title.showTitle
+      ? generateTitleText({
+          text: title.titleText,
+          fontSize: title.fontSize,
+          bold: title.bold,
+          position: title.position,
+          customPosition: title.customPosition,
+          fill: colors.textColor ?? "#ffffff",
+        })
+      : "";
+    const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+      backgroundColor: colors.backgroundColor ?? "#000000",
+      graphicContent,
+      titleContent,
+    });
 
     return svgToDataUri(svg);
   }

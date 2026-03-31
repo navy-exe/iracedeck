@@ -153,6 +153,15 @@ vi.mock("@iracedeck/deck-core", () => ({
       return `data:image/svg+xml,${encoded}`;
     },
   ),
+  extractGraphicContent: vi.fn((svg: string) =>
+    svg
+      .replace(/<svg[^>]*>/, "")
+      .replace(/<\/svg>\s*$/, "")
+      .replace(/<desc>[\s\S]*?<\/desc>/, "")
+      .trim(),
+  ),
+  generateTitleText: vi.fn(() => ""),
+  ICON_BASE_TEMPLATE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>{{graphicContent}}{{titleContent}}</svg>`,
   resolveIconColors: vi.fn((_svg: string, _global: unknown, _overrides: unknown) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;

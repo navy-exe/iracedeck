@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  extractGraphicContent,
   getCommands,
   getGlobalColors,
   getGlobalSettings,
@@ -313,15 +314,21 @@ export function generateCameraControlsSvg(
 function generateCameraSelectSvg(
   groupName: string,
   colorOverrides?: Partial<CommonSettings>["colorOverrides"],
+  titleOverrides?: Partial<CommonSettings>["titleOverrides"],
 ): string {
   const iconSvg = CAMERA_SELECT_ICONS[groupName];
 
   if (!iconSvg) return generateCameraControlsSvg({ target: "cycle-camera", direction: "next" });
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
-  const svg = renderIconTemplate(iconSvg, { mainLabel: groupName.toUpperCase(), ...colors });
+  const title = resolveTitleSettings(
+    iconSvg,
+    getGlobalTitleSettings(),
+    titleOverrides,
+    `CAMERA\n${groupName.toUpperCase()}`,
+  );
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
@@ -477,10 +484,10 @@ export function generateCycleCameraGridSvg(
   if (groupsWithIcons.length === 0) {
     const iconSvg = CYCLE_ICONS["cycle-camera"][direction];
     const titleText = CYCLE_TITLES["cycle-camera"][direction];
-    const [subLabel = "", mainLabel = ""] = titleText.split("\n");
     const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), undefined, titleText);
 
-    return svgToDataUri(renderIconTemplate(iconSvg, { mainLabel, subLabel, ...colors }));
+    return assembleIcon({ graphicSvg: iconSvg, colors, title });
   }
 
   const displayGroups = groupsWithIcons.slice(0, 6);
@@ -499,8 +506,8 @@ export function generateCycleCameraGridSvg(
     const groupName = displayGroups[i];
     const iconSvg = CAMERA_SELECT_ICONS[groupName];
     const artColors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
-    const rendered = renderIconTemplate(iconSvg, { mainLabel: "", ...artColors });
-    const artwork = extractIconArtwork(rendered);
+    const rawGraphic = extractGraphicContent(iconSvg);
+    const artwork = renderIconTemplate(rawGraphic, artColors);
     const pos = positions[i];
 
     const scale = pos.size / 144;
@@ -937,9 +944,11 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     if (this.lastDisplayedGroup.get(contextId) === nextEntry.groupName) return;
 
     this.lastDisplayedGroup.set(contextId, nextEntry.groupName);
-    const svgDataUri = generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides);
+    const svgDataUri = generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides, settings.titleOverrides);
     await this.updateKeyImage(contextId, svgDataUri);
-    this.setRegenerateCallback(contextId, () => generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides));
+    this.setRegenerateCallback(contextId, () =>
+      generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides, settings.titleOverrides),
+    );
   }
 
   private async updateDisplay(
