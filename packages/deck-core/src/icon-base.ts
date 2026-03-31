@@ -26,8 +26,13 @@ export function extractGraphicContent(svgTemplate: string): string {
   content = content.replace(/<text[^>]*>\{\{subLabel\}\}<\/text>/g, "");
 
   // Remove <g filter="url(#activity-state)"> wrapper if present (keep inner content)
-  content = content.replace(/<g\s+filter="url\(#activity-state\)"\s*>/, "");
-  content = content.replace(/<\/g>\s*$/, "");
+  // Only strip the closing </g> if the opening <g filter> was found and removed
+  const hadActivityState = /<g\s+filter="url\(#activity-state\)"\s*>/.test(content);
+
+  if (hadActivityState) {
+    content = content.replace(/<g\s+filter="url\(#activity-state\)"\s*>/, "");
+    content = content.replace(/<\/g>\s*$/, "");
+  }
 
   // Remove <defs> and <filter> elements (activity-state filter is in base now)
   content = content.replace(/<defs>[\s\S]*?<\/defs>/, "");
