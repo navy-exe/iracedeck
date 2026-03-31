@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import type { TitleOverrides } from "./common-settings.js";
-import { generateTitleText, resolveTitleSettings } from "./title-settings.js";
+import { assembleIcon, generateTitleText, resolveTitleSettings } from "./title-settings.js";
 import type { GlobalTitleSettings } from "./title-settings.js";
 
 const GRAPHIC_WITH_TITLE = `<svg><desc>{"colors":{},"title":{"text":"TOGGLE\\nLAP TIMING"}}</desc></svg>`;
 const GRAPHIC_NO_TITLE = `<svg><desc>{"colors":{}}</desc></svg>`;
+
+const MOCK_GRAPHIC = `<svg><desc>{"colors":{"backgroundColor":"#2a3444","textColor":"#ffffff"},"title":{"text":"TOGGLE\\nLAP TIMING"}}</desc><rect x="22" y="12" width="100" height="80" fill="{{graphic1Color}}"/></svg>`;
 
 describe("resolveTitleSettings", () => {
   it("should return defaults when no overrides", () => {
@@ -195,5 +197,83 @@ describe("generateTitleText", () => {
     const ys = lines!.map((l) => parseFloat(l.match(/(\d+\.?\d*)/)![1]));
     const avg = ys.reduce((a, b) => a + b, 0) / ys.length;
     expect(Math.abs(avg - 72)).toBeLessThan(2);
+  });
+});
+
+function decodeDataUri(dataUri: string): string {
+  const base64Match = dataUri.match(/^data:image\/svg\+xml;base64,(.+)$/);
+
+  if (base64Match) {
+    return Buffer.from(base64Match[1], "base64").toString("utf-8");
+  }
+
+  // URL-encoded fallback
+  const plainMatch = dataUri.match(/^data:image\/svg\+xml,(.+)$/);
+
+  if (plainMatch) {
+    return decodeURIComponent(plainMatch[1]);
+  }
+
+  return dataUri;
+}
+
+describe("assembleIcon", () => {
+  it("should assemble a complete icon with graphics and title", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff", graphic1Color: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TOGGLE\nLAP TIMING",
+        bold: true,
+        fontSize: 18,
+        position: "bottom",
+        customPosition: 0,
+      },
+    });
+    const svg = decodeDataUri(result);
+    expect(result).toContain("data:image/svg+xml");
+    expect(svg).toContain("TOGGLE");
+    expect(svg).toContain("LAP TIMING");
+    expect(svg).toContain("#2a3444");
+  });
+
+  it("should hide graphics when showGraphics is false", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff", graphic1Color: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: false,
+        titleText: "TOGGLE\nLAP TIMING",
+        bold: true,
+        fontSize: 18,
+        position: "bottom",
+        customPosition: 0,
+      },
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).toContain("TOGGLE");
+    expect(svg).not.toContain('width="100"');
+  });
+
+  it("should hide title when showTitle is false", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff", graphic1Color: "#ffffff" },
+      title: {
+        showTitle: false,
+        showGraphics: true,
+        titleText: "TOGGLE\nLAP TIMING",
+        bold: true,
+        fontSize: 18,
+        position: "bottom",
+        customPosition: 0,
+      },
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).not.toContain("TOGGLE");
+    expect(svg).toContain('width="100"');
   });
 });

@@ -1,5 +1,7 @@
 import type { TitleOverrides } from "./common-settings.js";
-import { escapeXml, parseIconTitleDefault } from "./icon-template.js";
+import { extractGraphicContent, ICON_BASE_TEMPLATE } from "./icon-base.js";
+import { escapeXml, parseIconTitleDefault, renderIconTemplate } from "./icon-template.js";
+import { svgToDataUri } from "./overlay-utils.js";
 
 export interface ResolvedTitleSettings {
   showTitle: boolean;
@@ -157,4 +159,49 @@ export function resolveTitleSettings(
       TITLE_DEFAULTS.customPosition,
     ),
   };
+}
+
+/**
+ * Assembles a final icon data URI from a graphic SVG, resolved colors, and resolved title settings.
+ *
+ * Steps:
+ * 1. Extracts graphic artwork from the SVG (strips wrapper, background, labels)
+ * 2. Colorizes the graphic with renderIconTemplate
+ * 3. Generates title text with generateTitleText
+ * 4. Fills the base template (background + graphic + title)
+ * 5. Converts to a data URI
+ *
+ * @param options.graphicSvg - Source SVG template with <desc> metadata
+ * @param options.colors - Resolved color values for all slots
+ * @param options.title - Fully resolved title settings
+ * @returns SVG data URI string
+ */
+export function assembleIcon(options: {
+  graphicSvg: string;
+  colors: Record<string, string>;
+  title: ResolvedTitleSettings;
+}): string {
+  const { graphicSvg, colors, title } = options;
+
+  const rawGraphic = extractGraphicContent(graphicSvg);
+  const graphicContent = title.showGraphics ? renderIconTemplate(rawGraphic, colors) : "";
+
+  const titleContent = title.showTitle
+    ? generateTitleText({
+        text: title.titleText,
+        fontSize: title.fontSize,
+        bold: title.bold,
+        position: title.position,
+        customPosition: title.customPosition,
+        fill: colors.textColor ?? "#ffffff",
+      })
+    : "";
+
+  const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+    backgroundColor: colors.backgroundColor ?? "#000000",
+    graphicContent,
+    titleContent,
+  });
+
+  return svgToDataUri(svg);
 }
