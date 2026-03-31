@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import differentialEntryDecreaseIconSvg from "@iracedeck/icons/setup-chassis/differential-entry-decrease.svg";
 import differentialEntryIncreaseIconSvg from "@iracedeck/icons/setup-chassis/differential-entry-increase.svg";
@@ -74,36 +75,35 @@ const SETUP_CHASSIS_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
- * mainLabel = primary (bold, top), subLabel = secondary (subdued, bottom).
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_CHASSIS_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "differential-preload-increase": { mainLabel: "DIFF PRELOAD", subLabel: "INCREASE" },
-  "differential-preload-decrease": { mainLabel: "DIFF PRELOAD", subLabel: "DECREASE" },
-  "differential-entry-increase": { mainLabel: "DIFF ENTRY", subLabel: "INCREASE" },
-  "differential-entry-decrease": { mainLabel: "DIFF ENTRY", subLabel: "DECREASE" },
-  "differential-middle-increase": { mainLabel: "DIFF MIDDLE", subLabel: "INCREASE" },
-  "differential-middle-decrease": { mainLabel: "DIFF MIDDLE", subLabel: "DECREASE" },
-  "differential-exit-increase": { mainLabel: "DIFF EXIT", subLabel: "INCREASE" },
-  "differential-exit-decrease": { mainLabel: "DIFF EXIT", subLabel: "DECREASE" },
-  "front-arb-increase": { mainLabel: "FRONT ARB", subLabel: "INCREASE" },
-  "front-arb-decrease": { mainLabel: "FRONT ARB", subLabel: "DECREASE" },
-  "rear-arb-increase": { mainLabel: "REAR ARB", subLabel: "INCREASE" },
-  "rear-arb-decrease": { mainLabel: "REAR ARB", subLabel: "DECREASE" },
-  "left-spring-increase": { mainLabel: "LEFT SPRING", subLabel: "INCREASE" },
-  "left-spring-decrease": { mainLabel: "LEFT SPRING", subLabel: "DECREASE" },
-  "right-spring-increase": { mainLabel: "RIGHT SPRING", subLabel: "INCREASE" },
-  "right-spring-decrease": { mainLabel: "RIGHT SPRING", subLabel: "DECREASE" },
-  "lf-shock-increase": { mainLabel: "LF SHOCK", subLabel: "INCREASE" },
-  "lf-shock-decrease": { mainLabel: "LF SHOCK", subLabel: "DECREASE" },
-  "rf-shock-increase": { mainLabel: "RF SHOCK", subLabel: "INCREASE" },
-  "rf-shock-decrease": { mainLabel: "RF SHOCK", subLabel: "DECREASE" },
-  "lr-shock-increase": { mainLabel: "LR SHOCK", subLabel: "INCREASE" },
-  "lr-shock-decrease": { mainLabel: "LR SHOCK", subLabel: "DECREASE" },
-  "rr-shock-increase": { mainLabel: "RR SHOCK", subLabel: "INCREASE" },
-  "rr-shock-decrease": { mainLabel: "RR SHOCK", subLabel: "DECREASE" },
-  "power-steering-increase": { mainLabel: "PWR STEER", subLabel: "INCREASE" },
-  "power-steering-decrease": { mainLabel: "PWR STEER", subLabel: "DECREASE" },
+const SETUP_CHASSIS_TITLES: Record<string, string> = {
+  "differential-preload-increase": "INCREASE\nDIFF PRELOAD",
+  "differential-preload-decrease": "DECREASE\nDIFF PRELOAD",
+  "differential-entry-increase": "INCREASE\nDIFF ENTRY",
+  "differential-entry-decrease": "DECREASE\nDIFF ENTRY",
+  "differential-middle-increase": "INCREASE\nDIFF MIDDLE",
+  "differential-middle-decrease": "DECREASE\nDIFF MIDDLE",
+  "differential-exit-increase": "INCREASE\nDIFF EXIT",
+  "differential-exit-decrease": "DECREASE\nDIFF EXIT",
+  "front-arb-increase": "INCREASE\nFRONT ARB",
+  "front-arb-decrease": "DECREASE\nFRONT ARB",
+  "rear-arb-increase": "INCREASE\nREAR ARB",
+  "rear-arb-decrease": "DECREASE\nREAR ARB",
+  "left-spring-increase": "INCREASE\nLEFT SPRING",
+  "left-spring-decrease": "DECREASE\nLEFT SPRING",
+  "right-spring-increase": "INCREASE\nRIGHT SPRING",
+  "right-spring-decrease": "DECREASE\nRIGHT SPRING",
+  "lf-shock-increase": "INCREASE\nLF SHOCK",
+  "lf-shock-decrease": "DECREASE\nLF SHOCK",
+  "rf-shock-increase": "INCREASE\nRF SHOCK",
+  "rf-shock-decrease": "DECREASE\nRF SHOCK",
+  "lr-shock-increase": "INCREASE\nLR SHOCK",
+  "lr-shock-decrease": "DECREASE\nLR SHOCK",
+  "rr-shock-increase": "INCREASE\nRR SHOCK",
+  "rr-shock-decrease": "DECREASE\nRR SHOCK",
+  "power-steering-increase": "INCREASE\nPWR STEER",
+  "power-steering-decrease": "DECREASE\nPWR STEER",
 };
 
 /**
@@ -174,16 +174,12 @@ export function generateSetupChassisSvg(settings: SetupChassisSettings): string 
   const key = `${setting}-${direction}`;
 
   const iconSvg = SETUP_CHASSIS_ICONS[key] || SETUP_CHASSIS_ICONS["differential-preload-increase"];
-  const labels = SETUP_CHASSIS_LABELS[key] || { mainLabel: "CHASSIS", subLabel: "SETUP" };
+  const defaultTitle = SETUP_CHASSIS_TITLES[key] || "SETUP\nCHASSIS";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

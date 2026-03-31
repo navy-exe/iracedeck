@@ -1,7 +1,9 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDialUpEvent,
@@ -10,9 +12,8 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import hysBoostIconSvg from "@iracedeck/icons/setup-hybrid/hys-boost.svg";
 import hysNoBoostIconSvg from "@iracedeck/icons/setup-hybrid/hys-no-boost.svg";
@@ -61,18 +62,18 @@ const SETUP_HYBRID_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_HYBRID_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "mguk-regen-gain-increase": { mainLabel: "REGEN GAIN", subLabel: "INCREASE" },
-  "mguk-regen-gain-decrease": { mainLabel: "REGEN GAIN", subLabel: "DECREASE" },
-  "mguk-deploy-mode-increase": { mainLabel: "DEPLOY MODE", subLabel: "INCREASE" },
-  "mguk-deploy-mode-decrease": { mainLabel: "DEPLOY MODE", subLabel: "DECREASE" },
-  "mguk-fixed-deploy-increase": { mainLabel: "FIXED DEPLOY", subLabel: "INCREASE" },
-  "mguk-fixed-deploy-decrease": { mainLabel: "FIXED DEPLOY", subLabel: "DECREASE" },
-  "hys-boost": { mainLabel: "HYS", subLabel: "BOOST" },
-  "hys-regen": { mainLabel: "HYS", subLabel: "REGEN" },
-  "hys-no-boost": { mainLabel: "HYS", subLabel: "NO BOOST" },
+const SETUP_HYBRID_TITLES: Record<string, string> = {
+  "mguk-regen-gain-increase": "INCREASE\nREGEN GAIN",
+  "mguk-regen-gain-decrease": "DECREASE\nREGEN GAIN",
+  "mguk-deploy-mode-increase": "INCREASE\nDEPLOY MODE",
+  "mguk-deploy-mode-decrease": "DECREASE\nDEPLOY MODE",
+  "mguk-fixed-deploy-increase": "INCREASE\nFIXED DEPLOY",
+  "mguk-fixed-deploy-decrease": "DECREASE\nFIXED DEPLOY",
+  "hys-boost": "BOOST\nHYS",
+  "hys-regen": "REGEN\nHYS",
+  "hys-no-boost": "NO BOOST\nHYS",
 };
 
 /**
@@ -129,16 +130,12 @@ export function generateSetupHybridSvg(settings: SetupHybridSettings): string {
   const iconKey = resolveIconKey(settings.setting, settings.direction);
 
   const iconSvg = SETUP_HYBRID_ICONS[iconKey] || SETUP_HYBRID_ICONS["hys-boost"];
-  const labels = SETUP_HYBRID_LABELS[iconKey] || { mainLabel: "HYBRID", subLabel: "SETUP" };
+  const defaultTitle = SETUP_HYBRID_TITLES[iconKey] || "SETUP\nHYBRID";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

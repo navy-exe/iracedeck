@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import tcSlot1DecreaseIconSvg from "@iracedeck/icons/setup-traction/tc-slot-1-decrease.svg";
 import tcSlot1IncreaseIconSvg from "@iracedeck/icons/setup-traction/tc-slot-1-increase.svg";
@@ -50,18 +51,18 @@ const SETUP_TRACTION_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_TRACTION_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "tc-toggle": { mainLabel: "TC", subLabel: "TOGGLE" },
-  "tc-slot-1-increase": { mainLabel: "TC SLOT 1", subLabel: "INCREASE" },
-  "tc-slot-1-decrease": { mainLabel: "TC SLOT 1", subLabel: "DECREASE" },
-  "tc-slot-2-increase": { mainLabel: "TC SLOT 2", subLabel: "INCREASE" },
-  "tc-slot-2-decrease": { mainLabel: "TC SLOT 2", subLabel: "DECREASE" },
-  "tc-slot-3-increase": { mainLabel: "TC SLOT 3", subLabel: "INCREASE" },
-  "tc-slot-3-decrease": { mainLabel: "TC SLOT 3", subLabel: "DECREASE" },
-  "tc-slot-4-increase": { mainLabel: "TC SLOT 4", subLabel: "INCREASE" },
-  "tc-slot-4-decrease": { mainLabel: "TC SLOT 4", subLabel: "DECREASE" },
+const SETUP_TRACTION_TITLES: Record<string, string> = {
+  "tc-toggle": "TOGGLE\nTC",
+  "tc-slot-1-increase": "INCREASE\nTC SLOT 1",
+  "tc-slot-1-decrease": "DECREASE\nTC SLOT 1",
+  "tc-slot-2-increase": "INCREASE\nTC SLOT 2",
+  "tc-slot-2-decrease": "DECREASE\nTC SLOT 2",
+  "tc-slot-3-increase": "INCREASE\nTC SLOT 3",
+  "tc-slot-3-decrease": "DECREASE\nTC SLOT 3",
+  "tc-slot-4-increase": "INCREASE\nTC SLOT 4",
+  "tc-slot-4-decrease": "DECREASE\nTC SLOT 4",
 };
 
 /**
@@ -109,16 +110,12 @@ export function generateSetupTractionSvg(settings: SetupTractionSettings): strin
   const iconKey = resolveIconKey(settings.setting, settings.direction);
 
   const iconSvg = SETUP_TRACTION_ICONS[iconKey] || SETUP_TRACTION_ICONS["tc-toggle"];
-  const labels = SETUP_TRACTION_LABELS[iconKey] || { mainLabel: "TC", subLabel: "SETUP" };
+  const defaultTitle = SETUP_TRACTION_TITLES[iconKey] || "SETUP\nTC";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

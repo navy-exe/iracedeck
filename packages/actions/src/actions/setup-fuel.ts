@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import disableFuelCutIconSvg from "@iracedeck/icons/setup-fuel/disable-fuel-cut.svg";
 import fcyModeToggleIconSvg from "@iracedeck/icons/setup-fuel/fcy-mode-toggle.svg";
@@ -46,24 +47,16 @@ const SETUP_FUEL_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
- * Standard layout: mainLabel = primary (bold, top), subLabel = secondary (subdued, bottom).
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_FUEL_LABELS: Record<
-  SetupFuelSetting,
-  Record<DirectionType, { mainLabel: string; subLabel: string }> | { mainLabel: string; subLabel: string }
-> = {
-  "fuel-mixture": {
-    increase: { mainLabel: "FUEL MIX", subLabel: "INCREASE" },
-    decrease: { mainLabel: "FUEL MIX", subLabel: "DECREASE" },
-  },
-  "fuel-cut-position": {
-    increase: { mainLabel: "FUEL CUT", subLabel: "INCREASE" },
-    decrease: { mainLabel: "FUEL CUT", subLabel: "DECREASE" },
-  },
-  "disable-fuel-cut": { mainLabel: "FUEL CUT", subLabel: "DISABLE" },
-  "low-fuel-accept": { mainLabel: "LOW FUEL", subLabel: "ACCEPT" },
-  "fcy-mode-toggle": { mainLabel: "FCY MODE", subLabel: "TOGGLE" },
+const SETUP_FUEL_TITLES: Record<string, string> = {
+  "fuel-mixture-increase": "INCREASE\nFUEL MIX",
+  "fuel-mixture-decrease": "DECREASE\nFUEL MIX",
+  "fuel-cut-position-increase": "INCREASE\nFUEL CUT",
+  "fuel-cut-position-decrease": "DECREASE\nFUEL CUT",
+  "disable-fuel-cut": "DISABLE\nFUEL CUT",
+  "low-fuel-accept": "ACCEPT\nLOW FUEL",
+  "fcy-mode-toggle": "TOGGLE\nFCY MODE",
 };
 
 /**
@@ -101,19 +94,12 @@ export function generateSetupFuelSvg(settings: SetupFuelSettings): string {
 
   const iconKey = DIRECTIONAL_CONTROLS.has(setting) ? `${setting}-${direction}` : setting;
   const iconSvg = SETUP_FUEL_ICONS[iconKey] || SETUP_FUEL_ICONS["disable-fuel-cut"];
-
-  const labelEntry = SETUP_FUEL_LABELS[setting];
-  const labels: { mainLabel: string; subLabel: string } =
-    "mainLabel" in labelEntry ? labelEntry : (labelEntry[direction] ?? { mainLabel: "FUEL", subLabel: "SETUP" });
+  const defaultTitle = SETUP_FUEL_TITLES[iconKey] || "SETUP\nFUEL";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

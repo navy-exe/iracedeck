@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import absAdjustDecreaseIconSvg from "@iracedeck/icons/setup-brakes/abs-adjust-decrease.svg";
 import absAdjustIncreaseIconSvg from "@iracedeck/icons/setup-brakes/abs-adjust-increase.svg";
@@ -67,23 +68,22 @@ const SETUP_BRAKES_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
- * mainLabel = primary (bold, white), subLabel = secondary (subdued).
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_BRAKES_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "abs-toggle": { mainLabel: "ABS", subLabel: "TOGGLE" },
-  "abs-adjust-increase": { mainLabel: "ABS", subLabel: "INCREASE" },
-  "abs-adjust-decrease": { mainLabel: "ABS", subLabel: "DECREASE" },
-  "brake-bias-increase": { mainLabel: "BRAKE BIAS", subLabel: "INCREASE" },
-  "brake-bias-decrease": { mainLabel: "BRAKE BIAS", subLabel: "DECREASE" },
-  "brake-bias-fine-increase": { mainLabel: "BIAS FINE", subLabel: "INCREASE" },
-  "brake-bias-fine-decrease": { mainLabel: "BIAS FINE", subLabel: "DECREASE" },
-  "peak-brake-bias-increase": { mainLabel: "PEAK BIAS", subLabel: "INCREASE" },
-  "peak-brake-bias-decrease": { mainLabel: "PEAK BIAS", subLabel: "DECREASE" },
-  "brake-misc-increase": { mainLabel: "BRAKE MISC", subLabel: "INCREASE" },
-  "brake-misc-decrease": { mainLabel: "BRAKE MISC", subLabel: "DECREASE" },
-  "engine-braking-increase": { mainLabel: "ENG BRAKE", subLabel: "INCREASE" },
-  "engine-braking-decrease": { mainLabel: "ENG BRAKE", subLabel: "DECREASE" },
+const SETUP_BRAKES_TITLES: Record<string, string> = {
+  "abs-toggle": "TOGGLE\nABS",
+  "abs-adjust-increase": "INCREASE\nABS",
+  "abs-adjust-decrease": "DECREASE\nABS",
+  "brake-bias-increase": "INCREASE\nBRAKE BIAS",
+  "brake-bias-decrease": "DECREASE\nBRAKE BIAS",
+  "brake-bias-fine-increase": "INCREASE\nBIAS FINE",
+  "brake-bias-fine-decrease": "DECREASE\nBIAS FINE",
+  "peak-brake-bias-increase": "INCREASE\nPEAK BIAS",
+  "peak-brake-bias-decrease": "DECREASE\nPEAK BIAS",
+  "brake-misc-increase": "INCREASE\nBRAKE MISC",
+  "brake-misc-decrease": "DECREASE\nBRAKE MISC",
+  "engine-braking-increase": "INCREASE\nENG BRAKE",
+  "engine-braking-decrease": "DECREASE\nENG BRAKE",
 };
 
 /**
@@ -146,16 +146,12 @@ export function generateSetupBrakesSvg(settings: SetupBrakesSettings): string {
 
   const iconKey = resolveIconKey(setting, direction);
   const iconSvg = SETUP_BRAKES_ICONS[iconKey] || SETUP_BRAKES_ICONS["abs-toggle"];
-  const labels = SETUP_BRAKES_LABELS[iconKey] || { mainLabel: "BRAKE", subLabel: "SETUP" };
+  const defaultTitle = SETUP_BRAKES_TITLES[iconKey] || "SETUP\nBRAKE";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
