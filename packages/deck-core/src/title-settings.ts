@@ -27,7 +27,7 @@ const TITLE_DEFAULTS: Omit<ResolvedTitleSettings, "titleText"> = {
   showTitle: true,
   showGraphics: true,
   bold: true,
-  fontSize: 18,
+  fontSize: 9,
   position: "bottom",
   customPosition: 0,
 };
@@ -47,7 +47,9 @@ export interface GenerateTitleTextOptions {
 }
 
 export function generateTitleText(options: GenerateTitleTextOptions): string {
-  const { text, fontSize, bold, position, customPosition, fill } = options;
+  const { text, bold, position, customPosition, fill } = options;
+  // Double the PI font size for SVG rendering (consistent with telemetry-display and chat)
+  const fontSize = options.fontSize * 2;
 
   if (!text) return "";
 
