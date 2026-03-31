@@ -132,6 +132,28 @@ const GlobalSettingsSchema = z.object({
 
 The `.passthrough()` allows dynamic key binding properties (e.g., `blackBoxLapTiming`, `lookDirectionLeft`) without declaring them explicitly in the schema.
 
+## Title Settings Keys
+
+Plugin-level title defaults are stored as flat keys with a `title` prefix and read via `getGlobalTitleSettings()`:
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `titleShowTitle` | boolean | `true` | Show title text on key |
+| `titleShowGraphics` | boolean | `true` | Show graphics on key |
+| `titleBold` | boolean | `true` | Bold title text |
+| `titleFontSize` | number | `18` | Title font size (5–50) |
+| `titlePosition` | string | `"bottom"` | Position: `"top"`, `"middle"`, `"bottom"`, `"custom"` |
+| `titleCustomPosition` | number | `0` | Vertical offset for custom position (−50 to +50) |
+
+These are configured in the Global Settings PI section under "Title Defaults". Use `getGlobalTitleSettings()` in action code to read them:
+
+```typescript
+import { getGlobalTitleSettings } from "@iracedeck/deck-core";
+
+const globalTitle = getGlobalTitleSettings();
+const title = resolveTitleSettings(iconSvg, globalTitle, settings.titleOverrides);
+```
+
 ## Settings Key Convention
 
 Global key bindings use flat key names:
