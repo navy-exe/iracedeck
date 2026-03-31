@@ -172,4 +172,138 @@
       colorEl.dispatchEvent(new Event('change', { bubbles: true }));
     }
   });
+
+  // Title preset buttons — "default" and "global" both clear all title override fields
+  // (clearing causes the action to fall through to global/icon defaults)
+  document.addEventListener('click', function(ev) {
+    var btn = ev.target.closest('.ird-title-preset');
+    if (!btn) return;
+    var titleFields = [
+      'titleOverrides.showTitle',
+      'titleOverrides.showGraphics',
+      'titleOverrides.bold',
+      'titleOverrides.fontSize',
+      'titleOverrides.position',
+      'titleOverrides.customPosition'
+    ];
+    titleFields.forEach(function(settingKey) {
+      var el = document.querySelector('[setting="' + settingKey + '"]');
+      if (el) {
+        el.value = '';
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    // Also clear the textarea (data-setting)
+    var textarea = document.querySelector('[data-setting="titleOverrides.titleText"]');
+    if (textarea) {
+      textarea.value = '';
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+
+  // Custom position visibility: per-action title position select
+  (function() {
+    function updateTitleCustomPosition(value) {
+      var item = document.getElementById('title-custom-position-item');
+      if (!item) return;
+      if (value === 'custom') {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    }
+
+    async function initTitlePosition() {
+      await customElements.whenDefined('sdpi-select');
+      var select = document.getElementById('title-override-position');
+      if (!select) return;
+      updateTitleCustomPosition(select.value || 'bottom');
+      select.addEventListener('change', function(e) { updateTitleCustomPosition(e.target.value); });
+      select.addEventListener('input', function(e) { updateTitleCustomPosition(e.target.value); });
+      var lastVal = select.value || 'bottom';
+      setInterval(function() {
+        var cur = select.value;
+        if (cur && cur !== lastVal) {
+          lastVal = cur;
+          updateTitleCustomPosition(cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTitlePosition);
+    } else {
+      initTitlePosition();
+    }
+  })();
+
+  // Custom position visibility: global title position select
+  (function() {
+    function updateGlobalTitleCustomPosition(value) {
+      var item = document.getElementById('global-title-custom-position-item');
+      if (!item) return;
+      if (value === 'custom') {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    }
+
+    async function initGlobalTitlePosition() {
+      await customElements.whenDefined('sdpi-select');
+      var select = document.getElementById('global-title-position');
+      if (!select) return;
+      updateGlobalTitleCustomPosition(select.value || 'bottom');
+      select.addEventListener('change', function(e) { updateGlobalTitleCustomPosition(e.target.value); });
+      select.addEventListener('input', function(e) { updateGlobalTitleCustomPosition(e.target.value); });
+      var lastVal = select.value || 'bottom';
+      setInterval(function() {
+        var cur = select.value;
+        if (cur && cur !== lastVal) {
+          lastVal = cur;
+          updateGlobalTitleCustomPosition(cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGlobalTitlePosition);
+    } else {
+      initGlobalTitlePosition();
+    }
+  })();
+
+  // Textarea persistence for titleOverrides.titleText
+  // Raw <textarea data-setting="..."> is not handled by sdpi-components, so we manually
+  // dispatch sdpi-store-value events and populate from settings on load.
+  (function() {
+    var TEXTAREA_SETTING = 'titleOverrides.titleText';
+
+    function getTextarea() {
+      return document.querySelector('[data-setting="' + TEXTAREA_SETTING + '"]');
+    }
+
+    // Populate textarea when sdpi-components has loaded settings
+    document.addEventListener('settingsLoaded', function(e) {
+      var textarea = getTextarea();
+      if (!textarea || !e.detail) return;
+      var keys = TEXTAREA_SETTING.split('.');
+      var val = e.detail;
+      for (var i = 0; i < keys.length; i++) {
+        val = val && val[keys[i]];
+      }
+      if (val !== undefined && val !== null) {
+        textarea.value = val;
+      }
+    });
+
+    // Persist textarea changes to Stream Deck settings via sdpi-store-value event
+    document.addEventListener('input', function(ev) {
+      if (!ev.target.matches('[data-setting="' + TEXTAREA_SETTING + '"]')) return;
+      ev.target.dispatchEvent(new CustomEvent('sdpi-store-value', {
+        bubbles: true,
+        detail: { key: TEXTAREA_SETTING, value: ev.target.value }
+      }));
+    });
+  })();
 </script>
