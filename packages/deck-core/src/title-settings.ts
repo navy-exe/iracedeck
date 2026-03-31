@@ -75,7 +75,7 @@ function calculateYPositions(
 
   switch (position) {
     case "top": {
-      const startY = fontSize + 4;
+      const startY = fontSize - 2;
 
       for (let i = 0; i < lineCount; i++) {
         positions.push(startY + i * lineHeight);
@@ -84,7 +84,8 @@ function calculateYPositions(
       break;
     }
     case "middle": {
-      const centerY = 72;
+      // Dynamic center that adjusts with font size, matching telemetry-display pattern
+      const centerY = 88 + (fontSize - 44) / 3;
       const startY = centerY - totalHeight / 2;
 
       for (let i = 0; i < lineCount; i++) {
@@ -104,7 +105,7 @@ function calculateYPositions(
       break;
     }
     case "custom": {
-      const centerY = 72 + customPosition;
+      const centerY = 88 + (fontSize - 44) / 3 + customPosition;
       const startY = centerY - totalHeight / 2;
 
       for (let i = 0; i < lineCount; i++) {

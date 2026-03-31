@@ -245,42 +245,6 @@
     }
   })();
 
-  // Bidirectional sync between sdpi-range and number input
-  function syncRangeAndInput(rangeId, inputId) {
-    var range = document.getElementById(rangeId);
-    var input = document.getElementById(inputId);
-    if (!range || !input) return;
-
-    // Range → Input
-    range.addEventListener('input', function() { input.value = range.value; });
-    range.addEventListener('change', function() { input.value = range.value; });
-
-    // Input → Range (also trigger change for sdpi persistence)
-    input.addEventListener('change', function() {
-      var val = Math.min(Math.max(Number(input.value), Number(input.min)), Number(input.max));
-      input.value = val;
-      range.value = val;
-      range.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-
-    // Initialize input from range on load
-    if (range.value) input.value = range.value;
-  }
-
-  (function() {
-    function initRangeSyncs() {
-      syncRangeAndInput('title-override-customPosition', 'title-override-customPosition-input');
-      syncRangeAndInput('global-title-fontSize', 'global-title-fontSize-input');
-      syncRangeAndInput('global-title-customPosition', 'global-title-customPosition-input');
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initRangeSyncs);
-    } else {
-      initRangeSyncs();
-    }
-  })();
-
   // Font Size checkbox gate: sdpi-checkbox (persists via setting attribute) + sdpi-range.
   // When unchecked: hide range, clear fontSize setting.
   // When checked: show range, sdpi persists fontSize normally.
@@ -290,64 +254,33 @@
       var toggle = document.getElementById('title-override-fontSize-toggle');
       var item = document.getElementById('title-fontSize-item');
       var range = document.getElementById('title-override-fontSize');
-      var input = document.getElementById('title-override-fontSize-input');
-      if (!toggle || !item || !range || !input) return;
+      if (!toggle || !item || !range) return;
 
       function isChecked() {
-        // sdpi-checkbox may use .checked or .value
         return toggle.checked === true || toggle.value === true || toggle.value === 'true';
       }
 
       function showControls(show) {
         if (show) {
           item.classList.remove('hidden');
-          // Set default value if range is empty
           if (!range.value || range.value === '') {
             range.value = '18';
-            input.value = '18';
             range.dispatchEvent(new Event('change', { bubbles: true }));
           }
         } else {
           item.classList.add('hidden');
-          // Clear fontSize so it inherits
           range.value = '';
           range.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
 
-      // Listen for checkbox changes
       toggle.addEventListener('change', function() {
         showControls(isChecked());
       });
 
-      // Sync range → input
-      range.addEventListener('input', function() { input.value = range.value; });
-      range.addEventListener('change', function() { if (range.value) input.value = range.value; });
-
-      // Input → range
-      input.addEventListener('change', function() {
-        var val = Math.min(Math.max(Number(input.value), 5), 100);
-        input.value = val;
-        range.value = val;
-        range.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-
-      // Sync input: poll the range value since sdpi-range loads asynchronously
-      var settingsHaveLoaded = false;
       document.addEventListener('settingsLoaded', function() {
-        settingsHaveLoaded = true;
         showControls(isChecked());
       });
-
-      var syncInterval = setInterval(function() {
-        if (range.value && range.value !== '' && input.value !== range.value) {
-          input.value = range.value;
-        }
-        // Only stop polling after settings have loaded AND values are synced
-        if (settingsHaveLoaded && range.value && input.value === range.value) {
-          clearInterval(syncInterval);
-        }
-      }, 200);
 
       // Polling fallback for checkbox state
       var lastChecked = isChecked();
@@ -389,11 +322,6 @@
       }
     });
 
-    // Also sync the number inputs
-    var fontInput = document.getElementById('global-title-fontSize-input');
-    if (fontInput) fontInput.value = '18';
-    var posInput = document.getElementById('global-title-customPosition-input');
-    if (posInput) posInput.value = '0';
   });
 
   // Note: titleOverrides.titleText uses sdpi-textarea with setting attribute.

@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateTitleText,
   getGlobalColors,
   getGlobalTitleSettings,
   getKeyboard,
@@ -389,12 +390,30 @@ function renderDynamicIcon(settings: CarControlSettings, iconContent: string, sh
   const labels = showLabels
     ? CAR_CONTROL_LABELS[settings.control] || CAR_CONTROL_LABELS["starter"]
     : { line1: "", line2: "" };
+  const defaultTitle = showLabels ? `${labels.line2}\n${labels.line1}` : "";
 
   const colors = resolveIconColors(carControlTemplate, getGlobalColors(), settings.colorOverrides);
+  const resolvedTitle = resolveTitleSettings(
+    carControlTemplate,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    defaultTitle,
+  );
+
+  const titleContent = resolvedTitle.showTitle
+    ? generateTitleText({
+        text: resolvedTitle.titleText,
+        fontSize: resolvedTitle.fontSize,
+        bold: resolvedTitle.bold,
+        position: resolvedTitle.position,
+        customPosition: resolvedTitle.customPosition,
+        fill: colors.textColor ?? "#ffffff",
+      })
+    : "";
+
   const svg = renderIconTemplate(carControlTemplate, {
-    iconContent,
-    mainLabel: labels.line1,
-    subLabel: labels.line2,
+    iconContent: resolvedTitle.showGraphics ? iconContent : "",
+    titleContent,
     ...colors,
   });
 

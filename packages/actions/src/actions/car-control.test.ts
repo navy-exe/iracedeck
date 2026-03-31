@@ -139,8 +139,9 @@ vi.mock("@iracedeck/deck-core", () => ({
     },
   ),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
+  generateTitleText: vi.fn((opts: { text: string }) => `<text>${opts.text}</text>`),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
-    return `<svg>${template}${data.iconContent || ""}${data.mainLabel || data.labelLine1 || ""}${data.subLabel || data.labelLine2 || ""}</svg>`;
+    return `<svg>${template}${data.iconContent || ""}${data.titleContent || ""}${data.mainLabel || ""}${data.subLabel || ""}</svg>`;
   }),
   svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
 }));

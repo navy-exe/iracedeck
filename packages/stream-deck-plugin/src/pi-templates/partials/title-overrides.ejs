@@ -39,10 +39,7 @@
       '<sdpi-checkbox id="title-override-fontSize-toggle" setting="titleOverrides.fontSizeEnabled" label="Override font size"></sdpi-checkbox>' +
     '</sdpi-item>' +
     '<sdpi-item id="title-fontSize-item" class="hidden" label="Font Size">' +
-      '<div style="display:flex;align-items:center;gap:6px;">' +
-        '<sdpi-range id="title-override-fontSize" setting="titleOverrides.fontSize" min="5" max="100" style="flex:1;"></sdpi-range>' +
-        '<input type="number" id="title-override-fontSize-input" min="5" max="100" style="width:48px;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:11px;text-align:center;" />' +
-      '</div>' +
+      '<sdpi-range id="title-override-fontSize" setting="titleOverrides.fontSize" min="5" max="100" showlabels></sdpi-range>' +
     '</sdpi-item>' +
 
     '<div class="ird-section-subtitle">Position</div>' +
@@ -56,9 +53,6 @@
       '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item id="title-custom-position-item" class="hidden" label="Custom Position">' +
-      '<div style="display:flex;align-items:center;gap:6px;">' +
-        '<sdpi-range id="title-override-customPosition" setting="titleOverrides.customPosition" min="-100" max="100" default="0" style="flex:1;"></sdpi-range>' +
-        '<input type="number" id="title-override-customPosition-input" min="-100" max="100" value="0" style="width:48px;background:var(--sdpi-bgcolor,#2a2a2a);color:var(--sdpi-color,#fff);border:1px solid var(--sdpi-bordercolor,#555);border-radius:3px;padding:2px 4px;font-size:11px;text-align:center;" />' +
-      '</div>' +
+      '<sdpi-range id="title-override-customPosition" setting="titleOverrides.customPosition" min="-100" max="100" default="0" showlabels></sdpi-range>' +
     '</sdpi-item>'
 }) %>

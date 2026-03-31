@@ -31,7 +31,7 @@ type TelemetryDisplaySettings = z.infer<typeof TelemetryDisplaySettings>;
  */
 export function generateValueContent(value: string, fontSize: number, textColor: string): string {
   const lines = value.split("\n").filter((line) => line.length > 0);
-  const baseY = 102 + (fontSize - 44) / 3;
+  const baseY = 88 + (fontSize - 44) / 3;
   const lineHeight = fontSize * 1.2;
 
   if (lines.length <= 1) {

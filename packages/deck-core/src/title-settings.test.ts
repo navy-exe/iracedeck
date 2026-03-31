@@ -127,7 +127,8 @@ describe("generateTitleText", () => {
       customPosition: 0,
       ...defaults,
     });
-    expect(result).toContain('y="24"');
+    // top startY = fontSize - 2 = 18
+    expect(result).toContain('y="18"');
   });
 
   it("should generate single-line text at middle position", () => {
@@ -139,7 +140,8 @@ describe("generateTitleText", () => {
       customPosition: 0,
       ...defaults,
     });
-    expect(result).toContain('y="72"');
+    // centerY = 88 + (20 - 44) / 3 = 80
+    expect(result).toContain('y="80"');
   });
 
   it("should generate multiline text at bottom position", () => {
@@ -171,7 +173,7 @@ describe("generateTitleText", () => {
     const y1 = parseFloat(lines![0].match(/(\d+\.?\d*)/)![1]);
     const y2 = parseFloat(lines![1].match(/(\d+\.?\d*)/)![1]);
     expect(y1).toBeLessThan(y2);
-    expect(y1).toBe(18 + 4);
+    expect(y1).toBe(18 - 2);
   });
 
   it("should use custom position as offset from middle", () => {
@@ -183,7 +185,8 @@ describe("generateTitleText", () => {
       customPosition: -30,
       ...defaults,
     });
-    expect(result).toContain('y="42"');
+    // centerY = 88 + (20 - 44) / 3 + (-30) = 50
+    expect(result).toContain('y="50"');
   });
 
   it("should render normal weight when bold is false", () => {
@@ -235,7 +238,8 @@ describe("generateTitleText", () => {
     expect(lines).toHaveLength(3);
     const ys = lines!.map((l) => parseFloat(l.match(/(\d+\.?\d*)/)![1]));
     const avg = ys.reduce((a, b) => a + b, 0) / ys.length;
-    expect(Math.abs(avg - 72)).toBeLessThan(2);
+    // centerY = 88 + (16 - 44) / 3 ≈ 78.67
+    expect(Math.abs(avg - 78.67)).toBeLessThan(2);
   });
 });
 
