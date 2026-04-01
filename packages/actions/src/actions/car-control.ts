@@ -174,29 +174,17 @@ export function pitLimiterInactiveIcon(speed: number): string {
  *
  * DRS icon — large centered "DRS" text with ON/OFF status bar at the bottom.
  */
-export function drsIcon(active: boolean, graphic1Color = WHITE): string {
-  const statusBar = active ? statusBarOn() : statusBarOff();
-
-  return `
-    <text x="72" y="68" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="50" font-weight="bold">DRS</text>
-    ${statusBar}`;
+export function drsIcon(active: boolean, _graphic1Color = WHITE): string {
+  return active ? statusBarOn() : statusBarOff();
 }
 
 /**
  * @internal Exported for testing
  *
- * Push To Pass icon — "PUSH TO" / "PASS" on two lines with ON/OFF status bar at the bottom.
+ * Push To Pass icon — status bar only (title text handled by title settings system).
  */
-export function pushToPassIcon(active: boolean, graphic1Color = WHITE): string {
-  const statusBar = active ? statusBarOn() : statusBarOff();
-
-  return `
-    <text x="72" y="44" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">PUSH TO</text>
-    <text x="72" y="74" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">PASS</text>
-    ${statusBar}`;
+export function pushToPassIcon(active: boolean, _graphic1Color = WHITE): string {
+  return active ? statusBarOn() : statusBarOff();
 }
 
 /**
