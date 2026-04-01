@@ -322,12 +322,13 @@
         }
       }
 
-      toggle.addEventListener('change', function() {
-        showRange(!isChecked());
-      });
+      toggle.addEventListener('change', function() { showRange(!isChecked()); });
+      toggle.addEventListener('input', function() { showRange(!isChecked()); });
 
+      // Initial state + settingsLoaded
+      showRange(!isChecked());
       document.addEventListener('settingsLoaded', function() {
-        showRange(!isChecked());
+        setTimeout(function() { showRange(!isChecked()); }, 200);
       });
 
       var lastChecked = isChecked();
