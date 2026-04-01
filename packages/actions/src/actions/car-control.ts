@@ -1,7 +1,10 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateTitleText,
   getGlobalColors,
+  getGlobalTitleSettings,
   getKeyboard,
   getSDK,
   type IDeckDialDownEvent,
@@ -13,10 +16,10 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import enterCarIcon from "@iracedeck/icons/car-control/enter-car.svg";
-import enterExitTowIcon from "@iracedeck/icons/car-control/enter-exit-tow.svg";
 import escapeIcon from "@iracedeck/icons/car-control/escape.svg";
 import exitCarIcon from "@iracedeck/icons/car-control/exit-car.svg";
 import headlightFlashIcon from "@iracedeck/icons/car-control/headlight-flash.svg";
@@ -29,6 +32,8 @@ import towIcon from "@iracedeck/icons/car-control/tow.svg";
 import { EngineWarnings, hasFlag, type TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
+import drsTemplate from "../../icons/car-control-drs.svg";
+import pushToPassTemplate from "../../icons/car-control-push-to-pass.svg";
 import carControlTemplate from "../../icons/car-control.svg";
 import { statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
@@ -75,11 +80,20 @@ const ENTER_EXIT_TOW_ICONS: Record<EnterExitTowState, string> = {
   tow: towIcon,
 };
 
-const ENTER_EXIT_TOW_LABELS: Record<EnterExitTowState, { line1: string; line2: string }> = {
-  "enter-car": { line1: "DRIVE", line2: "" },
-  "exit-car": { line1: "EXIT", line2: "" },
-  "reset-to-pits": { line1: "RESET", line2: "" },
-  tow: { line1: "TOW", line2: "" },
+const ENTER_EXIT_TOW_TITLES: Record<EnterExitTowState, string> = {
+  "enter-car": "DRIVE",
+  "exit-car": "EXIT",
+  "reset-to-pits": "RESET",
+  tow: "TOW",
+};
+
+const CAR_CONTROL_STATIC_TITLES: Partial<Record<CarControlType, string>> = {
+  starter: "ENGINE\nSTART",
+  ignition: "ON/OFF\nIGNITION",
+  "pause-sim": "SIM\nPAUSE",
+  "headlight-flash": "FLASH\nHEADLIGHT",
+  "tear-off-visor": "VISOR\nTEAR OFF",
+  escape: "ESCAPE",
 };
 
 const DEFAULT_PIT_SPEED = 80;
@@ -157,31 +171,19 @@ export function pitLimiterInactiveIcon(speed: number): string {
 /**
  * @internal Exported for testing
  *
- * DRS icon — large centered "DRS" text with ON/OFF status bar at the bottom.
+ * DRS icon — status bar only (title text handled by title settings system).
  */
-export function drsIcon(active: boolean, graphic1Color = WHITE): string {
-  const statusBar = active ? statusBarOn() : statusBarOff();
-
-  return `
-    <text x="72" y="68" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="50" font-weight="bold">DRS</text>
-    ${statusBar}`;
+export function drsIcon(active: boolean): string {
+  return active ? statusBarOn() : statusBarOff();
 }
 
 /**
  * @internal Exported for testing
  *
- * Push To Pass icon — "PUSH TO" / "PASS" on two lines with ON/OFF status bar at the bottom.
+ * Push To Pass icon — status bar only (title text handled by title settings system).
  */
-export function pushToPassIcon(active: boolean, graphic1Color = WHITE): string {
-  const statusBar = active ? statusBarOn() : statusBarOff();
-
-  return `
-    <text x="72" y="44" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">PUSH TO</text>
-    <text x="72" y="74" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">PASS</text>
-    ${statusBar}`;
+export function pushToPassIcon(active: boolean): string {
+  return active ? statusBarOn() : statusBarOff();
 }
 
 /**
@@ -190,7 +192,6 @@ export function pushToPassIcon(active: boolean, graphic1Color = WHITE): string {
 const STATIC_CAR_CONTROL_ICONS: Partial<Record<CarControlType, string>> = {
   starter: starterIcon,
   ignition: ignitionIcon,
-  "enter-exit-tow": enterExitTowIcon,
   "pause-sim": pauseSimIcon,
   "headlight-flash": headlightFlashIcon,
   "tear-off-visor": tearOffVisorIcon,
@@ -336,61 +337,86 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
     return renderDynamicIcon(settings, iconContent);
   }
 
-  // Push To Pass and DRS use dedicated full-icon layouts (no mainLabel/subLabel)
+  // Push To Pass and DRS use dedicated templates with their own <desc> defaults
   if (control === "push-to-pass" || control === "drs") {
-    const colors = resolveIconColors(carControlTemplate, getGlobalColors(), settings.colorOverrides) as Record<
-      string,
-      string
-    >;
-    const graphic1 = colors.graphic1Color || settings.colorOverrides?.graphic1Color || WHITE;
+    const template = control === "push-to-pass" ? pushToPassTemplate : drsTemplate;
+    const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
     const iconContent =
       control === "push-to-pass"
-        ? pushToPassIcon(telemetryState?.pushToPassActive ?? false, graphic1)
-        : drsIcon(telemetryState?.drsActive ?? false, graphic1);
+        ? pushToPassIcon(telemetryState?.pushToPassActive ?? false)
+        : drsIcon(telemetryState?.drsActive ?? false);
 
-    return renderDynamicIcon(settings, iconContent, false);
-  }
+    const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
 
-  // Enter/Exit/Tow uses state-specific standalone SVGs
-  if (control === "enter-exit-tow") {
-    const towState = telemetryState?.enterExitTowState ?? "enter-car";
-    const iconSvg = ENTER_EXIT_TOW_ICONS[towState];
-    const labels = ENTER_EXIT_TOW_LABELS[towState];
+    const titleContent = resolvedTitle.showTitle
+      ? generateTitleText({
+          text: resolvedTitle.titleText,
+          fontSize: resolvedTitle.fontSize,
+          bold: resolvedTitle.bold,
+          position: resolvedTitle.position,
+          customPosition: resolvedTitle.customPosition,
+          fill: colors.textColor ?? WHITE,
+        })
+      : "";
 
-    const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-    const svg = renderIconTemplate(iconSvg, {
-      mainLabel: labels.line1,
-      subLabel: labels.line2,
+    // Status bar is always visible, even when Show Graphics is off
+    const svg = renderIconTemplate(template, {
+      iconContent,
+      titleContent,
       ...colors,
     });
 
     return svgToDataUri(svg);
   }
 
+  // Enter/Exit/Tow uses state-specific standalone SVGs
+  if (control === "enter-exit-tow") {
+    const towState = telemetryState?.enterExitTowState ?? "enter-car";
+    const iconSvg = ENTER_EXIT_TOW_ICONS[towState];
+    const defaultTitle = ENTER_EXIT_TOW_TITLES[towState];
+
+    const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  }
+
   // Static modes use standalone SVGs from @iracedeck/icons
   const iconSvg = STATIC_CAR_CONTROL_ICONS[control] || starterIcon;
-  const labels = CAR_CONTROL_LABELS[control] || CAR_CONTROL_LABELS["starter"];
+  const defaultTitle = CAR_CONTROL_STATIC_TITLES[control] ?? CAR_CONTROL_STATIC_TITLES["starter"]!;
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.line1,
-    subLabel: labels.line2,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
-function renderDynamicIcon(settings: CarControlSettings, iconContent: string, showLabels = true): string {
-  const labels = showLabels
-    ? CAR_CONTROL_LABELS[settings.control] || CAR_CONTROL_LABELS["starter"]
-    : { line1: "", line2: "" };
+function renderDynamicIcon(settings: CarControlSettings, iconContent: string): string {
+  const labels = CAR_CONTROL_LABELS[settings.control] || CAR_CONTROL_LABELS["starter"];
+  const defaultTitle = `${labels.line2}\n${labels.line1}`;
 
   const colors = resolveIconColors(carControlTemplate, getGlobalColors(), settings.colorOverrides);
+  const resolvedTitle = resolveTitleSettings(
+    carControlTemplate,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    defaultTitle,
+  );
+
+  const titleContent = resolvedTitle.showTitle
+    ? generateTitleText({
+        text: resolvedTitle.titleText,
+        fontSize: resolvedTitle.fontSize,
+        bold: resolvedTitle.bold,
+        position: resolvedTitle.position,
+        customPosition: resolvedTitle.customPosition,
+        fill: colors.textColor ?? "#ffffff",
+      })
+    : "";
+
   const svg = renderIconTemplate(carControlTemplate, {
-    iconContent,
-    mainLabel: labels.line1,
-    subLabel: labels.line2,
+    iconContent: resolvedTitle.showGraphics ? iconContent : "",
+    titleContent,
     ...colors,
   });
 

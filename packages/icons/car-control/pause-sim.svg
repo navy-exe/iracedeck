@@ -1,17 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <!-- Main background -->
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"SIM\nPAUSE"}}</desc>
 
-    <!-- Pause bars -->
     <rect x="54" y="28" width="12" height="40" rx="2" fill="{{graphic1Color}}"/>
     <rect x="78" y="28" width="12" height="40" rx="2" fill="{{graphic1Color}}"/>
 
-    <!-- Two-line label -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-  </g>
 </svg>

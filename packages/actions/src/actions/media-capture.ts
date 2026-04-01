@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import reloadAllTexturesIconSvg from "@iracedeck/icons/media-capture/reload-all-textures.svg";
 import reloadCarTexturesIconSvg from "@iracedeck/icons/media-capture/reload-car-textures.svg";
@@ -43,16 +44,16 @@ const ACTION_ICONS: Record<MediaCaptureAction, string> = {
 };
 
 /**
- * Label configuration for each media capture action
+ * Title text for each media capture action (format: "subLabel\nmainLabel")
  */
-const MEDIA_CAPTURE_LABELS: Record<MediaCaptureAction, { mainLabel: string; subLabel: string }> = {
-  "start-stop-video": { mainLabel: "START/STOP", subLabel: "VIDEO" },
-  "video-timer": { mainLabel: "TIMER", subLabel: "VIDEO" },
-  "toggle-video-capture": { mainLabel: "TOGGLE", subLabel: "VIDEO" },
-  "take-screenshot": { mainLabel: "SCREENSHOT", subLabel: "CAPTURE" },
-  "take-giant-screenshot": { mainLabel: "GIANT", subLabel: "SCREENSHOT" },
-  "reload-all-textures": { mainLabel: "RELOAD ALL", subLabel: "TEXTURES" },
-  "reload-car-textures": { mainLabel: "RELOAD CAR", subLabel: "TEXTURES" },
+const MEDIA_CAPTURE_TITLES: Record<MediaCaptureAction, string> = {
+  "start-stop-video": "VIDEO\nSTART/STOP",
+  "video-timer": "VIDEO\nTIMER",
+  "toggle-video-capture": "VIDEO\nTOGGLE",
+  "take-screenshot": "CAPTURE\nSCREENSHOT",
+  "take-giant-screenshot": "SCREENSHOT\nGIANT",
+  "reload-all-textures": "TEXTURES\nRELOAD ALL",
+  "reload-car-textures": "TEXTURES\nRELOAD CAR",
 };
 
 /**
@@ -80,16 +81,12 @@ export function generateMediaCaptureSvg(settings: MediaCaptureSettings): string 
   const { action: actionType } = settings;
 
   const iconSvg = ACTION_ICONS[actionType] || ACTION_ICONS["start-stop-video"];
-  const labels = MEDIA_CAPTURE_LABELS[actionType] || MEDIA_CAPTURE_LABELS["start-stop-video"];
+  const defaultTitle = MEDIA_CAPTURE_TITLES[actionType] || MEDIA_CAPTURE_TITLES["start-stop-video"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

@@ -97,6 +97,7 @@ export default defineConfig({
             { slug: "docs/features/flags-overlay" },
             { slug: "docs/features/focus-iracing-window" },
             { slug: "docs/features/icon-colors" },
+            { slug: "docs/features/title-customization" },
             { slug: "docs/features/template-variables" },
           ],
         },

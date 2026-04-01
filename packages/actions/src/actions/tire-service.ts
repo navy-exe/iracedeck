@@ -1,9 +1,11 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   generateIconText,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   getSDK,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -12,6 +14,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import changeAllTiresIconSvg from "@iracedeck/icons/tire-service/change-all-tires.svg";
@@ -222,13 +225,14 @@ export function generateTireServiceSvg(
   switch (settings.action) {
     case "change-all-tires": {
       const colors = resolveIconColors(changeAllTiresIconSvg, getGlobalColors(), settings.colorOverrides);
-      const svg = renderIconTemplate(changeAllTiresIconSvg, {
-        mainLabel: "CHANGE",
-        subLabel: "ALL TIRES",
-        ...colors,
-      });
+      const title = resolveTitleSettings(
+        changeAllTiresIconSvg,
+        getGlobalTitleSettings(),
+        settings.titleOverrides,
+        "ALL TIRES\nCHANGE",
+      );
 
-      return svgToDataUri(svg);
+      return assembleIcon({ graphicSvg: changeAllTiresIconSvg, colors, title });
     }
     case "change-compound": {
       const compoundType = getCompoundName(compoundState.pitSv);
@@ -260,13 +264,14 @@ export function generateTireServiceSvg(
     }
     case "clear-tires": {
       const colors = resolveIconColors(clearTiresIconSvg, getGlobalColors(), settings.colorOverrides);
-      const svg = renderIconTemplate(clearTiresIconSvg, {
-        mainLabel: "CLEAR",
-        subLabel: "TIRES",
-        ...colors,
-      });
+      const title = resolveTitleSettings(
+        clearTiresIconSvg,
+        getGlobalTitleSettings(),
+        settings.titleOverrides,
+        "TIRES\nCLEAR",
+      );
 
-      return svgToDataUri(svg);
+      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title });
     }
     default: {
       iconContent = generateToggleTiresIconContent(settings, currentState);

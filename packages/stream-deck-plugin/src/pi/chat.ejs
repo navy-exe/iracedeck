@@ -48,6 +48,8 @@
 
 		<%- include('common-settings') %>
 
+		<%- include('title-overrides') %>
+
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color', 'graphic2Color'], defaults: require('./data/color-defaults.json')['chat'] }) %>
 
 		<%- include('global-key-bindings', {

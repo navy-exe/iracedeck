@@ -25,7 +25,28 @@ export type {
 export { BaseAction } from "./base-action.js";
 
 // Common settings (shared by all actions)
-export { CommonSettings, ColorOverridesSchema, type ColorOverrides } from "./common-settings.js";
+export {
+  CommonSettings,
+  ColorOverridesSchema,
+  type ColorOverrides,
+  TitleOverridesSchema,
+  type TitleOverrides,
+} from "./common-settings.js";
+
+// Title settings utilities
+export {
+  assembleIcon,
+  generateTitleText,
+  getGlobalTitleSettings,
+  resolveTitleSettings,
+  TITLE_DEFAULTS,
+  type GenerateTitleTextOptions,
+  type GlobalTitleSettings,
+  type ResolvedTitleSettings,
+} from "./title-settings.js";
+
+// Icon base template
+export { ICON_BASE_TEMPLATE, extractGraphicContent } from "./icon-base.js";
 
 // Connection state aware action (extends BaseAction with iRacing connection tracking)
 export { ConnectionStateAwareAction } from "./connection-state-aware-action.js";

@@ -1,9 +1,12 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  extractGraphicContent,
   getCommands,
   getGlobalColors,
   getGlobalSettings,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -12,6 +15,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 // Cycle icons
@@ -163,24 +167,24 @@ export const CYCLE_ICONS: Record<CycleTarget, Record<Direction, string>> = {
 /**
  * @internal Exported for testing
  *
- * Cycle label configuration (target + direction → labels)
+ * Cycle title configuration (target + direction → title string)
  */
-export const CYCLE_LABELS: Record<CycleTarget, Record<Direction, { mainLabel: string; subLabel: string }>> = {
+export const CYCLE_TITLES: Record<CycleTarget, Record<Direction, string>> = {
   "cycle-camera": {
-    next: { mainLabel: "NEXT", subLabel: "CAMERA" },
-    previous: { mainLabel: "PREV", subLabel: "CAMERA" },
+    next: "CAMERA\nNEXT",
+    previous: "CAMERA\nPREV",
   },
   "cycle-sub-camera": {
-    next: { mainLabel: "NEXT", subLabel: "SUB CAM" },
-    previous: { mainLabel: "PREV", subLabel: "SUB CAM" },
+    next: "SUB CAM\nNEXT",
+    previous: "SUB CAM\nPREV",
   },
   "cycle-car": {
-    next: { mainLabel: "NEXT", subLabel: "CAR" },
-    previous: { mainLabel: "PREV", subLabel: "CAR" },
+    next: "CAR\nNEXT",
+    previous: "CAR\nPREV",
   },
   "cycle-driving": {
-    next: { mainLabel: "NEXT", subLabel: "DRIVING" },
-    previous: { mainLabel: "PREV", subLabel: "DRIVING" },
+    next: "DRIVING\nNEXT",
+    previous: "DRIVING\nPREV",
   },
 };
 
@@ -249,14 +253,14 @@ const FOCUS_ICONS: Record<string, string> = {
   "set-camera-state": setCameraStateSvg,
 };
 
-const FOCUS_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "focus-your-car": { mainLabel: "YOUR CAR", subLabel: "FOCUS" },
-  "focus-on-leader": { mainLabel: "LEADER", subLabel: "FOCUS" },
-  "focus-on-incident": { mainLabel: "INCIDENT", subLabel: "FOCUS" },
-  "focus-on-exiting": { mainLabel: "EXITING", subLabel: "FOCUS" },
-  "switch-by-position": { mainLabel: "POSITION", subLabel: "SWITCH" },
-  "switch-by-car-number": { mainLabel: "CAR #", subLabel: "SWITCH" },
-  "set-camera-state": { mainLabel: "CAM STATE", subLabel: "SET" },
+const FOCUS_TITLES: Record<string, string> = {
+  "focus-your-car": "FOCUS\nYOUR CAR",
+  "focus-on-leader": "FOCUS\nLEADER",
+  "focus-on-incident": "FOCUS\nINCIDENT",
+  "focus-on-exiting": "FOCUS\nEXITING",
+  "switch-by-position": "SWITCH\nPOSITION",
+  "switch-by-car-number": "SWITCH\nCAR #",
+  "set-camera-state": "SET\nCAM STATE",
 };
 
 // --- Icon generation ---
@@ -277,7 +281,7 @@ export function generateCameraControlsSvg(
   const { target, direction = "next" } = settings;
 
   let iconSvg: string;
-  let labels: { mainLabel: string; subLabel: string };
+  let defaultTitle: string;
 
   if (isCycleTarget(target)) {
     if (target === "cycle-camera") {
@@ -287,24 +291,20 @@ export function generateCameraControlsSvg(
     }
 
     iconSvg = CYCLE_ICONS[target]?.[direction] || CYCLE_ICONS["cycle-camera"]["next"];
-    labels = CYCLE_LABELS[target]?.[direction] || CYCLE_LABELS["cycle-camera"]["next"];
+    defaultTitle = CYCLE_TITLES[target]?.[direction] || CYCLE_TITLES["cycle-camera"]["next"];
   } else if (target === "change-camera") {
     const group = CAMERA_GROUP_MAP[settings.cameraGroup ?? 9] ?? CAMERA_GROUP_MAP[9];
     iconSvg = group.icon;
-    labels = { mainLabel: group.name.toUpperCase(), subLabel: "CAMERA" };
+    defaultTitle = `CAMERA\n${group.name.toUpperCase()}`;
   } else {
     iconSvg = FOCUS_ICONS[target] || FOCUS_ICONS["focus-your-car"];
-    labels = FOCUS_LABELS[target] || FOCUS_LABELS["focus-your-car"];
+    defaultTitle = FOCUS_TITLES[target] || FOCUS_TITLES["focus-your-car"];
   }
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
@@ -314,15 +314,21 @@ export function generateCameraControlsSvg(
 function generateCameraSelectSvg(
   groupName: string,
   colorOverrides?: Partial<CommonSettings>["colorOverrides"],
+  titleOverrides?: Partial<CommonSettings>["titleOverrides"],
 ): string {
   const iconSvg = CAMERA_SELECT_ICONS[groupName];
 
   if (!iconSvg) return generateCameraControlsSvg({ target: "cycle-camera", direction: "next" });
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
-  const svg = renderIconTemplate(iconSvg, { mainLabel: groupName.toUpperCase(), ...colors });
+  const title = resolveTitleSettings(
+    iconSvg,
+    getGlobalTitleSettings(),
+    titleOverrides,
+    `CAMERA\n${groupName.toUpperCase()}`,
+  );
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
@@ -477,12 +483,11 @@ export function generateCycleCameraGridSvg(
   // Fall back to static cycle icon if no groups have icons (direct render, no recursion)
   if (groupsWithIcons.length === 0) {
     const iconSvg = CYCLE_ICONS["cycle-camera"][direction];
-    const labels = CYCLE_LABELS["cycle-camera"][direction];
+    const titleText = CYCLE_TITLES["cycle-camera"][direction];
     const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), undefined, titleText);
 
-    return svgToDataUri(
-      renderIconTemplate(iconSvg, { mainLabel: labels.mainLabel, subLabel: labels.subLabel, ...colors }),
-    );
+    return assembleIcon({ graphicSvg: iconSvg, colors, title });
   }
 
   const displayGroups = groupsWithIcons.slice(0, 6);
@@ -501,8 +506,8 @@ export function generateCycleCameraGridSvg(
     const groupName = displayGroups[i];
     const iconSvg = CAMERA_SELECT_ICONS[groupName];
     const artColors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
-    const rendered = renderIconTemplate(iconSvg, { mainLabel: "", ...artColors });
-    const artwork = extractIconArtwork(rendered);
+    const rawGraphic = extractGraphicContent(iconSvg);
+    const artwork = renderIconTemplate(rawGraphic, artColors);
     const pos = positions[i];
 
     const scale = pos.size / 144;
@@ -939,9 +944,11 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     if (this.lastDisplayedGroup.get(contextId) === nextEntry.groupName) return;
 
     this.lastDisplayedGroup.set(contextId, nextEntry.groupName);
-    const svgDataUri = generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides);
+    const svgDataUri = generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides, settings.titleOverrides);
     await this.updateKeyImage(contextId, svgDataUri);
-    this.setRegenerateCallback(contextId, () => generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides));
+    this.setRegenerateCallback(contextId, () =>
+      generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides, settings.titleOverrides),
+    );
   }
 
   private async updateDisplay(

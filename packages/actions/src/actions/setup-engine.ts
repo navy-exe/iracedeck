@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import boostLevelDecreaseIconSvg from "@iracedeck/icons/setup-engine/boost-level-decrease.svg";
 import boostLevelIncreaseIconSvg from "@iracedeck/icons/setup-engine/boost-level-increase.svg";
@@ -40,18 +41,17 @@ const SETUP_ENGINE_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
- * mainLabel = primary (bold, white), subLabel = secondary (subdued).
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_ENGINE_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "engine-power-increase": { mainLabel: "ENG POWER", subLabel: "INCREASE" },
-  "engine-power-decrease": { mainLabel: "ENG POWER", subLabel: "DECREASE" },
-  "throttle-shaping-increase": { mainLabel: "THROTTLE", subLabel: "INCREASE" },
-  "throttle-shaping-decrease": { mainLabel: "THROTTLE", subLabel: "DECREASE" },
-  "boost-level-increase": { mainLabel: "BOOST", subLabel: "INCREASE" },
-  "boost-level-decrease": { mainLabel: "BOOST", subLabel: "DECREASE" },
-  "launch-rpm-increase": { mainLabel: "LAUNCH RPM", subLabel: "INCREASE" },
-  "launch-rpm-decrease": { mainLabel: "LAUNCH RPM", subLabel: "DECREASE" },
+const SETUP_ENGINE_TITLES: Record<string, string> = {
+  "engine-power-increase": "INCREASE\nENG POWER",
+  "engine-power-decrease": "DECREASE\nENG POWER",
+  "throttle-shaping-increase": "INCREASE\nTHROTTLE",
+  "throttle-shaping-decrease": "DECREASE\nTHROTTLE",
+  "boost-level-increase": "INCREASE\nBOOST",
+  "boost-level-decrease": "DECREASE\nBOOST",
+  "launch-rpm-increase": "INCREASE\nLAUNCH RPM",
+  "launch-rpm-decrease": "DECREASE\nLAUNCH RPM",
 };
 
 /**
@@ -88,16 +88,12 @@ export function generateSetupEngineSvg(settings: SetupEngineSettings): string {
 
   const iconKey = `${setting}-${direction}`;
   const iconSvg = SETUP_ENGINE_ICONS[iconKey] || SETUP_ENGINE_ICONS["engine-power-increase"];
-  const labels = SETUP_ENGINE_LABELS[iconKey] || { mainLabel: "ENGINE", subLabel: "SETUP" };
+  const defaultTitle = SETUP_ENGINE_TITLES[iconKey] || "SETUP\nENGINE";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

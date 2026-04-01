@@ -1,16 +1,17 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import decreaseIconSvg from "@iracedeck/icons/replay-speed/decrease.svg";
 import increaseIconSvg from "@iracedeck/icons/replay-speed/increase.svg";
@@ -24,11 +25,11 @@ const DIRECTION_ICONS: Record<SpeedDirection, string> = {
 };
 
 /**
- * Label configuration for each speed direction
+ * Title text for each speed direction (format: "subLabel\nmainLabel")
  */
-const REPLAY_SPEED_LABELS: Record<SpeedDirection, { mainLabel: string; subLabel: string }> = {
-  increase: { mainLabel: "FASTER", subLabel: "REPLAY" },
-  decrease: { mainLabel: "SLOWER", subLabel: "REPLAY" },
+const REPLAY_SPEED_TITLES: Record<SpeedDirection, string> = {
+  increase: "REPLAY\nFASTER",
+  decrease: "REPLAY\nSLOWER",
 };
 
 const ReplaySpeedSettings = CommonSettings.extend({
@@ -46,16 +47,12 @@ export function generateReplaySpeedSvg(settings: ReplaySpeedSettings): string {
   const { direction } = settings;
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS["increase"];
-  const labels = REPLAY_SPEED_LABELS[direction] || REPLAY_SPEED_LABELS["increase"];
+  const defaultTitle = REPLAY_SPEED_TITLES[direction] || REPLAY_SPEED_TITLES["increase"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

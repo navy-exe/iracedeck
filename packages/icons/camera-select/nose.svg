@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nNOSE"}}</desc>
 
-    <!-- Race car (svgrepo, centered) -->
     <g transform="translate(27, 36) scale(0.135)">
       <path d="M222.537,232.693h49.21l-0.469-12.424l-19.929-1.29c-0.423-0.062-0.782-0.359-0.938-0.782l-1.681-6.458
         c-0.141-0.399-0.078-0.86,0.156-1.212c0.25-0.351,0.657-0.563,1.095-0.563h18.951c-1.407-13.127-9.78-22.853-22.962-24.839
@@ -39,14 +36,9 @@
         fill="{{graphic1Color}}"/>
     </g>
 
-    <!-- Camera on top of nose, scale 1.2 -->
     <g transform="translate(116, 66) rotate(0) scale(1.2) translate(-12, -12.5)">
       <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 7H15.5C16.3284 7 17 7.67157 17 8.5V10.5L19.2764 9.3618C19.6088 9.19558 20 9.43733 20 9.80902V15.2785C20 15.6276 19.6513 15.8692 19.3244 15.7467L17 14.875V16.5C17 17.3284 16.3284 18 15.5 18H5.5C4.67157 18 4 17.3284 4 16.5V8.5C4 7.67157 4.67157 7 5.5 7Z"
         fill="{{graphic1Color}}"/>
     </g>
 
-    <!-- Label -->
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>

@@ -1,16 +1,17 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import eraseTapeIcon from "@iracedeck/icons/replay-navigation/erase-tape.svg";
 import jumpToEndIcon from "@iracedeck/icons/replay-navigation/jump-to-end.svg";
@@ -42,20 +43,20 @@ type NavigationAction =
   | "erase-tape";
 
 /**
- * Label configuration for each navigation action (mainLabel prominent, subLabel subdued)
+ * Title text for each navigation action (format: "subLabel\nmainLabel")
  */
-const REPLAY_NAVIGATION_LABELS: Record<NavigationAction, { mainLabel: string; subLabel: string }> = {
-  "next-session": { mainLabel: "NEXT", subLabel: "SESSION" },
-  "prev-session": { mainLabel: "PREVIOUS", subLabel: "SESSION" },
-  "next-lap": { mainLabel: "LAP", subLabel: "NEXT" },
-  "prev-lap": { mainLabel: "LAP", subLabel: "PREVIOUS" },
-  "next-incident": { mainLabel: "NEXT", subLabel: "INCIDENT" },
-  "prev-incident": { mainLabel: "PREVIOUS", subLabel: "INCIDENT" },
-  "jump-to-start": { mainLabel: "START", subLabel: "JUMP TO" },
-  "jump-to-end": { mainLabel: "END", subLabel: "JUMP TO" },
-  "set-play-position": { mainLabel: "SET", subLabel: "POSITION" },
-  "search-session-time": { mainLabel: "SEARCH", subLabel: "TIME" },
-  "erase-tape": { mainLabel: "ERASE", subLabel: "TAPE" },
+const REPLAY_NAVIGATION_TITLES: Record<NavigationAction, string> = {
+  "next-session": "SESSION\nNEXT",
+  "prev-session": "SESSION\nPREVIOUS",
+  "next-lap": "NEXT\nLAP",
+  "prev-lap": "PREVIOUS\nLAP",
+  "next-incident": "INCIDENT\nNEXT",
+  "prev-incident": "INCIDENT\nPREVIOUS",
+  "jump-to-start": "JUMP TO\nSTART",
+  "jump-to-end": "JUMP TO\nEND",
+  "set-play-position": "POSITION\nSET",
+  "search-session-time": "TIME\nSEARCH",
+  "erase-tape": "TAPE\nERASE",
 };
 
 /**
@@ -123,16 +124,12 @@ export function generateReplayNavigationSvg(
   const { navigation } = settings;
 
   const iconSvg = NAVIGATION_ICONS[navigation] || NAVIGATION_ICONS["next-session"];
-  const labels = REPLAY_NAVIGATION_LABELS[navigation] || REPLAY_NAVIGATION_LABELS["next-session"];
+  const defaultTitle = REPLAY_NAVIGATION_TITLES[navigation] || REPLAY_NAVIGATION_TITLES["next-session"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

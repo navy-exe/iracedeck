@@ -1,10 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"]}</desc>
-  <g filter="url(#activity-state)">
-    <!-- Main background -->
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"LAUNCH RPM\nDECREASE"}}</desc>
 
-    <!-- Icon content area: Tachometer arc with RPM needle + left arrow -->
     <path d="M32,72 A40,40 0 0,1 104,72" fill="none" stroke="#888888" stroke-width="3" stroke-linecap="round"/>
     <line x1="40" y1="64" x2="40" y2="56" stroke="#888888" stroke-width="2" stroke-linecap="round"/>
     <line x1="56" y1="44" x2="56" y2="36" stroke="#888888" stroke-width="2" stroke-linecap="round"/>
@@ -14,10 +10,4 @@
     <circle cx="68" cy="72" r="4" fill="{{graphic1Color}}"/>
     <polyline points="34,32 24,44 34,56" fill="none" stroke="#f1c40f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 
-    <!-- Two-line label -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-  </g>
 </svg>

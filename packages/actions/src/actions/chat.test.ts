@@ -122,6 +122,32 @@ vi.mock("@iracedeck/deck-core", () => ({
     startRole: vi.fn().mockResolvedValue(true),
     stopRole: vi.fn().mockResolvedValue(true),
   })),
+  getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
+  assembleIcon: vi.fn(
+    ({
+      graphicSvg,
+      colors,
+      title,
+    }: {
+      graphicSvg: string;
+      colors: Record<string, string>;
+      title: { titleText: string };
+    }) => {
+      const colorStr = Object.values(colors ?? {}).join(" ");
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${colorStr}${title?.titleText ?? ""}</svg>`);
+
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((_template: string, data: Record<string, string>) => {
     return `<svg>${data.iconContent || ""}${data.color || ""}${data.textElement || ""}${data.mainLabel || data.labelLine1 || ""}${data.subLabel || data.labelLine2 || ""}</svg>`;

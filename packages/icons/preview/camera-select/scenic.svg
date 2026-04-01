@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nSCENIC"}}</desc>
 
-    <!-- Landscape (svgrepo, scaled to icon content area) -->
     <g transform="translate(32, 17) scale(0.176)">
       <path d="M41.035,155.681h136.152c22.28,0,40.406-18.127,40.406-40.407s-18.126-40.407-40.406-40.407
         c-2.588,0-5.18,0.25-7.714,0.742c-5.942-16.419-21.169-27.374-38.229-27.374c-0.732,0-1.413,0.046-2.014,0.087
@@ -29,8 +26,4 @@
         fill="#ffffff"/>
     </g>
 
-    <!-- Label -->
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>

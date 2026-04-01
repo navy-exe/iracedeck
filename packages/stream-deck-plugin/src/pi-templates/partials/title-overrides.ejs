@@ -1,0 +1,58 @@
+<!--
+  Title Overrides Component
+
+  Provides per-action overrides for Stream Deck title settings.
+  "Inherit" (default) means the field is unset and falls through to global → hardcoded defaults.
+-->
+<%- include('accordion', {
+  title: 'Title Overrides',
+  open: false,
+  content:
+    '<div class="ird-section-subtitle">Visibility</div>' +
+    '<sdpi-item label="Show Title">' +
+      '<sdpi-select setting="titleOverrides.showTitle" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+    '<sdpi-item label="Show Graphics">' +
+      '<sdpi-select setting="titleOverrides.showGraphics" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+
+    '<div class="ird-section-subtitle">Text</div>' +
+    '<sdpi-item label="Title Text">' +
+      '<sdpi-textarea setting="titleOverrides.titleText" rows="3"></sdpi-textarea>' +
+    '</sdpi-item>' +
+    '<sdpi-item label="Bold">' +
+      '<sdpi-select setting="titleOverrides.bold" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+    '<sdpi-item label="Custom Font Size">' +
+      '<sdpi-checkbox id="title-override-fontSize-toggle" setting="titleOverrides.fontSizeEnabled" label="Override font size"></sdpi-checkbox>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="title-fontSize-item" class="hidden" label="Font Size">' +
+      '<sdpi-range id="title-override-fontSize" setting="titleOverrides.fontSize" min="5" max="100" showlabels></sdpi-range>' +
+    '</sdpi-item>' +
+
+    '<div class="ird-section-subtitle">Position</div>' +
+    '<sdpi-item label="Position">' +
+      '<sdpi-select id="title-override-position" setting="titleOverrides.position" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="top">Top</option>' +
+        '<option value="middle">Middle</option>' +
+        '<option value="bottom">Bottom</option>' +
+        '<option value="custom">Custom</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="title-custom-position-item" class="hidden" label="Custom Position">' +
+      '<sdpi-range id="title-override-customPosition" setting="titleOverrides.customPosition" min="-100" max="100" default="0" showlabels></sdpi-range>' +
+    '</sdpi-item>'
+}) %>

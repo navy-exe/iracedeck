@@ -1,13 +1,14 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import announceLeaderIconSvg from "@iracedeck/icons/ai-spotter-controls/announce-leader.svg";
 import damageReportIconSvg from "@iracedeck/icons/ai-spotter-controls/damage-report.svg";
@@ -45,16 +46,16 @@ export const SPOTTER_ICONS: Record<SpotterControl, string> = {
 /**
  * @internal Exported for testing
  *
- * Label configuration for each spotter control.
+ * Title text for each spotter control (format: "subLabel\nmainLabel")
  */
-export const SPOTTER_LABELS: Record<SpotterControl, { mainLabel: string; subLabel: string }> = {
-  "damage-report": { mainLabel: "DAMAGE", subLabel: "REPORT" },
-  "weather-report": { mainLabel: "WEATHER", subLabel: "REPORT" },
-  "toggle-report-laps": { mainLabel: "LAPS", subLabel: "REPORT" },
-  "announce-leader": { mainLabel: "LEADER", subLabel: "SPOTTER" },
-  louder: { mainLabel: "LOUDER", subLabel: "SPOTTER" },
-  quieter: { mainLabel: "QUIETER", subLabel: "SPOTTER" },
-  silence: { mainLabel: "SILENCE", subLabel: "SPOTTER" },
+export const SPOTTER_TITLES: Record<SpotterControl, string> = {
+  "damage-report": "REPORT\nDAMAGE",
+  "weather-report": "REPORT\nWEATHER",
+  "toggle-report-laps": "REPORT\nLAPS",
+  "announce-leader": "SPOTTER\nLEADER",
+  louder: "SPOTTER\nLOUDER",
+  quieter: "SPOTTER\nQUIETER",
+  silence: "SPOTTER\nSILENCE",
 };
 
 /**
@@ -96,12 +97,12 @@ type AiSpotterControlsSettings = z.infer<typeof AiSpotterControlsSettings>;
 export function generateAiSpotterControlsSvg(settings: AiSpotterControlsSettings): string {
   const { control } = settings;
   const iconSvg = SPOTTER_ICONS[control] || SPOTTER_ICONS["damage-report"];
-  const labels = SPOTTER_LABELS[control] || SPOTTER_LABELS["damage-report"];
+  const defaultTitle = SPOTTER_TITLES[control] || SPOTTER_TITLES["damage-report"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, { mainLabel: labels.mainLabel, subLabel: labels.subLabel, ...colors });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

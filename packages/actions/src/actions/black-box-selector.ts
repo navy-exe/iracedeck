@@ -1,14 +1,15 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import fuelIconSvg from "@iracedeck/icons/black-box-selector/fuel.svg";
 import inCarIconSvg from "@iracedeck/icons/black-box-selector/in-car.svg";
@@ -45,20 +46,20 @@ const CYCLE_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each black box type
+ * Title text for each black box type (format: "subLabel\nmainLabel")
  */
-const BLACK_BOX_LABELS: Record<string, { mainLabel: string; subLabel: string }> = {
-  "lap-timing": { mainLabel: "LAP TIMING", subLabel: "TOGGLE" },
-  standings: { mainLabel: "STANDINGS", subLabel: "TOGGLE" },
-  relative: { mainLabel: "RELATIVE", subLabel: "TOGGLE" },
-  fuel: { mainLabel: "FUEL", subLabel: "ADJUSTMENTS" },
-  tires: { mainLabel: "TIRES", subLabel: "ADJUSTMENTS" },
-  "tire-info": { mainLabel: "TIRE INFO", subLabel: "TOGGLE" },
-  "pit-stop": { mainLabel: "PIT-STOP", subLabel: "ADJUSTMENTS" },
-  "in-car": { mainLabel: "IN-CAR", subLabel: "ADJUSTMENTS" },
-  mirror: { mainLabel: "GRAPHICS", subLabel: "ADJUSTMENTS" },
-  radio: { mainLabel: "RADIO", subLabel: "CHANNELS" },
-  weather: { mainLabel: "WEATHER", subLabel: "FORECAST" },
+const BLACK_BOX_TITLE_TEXT: Record<string, string> = {
+  "lap-timing": "TOGGLE\nLAP TIMING",
+  standings: "TOGGLE\nSTANDINGS",
+  relative: "TOGGLE\nRELATIVE",
+  fuel: "ADJUSTMENTS\nFUEL",
+  tires: "ADJUSTMENTS\nTIRES",
+  "tire-info": "TOGGLE\nTIRE INFO",
+  "pit-stop": "ADJUSTMENTS\nPIT-STOP",
+  "in-car": "ADJUSTMENTS\nIN-CAR",
+  mirror: "ADJUSTMENTS\nGRAPHICS",
+  radio: "CHANNELS\nRADIO",
+  weather: "FORECAST\nWEATHER",
 };
 
 /**
@@ -118,27 +119,23 @@ export function generateBlackBoxSelectorSvg(settings: BlackBoxSelectorSettings):
   const { mode, blackBox } = settings;
 
   let iconSvg: string;
-  let labels: { mainLabel: string; subLabel: string };
+  let defaultTitle: string;
 
   if (mode === "next") {
     iconSvg = CYCLE_ICONS.next;
-    labels = { mainLabel: "NEXT", subLabel: "BLACK BOX" };
+    defaultTitle = "BLACK BOX\nNEXT";
   } else if (mode === "previous") {
     iconSvg = CYCLE_ICONS.previous;
-    labels = { mainLabel: "PREVIOUS", subLabel: "BLACK BOX" };
+    defaultTitle = "BLACK BOX\nPREVIOUS";
   } else {
     iconSvg = DIRECT_ICONS[blackBox] || DIRECT_ICONS["lap-timing"];
-    labels = BLACK_BOX_LABELS[blackBox] || { mainLabel: "BLACK BOX", subLabel: "TOGGLE" };
+    defaultTitle = BLACK_BOX_TITLE_TEXT[blackBox] || "TOGGLE\nBLACK BOX";
   }
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

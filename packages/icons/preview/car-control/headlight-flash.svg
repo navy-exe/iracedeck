@@ -1,23 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <!-- Main background -->
-    <rect x="0" y="0" width="144" height="144" fill="#2a3a2a"/>
+  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"FLASH\nHEADLIGHT"}}</desc>
 
-    <!-- Headlight housing (rounded rectangle) -->
     <rect x="34" y="30" width="40" height="30" rx="6" fill="none" stroke="#ffffff" stroke-width="4"/>
-    <!-- Lens detail -->
     <rect x="38" y="34" width="32" height="22" rx="3" fill="#ffffff" opacity="0.3"/>
 
-    <!-- Light beam rays -->
     <line x1="80" y1="38" x2="110" y2="28" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
     <line x1="80" y1="45" x2="112" y2="45" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
     <line x1="80" y1="52" x2="110" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
 
-    <!-- Two-line label -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
-          fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="#ffffff" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-  </g>
 </svg>

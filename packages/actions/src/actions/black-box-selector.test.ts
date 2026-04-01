@@ -8,46 +8,53 @@ const { mockTapBinding, mockSetActiveBinding } = vi.hoisted(() => ({
 }));
 
 vi.mock("@iracedeck/icons/black-box-selector/lap-timing.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">lap-timing {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">lap-timing</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/standings.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">standings {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">standings</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/relative.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">relative {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">relative</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/fuel.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">fuel {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">fuel</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/tires.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">tires {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">tires</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/tire-info.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">tire-info {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">tire-info</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/pit-stop.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">pit-stop {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">pit-stop</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/in-car.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">in-car {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">in-car</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/mirror.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">mirror {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">mirror</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/radio.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">radio {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">radio</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/weather.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">weather {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">weather</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/next.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">next {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">next</svg>',
 }));
 vi.mock("@iracedeck/icons/black-box-selector/previous.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">previous {{mainLabel}} {{subLabel}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">previous</svg>',
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
+
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
   CommonSettings: {
     extend: (_fields: unknown) => {
       // Return a mock Zod-like schema
@@ -84,22 +91,22 @@ vi.mock("@iracedeck/deck-core", () => ({
   }),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: vi.fn(() => ({})),
+  getGlobalTitleSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
     sendKeyCombination: vi.fn().mockResolvedValue(true),
   })),
   LogLevel: { Info: 2 },
   parseKeyBinding: vi.fn(),
-  resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
-  renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
-    let result = template;
-
-    for (const [key, value] of Object.entries(data)) {
-      result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
-    }
-
-    return result;
-  }),
-  svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
+  resolveIconColors: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown) => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 9,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
 }));
 
 const ALL_BLACK_BOXES = [
@@ -214,26 +221,28 @@ describe("BlackBoxSelector", () => {
     });
 
     it("should include correct labels for all direct black boxes", () => {
-      const expectedLabels: Record<string, { mainLabel: string; subLabel: string }> = {
-        "lap-timing": { mainLabel: "LAP TIMING", subLabel: "TOGGLE" },
-        standings: { mainLabel: "STANDINGS", subLabel: "TOGGLE" },
-        relative: { mainLabel: "RELATIVE", subLabel: "TOGGLE" },
-        fuel: { mainLabel: "FUEL", subLabel: "ADJUSTMENTS" },
-        tires: { mainLabel: "TIRES", subLabel: "ADJUSTMENTS" },
-        "tire-info": { mainLabel: "TIRE INFO", subLabel: "TOGGLE" },
-        "pit-stop": { mainLabel: "PIT-STOP", subLabel: "ADJUSTMENTS" },
-        "in-car": { mainLabel: "IN-CAR", subLabel: "ADJUSTMENTS" },
-        mirror: { mainLabel: "GRAPHICS", subLabel: "ADJUSTMENTS" },
-        radio: { mainLabel: "RADIO", subLabel: "CHANNELS" },
-        weather: { mainLabel: "WEATHER", subLabel: "FORECAST" },
+      const expectedTitleText: Record<string, string> = {
+        "lap-timing": "TOGGLE\nLAP TIMING",
+        standings: "TOGGLE\nSTANDINGS",
+        relative: "TOGGLE\nRELATIVE",
+        fuel: "ADJUSTMENTS\nFUEL",
+        tires: "ADJUSTMENTS\nTIRES",
+        "tire-info": "TOGGLE\nTIRE INFO",
+        "pit-stop": "ADJUSTMENTS\nPIT-STOP",
+        "in-car": "ADJUSTMENTS\nIN-CAR",
+        mirror: "ADJUSTMENTS\nGRAPHICS",
+        radio: "CHANNELS\nRADIO",
+        weather: "FORECAST\nWEATHER",
       };
 
-      for (const [blackBox, labels] of Object.entries(expectedLabels)) {
+      for (const [blackBox, titleText] of Object.entries(expectedTitleText)) {
         const result = generateBlackBoxSelectorSvg({ mode: "direct", blackBox: blackBox as any });
         const decoded = decodeURIComponent(result);
 
-        expect(decoded).toContain(labels.mainLabel);
-        expect(decoded).toContain(labels.subLabel);
+        // Each part of the title text should appear in the output
+        for (const part of titleText.split("\n")) {
+          expect(decoded).toContain(part);
+        }
       }
     });
   });

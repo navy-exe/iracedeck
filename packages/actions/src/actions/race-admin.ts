@@ -6,18 +6,19 @@
  */
 // ── Icon Imports ────────────────────────────────────────────────
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import advanceSessionIconSvg from "@iracedeck/icons/race-admin/advance-session.svg";
 import blackFlagIconSvg from "@iracedeck/icons/race-admin/black-flag.svg";
@@ -114,17 +115,20 @@ export function generateRaceAdminSvg(mode: RaceAdminMode, settings: RaceAdminSet
   const meta = RACE_ADMIN_MODE_META[mode];
   const iconSvg = RACE_ADMIN_ICONS[mode];
 
-  let { mainLabel, subLabel } = meta;
+  // Build default title from meta labels (subLabel on top, mainLabel on bottom)
+  let subLabel = meta.subLabel;
 
-  // When pre-defined car number is set, show it on the icon
+  // When pre-defined car number is set, show it on the icon instead of subLabel
   if (meta.needsDriver && !settings.useViewedCar && settings.carNumber?.trim()) {
     subLabel = `#${settings.carNumber.trim()}`;
   }
 
-  const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, { mainLabel, subLabel, ...colors });
+  const defaultTitle = subLabel ? `${subLabel}\n${meta.mainLabel}` : meta.mainLabel;
 
-  return svgToDataUri(svg);
+  const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 // ── Action Class ────────────────────────────────────────────────

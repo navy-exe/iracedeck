@@ -140,18 +140,19 @@ Plugin-level title defaults are stored as flat keys with a `title` prefix and re
 |-----|------|---------|-------------|
 | `titleShowTitle` | boolean | `true` | Show title text on key |
 | `titleShowGraphics` | boolean | `true` | Show graphics on key |
-| `titleBold` | boolean | `true` | Bold title text |
-| `titleFontSize` | number | `18` | Title font size (5–50) |
-| `titlePosition` | string | `"bottom"` | Position: `"top"`, `"middle"`, `"bottom"`, `"custom"` |
-| `titleCustomPosition` | number | `0` | Vertical offset for custom position (−50 to +50) |
+| `titleBold` | string | `"default"` | Bold: `"default"`, `"true"`, `"false"` |
+| `titleFontSizeDefault` | boolean | `true` | Use icon default font size (hides range when true) |
+| `titleFontSize` | number | `9` | Title font size in PI units (5–100, doubled for SVG) |
+| `titlePosition` | string | `"default"` | Position: `"default"`, `"top"`, `"middle"`, `"bottom"`, `"custom"` |
+| `titleCustomPosition` | number | `0` | Vertical offset for custom position (−100 to +100) |
 
-These are configured in the Global Settings PI section under "Title Defaults". Use `getGlobalTitleSettings()` in action code to read them:
+`"default"` means defer to the icon's `<desc>` title metadata default. These are configured in the Global Settings PI section under "Title Defaults". Use `getGlobalTitleSettings()` in action code to read them:
 
 ```typescript
-import { getGlobalTitleSettings } from "@iracedeck/deck-core";
+import { getGlobalTitleSettings, resolveTitleSettings } from "@iracedeck/deck-core";
 
-const globalTitle = getGlobalTitleSettings();
-const title = resolveTitleSettings(iconSvg, globalTitle, settings.titleOverrides);
+const globalTitleSettings = getGlobalTitleSettings();
+const title = resolveTitleSettings(graphicSvg, globalTitleSettings, settings.titleOverrides, "DEFAULT\nTITLE");
 ```
 
 ## Settings Key Convention

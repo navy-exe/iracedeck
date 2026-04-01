@@ -49,12 +49,27 @@ vi.mock("@iracedeck/deck-core", () => ({
   },
   getGlobalColors: vi.fn(() => ({})),
   LogLevel: { Info: 2 },
+  generateTitleText: vi.fn(({ text, fill }: { text: string; fill: string }) => {
+    if (!text) return "";
+
+    return `<text fill="${fill}">${text}</text>`;
+  }),
+  getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
   resolveIconColors: vi.fn((_svg: string, _global: unknown, _overrides: unknown) => ({
     backgroundColor: "#2a3444",
     textColor: "#ffffff",
   })),
   renderIconTemplate: vi.fn((_template: string, data: Record<string, string>) => {
-    return `<svg>${data.backgroundColor || ""}|${data.titleLabel || ""}|${data.value || ""}|${data.valueFontSize || ""}|${data.valueY || ""}|${data.textColor || ""}</svg>`;
+    return `<svg>${data.backgroundColor || ""}|${data.titleContent || ""}|${data.value || ""}|${data.valueFontSize || ""}|${data.valueY || ""}|${data.textColor || ""}</svg>`;
   }),
   svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
 }));

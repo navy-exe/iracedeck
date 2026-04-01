@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import driverHeightDecreaseIconSvg from "@iracedeck/icons/view-adjustment/driver-height-decrease.svg";
 import driverHeightIncreaseIconSvg from "@iracedeck/icons/view-adjustment/driver-height-increase.svg";
@@ -42,29 +43,28 @@ const VIEW_ADJUSTMENT_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each adjustment + direction combination.
- * Inverted layout: mainLabel = primary (bold, bottom), subLabel = secondary (subdued, top).
+ * Title configuration for each adjustment + direction combination.
  */
-const VIEW_ADJUSTMENT_LABELS: Record<AdjustmentType, Record<DirectionType, { mainLabel: string; subLabel: string }>> = {
+const VIEW_ADJUSTMENT_TITLES: Record<AdjustmentType, Record<DirectionType, string>> = {
   fov: {
-    increase: { mainLabel: "INCREASE", subLabel: "FOV" },
-    decrease: { mainLabel: "DECREASE", subLabel: "FOV" },
+    increase: "FOV\nINCREASE",
+    decrease: "FOV\nDECREASE",
   },
   horizon: {
-    increase: { mainLabel: "UP", subLabel: "HORIZON" },
-    decrease: { mainLabel: "DOWN", subLabel: "HORIZON" },
+    increase: "HORIZON\nUP",
+    decrease: "HORIZON\nDOWN",
   },
   "driver-height": {
-    increase: { mainLabel: "UP", subLabel: "DRIVER HEIGHT" },
-    decrease: { mainLabel: "DOWN", subLabel: "DRIVER HEIGHT" },
+    increase: "DRIVER HEIGHT\nUP",
+    decrease: "DRIVER HEIGHT\nDOWN",
   },
   "recenter-vr": {
-    increase: { mainLabel: "RECENTER", subLabel: "VR VIEW" },
-    decrease: { mainLabel: "RECENTER", subLabel: "VR VIEW" },
+    increase: "VR VIEW\nRECENTER",
+    decrease: "VR VIEW\nRECENTER",
   },
   "ui-size": {
-    increase: { mainLabel: "INCREASE", subLabel: "UI SIZE" },
-    decrease: { mainLabel: "DECREASE", subLabel: "UI SIZE" },
+    increase: "UI SIZE\nINCREASE",
+    decrease: "UI SIZE\nDECREASE",
   },
 };
 
@@ -113,16 +113,12 @@ export function generateViewAdjustmentSvg(settings: ViewAdjustmentSettings): str
 
   const iconKey = `${adjustment}-${direction}`;
   const iconSvg = VIEW_ADJUSTMENT_ICONS[iconKey] || VIEW_ADJUSTMENT_ICONS["fov-increase"];
-  const labels = VIEW_ADJUSTMENT_LABELS[adjustment]?.[direction] || VIEW_ADJUSTMENT_LABELS.fov.increase;
+  const defaultTitle = VIEW_ADJUSTMENT_TITLES[adjustment]?.[direction] || VIEW_ADJUSTMENT_TITLES.fov.increase;
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

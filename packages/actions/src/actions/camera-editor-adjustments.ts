@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import altitudeDecreaseIconSvg from "@iracedeck/icons/camera-editor-adjustments/altitude-decrease.svg";
 import altitudeIncreaseIconSvg from "@iracedeck/icons/camera-editor-adjustments/altitude-increase.svg";
@@ -101,70 +102,39 @@ const ADJUSTMENT_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each adjustment + direction combination.
- * mainLabel = primary (bold, bottom), subLabel = secondary (subdued, top).
+ * Title text for each adjustment + direction combination (format: "subLabel\nmainLabel")
  */
-const CAMERA_EDITOR_LABELS: Record<AdjustmentType, Record<DirectionType, { mainLabel: string; subLabel: string }>> = {
-  latitude: {
-    increase: { mainLabel: "+", subLabel: "LATITUDE" },
-    decrease: { mainLabel: "-", subLabel: "LATITUDE" },
-  },
-  longitude: {
-    increase: { mainLabel: "+", subLabel: "LONGITUDE" },
-    decrease: { mainLabel: "-", subLabel: "LONGITUDE" },
-  },
-  altitude: {
-    increase: { mainLabel: "+", subLabel: "ALTITUDE" },
-    decrease: { mainLabel: "-", subLabel: "ALTITUDE" },
-  },
-  yaw: {
-    increase: { mainLabel: "+", subLabel: "YAW" },
-    decrease: { mainLabel: "-", subLabel: "YAW" },
-  },
-  pitch: {
-    increase: { mainLabel: "+", subLabel: "PITCH" },
-    decrease: { mainLabel: "-", subLabel: "PITCH" },
-  },
-  "fov-zoom": {
-    increase: { mainLabel: "+", subLabel: "FOV ZOOM" },
-    decrease: { mainLabel: "-", subLabel: "FOV ZOOM" },
-  },
-  "key-step": {
-    increase: { mainLabel: "+", subLabel: "KEY STEP" },
-    decrease: { mainLabel: "-", subLabel: "KEY STEP" },
-  },
-  "vanish-x": {
-    increase: { mainLabel: "+", subLabel: "VANISH X" },
-    decrease: { mainLabel: "-", subLabel: "VANISH X" },
-  },
-  "vanish-y": {
-    increase: { mainLabel: "+", subLabel: "VANISH Y" },
-    decrease: { mainLabel: "-", subLabel: "VANISH Y" },
-  },
-  "blimp-radius": {
-    increase: { mainLabel: "+", subLabel: "BLIMP RAD" },
-    decrease: { mainLabel: "-", subLabel: "BLIMP RAD" },
-  },
-  "blimp-velocity": {
-    increase: { mainLabel: "+", subLabel: "BLIMP VEL" },
-    decrease: { mainLabel: "-", subLabel: "BLIMP VEL" },
-  },
-  "mic-gain": {
-    increase: { mainLabel: "+", subLabel: "MIC GAIN" },
-    decrease: { mainLabel: "-", subLabel: "MIC GAIN" },
-  },
-  "auto-set-mic-gain": {
-    increase: { mainLabel: "AUTO", subLabel: "MIC GAIN" },
-    decrease: { mainLabel: "AUTO", subLabel: "MIC GAIN" },
-  },
-  "f-number": {
-    increase: { mainLabel: "+", subLabel: "F-NUMBER" },
-    decrease: { mainLabel: "-", subLabel: "F-NUMBER" },
-  },
-  "focus-depth": {
-    increase: { mainLabel: "+", subLabel: "FOCUS DEPTH" },
-    decrease: { mainLabel: "-", subLabel: "FOCUS DEPTH" },
-  },
+const CAMERA_EDITOR_TITLES: Record<string, string> = {
+  "latitude-increase": "LATITUDE\n+",
+  "latitude-decrease": "LATITUDE\n-",
+  "longitude-increase": "LONGITUDE\n+",
+  "longitude-decrease": "LONGITUDE\n-",
+  "altitude-increase": "ALTITUDE\n+",
+  "altitude-decrease": "ALTITUDE\n-",
+  "yaw-increase": "YAW\n+",
+  "yaw-decrease": "YAW\n-",
+  "pitch-increase": "PITCH\n+",
+  "pitch-decrease": "PITCH\n-",
+  "fov-zoom-increase": "FOV ZOOM\n+",
+  "fov-zoom-decrease": "FOV ZOOM\n-",
+  "key-step-increase": "KEY STEP\n+",
+  "key-step-decrease": "KEY STEP\n-",
+  "vanish-x-increase": "VANISH X\n+",
+  "vanish-x-decrease": "VANISH X\n-",
+  "vanish-y-increase": "VANISH Y\n+",
+  "vanish-y-decrease": "VANISH Y\n-",
+  "blimp-radius-increase": "BLIMP RAD\n+",
+  "blimp-radius-decrease": "BLIMP RAD\n-",
+  "blimp-velocity-increase": "BLIMP VEL\n+",
+  "blimp-velocity-decrease": "BLIMP VEL\n-",
+  "mic-gain-increase": "MIC GAIN\n+",
+  "mic-gain-decrease": "MIC GAIN\n-",
+  "auto-set-mic-gain-increase": "MIC GAIN\nAUTO",
+  "auto-set-mic-gain-decrease": "MIC GAIN\nAUTO",
+  "f-number-increase": "F-NUMBER\n+",
+  "f-number-decrease": "F-NUMBER\n-",
+  "focus-depth-increase": "FOCUS DEPTH\n+",
+  "focus-depth-decrease": "FOCUS DEPTH\n-",
 };
 
 /**
@@ -207,16 +177,12 @@ export function generateCameraEditorAdjustmentsSvg(settings: CameraEditorAdjustm
 
   const iconKey = `${adjustment}-${direction}`;
   const iconSvg = ADJUSTMENT_ICONS[iconKey] || ADJUSTMENT_ICONS["latitude-increase"];
-  const labels = CAMERA_EDITOR_LABELS[adjustment]?.[direction] || CAMERA_EDITOR_LABELS.latitude.increase;
+  const defaultTitle = CAMERA_EDITOR_TITLES[iconKey] || "LATITUDE\n+";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

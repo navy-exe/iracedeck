@@ -1,9 +1,12 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   fuelToDisplayUnits,
+  generateTitleText,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -13,6 +16,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import addFuelIcon from "@iracedeck/icons/fuel-service/add-fuel.svg";
@@ -169,19 +173,19 @@ export function formatFuelFillAmount(liters: number, displayUnits: number | unde
 /**
  * Generates dynamic icon content (fuel amount + status bar) for toggle-fuel-fill mode.
  */
-function fuelFillDynamicIcon(telemetryState: FuelServiceTelemetryState, graphic1Color: string): string {
-  const statusBar = telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
+function fuelFillGraphicContent(telemetryState: FuelServiceTelemetryState, graphic1Color: string): string {
   const fuelText =
     telemetryState.fuelAmount === undefined
       ? "--"
       : formatFuelFillAmount(telemetryState.fuelAmount, telemetryState.displayUnits);
 
   return `
-    <text x="72" y="24" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">REFUEL</text>
     <text x="72" y="75" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${fuelText}</text>
-    ${statusBar}`;
+          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${fuelText}</text>`;
+}
+
+function fuelFillStatusBar(telemetryState: FuelServiceTelemetryState): string {
+  return telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
 }
 
 /**
@@ -263,10 +267,29 @@ export function generateFuelServiceSvg(
       string
     >;
     const graphic1 = colors.graphic1Color || WHITE;
-    const iconContent = fuelFillDynamicIcon(telemetryState ?? {}, graphic1);
+    const state = telemetryState ?? {};
+    const graphicContent = fuelFillGraphicContent(state, graphic1);
+    // Status bar is always visible, even when graphics are off
+    const statusBar = fuelFillStatusBar(state);
+
+    const resolvedTitle = resolveTitleSettings(fuelServiceTemplate, getGlobalTitleSettings(), settings.titleOverrides);
+
+    const titleContent = resolvedTitle.showTitle
+      ? generateTitleText({
+          text: resolvedTitle.titleText,
+          fontSize: resolvedTitle.fontSize,
+          bold: resolvedTitle.bold,
+          position: resolvedTitle.position,
+          customPosition: resolvedTitle.customPosition,
+          fill: colors.textColor ?? WHITE,
+        })
+      : "";
+
+    const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
 
     const svg = renderIconTemplate(fuelServiceTemplate, {
       iconContent,
+      titleContent,
       ...colors,
     });
 
@@ -275,16 +298,14 @@ export function generateFuelServiceSvg(
 
   // Static modes
   const iconSvg = FUEL_SERVICE_ICONS[mode] ?? FUEL_SERVICE_ICONS["add-fuel"]!;
-  const labels = getFuelServiceLabels(settings);
+  const { line1, line2 } = getFuelServiceLabels(settings);
+  // Convert inverted layout (line2=subLabel/top, line1=mainLabel/bottom) to title format (top\nbottom)
+  const defaultTitle = line2 ? `${line2}\n${line1}` : line1;
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.line1,
-    subLabel: labels.line2,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**
