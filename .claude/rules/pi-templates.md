@@ -74,11 +74,11 @@ Adds per-action title customization controls. Settings are stored under the `tit
 ```
 
 No parameters needed. The partial provides controls for:
-- **Show Title** / **Show Graphics** — toggle visibility of title text and artwork
-- **Title Text** — override default text (two lines: `"subLabel\nmainLabel"`)
-- **Bold**, **Font Size** — text style
-- **Position** — top, middle, bottom, or custom (with offset slider)
-- **Presets** — "Default" (resets to icon defaults) and "Global" (defers to global settings)
+- **Show Title** / **Show Graphics** — three-state select (Inherit / Yes / No)
+- **Title Text** — multiline textarea to override default title (`titleText`, newline-separated)
+- **Bold** — three-state select (Inherit / Yes / No)
+- **Font Size** — gated by "Override font size" checkbox; when enabled, shows range slider (5–100, doubled for SVG)
+- **Position** — select (Inherit / Top / Middle / Bottom / Custom); Custom reveals offset slider (−100 to +100)
 
 Place between `color-overrides` and `global-key-bindings`/`global-settings` includes.
 

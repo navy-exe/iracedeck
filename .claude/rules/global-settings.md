@@ -149,10 +149,10 @@ Plugin-level title defaults are stored as flat keys with a `title` prefix and re
 `"default"` means defer to the icon's `<desc>` title metadata default. These are configured in the Global Settings PI section under "Title Defaults". Use `getGlobalTitleSettings()` in action code to read them:
 
 ```typescript
-import { getGlobalTitleSettings } from "@iracedeck/deck-core";
+import { getGlobalTitleSettings, resolveTitleSettings } from "@iracedeck/deck-core";
 
-const globalTitle = getGlobalTitleSettings();
-const title = resolveTitleSettings(iconSvg, globalTitle, settings.titleOverrides);
+const globalTitleSettings = getGlobalTitleSettings();
+const title = resolveTitleSettings(graphicSvg, globalTitleSettings, settings.titleOverrides, "DEFAULT\nTITLE");
 ```
 
 ## Settings Key Convention

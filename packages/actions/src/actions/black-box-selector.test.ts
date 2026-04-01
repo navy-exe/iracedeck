@@ -48,11 +48,13 @@ vi.mock("@iracedeck/icons/black-box-selector/previous.svg", () => ({
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
-  assembleIcon: vi.fn(({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { text: string } }) => {
-    const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.text ?? ""}</svg>`);
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
 
-    return `data:image/svg+xml,${encoded}`;
-  }),
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
   CommonSettings: {
     extend: (_fields: unknown) => {
       // Return a mock Zod-like schema
@@ -97,7 +99,13 @@ vi.mock("@iracedeck/deck-core", () => ({
   parseKeyBinding: vi.fn(),
   resolveIconColors: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown) => ({})),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle: string) => ({
-    text: defaultTitle,
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 9,
+    position: "bottom" as const,
+    customPosition: 0,
   })),
 }));
 
