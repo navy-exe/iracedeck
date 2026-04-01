@@ -34,9 +34,6 @@ const TITLE_DEFAULTS: Omit<ResolvedTitleSettings, "titleText"> = {
 
 export { TITLE_DEFAULTS };
 
-// Ensure the TitleOverrides import is used (type-only import for future use)
-export type { TitleOverrides };
-
 export interface GenerateTitleTextOptions {
   text: string;
   fontSize: number;

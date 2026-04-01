@@ -98,6 +98,31 @@ describe("resolveTitleSettings", () => {
     expect(result.bold).toBe(true);
     expect(result.position).toBe("bottom");
   });
+
+  it("should treat global 'default' as unset and fall through to icon defaults", () => {
+    const graphicWithDefaults = `<svg><desc>{"colors":{},"title":{"text":"TEST","position":"top","fontSize":15,"customPosition":-10}}</desc></svg>`;
+    const global: GlobalTitleSettings = {
+      position: "default",
+      fontSize: "default",
+      bold: "default",
+      customPosition: "default",
+    };
+    const result = resolveTitleSettings(graphicWithDefaults, global);
+    expect(result.position).toBe("top");
+    expect(result.fontSize).toBe(15);
+    expect(result.customPosition).toBe(-10);
+    expect(result.bold).toBe(true); // no icon default for bold, falls to TITLE_DEFAULTS
+  });
+
+  it("should treat global 'default' as unset and fall through to TITLE_DEFAULTS when no icon defaults", () => {
+    const global: GlobalTitleSettings = {
+      position: "default",
+      fontSize: "default",
+    };
+    const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, global);
+    expect(result.position).toBe("bottom"); // TITLE_DEFAULTS
+    expect(result.fontSize).toBe(9); // TITLE_DEFAULTS
+  });
 });
 
 describe("generateTitleText", () => {
@@ -357,5 +382,32 @@ describe("getGlobalTitleSettings", () => {
     } as unknown as GlobalSettings);
     const result = getGlobalTitleSettings();
     expect(result).toEqual({ fontSize: 20 });
+  });
+
+  it("should return 'default' for bold when set to 'default'", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      titleBold: "default",
+    } as unknown as GlobalSettings);
+    const result = getGlobalTitleSettings();
+    expect(result.bold).toBe("default");
+  });
+
+  it("should return 'default' for fontSize when titleFontSizeDefault is true", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      titleFontSizeDefault: true,
+      titleFontSize: 20,
+    } as unknown as GlobalSettings);
+    const result = getGlobalTitleSettings();
+    expect(result.fontSize).toBe("default");
+  });
+
+  it("should return 'default' for position and customPosition when position is 'default'", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      titlePosition: "default",
+      titleCustomPosition: 10,
+    } as unknown as GlobalSettings);
+    const result = getGlobalTitleSettings();
+    expect(result.position).toBe("default");
+    expect(result.customPosition).toBe("default");
   });
 });

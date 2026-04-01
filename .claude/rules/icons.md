@@ -5,7 +5,7 @@
 
 - **Category icons** (`icon.svg`, 20x20): Must be monochrome white (`#ffffff`) on transparent background. No colors. Keep designs simple—text is often too small to read at this size.
 - **Key icons** (`key.svg`, 72x72): Can use full color palette. These appear on Stream Deck buttons. See [key-icon-types.md](key-icon-types.md) for standardized layouts.
-- **Standalone icon SVGs** (`packages/icons/{action-name}/*.svg`): Complete, self-contained 144x144 SVG files with Mustache placeholders for labels and colors. Imported at build time via `@iracedeck/icons/{action-name}/{variant}.svg`.
+- **Standalone icon SVGs** (`packages/icons/{action-name}/*.svg`): Graphic snippet SVGs — 144x144 viewBox with color Mustache placeholders and `<desc>` metadata, but no background rect and no label text elements. The background, title text, and base layout are added at render time by `assembleIcon()`. Imported at build time via `@iracedeck/icons/{action-name}/{variant}.svg`.
 - **Dynamic templates** (e.g., `packages/stream-deck-plugin/icons/*.svg`): 144x144 Mustache templates for actions with telemetry-driven content that can't be pre-rendered as standalone SVGs. May exist in any plugin package that needs them.
 
 ## Standalone Icon SVGs (preferred)
@@ -19,24 +19,32 @@ packages/icons/{action-name}/
 └── default.svg
 ```
 
-### Structure (144x144)
+### Structure (144x144 graphic snippet)
+
+Icons are graphic snippets — they contain only the artwork and metadata. The background rect and title text are added at render time by `assembleIcon()`.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CATEGORY\nACTION"}}</desc>
 
-    <!-- Icon content area (y=18 to y=86) -->
-    <!-- Eligible single-color artwork uses {{graphic1Color}} -->
-    <!-- ... artwork ... -->
+  <!-- Graphic artwork only — no background rect, no label text elements -->
+  <!-- Eligible single-color artwork uses {{graphic1Color}} -->
+  <!-- ... artwork ... -->
 
-    <!-- Labels -->
-    <text x="72" y="104" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="126" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
+</svg>
+```
+
+The `title.text` field in `<desc>` provides the default title (two lines: `"subLabel\nmainLabel"` format). Title position, font, and visibility are controlled via `resolveTitleSettings()` at render time.
+
+### Base template
+
+At render time, `assembleIcon()` assembles the final icon using `ICON_BASE_TEMPLATE`:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <rect x="0" y="0" width="144" height="144" fill="{backgroundColor}"/>
+  {graphicContent}
+  {titleContent}
 </svg>
 ```
 
@@ -48,18 +56,15 @@ import nextIconSvg from "@iracedeck/icons/splits-delta-cycle/next.svg";
 
 The Rollup `svgPlugin` resolves `@iracedeck/icons/` to `packages/icons/`.
 
-### Label placeholders
-
-- **`{{mainLabel}}`** — prominent label (larger, bold)
-- **`{{subLabel}}`** — secondary label (smaller)
-
 ## Color Slots
 
-Icons support up to 4 customizable color slots via Mustache placeholders. Each SVG declares its supported slots and defaults in a `<desc>` element:
+Icons support up to 4 customizable color slots via Mustache placeholders. Each SVG declares its supported slots, defaults, and default title text in a `<desc>` element:
 
 ```svg
-<desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
+<desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CATEGORY\nACTION"}}</desc>
 ```
+
+The `title.text` field is the default two-line title text (`"subLabel\nmainLabel"` format). Actions may override this at render time via `resolveTitleSettings()`.
 
 | Slot | Placeholder | Controls | Availability |
 |------|-------------|----------|-------------|

@@ -57,7 +57,44 @@ const MyActionSettings = CommonSettings.extend({
 
 Actions with no custom settings use `CommonSettings` directly.
 
-`CommonSettings` includes `flagsOverlay` (boolean) and `colorOverrides` (optional object with `backgroundColor`, `textColor`, `graphic1Color`, `graphic2Color`). Both are automatically available in all action settings schemas.
+`CommonSettings` includes:
+- `flagsOverlay` (boolean) — flags overlay toggle
+- `colorOverrides` (optional object with `backgroundColor`, `textColor`, `graphic1Color`, `graphic2Color`) — per-action color overrides
+- `titleOverrides` (optional `TitleOverridesSchema` object) — per-action title overrides (showTitle, showGraphics, titleText, bold, fontSize, position, customPosition)
+
+All fields are automatically available in all action settings schemas.
+
+### Icon Assembly Pattern
+
+Actions use `assembleIcon()` instead of `renderIconTemplate()` + `svgToDataUri()`. This handles the graphic snippet format: extracts artwork, applies colors, generates title text, and wraps in the base template.
+
+```typescript
+import {
+  assembleIcon,
+  getGlobalColors,
+  getGlobalTitleSettings,
+  resolveIconColors,
+  resolveTitleSettings,
+} from "@iracedeck/deck-core";
+import myIconSvg from "@iracedeck/icons/my-action/variant.svg";
+
+function generateIcon(settings: MySettings): string {
+  const colors = resolveIconColors(myIconSvg, getGlobalColors(), settings.colorOverrides);
+  const title = resolveTitleSettings(
+    myIconSvg,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    "DEFAULT\nTITLE",  // optional: action-specific default text
+  );
+  return assembleIcon({ graphicSvg: myIconSvg, colors, title });
+}
+```
+
+The `resolveTitleSettings()` resolution order for each field:
+1. `settings.titleOverrides` — per-action override (from Title Overrides PI section)
+2. `getGlobalTitleSettings()` — plugin-level global setting
+3. `<desc>` title metadata in the SVG — icon default
+4. Hard-coded defaults (showTitle=true, bold=true, fontSize=18, position="bottom")
 
 ### Super Calls
 

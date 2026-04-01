@@ -20,7 +20,6 @@ import {
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import enterCarIcon from "@iracedeck/icons/car-control/enter-car.svg";
-import enterExitTowIcon from "@iracedeck/icons/car-control/enter-exit-tow.svg";
 import escapeIcon from "@iracedeck/icons/car-control/escape.svg";
 import exitCarIcon from "@iracedeck/icons/car-control/exit-car.svg";
 import headlightFlashIcon from "@iracedeck/icons/car-control/headlight-flash.svg";
@@ -172,9 +171,9 @@ export function pitLimiterInactiveIcon(speed: number): string {
 /**
  * @internal Exported for testing
  *
- * DRS icon — large centered "DRS" text with ON/OFF status bar at the bottom.
+ * DRS icon — status bar only (title text handled by title settings system).
  */
-export function drsIcon(active: boolean, _graphic1Color = WHITE): string {
+export function drsIcon(active: boolean): string {
   return active ? statusBarOn() : statusBarOff();
 }
 
@@ -183,7 +182,7 @@ export function drsIcon(active: boolean, _graphic1Color = WHITE): string {
  *
  * Push To Pass icon — status bar only (title text handled by title settings system).
  */
-export function pushToPassIcon(active: boolean, _graphic1Color = WHITE): string {
+export function pushToPassIcon(active: boolean): string {
   return active ? statusBarOn() : statusBarOff();
 }
 
@@ -193,7 +192,6 @@ export function pushToPassIcon(active: boolean, _graphic1Color = WHITE): string 
 const STATIC_CAR_CONTROL_ICONS: Partial<Record<CarControlType, string>> = {
   starter: starterIcon,
   ignition: ignitionIcon,
-  "enter-exit-tow": enterExitTowIcon,
   "pause-sim": pauseSimIcon,
   "headlight-flash": headlightFlashIcon,
   "tear-off-visor": tearOffVisorIcon,
@@ -343,11 +341,10 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   if (control === "push-to-pass" || control === "drs") {
     const template = control === "push-to-pass" ? pushToPassTemplate : drsTemplate;
     const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
-    const graphic1 = colors.graphic1Color || settings.colorOverrides?.graphic1Color || WHITE;
     const iconContent =
       control === "push-to-pass"
-        ? pushToPassIcon(telemetryState?.pushToPassActive ?? false, graphic1)
-        : drsIcon(telemetryState?.drsActive ?? false, graphic1);
+        ? pushToPassIcon(telemetryState?.pushToPassActive ?? false)
+        : drsIcon(telemetryState?.drsActive ?? false);
 
     const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
 
@@ -362,6 +359,7 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
         })
       : "";
 
+    // Status bar is always visible, even when Show Graphics is off
     const svg = renderIconTemplate(template, {
       iconContent,
       titleContent,
@@ -393,11 +391,9 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
-function renderDynamicIcon(settings: CarControlSettings, iconContent: string, showLabels = true): string {
-  const labels = showLabels
-    ? CAR_CONTROL_LABELS[settings.control] || CAR_CONTROL_LABELS["starter"]
-    : { line1: "", line2: "" };
-  const defaultTitle = showLabels ? `${labels.line2}\n${labels.line1}` : "";
+function renderDynamicIcon(settings: CarControlSettings, iconContent: string): string {
+  const labels = CAR_CONTROL_LABELS[settings.control] || CAR_CONTROL_LABELS["starter"];
+  const defaultTitle = `${labels.line2}\n${labels.line1}`;
 
   const colors = resolveIconColors(carControlTemplate, getGlobalColors(), settings.colorOverrides);
   const resolvedTitle = resolveTitleSettings(

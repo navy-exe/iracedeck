@@ -132,6 +132,29 @@ const GlobalSettingsSchema = z.object({
 
 The `.passthrough()` allows dynamic key binding properties (e.g., `blackBoxLapTiming`, `lookDirectionLeft`) without declaring them explicitly in the schema.
 
+## Title Settings Keys
+
+Plugin-level title defaults are stored as flat keys with a `title` prefix and read via `getGlobalTitleSettings()`:
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `titleShowTitle` | boolean | `true` | Show title text on key |
+| `titleShowGraphics` | boolean | `true` | Show graphics on key |
+| `titleBold` | string | `"default"` | Bold: `"default"`, `"true"`, `"false"` |
+| `titleFontSizeDefault` | boolean | `true` | Use icon default font size (hides range when true) |
+| `titleFontSize` | number | `9` | Title font size in PI units (5–100, doubled for SVG) |
+| `titlePosition` | string | `"default"` | Position: `"default"`, `"top"`, `"middle"`, `"bottom"`, `"custom"` |
+| `titleCustomPosition` | number | `0` | Vertical offset for custom position (−100 to +100) |
+
+`"default"` means defer to the icon's `<desc>` title metadata default. These are configured in the Global Settings PI section under "Title Defaults". Use `getGlobalTitleSettings()` in action code to read them:
+
+```typescript
+import { getGlobalTitleSettings } from "@iracedeck/deck-core";
+
+const globalTitle = getGlobalTitleSettings();
+const title = resolveTitleSettings(iconSvg, globalTitle, settings.titleOverrides);
+```
+
 ## Settings Key Convention
 
 Global key bindings use flat key names:

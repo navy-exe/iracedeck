@@ -34,7 +34,7 @@ export function extractGraphicContent(svgTemplate: string): string {
     content = content.replace(/<\/g>\s*$/, "");
   }
 
-  // Remove <defs> and <filter> elements (activity-state filter is in base now)
+  // Remove <defs> and <filter> elements — activity-state filter is applied at render time by the overlay system
   content = content.replace(/<defs>[\s\S]*?<\/defs>/, "");
 
   return content.trim();

@@ -90,19 +90,6 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
   return (parsed.colors ?? {}) as ColorSlots;
 }
 
-/**
- * Parses the default title text from an SVG template's <desc> metadata.
- * The <desc> element should contain JSON with a "title" object: {"title":{"text":"LINE1\\nLINE2"}}
- *
- * @param svgTemplate - SVG template string containing a <desc> element
- * @returns The default title text, or undefined if not declared in metadata
- *
- * @internal Exported for testing and use by title-settings utilities
- */
-export function parseIconTitleDefault(svgTemplate: string): string | undefined {
-  return parseIconTitleDefaults(svgTemplate).text;
-}
-
 export interface IconTitleDefaults {
   text?: string;
   position?: "top" | "middle" | "bottom" | "custom";

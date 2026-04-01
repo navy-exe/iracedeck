@@ -278,11 +278,10 @@
         showControls(isChecked());
       });
 
-      document.addEventListener('settingsLoaded', function() {
-        showControls(isChecked());
-      });
+      // Initial state check
+      showControls(isChecked());
 
-      // Polling fallback for checkbox state
+      // Polling fallback for checkbox state (sdpi-checkbox loads asynchronously)
       var lastChecked = isChecked();
       setInterval(function() {
         var cur = isChecked();
@@ -325,11 +324,8 @@
       toggle.addEventListener('change', function() { showRange(!isChecked()); });
       toggle.addEventListener('input', function() { showRange(!isChecked()); });
 
-      // Initial state + settingsLoaded
+      // Initial state check
       showRange(!isChecked());
-      document.addEventListener('settingsLoaded', function() {
-        setTimeout(function() { showRange(!isChecked()); }, 200);
-      });
 
       var lastChecked = isChecked();
       setInterval(function() {
