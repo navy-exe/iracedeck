@@ -1,7 +1,9 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialUpEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -9,9 +11,8 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import lookDownIconSvg from "@iracedeck/icons/look-direction/look-down.svg";
 import lookLeftIconSvg from "@iracedeck/icons/look-direction/look-left.svg";
@@ -29,13 +30,13 @@ const DIRECTION_ICONS: Record<LookDirectionType, string> = {
 };
 
 /**
- * Label configuration for each look direction
+ * Title text for each look direction (format: "subLabel\nmainLabel")
  */
-const LOOK_DIRECTION_LABELS: Record<LookDirectionType, { mainLabel: string; subLabel: string }> = {
-  "look-left": { mainLabel: "LEFT", subLabel: "LOOK" },
-  "look-right": { mainLabel: "RIGHT", subLabel: "LOOK" },
-  "look-up": { mainLabel: "UP", subLabel: "LOOK" },
-  "look-down": { mainLabel: "DOWN", subLabel: "LOOK" },
+const LOOK_DIRECTION_TITLES: Record<LookDirectionType, string> = {
+  "look-left": "LOOK\nLEFT",
+  "look-right": "LOOK\nRIGHT",
+  "look-up": "LOOK\nUP",
+  "look-down": "LOOK\nDOWN",
 };
 
 /**
@@ -65,16 +66,12 @@ export function generateLookDirectionSvg(settings: LookDirectionSettings): strin
   const { direction } = settings;
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS["look-left"];
-  const labels = LOOK_DIRECTION_LABELS[direction] || LOOK_DIRECTION_LABELS["look-left"];
+  const defaultTitle = LOOK_DIRECTION_TITLES[direction] || LOOK_DIRECTION_TITLES["look-left"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

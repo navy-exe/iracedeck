@@ -5,56 +5,42 @@ paths:
 ---
 # Key Icon Types
 
-This document defines standardized key icon type layouts. Standalone icon templates (`packages/icons/**/*.svg`) are 144x144 SVGs with Mustache color placeholders and `<desc>` metadata, no `rx` on background rects. Key icons (`**/imgs/actions/**/key.svg`) are 72x72 static full-color SVGs with no Mustache placeholders and no `activity-state` filter.
+This document defines standardized key icon type layouts. Standalone icon SVGs (`packages/icons/**/*.svg`) are 144x144 graphic snippets — they contain only artwork, Mustache color placeholders, and `<desc>` metadata. No background rect and no label text elements. Background, title text, and base layout are composed at render time by `assembleIcon()`. Key icons (`**/imgs/actions/**/key.svg`) are 72x72 static full-color SVGs with no Mustache placeholders.
 
 ## Default Key Icon Type
 
 The standard layout for most action icons.
 
-### Canvas Layout (144x144 standalone)
+### Canvas Layout (144x144 graphic snippet)
+
+Icon SVGs contain only artwork — the background and title are assembled at render time:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <g filter="url(#activity-state)">
-    <!-- Main background -->
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"subLabel\nmainLabel"}}</desc>
 
-    <!-- Icon content area: y=18 to y=86 -->
-    {icon content using {{graphic1Color}} for eligible artwork}
+  <!-- Icon content area: y=18 to y=86 (recommended) -->
+  {icon content using {{graphic1Color}} for eligible artwork}
 
-    <!-- Two-line label area -->
-    <text x="72" y="116" fill="{{textColor}}" ...>{{subLabel}}</text>
-    <text x="72" y="138" fill="{{textColor}}" ...>{{mainLabel}}</text>
-  </g>
 </svg>
 ```
 
-- **Background**: No rounded corners, color varies by category (declared in `<desc>` metadata)
-- **Icon area**: y=18 to y=86 (68px height)
-- **Text area**: y=112 to y=148
+- **Background**: Added by `assembleIcon()` via `ICON_BASE_TEMPLATE` — no background rect in the source SVG
+- **Icon artwork area**: y=18 to y=86 recommended (68px height)
+- **Title text**: Generated from `<desc>` title metadata and placed at the bottom by default
 
-### Two-Line Label System
+### Title Text System
 
-Labels use two lines with primary (bold, prominent) and secondary (subdued) styling:
+Title text replaces the old `{{mainLabel}}`/`{{subLabel}}` placeholders. Each icon declares its default title in `<desc>`:
 
-| Label Type | Font Size (144) | Font Size (72) | Weight | Color |
-|------------|-----------------|-----------------|--------|-------|
-| Primary (`{{mainLabel}}`) | 20px | 10px | bold | `{{textColor}}` |
-| Secondary (`{{subLabel}}`) | 16px | 8px | normal | `{{textColor}}` |
+```json
+{"colors": {...}, "title": {"text": "subLabel\nmainLabel"}}
+```
 
-Both lines are centered horizontally (text-anchor="middle").
-
-There are two label layouts:
-
-**Standard** (mainLabel on top, subLabel on bottom):
-- Used when the category/name is the most important info (e.g., "STARTER" / "car control")
-- `{{mainLabel}}` at y=116 (primary), `{{subLabel}}` at y=138 (secondary)
-- Reference: `packages/icons/car-control/starter.svg`
-
-**Inverted** (subLabel on top, mainLabel on bottom):
-- Used when the action/direction word is more important than the category (e.g., "splits delta" / "NEXT")
-- `{{subLabel}}` at y=116 (secondary), `{{mainLabel}}` at y=138 (primary)
-- Reference: `packages/icons/splits-delta-cycle/next.svg`
+- Default format: `"subLabel\nmainLabel"` (first line secondary, second line primary)
+- Title is rendered at the bottom of the icon by `generateTitleText()` at render time
+- Users can override title text, font size, position, and visibility via the Title Overrides section in the Property Inspector
+- Actions can also supply a dynamic `actionDefaultText` string when calling `resolveTitleSettings()`
 
 ### Background Colors
 
@@ -82,47 +68,21 @@ Use these colors consistently across all icons (literal hex values in SVG, no co
 | Blue | #3498db | Cold temperatures |
 | Red | #e74c3c | Hot temperatures, errors |
 
-### Standard Template (144x144)
+### Graphic Snippet Template (144x144)
+
+All icon SVGs now use this graphic snippet format:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CATEGORY\nACTION"}}</desc>
 
-    <!-- Icon content area: y=18 to y=86 -->
-    <!-- ... artwork using {{graphic1Color}} ... -->
+  <!-- Icon content area: y=18 to y=86 -->
+  <!-- ... artwork using {{graphic1Color}} ... -->
 
-    <!-- Two-line label: mainLabel primary on top, subLabel secondary on bottom -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-  </g>
 </svg>
 ```
 
-### Inverted Template (144x144)
-
-Used when the action word (e.g., NEXT/PREVIOUS) should be more prominent than the category name.
-
-```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
-
-    <!-- Icon content area: y=18 to y=86 -->
-    <!-- ... artwork using {{graphic1Color}} ... -->
-
-    <!-- Inverted label: subLabel secondary on top, mainLabel primary on bottom -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
-</svg>
-```
+The default title text format is `"subLabel\nmainLabel"` — first line is the secondary (smaller) label, second line is the primary (bold) label. These are rendered at the bottom of the icon at position y≈118–140 by `generateTitleText()`.
 
 ## Specialized Types
 
@@ -137,9 +97,9 @@ Extends Default Key Icon Type (Standard label layout) with an inner black box fr
 
 ### Inverted Type
 
-Uses the Inverted label layout where the action word is prominent (bottom, bold) and the category is subdued (top, small).
+A convention for how the `title.text` is written in `<desc>`: the action word (e.g., NEXT) is on the second line (rendered bold), and the category is on the first line (rendered normally).
 
-- Category/context label on top (secondary), action word on bottom (primary)
+- Convention: `"title":{"text":"CATEGORY\nACTION"}` in `<desc>` — category first, action second
 - Background color varies per action
 - Reference: `packages/icons/splits-delta-cycle/`
 

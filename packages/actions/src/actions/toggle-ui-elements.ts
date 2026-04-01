@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import dashBoxIconSvg from "@iracedeck/icons/toggle-ui-elements/dash-box.svg";
 import displayRefCarIconSvg from "@iracedeck/icons/toggle-ui-elements/display-ref-car.svg";
@@ -47,18 +48,18 @@ const ELEMENT_ICONS: Record<UiElement, string> = {
 };
 
 /**
- * Label configuration for each UI element
+ * Title configuration for each UI element
  */
-const UI_ELEMENT_LABELS: Record<UiElement, { mainLabel: string; subLabel: string }> = {
-  "dash-box": { mainLabel: "DASH BOX", subLabel: "TOGGLE" },
-  "speed-gear-pedals": { mainLabel: "INPUTS", subLabel: "TOGGLE" },
-  "radio-display": { mainLabel: "RADIO", subLabel: "DISPLAY" },
-  "fps-network-display": { mainLabel: "SYSTEM", subLabel: "METERS" },
-  "weather-radar": { mainLabel: "WEATHER", subLabel: "RADAR" },
-  "virtual-mirror": { mainLabel: "VIRTUAL", subLabel: "MIRROR" },
-  "ui-edit-mode": { mainLabel: "UI EDIT", subLabel: "MODE" },
-  "display-ref-car": { mainLabel: "REFERENCE", subLabel: "CAR" },
-  "replay-ui": { mainLabel: "REPLAY UI", subLabel: "TOGGLE" },
+const UI_ELEMENT_TITLES: Record<UiElement, string> = {
+  "dash-box": "TOGGLE\nDASH BOX",
+  "speed-gear-pedals": "TOGGLE\nINPUTS",
+  "radio-display": "DISPLAY\nRADIO",
+  "fps-network-display": "METERS\nSYSTEM",
+  "weather-radar": "RADAR\nWEATHER",
+  "virtual-mirror": "MIRROR\nVIRTUAL",
+  "ui-edit-mode": "MODE\nUI EDIT",
+  "display-ref-car": "CAR\nREFERENCE",
+  "replay-ui": "TOGGLE\nREPLAY UI",
 };
 
 /**
@@ -105,16 +106,12 @@ export function generateToggleUiElementsSvg(settings: ToggleUiElementsSettings):
   const { element } = settings;
 
   const iconSvg = ELEMENT_ICONS[element] || ELEMENT_ICONS["dash-box"];
-  const labels = UI_ELEMENT_LABELS[element] || UI_ELEMENT_LABELS["dash-box"];
+  const defaultTitle = UI_ELEMENT_TITLES[element] || UI_ELEMENT_TITLES["dash-box"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

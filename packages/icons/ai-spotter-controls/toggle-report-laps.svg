@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a4a5a","textColor":"#ffffff","graphic1Color":"#f2f2f2"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#3a4a5a","textColor":"#ffffff","graphic1Color":"#f2f2f2"},"title":{"text":"REPORT\nLAPS"}}</desc>
 
-    <!-- Icon content area: lap counter display -->
     <g transform="translate(0, -8)">
       <path fill="{{graphic1Color}}" d="M75.8,83.6h-7.57c-1.06,0-1.95.88-1.95,1.95s.88,1.95,1.95,1.95h7.57c1.06,0,1.95-.88,1.95-1.95s-.88-1.95-1.95-1.95Z"/>
       <path fill="{{graphic1Color}}" d="M97.8,83.6h-7.57c-1.06,0-1.95.88-1.95,1.95s.88,1.95,1.95,1.95h7.57c1.09,0,1.95-.88,1.95-1.95s-.88-1.95-1.95-1.95Z"/>
@@ -19,8 +16,4 @@
       <path fill="{{graphic1Color}}" d="M100.88,22.93h-57.74c-17.2,0-31.18,14.32-31.18,31.93v10.95c0,8.51,3.24,16.47,9.1,22.41,5.86,5.91,13.7,9.18,22.05,9.18h57.77c8.35,0,16.19-3.27,22.05-9.18,5.89-5.94,9.1-13.88,9.1-22.41v-10.95c.03-17.61-13.96-31.93-31.15-31.93ZM73.96,26.82h6.77v5.99h-6.77v-5.99ZM95.38,46.58c6.02,0,11.13,5.08,11.13,11.1v5.29c0,5.94-4.98,10.76-11.13,10.76h-46.74c-6.12,0-11.13-4.82-11.13-10.76v-5.29c0-6.02,5.08-11.1,11.13-11.1h46.74ZM73.96,36.7h6.77v5.99h-6.77v-5.99ZM63.3,26.82h6.77v5.99h-6.77v-5.99ZM63.3,36.7h6.77v5.99h-6.77v-5.99ZM128.25,65.8h-.08c0,15.54-11.98,27.68-27.29,27.68h-57.74c-15.3,0-27.29-12.17-27.29-27.68v-10.95c0-15.46,12.24-28.04,27.29-28.04h16.26v15.87h-10.76c-3.99,0-7.76,1.58-10.61,4.46-2.83,2.85-4.38,6.59-4.38,10.53v5.29c0,8.07,6.74,14.66,15.02,14.66h46.77c8.27,0,15.02-6.56,15.02-14.66v-5.29c0-3.94-1.56-7.68-4.38-10.53-2.85-2.88-6.61-4.46-10.61-4.46h-10.76v-15.87h16.26c15.04,0,27.29,12.58,27.29,28.04v10.95Z"/>
     </g>
 
-    <!-- Labels -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central" fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central" fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>

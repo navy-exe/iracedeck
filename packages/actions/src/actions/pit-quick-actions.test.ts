@@ -43,7 +43,7 @@ vi.mock("@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg", () => ({
 }));
 
 vi.mock("../../icons/pit-quick-actions.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">{{iconContent}} {{backgroundColor}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">{{titleContent}}{{iconContent}} {{backgroundColor}}</svg>',
 }));
 
 vi.mock("../icons/status-bar.js", () => ({
@@ -80,9 +80,27 @@ vi.mock("@iracedeck/deck-core", () => ({
   getCommands: mockGetCommands,
   getGlobalColors: vi.fn(() => ({})),
   LogLevel: { Info: 2 },
+  getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
+
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
   resolveIconColors: vi.fn((_svg: string, _global: unknown, _overrides: unknown) => ({
     graphic1Color: "#ffffff",
   })),
+  generateTitleText: vi.fn((opts: { text: string }) => `<text>${opts.text}</text>`),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
 

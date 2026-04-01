@@ -2,12 +2,15 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   escapeXml,
+  generateTitleText,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDidReceiveSettingsEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import { resolveTemplate } from "@iracedeck/iracing-sdk";
@@ -28,7 +31,7 @@ type TelemetryDisplaySettings = z.infer<typeof TelemetryDisplaySettings>;
  */
 export function generateValueContent(value: string, fontSize: number, textColor: string): string {
   const lines = value.split("\n").filter((line) => line.length > 0);
-  const baseY = 102 + (fontSize - 44) / 3;
+  const baseY = 88 + (fontSize - 44) / 3;
   const lineHeight = fontSize * 1.2;
 
   if (lines.length <= 1) {
@@ -58,10 +61,27 @@ export function generateTelemetryDisplaySvg(title: string, value: string, settin
 
   const valueContent = generateValueContent(value, settings.fontSize * 2, textColor);
 
+  const resolvedTitle = resolveTitleSettings(
+    telemetryDisplayTemplate,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    title,
+  );
+
+  const titleContent = resolvedTitle.showTitle
+    ? generateTitleText({
+        text: resolvedTitle.titleText,
+        fontSize: resolvedTitle.fontSize,
+        bold: resolvedTitle.bold,
+        position: resolvedTitle.position,
+        customPosition: resolvedTitle.customPosition,
+        fill: textColor,
+      })
+    : "";
+
   const svg = renderIconTemplate(telemetryDisplayTemplate, {
     ...colors,
-    titleColor: textColor,
-    titleLabel: title,
+    titleContent,
     valueContent,
   });
 

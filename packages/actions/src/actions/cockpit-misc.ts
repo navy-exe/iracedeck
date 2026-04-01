@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import dashPage1DecreaseSvg from "@iracedeck/icons/cockpit-misc/dash-page-1-decrease.svg";
 import dashPage1IncreaseSvg from "@iracedeck/icons/cockpit-misc/dash-page-1-increase.svg";
@@ -38,29 +39,19 @@ type DirectionType = "increase" | "decrease";
 const DIRECTIONAL_CONTROLS: Set<CockpitMiscControl> = new Set(["ffb-max-force", "dash-page-1", "dash-page-2"]);
 
 /**
- * Label configuration for each control + direction combination.
- * Standard layout: mainLabel = prominent (bold, bottom), subLabel = category/context (subdued, top).
+ * Title text for each control + direction combination (format: "subLabel\nmainLabel")
  */
-const COCKPIT_MISC_LABELS: Record<
-  CockpitMiscControl,
-  Record<DirectionType, { mainLabel: string; subLabel: string }> | { mainLabel: string; subLabel: string }
-> = {
-  "toggle-wipers": { mainLabel: "WIPERS", subLabel: "TOGGLE" },
-  "trigger-wipers": { mainLabel: "WIPERS", subLabel: "TRIGGER" },
-  "ffb-max-force": {
-    increase: { mainLabel: "FFB FORCE", subLabel: "INCREASE" },
-    decrease: { mainLabel: "FFB FORCE", subLabel: "DECREASE" },
-  },
-  "report-latency": { mainLabel: "LATENCY", subLabel: "REPORT" },
-  "dash-page-1": {
-    increase: { mainLabel: "DASH PG 1", subLabel: "NEXT" },
-    decrease: { mainLabel: "DASH PG 1", subLabel: "PREVIOUS" },
-  },
-  "dash-page-2": {
-    increase: { mainLabel: "DASH PG 2", subLabel: "NEXT" },
-    decrease: { mainLabel: "DASH PG 2", subLabel: "PREVIOUS" },
-  },
-  "in-lap-mode": { mainLabel: "IN LAP", subLabel: "MODE" },
+const COCKPIT_MISC_TITLES: Record<string, string> = {
+  "toggle-wipers": "TOGGLE\nWIPERS",
+  "trigger-wipers": "TRIGGER\nWIPERS",
+  "ffb-max-force-increase": "INCREASE\nFFB FORCE",
+  "ffb-max-force-decrease": "DECREASE\nFFB FORCE",
+  "report-latency": "REPORT\nLATENCY",
+  "dash-page-1-increase": "NEXT\nDASH PG 1",
+  "dash-page-1-decrease": "PREVIOUS\nDASH PG 1",
+  "dash-page-2-increase": "NEXT\nDASH PG 2",
+  "dash-page-2-decrease": "PREVIOUS\nDASH PG 2",
+  "in-lap-mode": "MODE\nIN LAP",
 };
 
 /**
@@ -134,18 +125,18 @@ export function generateCockpitMiscSvg(settings: CockpitMiscSettings): string {
   const iconSvg =
     typeof svgEntry === "string" ? svgEntry : (svgEntry?.[direction] ?? COCKPIT_MISC_SVGS["trigger-wipers"]);
 
-  const labelEntry = COCKPIT_MISC_LABELS[control];
-  const labels: { mainLabel: string; subLabel: string } =
-    "mainLabel" in labelEntry ? labelEntry : (labelEntry[direction] ?? { mainLabel: "COCKPIT", subLabel: "MISC" });
+  const titleKey = DIRECTIONAL_CONTROLS.has(control) ? `${control}-${direction}` : control;
+  const defaultTitle = COCKPIT_MISC_TITLES[titleKey] || "COCKPIT\nMISC";
 
   const colors = resolveIconColors(iconSvg as string, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg as string, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(
+    iconSvg as string,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    defaultTitle,
+  );
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg as string, colors, title });
 }
 
 /**

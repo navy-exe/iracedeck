@@ -1,8 +1,13 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  extractGraphicContent,
+  generateTitleText,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
+  ICON_BASE_TEMPLATE,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -12,6 +17,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import fastForwardIconSvg from "@iracedeck/icons/replay-control/fast-forward.svg";
@@ -107,32 +113,32 @@ const REPLAY_CONTROL_ICONS: Record<ReplayControlMode, string> = {
   "prev-car-number": prevCarNumberIconSvg,
 };
 
-const REPLAY_CONTROL_LABELS: Record<ReplayControlMode, { mainLabel: string; subLabel: string }> = {
-  "play-pause": { mainLabel: "PLAY", subLabel: "FORWARD" },
-  "play-backward": { mainLabel: "PLAY", subLabel: "BACKWARD" },
-  stop: { mainLabel: "STOP", subLabel: "" },
-  "fast-forward": { mainLabel: "FORWARD", subLabel: "FAST" },
-  rewind: { mainLabel: "REWIND", subLabel: "" },
-  "slow-motion": { mainLabel: "MOTION", subLabel: "SLOW" },
-  "frame-forward": { mainLabel: "FRAME FWD", subLabel: "" },
-  "frame-backward": { mainLabel: "FRAME BACK", subLabel: "" },
-  "speed-increase": { mainLabel: "FASTER", subLabel: "REPLAY" },
-  "speed-decrease": { mainLabel: "SLOWER", subLabel: "REPLAY" },
-  "set-speed": { mainLabel: "", subLabel: "SET SPEED" },
-  "speed-display": { mainLabel: "SPEED", subLabel: "REPLAY" },
-  "next-session": { mainLabel: "NEXT", subLabel: "SESSION" },
-  "prev-session": { mainLabel: "PREVIOUS", subLabel: "SESSION" },
-  "next-lap": { mainLabel: "LAP", subLabel: "NEXT" },
-  "prev-lap": { mainLabel: "LAP", subLabel: "PREVIOUS" },
-  "next-incident": { mainLabel: "NEXT", subLabel: "INCIDENT" },
-  "prev-incident": { mainLabel: "PREVIOUS", subLabel: "INCIDENT" },
-  "jump-to-beginning": { mainLabel: "BEGINNING", subLabel: "JUMP TO" },
-  "jump-to-live": { mainLabel: "LIVE", subLabel: "JUMP TO" },
-  "jump-to-my-car": { mainLabel: "MY CAR", subLabel: "JUMP TO" },
-  "next-car": { mainLabel: "NEXT", subLabel: "CAR" },
-  "prev-car": { mainLabel: "PREVIOUS", subLabel: "CAR" },
-  "next-car-number": { mainLabel: "NEXT", subLabel: "CAR #" },
-  "prev-car-number": { mainLabel: "PREVIOUS", subLabel: "CAR #" },
+const REPLAY_CONTROL_TITLES: Record<ReplayControlMode, string> = {
+  "play-pause": "FORWARD\nPLAY",
+  "play-backward": "BACKWARD\nPLAY",
+  stop: "STOP",
+  "fast-forward": "FAST\nFORWARD",
+  rewind: "REWIND",
+  "slow-motion": "SLOW\nMOTION",
+  "frame-forward": "FRAME FWD",
+  "frame-backward": "FRAME BACK",
+  "speed-increase": "REPLAY\nFASTER",
+  "speed-decrease": "REPLAY\nSLOWER",
+  "set-speed": "SET SPEED",
+  "speed-display": "REPLAY\nSPEED",
+  "next-session": "SESSION\nNEXT",
+  "prev-session": "SESSION\nPREVIOUS",
+  "next-lap": "NEXT\nLAP",
+  "prev-lap": "PREVIOUS\nLAP",
+  "next-incident": "INCIDENT\nNEXT",
+  "prev-incident": "INCIDENT\nPREVIOUS",
+  "jump-to-beginning": "JUMP TO\nBEGINNING",
+  "jump-to-live": "JUMP TO\nLIVE",
+  "jump-to-my-car": "JUMP TO\nMY CAR",
+  "next-car": "CAR\nNEXT",
+  "prev-car": "CAR\nPREVIOUS",
+  "next-car-number": "CAR #\nNEXT",
+  "prev-car-number": "CAR #\nPREVIOUS",
 };
 
 /**
@@ -250,32 +256,79 @@ export function generateReplayControlSvg(
   const { mode } = settings;
 
   let iconSvg = REPLAY_CONTROL_ICONS[mode] || REPLAY_CONTROL_ICONS["play-pause"];
-  const labels = REPLAY_CONTROL_LABELS[mode] || REPLAY_CONTROL_LABELS["play-pause"];
-
-  let mainLabel = labels.mainLabel;
-  let subLabel = labels.subLabel;
-  const templateData: Record<string, string> = {};
-
-  if ((mode === "play-pause" || mode === "play-backward") && isPlaying) {
-    iconSvg = pauseIconSvg;
-    mainLabel = "PAUSE";
-    subLabel = "";
-  } else if (mode === "speed-display") {
-    const speed = replaySpeed ?? 0;
-    const slowMo = replaySlowMotion ?? false;
-    templateData.speedText = formatSpeedDisplay(speed, slowMo);
-  } else if (mode === "set-speed" && settings.speed) {
-    mainLabel = formatSetSpeedLabel(settings.speed);
-    templateData.needleAngle = String(calculateNeedleAngle(settings.speed));
-  }
-
-  templateData.mainLabel = mainLabel;
-  templateData.subLabel = subLabel;
+  const defaultTitle = REPLAY_CONTROL_TITLES[mode] || REPLAY_CONTROL_TITLES["play-pause"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, { ...templateData, ...colors });
 
-  return svgToDataUri(svg);
+  // speed-display: dynamic template variable (speedText) embedded in the graphic snippet
+  if (mode === "speed-display") {
+    const speed = replaySpeed ?? 0;
+    const slowMo = replaySlowMotion ?? false;
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+    const rawGraphic = extractGraphicContent(iconSvg);
+    const graphicContent = title.showGraphics
+      ? renderIconTemplate(rawGraphic, { speedText: formatSpeedDisplay(speed, slowMo), ...colors })
+      : "";
+    const titleContent = title.showTitle
+      ? generateTitleText({
+          text: title.titleText,
+          fontSize: title.fontSize,
+          bold: title.bold,
+          position: title.position,
+          customPosition: title.customPosition,
+          fill: colors.textColor ?? "#ffffff",
+        })
+      : "";
+    const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+      backgroundColor: colors.backgroundColor ?? "#000000",
+      graphicContent,
+      titleContent,
+    });
+
+    return svgToDataUri(svg);
+  }
+
+  // set-speed: dynamic template variable (needleAngle) embedded in the graphic snippet
+  if (mode === "set-speed" && settings.speed) {
+    const mainLabel = formatSetSpeedLabel(settings.speed);
+    const needleAngle = String(calculateNeedleAngle(settings.speed));
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+    const rawGraphic = extractGraphicContent(iconSvg);
+    const graphicContent = title.showGraphics
+      ? renderIconTemplate(rawGraphic, { mainLabel, needleAngle, ...colors })
+      : "";
+    const titleContent = title.showTitle
+      ? generateTitleText({
+          text: title.titleText,
+          fontSize: title.fontSize,
+          bold: title.bold,
+          position: title.position,
+          customPosition: title.customPosition,
+          fill: colors.textColor ?? "#ffffff",
+        })
+      : "";
+    const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+      backgroundColor: colors.backgroundColor ?? "#000000",
+      graphicContent,
+      titleContent,
+    });
+
+    return svgToDataUri(svg);
+  }
+
+  // play-pause / play-backward: icon and title switch based on playing state
+  if ((mode === "play-pause" || mode === "play-backward") && isPlaying) {
+    iconSvg = pauseIconSvg;
+    const pauseColors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PAUSE");
+
+    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title });
+  }
+
+  // All other modes: static title via assembleIcon
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

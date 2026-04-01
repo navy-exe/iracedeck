@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nTV1"}}</desc>
 
-    <!-- TV (svgrepo, scaled to icon content area) -->
     <g transform="translate(29.3, 19.7) scale(0.1667)">
       <path d="M447.86,384H64.14A48.2,48.2,0,0,1,16,335.86V128.14A48.2,48.2,0,0,1,64.14,80H447.86A48.2,48.2,0,0,1,496,128.14V335.86A48.2,48.2,0,0,1,447.86,384Z"
         fill="{{graphic1Color}}"/>
@@ -11,12 +8,7 @@
         stroke="{{graphic1Color}}" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32"/>
     </g>
 
-    <!-- TV1 text on screen (background color for cut-out effect) -->
     <text x="72" y="67" text-anchor="middle" dominant-baseline="central"
           fill="{{backgroundColor}}" font-family="Arial, sans-serif" font-size="25" font-weight="bold">TV1</text>
 
-    <!-- Label -->
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>

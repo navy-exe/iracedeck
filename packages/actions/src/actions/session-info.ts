@@ -1,12 +1,15 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
+  generateTitleText,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDidReceiveSettingsEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import {
@@ -122,9 +125,10 @@ export function generateSessionInfoSvg(
     fuel: "FUEL",
     flags: "FLAGS",
   };
-  const titleLabel = titleLabels[settings.mode] ?? "INCIDENTS";
-  const valueFontSize = settings.mode === "incidents" ? "48" : value.length > 5 ? "28" : "36";
-  const valueY = settings.mode === "incidents" ? "104" : "100";
+  const actionDefaultTitle = titleLabels[settings.mode] ?? "INCIDENTS";
+  const valueFontSizeNum = settings.mode === "incidents" ? 48 : value.length > 5 ? 28 : 36;
+  const valueFontSize = String(valueFontSizeNum);
+  const valueY = String(88 + (valueFontSizeNum - 44) / 3);
 
   let backgroundColor: string;
   let textColor: string;
@@ -139,9 +143,27 @@ export function generateSessionInfoSvg(
     textColor = colors.textColor;
   }
 
+  const resolvedTitle = resolveTitleSettings(
+    sessionInfoTemplate,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    actionDefaultTitle,
+  );
+
+  const titleContent = resolvedTitle.showTitle
+    ? generateTitleText({
+        text: resolvedTitle.titleText,
+        fontSize: resolvedTitle.fontSize,
+        bold: resolvedTitle.bold,
+        position: resolvedTitle.position,
+        customPosition: resolvedTitle.customPosition,
+        fill: textColor,
+      })
+    : "";
+
   const svg = renderIconTemplate(sessionInfoTemplate, {
     backgroundColor,
-    titleLabel,
+    titleContent,
     value,
     valueFontSize,
     valueY,

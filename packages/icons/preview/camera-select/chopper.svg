@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <rect x="0" y="0" width="144" height="144" fill="#2a4a5a"/>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nCHOPPER"}}</desc>
 
-    <!-- Helicopter (svgrepo, scaled to icon content area) -->
     <g transform="translate(32, 18) scale(0.15625)">
       <path d="M495.295,372.934c-9.222,0-16.705,7.477-16.705,16.705c0,9.211-7.494,16.705-16.705,16.705h-27.559v-34.067
         c16.713-2.157,32.179-9.729,44.307-21.893c14.573-14.606,22.567-33.997,22.513-54.595c-0.003-1.409,0.318-6.965-0.556-10.442
@@ -18,8 +15,4 @@
         fill="#ffffff"/>
     </g>
 
-    <!-- Label -->
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>

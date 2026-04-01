@@ -1,14 +1,15 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import acquireEndIconSvg from "@iracedeck/icons/camera-editor-controls/acquire-end.svg";
 import acquireStartIconSvg from "@iracedeck/icons/camera-editor-controls/acquire-start.svg";
@@ -111,39 +112,39 @@ const CONTROL_ICONS: Record<ControlType, string> = {
 };
 
 /**
- * Label configuration for each control.
+ * Title text for each control (format: "subLabel\nmainLabel")
  */
-const CAMERA_EDITOR_CONTROLS_LABELS: Record<ControlType, { mainLabel: string; subLabel: string }> = {
-  "open-camera-tool": { mainLabel: "OPEN", subLabel: "CAM TOOL" },
-  "key-acceleration-toggle": { mainLabel: "KEY ACCEL", subLabel: "TOGGLE" },
-  "key-10x-toggle": { mainLabel: "KEY 10X", subLabel: "TOGGLE" },
-  "parabolic-mic-toggle": { mainLabel: "PARA MIC", subLabel: "TOGGLE" },
-  "cycle-position-type": { mainLabel: "POS TYPE", subLabel: "CYCLE" },
-  "cycle-aim-type": { mainLabel: "AIM TYPE", subLabel: "CYCLE" },
-  "acquire-start": { mainLabel: "ACQ START", subLabel: "ACQUIRE" },
-  "acquire-end": { mainLabel: "ACQ END", subLabel: "ACQUIRE" },
-  "temporary-edits-toggle": { mainLabel: "TEMP EDIT", subLabel: "TOGGLE" },
-  "dampening-toggle": { mainLabel: "DAMPEN", subLabel: "TOGGLE" },
-  "zoom-toggle": { mainLabel: "ZOOM", subLabel: "TOGGLE" },
-  "beyond-fence-toggle": { mainLabel: "BND FENCE", subLabel: "TOGGLE" },
-  "in-cockpit-toggle": { mainLabel: "IN COCKPIT", subLabel: "TOGGLE" },
-  "mouse-navigation-toggle": { mainLabel: "MOUSE NAV", subLabel: "TOGGLE" },
-  "pitch-gyro-toggle": { mainLabel: "PITCH GYRO", subLabel: "TOGGLE" },
-  "roll-gyro-toggle": { mainLabel: "ROLL GYRO", subLabel: "TOGGLE" },
-  "limit-shot-range-toggle": { mainLabel: "SHOT RNG", subLabel: "TOGGLE" },
-  "show-camera-toggle": { mainLabel: "SHOW CAM", subLabel: "TOGGLE" },
-  "shot-selection-toggle": { mainLabel: "SHOT SEL", subLabel: "TOGGLE" },
-  "manual-focus-toggle": { mainLabel: "MAN FOCUS", subLabel: "TOGGLE" },
-  "insert-camera": { mainLabel: "INSERT", subLabel: "CAMERA" },
-  "remove-camera": { mainLabel: "REMOVE", subLabel: "CAMERA" },
-  "copy-camera": { mainLabel: "COPY", subLabel: "CAMERA" },
-  "paste-camera": { mainLabel: "PASTE", subLabel: "CAMERA" },
-  "copy-group": { mainLabel: "COPY", subLabel: "GROUP" },
-  "paste-group": { mainLabel: "PASTE", subLabel: "GROUP" },
-  "save-track-camera": { mainLabel: "SAVE", subLabel: "TRACK CAM" },
-  "load-track-camera": { mainLabel: "LOAD", subLabel: "TRACK CAM" },
-  "save-car-camera": { mainLabel: "SAVE", subLabel: "CAR CAM" },
-  "load-car-camera": { mainLabel: "LOAD", subLabel: "CAR CAM" },
+const CAMERA_EDITOR_CONTROLS_TITLES: Record<ControlType, string> = {
+  "open-camera-tool": "CAM TOOL\nOPEN",
+  "key-acceleration-toggle": "TOGGLE\nKEY ACCEL",
+  "key-10x-toggle": "TOGGLE\nKEY 10X",
+  "parabolic-mic-toggle": "TOGGLE\nPARA MIC",
+  "cycle-position-type": "CYCLE\nPOS TYPE",
+  "cycle-aim-type": "CYCLE\nAIM TYPE",
+  "acquire-start": "ACQUIRE\nACQ START",
+  "acquire-end": "ACQUIRE\nACQ END",
+  "temporary-edits-toggle": "TOGGLE\nTEMP EDIT",
+  "dampening-toggle": "TOGGLE\nDAMPEN",
+  "zoom-toggle": "TOGGLE\nZOOM",
+  "beyond-fence-toggle": "TOGGLE\nBND FENCE",
+  "in-cockpit-toggle": "TOGGLE\nIN COCKPIT",
+  "mouse-navigation-toggle": "TOGGLE\nMOUSE NAV",
+  "pitch-gyro-toggle": "TOGGLE\nPITCH GYRO",
+  "roll-gyro-toggle": "TOGGLE\nROLL GYRO",
+  "limit-shot-range-toggle": "TOGGLE\nSHOT RNG",
+  "show-camera-toggle": "TOGGLE\nSHOW CAM",
+  "shot-selection-toggle": "TOGGLE\nSHOT SEL",
+  "manual-focus-toggle": "TOGGLE\nMAN FOCUS",
+  "insert-camera": "CAMERA\nINSERT",
+  "remove-camera": "CAMERA\nREMOVE",
+  "copy-camera": "CAMERA\nCOPY",
+  "paste-camera": "CAMERA\nPASTE",
+  "copy-group": "GROUP\nCOPY",
+  "paste-group": "GROUP\nPASTE",
+  "save-track-camera": "TRACK CAM\nSAVE",
+  "load-track-camera": "TRACK CAM\nLOAD",
+  "save-car-camera": "CAR CAM\nSAVE",
+  "load-car-camera": "CAR CAM\nLOAD",
 };
 
 /**
@@ -199,16 +200,12 @@ export function generateCameraEditorControlsSvg(settings: CameraEditorControlsSe
   const { control } = settings;
 
   const iconSvg = CONTROL_ICONS[control] || CONTROL_ICONS["open-camera-tool"];
-  const labels = CAMERA_EDITOR_CONTROLS_LABELS[control] || CAMERA_EDITOR_CONTROLS_LABELS["open-camera-tool"];
+  const defaultTitle = CAMERA_EDITOR_CONTROLS_TITLES[control] || CAMERA_EDITOR_CONTROLS_TITLES["open-camera-tool"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

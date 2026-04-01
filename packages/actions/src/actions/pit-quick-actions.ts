@@ -1,8 +1,11 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateTitleText,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
@@ -10,13 +13,15 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import clearAllCheckboxesIconSvg from "@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg";
 import { hasFlag, PitSvFlags, type TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
-import pitQuickActionsTemplate from "../../icons/pit-quick-actions.svg";
+import fastRepairTemplate from "../../icons/pit-quick-actions-fast-repair.svg";
+import windshieldTemplate from "../../icons/pit-quick-actions-windshield.svg";
 import { statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "request-fast-repair";
@@ -27,15 +32,6 @@ type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "reque
  */
 const STATIC_ACTION_ICONS: Partial<Record<PitQuickActionType, string>> = {
   "clear-all-checkboxes": clearAllCheckboxesIconSvg,
-};
-
-/**
- * Label configuration for each pit quick action
- */
-const PIT_QUICK_ACTION_LABELS: Record<PitQuickActionType, { mainLabel: string; subLabel: string }> = {
-  "clear-all-checkboxes": { mainLabel: "CLEAR ALL", subLabel: "PIT" },
-  "windshield-tearoff": { mainLabel: "WINDSHIELD", subLabel: "TEAROFF" },
-  "request-fast-repair": { mainLabel: "FAST", subLabel: "REPAIR" },
 };
 
 /**
@@ -94,33 +90,19 @@ const WHITE = "#ffffff";
 function pitQuickActionDynamicIcon(
   actionType: PitQuickActionType,
   telemetryState: PitQuickActionTelemetryState,
-  graphic1Color: string,
 ): string {
-  const labels = PIT_QUICK_ACTION_LABELS[actionType];
-  let statusBar: string;
-
   switch (actionType) {
     case "windshield-tearoff":
-      statusBar = telemetryState.windshieldOn ? statusBarOn() : statusBarOff();
-      break;
+      return telemetryState.windshieldOn ? statusBarOn() : statusBarOff();
     case "request-fast-repair":
       if (telemetryState.fastRepairAvailable === false) {
-        statusBar = statusBarNA();
-      } else {
-        statusBar = telemetryState.fastRepairOn ? statusBarOn() : statusBarOff();
+        return statusBarNA();
       }
 
-      break;
+      return telemetryState.fastRepairOn ? statusBarOn() : statusBarOff();
     default:
-      statusBar = "";
+      return "";
   }
-
-  return `
-    <text x="72" y="44" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">${labels.mainLabel}</text>
-    <text x="72" y="74" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">${labels.subLabel}</text>
-    ${statusBar}`;
 }
 
 /**
@@ -137,27 +119,35 @@ export function generatePitQuickActionsSvg(
   // Static mode: clear-all-checkboxes (no telemetry)
   if (!TELEMETRY_AWARE_ACTIONS.has(actionType)) {
     const iconSvg = STATIC_ACTION_ICONS[actionType] ?? STATIC_ACTION_ICONS["clear-all-checkboxes"]!;
-    const labels = PIT_QUICK_ACTION_LABELS[actionType] || PIT_QUICK_ACTION_LABELS["clear-all-checkboxes"];
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-    const svg = renderIconTemplate(iconSvg, {
-      mainLabel: labels.mainLabel,
-      subLabel: labels.subLabel,
-      ...colors,
-    });
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PIT\nCLEAR ALL");
 
-    return svgToDataUri(svg);
+    return assembleIcon({ graphicSvg: iconSvg, colors, title });
   }
 
-  // Dynamic telemetry-driven modes
-  const colors = resolveIconColors(pitQuickActionsTemplate, getGlobalColors(), settings.colorOverrides) as Record<
-    string,
-    string
-  >;
-  const graphic1 = colors.graphic1Color || WHITE;
-  const iconContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {}, graphic1);
+  // Dynamic telemetry-driven modes — each has its own template with <desc> defaults
+  const template = actionType === "request-fast-repair" ? fastRepairTemplate : windshieldTemplate;
 
-  const svg = renderIconTemplate(pitQuickActionsTemplate, {
-    iconContent,
+  const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
+  const statusBarContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {});
+
+  const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
+
+  const titleContent = resolvedTitle.showTitle
+    ? generateTitleText({
+        text: resolvedTitle.titleText,
+        fontSize: resolvedTitle.fontSize,
+        bold: resolvedTitle.bold,
+        position: resolvedTitle.position,
+        customPosition: resolvedTitle.customPosition,
+        fill: colors.textColor ?? WHITE,
+      })
+    : "";
+
+  // Status bar is always visible, even when graphics are off
+  const svg = renderIconTemplate(template, {
+    iconContent: statusBarContent,
+    titleContent,
     ...colors,
   });
 

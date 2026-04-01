@@ -148,6 +148,32 @@ vi.mock("@iracedeck/deck-core", () => ({
   })),
   getGlobalColors: vi.fn(() => ({})),
   LogLevel: { Info: 2 },
+  getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
+    showTitle: true,
+    showGraphics: true,
+    titleText: defaultTitle ?? "",
+    bold: true,
+    fontSize: 18,
+    position: "bottom" as const,
+    customPosition: 0,
+  })),
+  assembleIcon: vi.fn(
+    ({ graphicSvg, title }: { graphicSvg: string; colors: unknown; title: { titleText: string } }) => {
+      const encoded = encodeURIComponent(`<svg>${graphicSvg}${title?.titleText ?? ""}</svg>`);
+
+      return `data:image/svg+xml,${encoded}`;
+    },
+  ),
+  extractGraphicContent: vi.fn((svg: string) =>
+    svg
+      .replace(/<svg[^>]*>/, "")
+      .replace(/<\/svg>\s*$/, "")
+      .replace(/<desc>[\s\S]*?<\/desc>/, "")
+      .trim(),
+  ),
+  generateTitleText: vi.fn(() => ""),
+  ICON_BASE_TEMPLATE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>{{graphicContent}}{{titleContent}}</svg>`,
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
@@ -392,14 +418,12 @@ describe("ReplayControl", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "set-speed", speed: "4" }));
 
       expect(decoded).toContain("4x");
-      expect(decoded).toContain("SET SPEED");
     });
 
     it("should show slow-motion speed label for set-speed mode", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "set-speed", speed: "s4" }));
 
       expect(decoded).toContain("1/4x");
-      expect(decoded).toContain("SET SPEED");
     });
 
     // Speed display labels
@@ -407,7 +431,6 @@ describe("ReplayControl", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "speed-display" }, true, 4, false));
 
       expect(decoded).toContain("4x");
-      expect(decoded).toContain("SPEED");
     });
 
     it("should show PAUSED for speed-display mode when not playing", () => {

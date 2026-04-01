@@ -44,6 +44,51 @@
         <a href="#" class="ird-color-reset" data-input="global-color-g2" data-default="#000001" style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" title="Clear global override">&#x21BA;</a>
       </div>
     </sdpi-item>
+    <div class="ird-section-subtitle">Title Defaults</div>
+    <sdpi-item label="Show Title">
+      <sdpi-checkbox
+        setting="titleShowTitle"
+        label="Show title text on key"
+        global
+        default="true"
+      ></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item label="Show Graphics">
+      <sdpi-checkbox
+        setting="titleShowGraphics"
+        label="Show graphics on key"
+        global
+        default="true"
+      ></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item label="Bold">
+      <sdpi-select setting="titleBold" default="default" global>
+        <option value="default">Default</option>
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </sdpi-select>
+    </sdpi-item>
+    <sdpi-item label="Font Size">
+      <sdpi-checkbox id="global-title-fontSize-default" setting="titleFontSizeDefault" label="Use icon default" global default="true"></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item id="global-title-fontSize-item" class="hidden" label=" ">
+      <sdpi-range id="global-title-fontSize" setting="titleFontSize" min="5" max="100" default="9" global showlabels></sdpi-range>
+    </sdpi-item>
+    <sdpi-item label="Position">
+      <sdpi-select id="global-title-position" setting="titlePosition" default="default" global>
+        <option value="default">Default</option>
+        <option value="top">Top</option>
+        <option value="middle">Middle</option>
+        <option value="bottom">Bottom</option>
+        <option value="custom">Custom</option>
+      </sdpi-select>
+    </sdpi-item>
+    <sdpi-item id="global-title-custom-position-item" class="hidden" label="Custom Position">
+      <sdpi-range id="global-title-customPosition" setting="titleCustomPosition" min="-100" max="100" default="0" global showlabels></sdpi-range>
+    </sdpi-item>
+    <sdpi-item label=" ">
+      <button class="ird-title-global-reset" style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#d0d0d0;">Reset Title Defaults</button>
+    </sdpi-item>
     <div class="ird-section-subtitle">iRacing</div>
     <sdpi-item label="Focus iRacing">
       <sdpi-checkbox

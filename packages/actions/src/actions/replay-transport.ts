@@ -1,16 +1,17 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import fastForwardIconSvg from "@iracedeck/icons/replay-transport/fast-forward.svg";
 import frameBackwardIconSvg from "@iracedeck/icons/replay-transport/frame-backward.svg";
@@ -33,17 +34,17 @@ type TransportAction =
   | "frame-backward";
 
 /**
- * Label configuration for each transport action (mainLabel prominent, subLabel subdued)
+ * Title text for each transport action (format: "subLabel\nmainLabel")
  */
-const REPLAY_TRANSPORT_LABELS: Record<TransportAction, { mainLabel: string; subLabel: string }> = {
-  play: { mainLabel: "PLAY", subLabel: "" },
-  pause: { mainLabel: "PAUSE", subLabel: "" },
-  stop: { mainLabel: "STOP", subLabel: "" },
-  "fast-forward": { mainLabel: "FORWARD", subLabel: "FAST" },
-  rewind: { mainLabel: "REWIND", subLabel: "" },
-  "slow-motion": { mainLabel: "MOTION", subLabel: "SLOW" },
-  "frame-forward": { mainLabel: "FRAME FWD", subLabel: "" },
-  "frame-backward": { mainLabel: "FRAME BACK", subLabel: "" },
+const REPLAY_TRANSPORT_TITLES: Record<TransportAction, string> = {
+  play: "PLAY",
+  pause: "PAUSE",
+  stop: "STOP",
+  "fast-forward": "FAST\nFORWARD",
+  rewind: "REWIND",
+  "slow-motion": "SLOW\nMOTION",
+  "frame-forward": "FRAME FWD",
+  "frame-backward": "FRAME BACK",
 };
 
 /**
@@ -86,16 +87,12 @@ export function generateReplayTransportSvg(settings: ReplayTransportSettings): s
   const { transport } = settings;
 
   const iconSvg = REPLAY_TRANSPORT_ICONS[transport] || REPLAY_TRANSPORT_ICONS["play"];
-  const labels = REPLAY_TRANSPORT_LABELS[transport] || REPLAY_TRANSPORT_LABELS["play"];
+  const defaultTitle = REPLAY_TRANSPORT_TITLES[transport] || REPLAY_TRANSPORT_TITLES["play"];
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

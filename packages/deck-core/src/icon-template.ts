@@ -58,8 +58,10 @@ export function renderIconTemplate(template: string, values: Record<string, stri
 /**
  * Parses the <desc> element from an SVG template and returns its JSON content.
  * Returns an empty object if the element is missing or its content is not valid JSON.
+ *
+ * @internal Exported for testing and use by icon-related utilities
  */
-function parseDescMetadata(svgTemplate: string): Record<string, unknown> {
+export function parseDescMetadata(svgTemplate: string): Record<string, unknown> {
   const descMatch = svgTemplate.match(/<desc>(.*?)<\/desc>/s);
 
   if (!descMatch) {
@@ -86,6 +88,33 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
   const parsed = parseDescMetadata(svgTemplate);
 
   return (parsed.colors ?? {}) as ColorSlots;
+}
+
+export interface IconTitleDefaults {
+  text?: string;
+  position?: "top" | "middle" | "bottom" | "custom";
+  fontSize?: number;
+  customPosition?: number;
+}
+
+export function parseIconTitleDefaults(svgTemplate: string): IconTitleDefaults {
+  const meta = parseDescMetadata(svgTemplate);
+
+  if (!meta) return {};
+
+  const title = meta.title as Record<string, unknown> | undefined;
+
+  if (!title) return {};
+
+  const pos = title.position;
+  const validPositions = new Set(["top", "middle", "bottom", "custom"]);
+
+  return {
+    text: typeof title.text === "string" ? title.text : undefined,
+    position: typeof pos === "string" && validPositions.has(pos) ? (pos as IconTitleDefaults["position"]) : undefined,
+    fontSize: typeof title.fontSize === "number" ? title.fontSize : undefined,
+    customPosition: typeof title.customPosition === "number" ? title.customPosition : undefined,
+  };
 }
 
 /**

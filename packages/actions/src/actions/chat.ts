@@ -1,9 +1,11 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   generateIconText,
   getCommands,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -12,6 +14,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveIconColors,
+  resolveTitleSettings,
   svgToDataUri,
 } from "@iracedeck/deck-core";
 import cancelIcon from "@iracedeck/icons/chat/cancel.svg";
@@ -53,16 +56,14 @@ const MACRO_TEMPLATE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144
 type ChatMode = "send-message" | "macro" | "reply" | "respond-pm" | "whisper" | "open-chat" | "cancel";
 
 /**
- * Label configuration for each chat mode (line1 bold, line2 subdued)
+ * Title configuration for each static chat mode (icon modes only, not send-message/macro)
  */
-const CHAT_LABELS: Record<ChatMode, { line1: string; line2: string }> = {
-  "open-chat": { line1: "OPEN", line2: "CHAT" },
-  reply: { line1: "REPLY", line2: "CHAT" },
-  whisper: { line1: "WHISPER", line2: "CHAT" },
-  "respond-pm": { line1: "RESPOND", line2: "LAST PM" },
-  cancel: { line1: "CANCEL", line2: "CHAT" },
-  "send-message": { line1: "SEND", line2: "MESSAGE" },
-  macro: { line1: "CHAT", line2: "MACRO" },
+const CHAT_TITLES: Partial<Record<ChatMode, string>> = {
+  "open-chat": "CHAT\nOPEN",
+  reply: "CHAT\nREPLY",
+  whisper: "CHAT\nWHISPER",
+  "respond-pm": "LAST PM\nRESPOND",
+  cancel: "CHAT\nCANCEL",
 };
 
 /**
@@ -134,41 +135,17 @@ export function generateChatSvg(settings: ChatSettings): string {
   // For other modes: use standalone SVG templates from @iracedeck/icons
   const iconSvg = CHAT_ICONS[mode] || CHAT_ICONS["open-chat"]!;
 
-  // Determine labels: use custom key text or default labels
+  // keyText provides a legacy per-action label override (falls back to mode default)
   const trimmedKeyText = keyText?.trim();
-  let mainLabel: string;
-  let subLabel: string;
-
-  if (trimmedKeyText) {
-    // Parse custom key text (supports newlines for two-line display)
-    const lines = trimmedKeyText
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
-    if (lines.length >= 2) {
-      mainLabel = lines[0];
-      subLabel = lines[1];
-    } else {
-      mainLabel = lines[0] || "";
-      subLabel = "";
-    }
-  } else {
-    // Use default labels for the mode
-    const labels = CHAT_LABELS[mode] || CHAT_LABELS["open-chat"];
-    mainLabel = labels.line1;
-    subLabel = labels.line2;
-  }
+  const defaultTitle = trimmedKeyText
+    ? trimmedKeyText.replace(/\r?\n/g, "\n")
+    : (CHAT_TITLES[mode] ?? CHAT_TITLES["open-chat"]!);
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    color: iconColor,
-    mainLabel,
-    subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  // Include iconColor as 'color' so the chat icon's {{color}} accent placeholder resolves
+  return assembleIcon({ graphicSvg: iconSvg, colors: { ...colors, color: iconColor }, title });
 }
 
 /**

@@ -172,4 +172,203 @@
       colorEl.dispatchEvent(new Event('change', { bubbles: true }));
     }
   });
+
+  // Custom position visibility: per-action title position select
+  (function() {
+    function updateTitleCustomPosition(value) {
+      var item = document.getElementById('title-custom-position-item');
+      if (!item) return;
+      if (value === 'custom') {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    }
+
+    async function initTitlePosition() {
+      await customElements.whenDefined('sdpi-select');
+      var select = document.getElementById('title-override-position');
+      if (!select) return;
+      updateTitleCustomPosition(select.value || 'inherit');
+      select.addEventListener('change', function(e) { updateTitleCustomPosition(e.target.value); });
+      select.addEventListener('input', function(e) { updateTitleCustomPosition(e.target.value); });
+      var lastVal = select.value || 'inherit';
+      setInterval(function() {
+        var cur = select.value;
+        if (cur && cur !== lastVal) {
+          lastVal = cur;
+          updateTitleCustomPosition(cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTitlePosition);
+    } else {
+      initTitlePosition();
+    }
+  })();
+
+  // Custom position visibility: global title position select
+  (function() {
+    function updateGlobalTitleCustomPosition(value) {
+      var item = document.getElementById('global-title-custom-position-item');
+      if (!item) return;
+      if (value === 'custom') {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    }
+
+    async function initGlobalTitlePosition() {
+      await customElements.whenDefined('sdpi-select');
+      var select = document.getElementById('global-title-position');
+      if (!select) return;
+      updateGlobalTitleCustomPosition(select.value || 'default');
+      select.addEventListener('change', function(e) { updateGlobalTitleCustomPosition(e.target.value); });
+      select.addEventListener('input', function(e) { updateGlobalTitleCustomPosition(e.target.value); });
+      var lastVal = select.value || 'default';
+      setInterval(function() {
+        var cur = select.value;
+        if (cur && cur !== lastVal) {
+          lastVal = cur;
+          updateGlobalTitleCustomPosition(cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGlobalTitlePosition);
+    } else {
+      initGlobalTitlePosition();
+    }
+  })();
+
+  // Font Size checkbox gate: sdpi-checkbox (persists via setting attribute) + sdpi-range.
+  // When unchecked: hide range, clear fontSize setting.
+  // When checked: show range, sdpi persists fontSize normally.
+  (function() {
+    async function initFontSizeToggle() {
+      await customElements.whenDefined('sdpi-checkbox');
+      var toggle = document.getElementById('title-override-fontSize-toggle');
+      var item = document.getElementById('title-fontSize-item');
+      var range = document.getElementById('title-override-fontSize');
+      if (!toggle || !item || !range) return;
+
+      function isChecked() {
+        return toggle.checked === true || toggle.value === true || toggle.value === 'true';
+      }
+
+      function showControls(show) {
+        if (show) {
+          item.classList.remove('hidden');
+          if (!range.value || range.value === '') {
+            range.value = '9';
+            range.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        } else {
+          item.classList.add('hidden');
+          range.value = '';
+          range.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      toggle.addEventListener('change', function() {
+        showControls(isChecked());
+      });
+
+      // Initial state check
+      showControls(isChecked());
+
+      // Polling fallback for checkbox state (sdpi-checkbox loads asynchronously)
+      var lastChecked = isChecked();
+      setInterval(function() {
+        var cur = isChecked();
+        if (cur !== lastChecked) {
+          lastChecked = cur;
+          showControls(cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initFontSizeToggle);
+    } else {
+      initFontSizeToggle();
+    }
+  })();
+
+  // Global Font Size "Use icon default" checkbox gate
+  // When checked: hide range (fontSize = "default", defers to icon).
+  // When unchecked: show range, use the global fontSize value.
+  (function() {
+    async function initGlobalFontSizeToggle() {
+      await customElements.whenDefined('sdpi-checkbox');
+      var toggle = document.getElementById('global-title-fontSize-default');
+      var item = document.getElementById('global-title-fontSize-item');
+      if (!toggle || !item) return;
+
+      function isChecked() {
+        return toggle.checked === true || toggle.value === true || toggle.value === 'true';
+      }
+
+      function showRange(show) {
+        if (show) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+
+      toggle.addEventListener('change', function() { showRange(!isChecked()); });
+      toggle.addEventListener('input', function() { showRange(!isChecked()); });
+
+      // Initial state check
+      showRange(!isChecked());
+
+      var lastChecked = isChecked();
+      setInterval(function() {
+        var cur = isChecked();
+        if (cur !== lastChecked) {
+          lastChecked = cur;
+          showRange(!cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGlobalFontSizeToggle);
+    } else {
+      initGlobalFontSizeToggle();
+    }
+  })();
+
+  // Global title defaults Reset button
+  document.addEventListener('click', function(ev) {
+    var btn = ev.target.closest('.ird-title-global-reset');
+    if (!btn) return;
+
+    var defaults = {
+      'titleShowTitle': 'true',
+      'titleShowGraphics': 'true',
+      'titleBold': 'default',
+      'titleFontSizeDefault': 'true',
+      'titleFontSize': '9',
+      'titlePosition': 'default',
+      'titleCustomPosition': '0'
+    };
+
+    Object.entries(defaults).forEach(function([setting, value]) {
+      var el = document.querySelector('[setting="' + setting + '"]');
+      if (el) {
+        el.value = value;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+  });
+
+  // Note: titleOverrides.titleText uses sdpi-textarea with setting attribute.
+  // Persistence is handled automatically by sdpi-components.
 </script>

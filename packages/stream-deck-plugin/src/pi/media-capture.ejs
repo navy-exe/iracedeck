@@ -18,6 +18,8 @@
 
 		<%- include('common-settings') %>
 
+		<%- include('title-overrides') %>
+
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['media-capture'] }) %>
 
 		<%- include('global-key-bindings', {

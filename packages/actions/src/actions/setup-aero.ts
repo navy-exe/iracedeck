@@ -1,15 +1,16 @@
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   getGlobalColors,
+  getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
-  renderIconTemplate,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import frontWingDecreaseIconSvg from "@iracedeck/icons/setup-aero/front-wing-decrease.svg";
 import frontWingIncreaseIconSvg from "@iracedeck/icons/setup-aero/front-wing-increase.svg";
@@ -45,26 +46,16 @@ const SETUP_AERO_ICONS: Record<string, string> = {
 };
 
 /**
- * Label configuration for each setting + direction combination.
- * Standard layout: mainLabel = primary (bold, top), subLabel = secondary (subdued, bottom).
+ * Title text for each setting + direction combination (format: "subLabel\nmainLabel")
  */
-const SETUP_AERO_LABELS: Record<
-  SetupAeroSetting,
-  Record<DirectionType, { mainLabel: string; subLabel: string }> | { mainLabel: string; subLabel: string }
-> = {
-  "front-wing": {
-    increase: { mainLabel: "FRONT WING", subLabel: "INCREASE" },
-    decrease: { mainLabel: "FRONT WING", subLabel: "DECREASE" },
-  },
-  "rear-wing": {
-    increase: { mainLabel: "REAR WING", subLabel: "INCREASE" },
-    decrease: { mainLabel: "REAR WING", subLabel: "DECREASE" },
-  },
-  "qualifying-tape": {
-    increase: { mainLabel: "QUAL TAPE", subLabel: "INCREASE" },
-    decrease: { mainLabel: "QUAL TAPE", subLabel: "DECREASE" },
-  },
-  "rf-brake-attached": { mainLabel: "RF BRAKE", subLabel: "TOGGLE" },
+const SETUP_AERO_TITLES: Record<string, string> = {
+  "front-wing-increase": "INCREASE\nFRONT WING",
+  "front-wing-decrease": "DECREASE\nFRONT WING",
+  "rear-wing-increase": "INCREASE\nREAR WING",
+  "rear-wing-decrease": "DECREASE\nREAR WING",
+  "qualifying-tape-increase": "INCREASE\nQUAL TAPE",
+  "qualifying-tape-decrease": "DECREASE\nQUAL TAPE",
+  "rf-brake-attached": "TOGGLE\nRF BRAKE",
 };
 
 /**
@@ -100,19 +91,12 @@ export function generateSetupAeroSvg(settings: SetupAeroSettings): string {
 
   const iconKey = DIRECTIONAL_CONTROLS.has(setting) ? `${setting}-${direction}` : setting;
   const iconSvg = SETUP_AERO_ICONS[iconKey] || SETUP_AERO_ICONS["rf-brake-attached"];
-
-  const labelEntry = SETUP_AERO_LABELS[setting];
-  const labels: { mainLabel: string; subLabel: string } =
-    "mainLabel" in labelEntry ? labelEntry : (labelEntry[direction] ?? { mainLabel: "AERO", subLabel: "SETUP" });
+  const defaultTitle = SETUP_AERO_TITLES[iconKey] || "SETUP\nAERO";
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(iconSvg, {
-    mainLabel: labels.mainLabel,
-    subLabel: labels.subLabel,
-    ...colors,
-  });
+  const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return svgToDataUri(svg);
+  return assembleIcon({ graphicSvg: iconSvg, colors, title });
 }
 
 /**

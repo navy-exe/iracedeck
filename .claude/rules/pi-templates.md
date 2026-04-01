@@ -59,10 +59,28 @@ Located in `packages/stream-deck-plugin/src/pi-templates/partials/`:
 - **accordion.ejs** - Collapsible section component
 - **common-settings.ejs** - Common settings shared by all actions (flags overlay)
 - **color-overrides.ejs** - Per-action color override controls with Default/White/Black presets
+- **title-overrides.ejs** - Per-action title override controls (show/hide title and graphics, title text, bold, font size, position)
 - **global-key-bindings.ejs** - Key bindings in collapsible section
-- **global-settings.ejs** - Global plugin settings accordion (focus window, icon colors)
+- **global-settings.ejs** - Global plugin settings accordion (focus window, icon colors, title defaults)
 - **docs-link.ejs** - Documentation link to the action's page on iracedeck.com (conditional, hidden when no URL mapped)
 - **version.ejs** - Version footer with downloads link
+
+## Title Overrides Partial
+
+Adds per-action title customization controls. Settings are stored under the `titleOverrides` key in action settings.
+
+```ejs
+<%- include('title-overrides') %>
+```
+
+No parameters needed. The partial provides controls for:
+- **Show Title** / **Show Graphics** — three-state select (Inherit / Yes / No)
+- **Title Text** — multiline textarea to override default title (`titleText`, newline-separated)
+- **Bold** — three-state select (Inherit / Yes / No)
+- **Font Size** — gated by "Override font size" checkbox; when enabled, shows range slider (5–100, doubled for SVG)
+- **Position** — select (Inherit / Top / Middle / Bottom / Custom); Custom reveals offset slider (−100 to +100)
+
+Place between `color-overrides` and `global-key-bindings`/`global-settings` includes.
 
 ## Color Overrides Partial
 

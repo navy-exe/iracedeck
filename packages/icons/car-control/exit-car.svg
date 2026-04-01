@@ -1,10 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>
-  <g filter="url(#activity-state)">
-    <!-- Main background -->
-    <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"EXIT\n"}}</desc>
 
-    <!-- Door exit icon (scaled from 520x520 reference) -->
     <g transform="translate(30, 17) scale(0.155)">
       <path d="M445.223,0H142.589c-6.683,0-12.105,5.423-12.105,12.105v180.979h16.65c-5.006-6.392-7.725-14.224-7.725-22.467
         c-0.006-9.764,3.8-18.943,10.708-25.845c1.421-1.421,2.973-2.687,4.583-3.845V24.211h278.417v8.697l-127.104,92.285v395.155
@@ -20,10 +16,4 @@
         fill="{{graphic1Color}}"/>
     </g>
 
-    <!-- Two-line label -->
-    <text x="72" y="116" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="16">{{subLabel}}</text>
-    <text x="72" y="138" text-anchor="middle" dominant-baseline="central"
-          fill="{{textColor}}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">{{mainLabel}}</text>
-  </g>
 </svg>
