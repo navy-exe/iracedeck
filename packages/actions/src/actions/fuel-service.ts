@@ -173,8 +173,7 @@ export function formatFuelFillAmount(liters: number, displayUnits: number | unde
 /**
  * Generates dynamic icon content (fuel amount + status bar) for toggle-fuel-fill mode.
  */
-function fuelFillDynamicIcon(telemetryState: FuelServiceTelemetryState, graphic1Color: string): string {
-  const statusBar = telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
+function fuelFillGraphicContent(telemetryState: FuelServiceTelemetryState, graphic1Color: string): string {
   const fuelText =
     telemetryState.fuelAmount === undefined
       ? "--"
@@ -182,8 +181,11 @@ function fuelFillDynamicIcon(telemetryState: FuelServiceTelemetryState, graphic1
 
   return `
     <text x="72" y="75" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${fuelText}</text>
-    ${statusBar}`;
+          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${fuelText}</text>`;
+}
+
+function fuelFillStatusBar(telemetryState: FuelServiceTelemetryState): string {
+  return telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
 }
 
 /**
@@ -265,14 +267,12 @@ export function generateFuelServiceSvg(
       string
     >;
     const graphic1 = colors.graphic1Color || WHITE;
-    const iconContent = fuelFillDynamicIcon(telemetryState ?? {}, graphic1);
+    const state = telemetryState ?? {};
+    const graphicContent = fuelFillGraphicContent(state, graphic1);
+    // Status bar is always visible, even when graphics are off
+    const statusBar = fuelFillStatusBar(state);
 
-    const resolvedTitle = resolveTitleSettings(
-      fuelServiceTemplate,
-      getGlobalTitleSettings(),
-      settings.titleOverrides,
-      "REFUEL",
-    );
+    const resolvedTitle = resolveTitleSettings(fuelServiceTemplate, getGlobalTitleSettings(), settings.titleOverrides);
 
     const titleContent = resolvedTitle.showTitle
       ? generateTitleText({
@@ -285,8 +285,10 @@ export function generateFuelServiceSvg(
         })
       : "";
 
+    const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
+
     const svg = renderIconTemplate(fuelServiceTemplate, {
-      iconContent: resolvedTitle.showGraphics ? iconContent : "",
+      iconContent,
       titleContent,
       ...colors,
     });

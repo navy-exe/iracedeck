@@ -20,7 +20,8 @@ import clearAllCheckboxesIconSvg from "@iracedeck/icons/pit-quick-actions/clear-
 import { hasFlag, PitSvFlags, type TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
-import pitQuickActionsTemplate from "../../icons/pit-quick-actions.svg";
+import fastRepairTemplate from "../../icons/pit-quick-actions-fast-repair.svg";
+import windshieldTemplate from "../../icons/pit-quick-actions-windshield.svg";
 import { statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "request-fast-repair";
@@ -31,15 +32,6 @@ type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "reque
  */
 const STATIC_ACTION_ICONS: Partial<Record<PitQuickActionType, string>> = {
   "clear-all-checkboxes": clearAllCheckboxesIconSvg,
-};
-
-/**
- * Label configuration for each pit quick action
- */
-const PIT_QUICK_ACTION_LABELS: Record<PitQuickActionType, { mainLabel: string; subLabel: string }> = {
-  "clear-all-checkboxes": { mainLabel: "CLEAR ALL", subLabel: "PIT" },
-  "windshield-tearoff": { mainLabel: "WINDSHIELD", subLabel: "TEAROFF" },
-  "request-fast-repair": { mainLabel: "FAST", subLabel: "REPAIR" },
 };
 
 /**
@@ -133,22 +125,13 @@ export function generatePitQuickActionsSvg(
     return assembleIcon({ graphicSvg: iconSvg, colors, title });
   }
 
-  // Dynamic telemetry-driven modes
-  const labels = PIT_QUICK_ACTION_LABELS[actionType];
-  const defaultTitle = `${labels.mainLabel}\n${labels.subLabel}`;
+  // Dynamic telemetry-driven modes — each has its own template with <desc> defaults
+  const template = actionType === "request-fast-repair" ? fastRepairTemplate : windshieldTemplate;
 
-  const colors = resolveIconColors(pitQuickActionsTemplate, getGlobalColors(), settings.colorOverrides) as Record<
-    string,
-    string
-  >;
-  const iconContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {});
+  const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
+  const statusBarContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {});
 
-  const resolvedTitle = resolveTitleSettings(
-    pitQuickActionsTemplate,
-    getGlobalTitleSettings(),
-    settings.titleOverrides,
-    defaultTitle,
-  );
+  const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
 
   const titleContent = resolvedTitle.showTitle
     ? generateTitleText({
@@ -161,8 +144,9 @@ export function generatePitQuickActionsSvg(
       })
     : "";
 
-  const svg = renderIconTemplate(pitQuickActionsTemplate, {
-    iconContent: resolvedTitle.showGraphics ? iconContent : "",
+  // Status bar is always visible, even when graphics are off
+  const svg = renderIconTemplate(template, {
+    iconContent: statusBarContent,
     titleContent,
     ...colors,
   });

@@ -33,6 +33,8 @@ import towIcon from "@iracedeck/icons/car-control/tow.svg";
 import { EngineWarnings, hasFlag, type TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
+import drsTemplate from "../../icons/car-control-drs.svg";
+import pushToPassTemplate from "../../icons/car-control-push-to-pass.svg";
 import carControlTemplate from "../../icons/car-control.svg";
 import { statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
@@ -349,19 +351,36 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
     return renderDynamicIcon(settings, iconContent);
   }
 
-  // Push To Pass and DRS use dedicated full-icon layouts (no mainLabel/subLabel)
+  // Push To Pass and DRS use dedicated templates with their own <desc> defaults
   if (control === "push-to-pass" || control === "drs") {
-    const colors = resolveIconColors(carControlTemplate, getGlobalColors(), settings.colorOverrides) as Record<
-      string,
-      string
-    >;
+    const template = control === "push-to-pass" ? pushToPassTemplate : drsTemplate;
+    const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
     const graphic1 = colors.graphic1Color || settings.colorOverrides?.graphic1Color || WHITE;
     const iconContent =
       control === "push-to-pass"
         ? pushToPassIcon(telemetryState?.pushToPassActive ?? false, graphic1)
         : drsIcon(telemetryState?.drsActive ?? false, graphic1);
 
-    return renderDynamicIcon(settings, iconContent, false);
+    const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
+
+    const titleContent = resolvedTitle.showTitle
+      ? generateTitleText({
+          text: resolvedTitle.titleText,
+          fontSize: resolvedTitle.fontSize,
+          bold: resolvedTitle.bold,
+          position: resolvedTitle.position,
+          customPosition: resolvedTitle.customPosition,
+          fill: colors.textColor ?? WHITE,
+        })
+      : "";
+
+    const svg = renderIconTemplate(template, {
+      iconContent,
+      titleContent,
+      ...colors,
+    });
+
+    return svgToDataUri(svg);
   }
 
   // Enter/Exit/Tow uses state-specific standalone SVGs
