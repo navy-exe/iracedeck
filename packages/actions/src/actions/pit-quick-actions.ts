@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateTitleText,
   getCommands,
   getGlobalColors,
   getGlobalTitleSettings,
@@ -97,33 +98,19 @@ const WHITE = "#ffffff";
 function pitQuickActionDynamicIcon(
   actionType: PitQuickActionType,
   telemetryState: PitQuickActionTelemetryState,
-  graphic1Color: string,
 ): string {
-  const labels = PIT_QUICK_ACTION_LABELS[actionType];
-  let statusBar: string;
-
   switch (actionType) {
     case "windshield-tearoff":
-      statusBar = telemetryState.windshieldOn ? statusBarOn() : statusBarOff();
-      break;
+      return telemetryState.windshieldOn ? statusBarOn() : statusBarOff();
     case "request-fast-repair":
       if (telemetryState.fastRepairAvailable === false) {
-        statusBar = statusBarNA();
-      } else {
-        statusBar = telemetryState.fastRepairOn ? statusBarOn() : statusBarOff();
+        return statusBarNA();
       }
 
-      break;
+      return telemetryState.fastRepairOn ? statusBarOn() : statusBarOff();
     default:
-      statusBar = "";
+      return "";
   }
-
-  return `
-    <text x="72" y="44" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">${labels.mainLabel}</text>
-    <text x="72" y="74" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">${labels.subLabel}</text>
-    ${statusBar}`;
 }
 
 /**
@@ -147,15 +134,36 @@ export function generatePitQuickActionsSvg(
   }
 
   // Dynamic telemetry-driven modes
+  const labels = PIT_QUICK_ACTION_LABELS[actionType];
+  const defaultTitle = `${labels.mainLabel}\n${labels.subLabel}`;
+
   const colors = resolveIconColors(pitQuickActionsTemplate, getGlobalColors(), settings.colorOverrides) as Record<
     string,
     string
   >;
-  const graphic1 = colors.graphic1Color || WHITE;
-  const iconContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {}, graphic1);
+  const iconContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {});
+
+  const resolvedTitle = resolveTitleSettings(
+    pitQuickActionsTemplate,
+    getGlobalTitleSettings(),
+    settings.titleOverrides,
+    defaultTitle,
+  );
+
+  const titleContent = resolvedTitle.showTitle
+    ? generateTitleText({
+        text: resolvedTitle.titleText,
+        fontSize: resolvedTitle.fontSize,
+        bold: resolvedTitle.bold,
+        position: resolvedTitle.position,
+        customPosition: resolvedTitle.customPosition,
+        fill: colors.textColor ?? WHITE,
+      })
+    : "";
 
   const svg = renderIconTemplate(pitQuickActionsTemplate, {
-    iconContent,
+    iconContent: resolvedTitle.showGraphics ? iconContent : "",
+    titleContent,
     ...colors,
   });
 

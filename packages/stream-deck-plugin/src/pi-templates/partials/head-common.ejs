@@ -225,10 +225,10 @@
       await customElements.whenDefined('sdpi-select');
       var select = document.getElementById('global-title-position');
       if (!select) return;
-      updateGlobalTitleCustomPosition(select.value || 'bottom');
+      updateGlobalTitleCustomPosition(select.value || 'default');
       select.addEventListener('change', function(e) { updateGlobalTitleCustomPosition(e.target.value); });
       select.addEventListener('input', function(e) { updateGlobalTitleCustomPosition(e.target.value); });
-      var lastVal = select.value || 'bottom';
+      var lastVal = select.value || 'default';
       setInterval(function() {
         var cur = select.value;
         if (cur && cur !== lastVal) {
@@ -300,6 +300,53 @@
     }
   })();
 
+  // Global Font Size "Use icon default" checkbox gate
+  // When checked: hide range (fontSize = "default", defers to icon).
+  // When unchecked: show range, use the global fontSize value.
+  (function() {
+    async function initGlobalFontSizeToggle() {
+      await customElements.whenDefined('sdpi-checkbox');
+      var toggle = document.getElementById('global-title-fontSize-default');
+      var item = document.getElementById('global-title-fontSize-item');
+      if (!toggle || !item) return;
+
+      function isChecked() {
+        return toggle.checked === true || toggle.value === true || toggle.value === 'true';
+      }
+
+      function showRange(show) {
+        if (show) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+
+      toggle.addEventListener('change', function() {
+        showRange(!isChecked());
+      });
+
+      document.addEventListener('settingsLoaded', function() {
+        showRange(!isChecked());
+      });
+
+      var lastChecked = isChecked();
+      setInterval(function() {
+        var cur = isChecked();
+        if (cur !== lastChecked) {
+          lastChecked = cur;
+          showRange(!cur);
+        }
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGlobalFontSizeToggle);
+    } else {
+      initGlobalFontSizeToggle();
+    }
+  })();
+
   // Global title defaults Reset button
   document.addEventListener('click', function(ev) {
     var btn = ev.target.closest('.ird-title-global-reset');
@@ -308,9 +355,10 @@
     var defaults = {
       'titleShowTitle': 'true',
       'titleShowGraphics': 'true',
-      'titleBold': 'true',
+      'titleBold': 'default',
+      'titleFontSizeDefault': 'true',
       'titleFontSize': '9',
-      'titlePosition': 'bottom',
+      'titlePosition': 'default',
       'titleCustomPosition': '0'
     };
 

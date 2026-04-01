@@ -3,6 +3,7 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   fuelToDisplayUnits,
+  generateTitleText,
   getCommands,
   getGlobalColors,
   getGlobalTitleSettings,
@@ -180,8 +181,6 @@ function fuelFillDynamicIcon(telemetryState: FuelServiceTelemetryState, graphic1
       : formatFuelFillAmount(telemetryState.fuelAmount, telemetryState.displayUnits);
 
   return `
-    <text x="72" y="24" text-anchor="middle" dominant-baseline="central"
-          fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="22" font-weight="bold">REFUEL</text>
     <text x="72" y="75" text-anchor="middle" dominant-baseline="central"
           fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${fuelText}</text>
     ${statusBar}`;
@@ -268,8 +267,27 @@ export function generateFuelServiceSvg(
     const graphic1 = colors.graphic1Color || WHITE;
     const iconContent = fuelFillDynamicIcon(telemetryState ?? {}, graphic1);
 
+    const resolvedTitle = resolveTitleSettings(
+      fuelServiceTemplate,
+      getGlobalTitleSettings(),
+      settings.titleOverrides,
+      "REFUEL",
+    );
+
+    const titleContent = resolvedTitle.showTitle
+      ? generateTitleText({
+          text: resolvedTitle.titleText,
+          fontSize: resolvedTitle.fontSize,
+          bold: resolvedTitle.bold,
+          position: resolvedTitle.position,
+          customPosition: resolvedTitle.customPosition,
+          fill: colors.textColor ?? WHITE,
+        })
+      : "";
+
     const svg = renderIconTemplate(fuelServiceTemplate, {
-      iconContent,
+      iconContent: resolvedTitle.showGraphics ? iconContent : "",
+      titleContent,
       ...colors,
     });
 

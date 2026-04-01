@@ -1,7 +1,7 @@
 import type { TitleOverrides } from "./common-settings.js";
 import { getGlobalSettings } from "./global-settings.js";
 import { extractGraphicContent, ICON_BASE_TEMPLATE } from "./icon-base.js";
-import { escapeXml, parseIconTitleDefault, renderIconTemplate } from "./icon-template.js";
+import { escapeXml, parseIconTitleDefaults, renderIconTemplate } from "./icon-template.js";
 import { svgToDataUri } from "./overlay-utils.js";
 
 export interface ResolvedTitleSettings {
@@ -17,10 +17,10 @@ export interface ResolvedTitleSettings {
 export interface GlobalTitleSettings {
   showTitle?: boolean;
   showGraphics?: boolean;
-  bold?: boolean;
-  fontSize?: number;
-  position?: "top" | "middle" | "bottom" | "custom";
-  customPosition?: number;
+  bold?: boolean | "default";
+  fontSize?: number | "default";
+  position?: "top" | "middle" | "bottom" | "custom" | "default";
+  customPosition?: number | "default";
 }
 
 const TITLE_DEFAULTS: Omit<ResolvedTitleSettings, "titleText"> = {
@@ -167,21 +167,41 @@ export function getGlobalTitleSettings(): GlobalTitleSettings {
 
   if (showGraphics !== undefined) result.showGraphics = showGraphics;
 
-  const bold = bool("titleBold");
+  // Bold: supports "default" to defer to icon defaults
+  const boldVal = settings["titleBold"];
 
-  if (bold !== undefined) result.bold = bold;
+  if (boldVal === "default") {
+    result.bold = "default";
+  } else {
+    const bold = bool("titleBold");
 
-  const fontSize = num("titleFontSize");
+    if (bold !== undefined) result.bold = bold;
+  }
 
-  if (fontSize !== undefined) result.fontSize = fontSize;
+  // Font size: "default" checkbox means defer to icon defaults
+  const fontSizeDefault = bool("titleFontSizeDefault");
 
+  if (fontSizeDefault) {
+    result.fontSize = "default";
+  } else {
+    const fontSize = num("titleFontSize");
+
+    if (fontSize !== undefined) result.fontSize = fontSize;
+  }
+
+  // Position: supports "default" to defer to icon defaults
   const position = str("titlePosition") as GlobalTitleSettings["position"];
 
   if (position !== undefined) result.position = position;
 
-  const customPosition = num("titleCustomPosition");
+  // Custom position: follows position — "default" when position is "default"
+  if (position === "default") {
+    result.customPosition = "default";
+  } else {
+    const customPosition = num("titleCustomPosition");
 
-  if (customPosition !== undefined) result.customPosition = customPosition;
+    if (customPosition !== undefined) result.customPosition = customPosition;
+  }
 
   return result;
 }
@@ -204,27 +224,56 @@ export function resolveTitleSettings(
   actionOverrides?: TitleOverrides,
   actionDefaultText?: string,
 ): ResolvedTitleSettings {
-  const descDefault = parseIconTitleDefault(graphicSvg);
+  const iconDefaults = parseIconTitleDefaults(graphicSvg);
 
-  const resolve = <T>(actionVal: T | undefined, globalVal: T | undefined, fallback: T): T =>
-    actionVal ?? globalVal ?? fallback;
+  // Resolution: per-action → global (if not "default") → icon <desc> default → TITLE_DEFAULTS
+  const resolve = <T>(
+    actionVal: T | undefined,
+    globalVal: T | "default" | undefined,
+    iconDefault: T | undefined,
+    fallback: T,
+  ): T => {
+    if (actionVal !== undefined) return actionVal;
+
+    if (globalVal !== undefined && globalVal !== "default") return globalVal as T;
+
+    if (iconDefault !== undefined) return iconDefault;
+
+    return fallback;
+  };
 
   const titleText =
     (actionOverrides?.titleText && actionOverrides.titleText.length > 0 ? actionOverrides.titleText : undefined) ??
     actionDefaultText ??
-    descDefault ??
+    iconDefaults.text ??
     "";
 
   return {
-    showTitle: resolve(actionOverrides?.showTitle, globalTitleSettings.showTitle, TITLE_DEFAULTS.showTitle),
-    showGraphics: resolve(actionOverrides?.showGraphics, globalTitleSettings.showGraphics, TITLE_DEFAULTS.showGraphics),
+    showTitle: resolve(actionOverrides?.showTitle, globalTitleSettings.showTitle, undefined, TITLE_DEFAULTS.showTitle),
+    showGraphics: resolve(
+      actionOverrides?.showGraphics,
+      globalTitleSettings.showGraphics,
+      undefined,
+      TITLE_DEFAULTS.showGraphics,
+    ),
     titleText,
-    bold: resolve(actionOverrides?.bold, globalTitleSettings.bold, TITLE_DEFAULTS.bold),
-    fontSize: resolve(actionOverrides?.fontSize, globalTitleSettings.fontSize, TITLE_DEFAULTS.fontSize),
-    position: resolve(actionOverrides?.position, globalTitleSettings.position, TITLE_DEFAULTS.position),
+    bold: resolve(actionOverrides?.bold, globalTitleSettings.bold, undefined, TITLE_DEFAULTS.bold),
+    fontSize: resolve(
+      actionOverrides?.fontSize,
+      globalTitleSettings.fontSize,
+      iconDefaults.fontSize,
+      TITLE_DEFAULTS.fontSize,
+    ),
+    position: resolve(
+      actionOverrides?.position,
+      globalTitleSettings.position,
+      iconDefaults.position,
+      TITLE_DEFAULTS.position,
+    ),
     customPosition: resolve(
       actionOverrides?.customPosition,
       globalTitleSettings.customPosition,
+      iconDefaults.customPosition,
       TITLE_DEFAULTS.customPosition,
     ),
   };

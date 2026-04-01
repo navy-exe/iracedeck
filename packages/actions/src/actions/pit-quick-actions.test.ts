@@ -43,7 +43,7 @@ vi.mock("@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg", () => ({
 }));
 
 vi.mock("../../icons/pit-quick-actions.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">{{iconContent}} {{backgroundColor}}</svg>',
+  default: '<svg xmlns="http://www.w3.org/2000/svg">{{titleContent}}{{iconContent}} {{backgroundColor}}</svg>',
 }));
 
 vi.mock("../icons/status-bar.js", () => ({
@@ -100,6 +100,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   resolveIconColors: vi.fn((_svg: string, _global: unknown, _overrides: unknown) => ({
     graphic1Color: "#ffffff",
   })),
+  generateTitleText: vi.fn((opts: { text: string }) => `<text>${opts.text}</text>`),
   renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
     let result = template;
 

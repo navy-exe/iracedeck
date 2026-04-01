@@ -100,13 +100,34 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
  * @internal Exported for testing and use by title-settings utilities
  */
 export function parseIconTitleDefault(svgTemplate: string): string | undefined {
+  return parseIconTitleDefaults(svgTemplate).text;
+}
+
+export interface IconTitleDefaults {
+  text?: string;
+  position?: "top" | "middle" | "bottom" | "custom";
+  fontSize?: number;
+  customPosition?: number;
+}
+
+export function parseIconTitleDefaults(svgTemplate: string): IconTitleDefaults {
   const meta = parseDescMetadata(svgTemplate);
 
-  if (!meta) return undefined;
+  if (!meta) return {};
 
-  const title = meta.title as { text?: string } | undefined;
+  const title = meta.title as Record<string, unknown> | undefined;
 
-  return title?.text;
+  if (!title) return {};
+
+  const pos = title.position;
+  const validPositions = new Set(["top", "middle", "bottom", "custom"]);
+
+  return {
+    text: typeof title.text === "string" ? title.text : undefined,
+    position: typeof pos === "string" && validPositions.has(pos) ? (pos as IconTitleDefaults["position"]) : undefined,
+    fontSize: typeof title.fontSize === "number" ? title.fontSize : undefined,
+    customPosition: typeof title.customPosition === "number" ? title.customPosition : undefined,
+  };
 }
 
 /**
