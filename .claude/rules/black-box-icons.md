@@ -38,24 +38,26 @@ All icons use a consistent inner frame:
 
 ## Text Labels
 
-Two-line labels at bottom:
-- **Line 1** (name): y=52, font-size 10px, white (#ffffff), bold, Arial
-- **Line 2** (action): y=63, font-size 8px, white (#ffffff), Arial
+Single-line labels at bottom:
+- **Label** (name): bold, white (#ffffff), Arial
+- Title text is rendered by `assembleIcon()` from the `<desc>` metadata
 
 Label configurations:
-| Black Box | Line 1 | Line 2 |
-|-----------|--------|--------|
-| Lap Timing | LAP TIMING | TOGGLE |
-| Standings | STANDINGS | TOGGLE |
-| Relative | RELATIVE | TOGGLE |
-| Fuel | FUEL | ADJUSTMENTS |
-| Tires | TIRES | ADJUSTMENTS |
-| Tire Info | TIRE INFO | TOGGLE |
-| Pit-stop | PIT-STOP | ADJUSTMENTS |
-| In-car | IN-CAR | ADJUSTMENTS |
-| Mirror (Graphics) | GRAPHICS | ADJUSTMENTS |
-| Radio | RADIO | CHANNELS |
-| Weather | WEATHER | FORECAST |
+| Black Box | Label |
+|-----------|-------|
+| Lap Timing | LAP TIMING |
+| Standings | STANDINGS |
+| Relative | RELATIVE |
+| Fuel | FUEL |
+| Tires | TIRES |
+| Tire Info | TIRE INFO |
+| Pit-stop | PIT-STOP |
+| In-car | IN-CAR |
+| Mirror (Graphics) | GRAPHICS |
+| Radio | RADIO |
+| Weather | WEATHER |
+| Next | NEXT |
+| Previous | PREVIOUS |
 
 ## Icon Layout Patterns
 

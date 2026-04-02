@@ -210,7 +210,6 @@ describe("BlackBoxSelector", () => {
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("LAP TIMING");
-      expect(decoded).toContain("TOGGLE");
     });
 
     it("should include NEXT label for next cycle mode", () => {
@@ -218,7 +217,6 @@ describe("BlackBoxSelector", () => {
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("NEXT");
-      expect(decoded).toContain("BLACK BOX");
     });
 
     it("should include PREVIOUS label for previous cycle mode", () => {
@@ -226,32 +224,30 @@ describe("BlackBoxSelector", () => {
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("PREVIOUS");
-      expect(decoded).toContain("BLACK BOX");
     });
 
     it("should include correct labels for all direct black boxes", () => {
       const expectedTitleText: Record<string, string> = {
-        "lap-timing": "TOGGLE\nLAP TIMING",
-        standings: "TOGGLE\nSTANDINGS",
-        relative: "TOGGLE\nRELATIVE",
-        fuel: "ADJUSTMENTS\nFUEL",
-        tires: "ADJUSTMENTS\nTIRES",
-        "tire-info": "TOGGLE\nTIRE INFO",
-        "pit-stop": "ADJUSTMENTS\nPIT-STOP",
-        "in-car": "ADJUSTMENTS\nIN-CAR",
-        mirror: "ADJUSTMENTS\nGRAPHICS",
-        radio: "CHANNELS\nRADIO",
-        weather: "FORECAST\nWEATHER",
+        "lap-timing": "\nLAP TIMING",
+        standings: "\nSTANDINGS",
+        relative: "\nRELATIVE",
+        fuel: "\nFUEL",
+        tires: "\nTIRES",
+        "tire-info": "\nTIRE INFO",
+        "pit-stop": "\nPIT-STOP",
+        "in-car": "\nIN-CAR",
+        mirror: "\nGRAPHICS",
+        radio: "\nRADIO",
+        weather: "\nWEATHER",
       };
 
       for (const [blackBox, titleText] of Object.entries(expectedTitleText)) {
         const result = generateBlackBoxSelectorSvg({ mode: "direct", blackBox: blackBox as any });
         const decoded = decodeURIComponent(result);
 
-        // Each part of the title text should appear in the output
-        for (const part of titleText.split("\n")) {
-          expect(decoded).toContain(part);
-        }
+        // The main label should appear in the output
+        const mainLabel = titleText.split("\n").filter(Boolean)[0];
+        expect(decoded).toContain(mainLabel);
       }
     });
   });
