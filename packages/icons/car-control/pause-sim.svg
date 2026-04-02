@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"SIM\nPAUSE"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"SIM\nPAUSE"},"border":{"color":"#5a6a5a"}}</desc>
 
     <rect x="54" y="28" width="12" height="40" rx="2" fill="{{graphic1Color}}"/>
     <rect x="78" y="28" width="12" height="40" rx="2" fill="{{graphic1Color}}"/>

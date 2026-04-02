@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"\nREWIND"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"\nREWIND"},"border":{"color":"#5a6a7a"}}</desc>
 
     <polygon points="100,28 68,52 100,76" fill="none" stroke="#f1c40f" stroke-width="4" stroke-linejoin="round"/>
     <polygon points="72,28 40,52 72,76" fill="none" stroke="#f1c40f" stroke-width="4" stroke-linejoin="round"/>

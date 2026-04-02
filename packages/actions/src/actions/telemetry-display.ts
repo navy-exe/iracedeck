@@ -4,13 +4,14 @@ import {
   escapeXml,
   generateBorderParts,
   generateTitleText,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDidReceiveSettingsEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -81,13 +82,14 @@ export function generateTelemetryDisplaySvg(title: string, value: string, settin
       })
     : "";
 
-  const border = generateBorderParts(resolveBorderOptions(settings.borderOverrides));
+  const border = resolveBorderSettings(telemetryDisplayTemplate, getGlobalBorderSettings(), settings.borderOverrides);
+  const borderSvg = generateBorderParts(border);
 
   const svg = renderIconTemplate(telemetryDisplayTemplate, {
     ...colors,
     titleContent,
-    borderDefs: border.defs,
-    borderContent: border.rects,
+    borderDefs: borderSvg.defs,
+    borderContent: borderSvg.rects,
     valueContent,
   });
 
@@ -172,7 +174,7 @@ export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDispla
   private buildStateKey(title: string, value: string, settings: TelemetryDisplaySettings): string {
     const co = settings.colorOverrides;
     const bo = settings.borderOverrides;
-    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
     return `${title}|${value}|${co?.backgroundColor || ""}|${co?.textColor || ""}|${settings.fontSize}|${borderKey}`;
   }

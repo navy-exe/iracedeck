@@ -89,6 +89,30 @@
     <sdpi-item label=" ">
       <button class="ird-title-global-reset" style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#d0d0d0;">Reset Title Defaults</button>
     </sdpi-item>
+    <div class="ird-section-subtitle">Border Defaults</div>
+    <sdpi-item label="Show Border">
+      <sdpi-select setting="borderEnabled" default="default" global>
+        <option value="default">Default</option>
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </sdpi-select>
+    </sdpi-item>
+    <sdpi-item label="Width">
+      <sdpi-range setting="borderWidth" min="2" max="40" step="2" default="14" global showlabels></sdpi-range>
+    </sdpi-item>
+    <sdpi-item label="Color">
+      <sdpi-color setting="borderColor" global></sdpi-color>
+    </sdpi-item>
+    <sdpi-item label="Show Glow">
+      <sdpi-select setting="borderGlowEnabled" default="default" global>
+        <option value="default">Default</option>
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </sdpi-select>
+    </sdpi-item>
+    <sdpi-item label="Glow Width">
+      <sdpi-range setting="borderGlowWidth" min="2" max="60" step="2" default="35" global showlabels></sdpi-range>
+    </sdpi-item>
     <div class="ird-section-subtitle">iRacing</div>
     <sdpi-item label="Focus iRacing">
       <sdpi-checkbox

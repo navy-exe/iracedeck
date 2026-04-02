@@ -4,6 +4,7 @@ import {
   ConnectionStateAwareAction,
   extractGraphicContent,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalSettings,
   getGlobalTitleSettings,
@@ -14,6 +15,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -303,8 +305,9 @@ export function generateCameraControlsSvg(
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -328,8 +331,9 @@ function generateCameraSelectSvg(
     titleOverrides,
     `CAMERA\n${groupName.toUpperCase()}`,
   );
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -488,8 +492,9 @@ export function generateCycleCameraGridSvg(
     const titleText = CYCLE_TITLES["cycle-camera"][direction];
     const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), undefined, titleText);
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides });
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
   }
 
   const displayGroups = groupsWithIcons.slice(0, 6);

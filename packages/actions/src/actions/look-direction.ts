@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -11,6 +12,7 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -71,7 +73,9 @@ export function generateLookDirectionSvg(settings: LookDirectionSettings): strin
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**

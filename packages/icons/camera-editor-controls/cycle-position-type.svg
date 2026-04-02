@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CYCLE\nPOS TYPE"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CYCLE\nPOS TYPE"},"border":{"color":"#3a6a5a"}}</desc>
 
     <circle cx="72" cy="44" r="24" fill="none" stroke="#888888" stroke-width="2"/>
     <path d="M72 20 A24 24 0 1 1 48 44" fill="none" stroke="{{graphic1Color}}" stroke-width="3" stroke-linecap="round"/>

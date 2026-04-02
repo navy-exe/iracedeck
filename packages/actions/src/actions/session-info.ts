@@ -3,13 +3,14 @@ import {
   ConnectionStateAwareAction,
   generateBorderParts,
   generateTitleText,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDidReceiveSettingsEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -163,13 +164,14 @@ export function generateSessionInfoSvg(
       })
     : "";
 
-  const border = generateBorderParts(resolveBorderOptions(settings.borderOverrides));
+  const border = resolveBorderSettings(sessionInfoTemplate, getGlobalBorderSettings(), settings.borderOverrides);
+  const borderSvg = generateBorderParts(border);
 
   const svg = renderIconTemplate(sessionInfoTemplate, {
     backgroundColor,
     titleContent,
-    borderDefs: border.defs,
-    borderContent: border.rects,
+    borderDefs: borderSvg.defs,
+    borderContent: borderSvg.rects,
     value,
     valueFontSize,
     valueY,
@@ -426,7 +428,7 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     bgOverride?: string,
   ): string {
     const bo = settings.borderOverrides;
-    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
     return `${settings.mode}|${value}|${isFlashing}|${bgOverride || ""}|${borderKey}`;
   }

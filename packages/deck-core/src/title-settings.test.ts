@@ -1,15 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { BorderOverrides, TitleOverrides } from "./common-settings.js";
+import type { TitleOverrides } from "./common-settings.js";
 import { getGlobalSettings } from "./global-settings.js";
 import type { GlobalSettings } from "./global-settings.js";
 import {
   assembleIcon,
+  BORDER_DEFAULTS,
   generateTitleText,
+  getGlobalBorderSettings,
   getGlobalTitleSettings,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveTitleSettings,
 } from "./title-settings.js";
+import type { GlobalBorderSettings, ResolvedBorderSettings } from "./title-settings.js";
 import type { GlobalTitleSettings } from "./title-settings.js";
 
 vi.mock("./global-settings.js", () => ({
@@ -307,6 +310,7 @@ describe("assembleIcon", () => {
         position: "bottom",
         customPosition: 0,
       },
+      border: BORDER_DEFAULTS,
     });
     const svg = decodeDataUri(result);
     expect(result).toContain("data:image/svg+xml");
@@ -328,6 +332,7 @@ describe("assembleIcon", () => {
         position: "bottom",
         customPosition: 0,
       },
+      border: BORDER_DEFAULTS,
     });
     const svg = decodeDataUri(result);
     expect(svg).toContain("TOGGLE");
@@ -347,6 +352,7 @@ describe("assembleIcon", () => {
         position: "bottom",
         customPosition: 0,
       },
+      border: BORDER_DEFAULTS,
     });
     const svg = decodeDataUri(result);
     expect(svg).not.toContain("TOGGLE");
@@ -418,44 +424,104 @@ describe("getGlobalTitleSettings", () => {
   });
 });
 
-describe("resolveBorderOptions", () => {
-  it("should return disabled defaults when no overrides", () => {
-    const result = resolveBorderOptions();
-    expect(result).toEqual({ enabled: false, width: 14, color: "#00aaff" });
+describe("resolveBorderSettings", () => {
+  const GRAPHIC_WITH_BORDER = `<svg><desc>{"colors":{},"border":{"color":"#5a5a5a"}}</desc></svg>`;
+  const GRAPHIC_NO_BORDER = `<svg><desc>{"colors":{}}</desc></svg>`;
+
+  it("should return BORDER_DEFAULTS when no overrides or global", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, {});
+    expect(result).toEqual(BORDER_DEFAULTS);
   });
 
-  it("should return disabled defaults when overrides are undefined", () => {
-    const result = resolveBorderOptions(undefined);
-    expect(result).toEqual({ enabled: false, width: 14, color: "#00aaff" });
+  it("should use icon border color default from desc metadata", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = resolveBorderSettings(GRAPHIC_WITH_BORDER, {});
+    expect(result.borderColor).toBe("#5a5a5a");
   });
 
-  it("should use overrides when provided", () => {
-    const overrides: BorderOverrides = { enabled: true, width: 10, color: "#ff0000" };
-    const result = resolveBorderOptions(overrides);
-    expect(result).toEqual({ enabled: true, width: 10, color: "#ff0000" });
-  });
-
-  it("should use stateColor over overrides color", () => {
-    const overrides: BorderOverrides = { enabled: true, width: 8, color: "#ff0000" };
-    const result = resolveBorderOptions(overrides, "#2ecc71");
-    expect(result).toEqual({ enabled: true, width: 8, color: "#2ecc71" });
-  });
-
-  it("should use stateColor even when overrides color is undefined", () => {
-    const overrides: BorderOverrides = { enabled: true, width: 6, color: "#ffffff" };
-    const result = resolveBorderOptions(overrides, "#e74c3c");
-    expect(result.color).toBe("#e74c3c");
-  });
-
-  it("should use partial overrides with defaults for missing fields", () => {
-    const result = resolveBorderOptions({ enabled: true } as BorderOverrides);
+  it("should use global settings over defaults", () => {
+    const global: GlobalBorderSettings = { enabled: true, borderWidth: 20 };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global);
     expect(result.enabled).toBe(true);
-    expect(result.width).toBe(14);
-    expect(result.color).toBe("#00aaff");
+    expect(result.borderWidth).toBe(20);
+  });
+
+  it("should use per-action overrides over global", () => {
+    const global: GlobalBorderSettings = { enabled: true, borderWidth: 20 };
+    const overrides = { enabled: false, borderWidth: 8 };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global, overrides);
+    expect(result.enabled).toBe(false);
+    expect(result.borderWidth).toBe(8);
+  });
+
+  it("should use stateColor over all other color sources", () => {
+    const global: GlobalBorderSettings = { borderColor: "#ffffff" };
+    const overrides = { borderColor: "#00aaff" };
+    const result = resolveBorderSettings(GRAPHIC_WITH_BORDER, global, overrides, "#e74c3c");
+    expect(result.borderColor).toBe("#e74c3c");
+  });
+
+  it("should treat 'default' global as unset and fall through", () => {
+    const global: GlobalBorderSettings = { enabled: "default", glowEnabled: "default" };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global);
+    expect(result.enabled).toBe(BORDER_DEFAULTS.enabled);
+    expect(result.glowEnabled).toBe(BORDER_DEFAULTS.glowEnabled);
+  });
+
+  it("should resolve glowEnabled and glowWidth independently", () => {
+    const global: GlobalBorderSettings = { glowEnabled: false, glowWidth: 50 };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global);
+    expect(result.glowEnabled).toBe(false);
+    expect(result.glowWidth).toBe(50);
+  });
+});
+
+describe("getGlobalBorderSettings", () => {
+  it("should return empty object when no global border settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = getGlobalBorderSettings();
+    expect(result).toEqual({});
+  });
+
+  it("should extract border settings from global settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      borderEnabled: true,
+      borderWidth: 20,
+      borderColor: "#ff0000",
+      borderGlowEnabled: false,
+      borderGlowWidth: 40,
+    } as unknown as GlobalSettings);
+    const result = getGlobalBorderSettings();
+    expect(result).toEqual({
+      enabled: true,
+      borderWidth: 20,
+      borderColor: "#ff0000",
+      glowEnabled: false,
+      glowWidth: 40,
+    });
+  });
+
+  it("should return 'default' for enabled when set to 'default'", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      borderEnabled: "default",
+    } as unknown as GlobalSettings);
+    const result = getGlobalBorderSettings();
+    expect(result.enabled).toBe("default");
   });
 });
 
 describe("assembleIcon with border", () => {
+  const ENABLED_BORDER: ResolvedBorderSettings = {
+    enabled: true,
+    borderWidth: 8,
+    borderColor: "#2ecc71",
+    glowEnabled: false,
+    glowWidth: 35,
+  };
+
+  const DISABLED_BORDER: ResolvedBorderSettings = { ...BORDER_DEFAULTS };
+
   it("should include border rect when border is enabled", () => {
     const result = assembleIcon({
       graphicSvg: MOCK_GRAPHIC,
@@ -469,12 +535,11 @@ describe("assembleIcon with border", () => {
         position: "bottom",
         customPosition: 0,
       },
-      borderOverrides: { enabled: true, width: 8, color: "#2ecc71" },
+      border: ENABLED_BORDER,
     });
     const svg = decodeDataUri(result);
     expect(svg).toContain('stroke="#2ecc71"');
     expect(svg).toContain('stroke-width="8"');
-    expect(svg).toContain('fill="none"');
   });
 
   it("should not include border rect when border is disabled", () => {
@@ -490,47 +555,9 @@ describe("assembleIcon with border", () => {
         position: "bottom",
         customPosition: 0,
       },
-      borderOverrides: { enabled: false, width: 8, color: "#2ecc71" },
-    });
-    const svg = decodeDataUri(result);
-    expect(svg).not.toContain('stroke="#2ecc71"');
-  });
-
-  it("should not include border when borderOverrides is undefined", () => {
-    const result = assembleIcon({
-      graphicSvg: MOCK_GRAPHIC,
-      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
-      title: {
-        showTitle: true,
-        showGraphics: true,
-        titleText: "TEST",
-        bold: true,
-        fontSize: 9,
-        position: "bottom",
-        customPosition: 0,
-      },
+      border: DISABLED_BORDER,
     });
     const svg = decodeDataUri(result);
     expect(svg).not.toContain("stroke=");
-  });
-
-  it("should use borderStateColor over borderOverrides color", () => {
-    const result = assembleIcon({
-      graphicSvg: MOCK_GRAPHIC,
-      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
-      title: {
-        showTitle: true,
-        showGraphics: true,
-        titleText: "TEST",
-        bold: true,
-        fontSize: 9,
-        position: "bottom",
-        customPosition: 0,
-      },
-      borderOverrides: { enabled: true, width: 6, color: "#00aaff" },
-      borderStateColor: "#e74c3c",
-    });
-    const svg = decodeDataUri(result);
-    expect(svg).toContain('stroke="#e74c3c"');
   });
 });

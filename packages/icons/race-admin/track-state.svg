@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#8B1A1A","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"STATE\nTRACK"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#8B1A1A","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"STATE\nTRACK"},"border":{"color":"#bb4a4a"}}</desc>
     <path d="M36,76 C36,36 108,36 108,76" fill="none" stroke="{{graphic1Color}}" stroke-width="5" stroke-linecap="round"/>
     <path d="M48,72 C48,48 96,48 96,72" fill="none" stroke="{{graphic1Color}}" stroke-width="3" stroke-linecap="round"/>
     <rect x="50" y="78" width="8" height="8" fill="{{graphic1Color}}" opacity="0.4"/>

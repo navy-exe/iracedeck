@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nZOOM"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nZOOM"},"border":{"color":"#3a6a5a"}}</desc>
 
     <circle cx="64" cy="40" r="20" fill="none" stroke="#ffffff" stroke-width="3"/>
     <line x1="78" y1="54" x2="100" y2="76" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>

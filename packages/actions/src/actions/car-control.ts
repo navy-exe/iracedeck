@@ -4,6 +4,7 @@ import {
   ConnectionStateAwareAction,
   generateBorderParts,
   generateTitleText,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   getKeyboard,
@@ -16,7 +17,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -333,11 +334,15 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
     const speed = telemetryState?.pitSpeedLimit ?? DEFAULT_PIT_SPEED;
     const isActive = telemetryState?.pitLimiterActive ?? false;
     const iconContent = isActive ? pitLimiterActiveIcon(speed) : pitLimiterInactiveIcon(speed);
-    const border = generateBorderParts(
-      resolveBorderOptions(settings.borderOverrides, borderColorForState(isActive ? "on" : "off")),
+    const border = resolveBorderSettings(
+      carControlTemplate,
+      getGlobalBorderSettings(),
+      settings.borderOverrides,
+      borderColorForState(isActive ? "on" : "off"),
     );
+    const borderSvg = generateBorderParts(border);
 
-    return renderDynamicIcon(settings, iconContent, border);
+    return renderDynamicIcon(settings, iconContent, borderSvg);
   }
 
   // Push To Pass and DRS use dedicated templates with their own <desc> defaults
@@ -361,16 +366,20 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
         })
       : "";
 
-    const border = generateBorderParts(
-      resolveBorderOptions(settings.borderOverrides, borderColorForState(isActive ? "on" : "off")),
+    const border = resolveBorderSettings(
+      template,
+      getGlobalBorderSettings(),
+      settings.borderOverrides,
+      borderColorForState(isActive ? "on" : "off"),
     );
+    const borderSvg = generateBorderParts(border);
 
     // Status bar is always visible, even when Show Graphics is off
     const svg = renderIconTemplate(template, {
       iconContent,
       titleContent,
-      borderDefs: border.defs,
-      borderContent: border.rects,
+      borderDefs: borderSvg.defs,
+      borderContent: borderSvg.rects,
       ...colors,
     });
 
@@ -385,8 +394,9 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
 
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
   }
 
   // Static modes use standalone SVGs from @iracedeck/icons
@@ -395,8 +405,9 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 function renderDynamicIcon(
@@ -660,7 +671,7 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
 
   private buildStateKey(settings: CarControlSettings, telemetryState: CarControlTelemetryState): string {
     const bo = settings.borderOverrides;
-    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
     if (settings.control === "pit-speed-limiter") {
       return `pit-speed-limiter|${telemetryState.pitLimiterActive ?? false}|${telemetryState.pitSpeedLimit ?? DEFAULT_PIT_SPEED}|${borderKey}`;

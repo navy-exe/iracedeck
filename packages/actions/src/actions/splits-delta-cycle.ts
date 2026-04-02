@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -9,6 +10,7 @@ import {
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -93,7 +95,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
       "CAR\nREFERENCE",
     );
 
-    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title, borderOverrides: settings.borderOverrides });
+    const border = resolveBorderSettings(displayRefCarIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title, border });
   }
 
   const modeIconSvg = MODE_ICONS[mode];
@@ -107,7 +111,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
       MODE_TITLES[mode],
     );
 
-    return assembleIcon({ graphicSvg: modeIconSvg, colors, title, borderOverrides: settings.borderOverrides });
+    const border = resolveBorderSettings(modeIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: modeIconSvg, colors, title, border });
   }
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS.next;
@@ -115,7 +121,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
   const defaultTitle = direction === "next" ? "SPLITS DELTA\nNEXT" : "SPLITS DELTA\nPREVIOUS";
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**

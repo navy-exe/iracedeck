@@ -6,6 +6,7 @@ import {
   generateBorderParts,
   generateTitleText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -16,7 +17,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -290,15 +291,19 @@ export function generateFuelServiceSvg(
     const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
 
     const fuelFillEnabled = state.fuelFillOn ?? false;
-    const border = generateBorderParts(
-      resolveBorderOptions(settings.borderOverrides, borderColorForState(fuelFillEnabled ? "on" : "off")),
+    const border = resolveBorderSettings(
+      fuelServiceTemplate,
+      getGlobalBorderSettings(),
+      settings.borderOverrides,
+      borderColorForState(fuelFillEnabled ? "on" : "off"),
     );
+    const borderSvg = generateBorderParts(border);
 
     const svg = renderIconTemplate(fuelServiceTemplate, {
       iconContent,
       titleContent,
-      borderDefs: border.defs,
-      borderContent: border.rects,
+      borderDefs: borderSvg.defs,
+      borderContent: borderSvg.rects,
       ...colors,
     });
 
@@ -313,8 +318,9 @@ export function generateFuelServiceSvg(
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -531,7 +537,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   private buildStateKey(settings: FuelServiceSettings, telemetryState: FuelServiceTelemetryState): string {
     if (settings.mode === "toggle-fuel-fill") {
       const bo = settings.borderOverrides;
-      const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+      const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
       return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
     }

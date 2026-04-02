@@ -1,7 +1,7 @@
 import type { BorderOverrides, TitleOverrides } from "./common-settings.js";
 import { getGlobalSettings } from "./global-settings.js";
-import { extractGraphicContent, generateBorderSvg, ICON_BASE_TEMPLATE } from "./icon-base.js";
-import { escapeXml, parseIconTitleDefaults, renderIconTemplate } from "./icon-template.js";
+import { extractGraphicContent, generateBorderParts, ICON_BASE_TEMPLATE } from "./icon-base.js";
+import { escapeXml, parseIconBorderDefaults, parseIconTitleDefaults, renderIconTemplate } from "./icon-template.js";
 import { svgToDataUri } from "./overlay-utils.js";
 
 export interface ResolvedTitleSettings {
@@ -276,21 +276,171 @@ export function resolveTitleSettings(
   };
 }
 
-/**
- * Resolves border options from per-action overrides and an optional state-driven color.
- *
- * @param overrides - Per-action border overrides from settings
- * @param stateColor - Optional state-driven color (e.g., green for ON, red for OFF) that overrides the user-chosen color
- */
-export function resolveBorderOptions(
-  overrides?: BorderOverrides,
-  stateColor?: string,
-): { enabled: boolean; width: number; color: string } {
-  const enabled = overrides?.enabled ?? false;
-  const width = overrides?.width ?? 14;
-  const color = stateColor ?? overrides?.color ?? "#00aaff";
+export interface ResolvedBorderSettings {
+  enabled: boolean;
+  borderWidth: number;
+  borderColor: string;
+  glowEnabled: boolean;
+  glowWidth: number;
+}
 
-  return { enabled, width, color };
+export interface GlobalBorderSettings {
+  enabled?: boolean | "default";
+  borderWidth?: number | "default";
+  borderColor?: string;
+  glowEnabled?: boolean | "default";
+  glowWidth?: number | "default";
+}
+
+const BORDER_DEFAULTS: ResolvedBorderSettings = {
+  enabled: false,
+  borderWidth: 14,
+  borderColor: "#00aaff",
+  glowEnabled: true,
+  glowWidth: 35,
+};
+
+export { BORDER_DEFAULTS };
+
+/**
+ * Reads plugin-level global border settings from the global settings store.
+ * Keys are flat with a `border` prefix (e.g., `borderEnabled`, `borderWidth`).
+ */
+export function getGlobalBorderSettings(): GlobalBorderSettings {
+  const settings = getGlobalSettings() as Record<string, unknown>;
+  const result: GlobalBorderSettings = {};
+
+  const bool = (key: string): boolean | undefined => {
+    const val = settings[key];
+
+    if (val === true || val === "true") return true;
+
+    if (val === false || val === "false") return false;
+
+    return undefined;
+  };
+
+  const num = (key: string): number | undefined => {
+    const val = settings[key];
+
+    if (typeof val === "number") return val;
+
+    if (typeof val === "string" && val.length > 0) {
+      const n = Number(val);
+
+      return Number.isFinite(n) ? n : undefined;
+    }
+
+    return undefined;
+  };
+
+  const str = (key: string): string | undefined => {
+    const val = settings[key];
+
+    return typeof val === "string" && val.length > 0 ? val : undefined;
+  };
+
+  // Enabled: supports "default" to defer to icon defaults
+  const enabledVal = settings["borderEnabled"];
+
+  if (enabledVal === "default") {
+    result.enabled = "default";
+  } else {
+    const enabled = bool("borderEnabled");
+
+    if (enabled !== undefined) result.enabled = enabled;
+  }
+
+  const borderWidth = num("borderWidth");
+
+  if (borderWidth !== undefined) result.borderWidth = borderWidth;
+
+  const borderColor = str("borderColor");
+
+  if (borderColor !== undefined) result.borderColor = borderColor;
+
+  // Glow enabled: supports "default"
+  const glowEnabledVal = settings["borderGlowEnabled"];
+
+  if (glowEnabledVal === "default") {
+    result.glowEnabled = "default";
+  } else {
+    const glowEnabled = bool("borderGlowEnabled");
+
+    if (glowEnabled !== undefined) result.glowEnabled = glowEnabled;
+  }
+
+  const glowWidth = num("borderGlowWidth");
+
+  if (glowWidth !== undefined) result.glowWidth = glowWidth;
+
+  return result;
+}
+
+/**
+ * Resolves border settings by merging per-action overrides, global settings, and icon defaults.
+ *
+ * Resolution chain: actionOverrides → globalBorderSettings → icon <desc> border defaults → BORDER_DEFAULTS
+ *
+ * @param graphicSvg - SVG template string with optional <desc> border metadata
+ * @param globalBorderSettings - Plugin-level global border settings
+ * @param actionOverrides - Per-action border overrides from settings (optional)
+ * @param stateColor - State-driven color for toggle actions (overrides all color sources)
+ */
+export function resolveBorderSettings(
+  graphicSvg: string,
+  globalBorderSettings: GlobalBorderSettings,
+  actionOverrides?: BorderOverrides,
+  stateColor?: string,
+): ResolvedBorderSettings {
+  const iconDefaults = parseIconBorderDefaults(graphicSvg);
+
+  const resolve = <T>(
+    actionVal: T | undefined,
+    globalVal: T | "default" | undefined,
+    iconDefault: T | undefined,
+    fallback: T,
+  ): T => {
+    if (actionVal !== undefined) return actionVal;
+
+    if (globalVal !== undefined && globalVal !== "default") return globalVal as T;
+
+    if (iconDefault !== undefined) return iconDefault;
+
+    return fallback;
+  };
+
+  const borderColor =
+    stateColor ??
+    resolve(
+      actionOverrides?.borderColor,
+      globalBorderSettings.borderColor,
+      iconDefaults.borderColor,
+      BORDER_DEFAULTS.borderColor,
+    );
+
+  return {
+    enabled: resolve(actionOverrides?.enabled, globalBorderSettings.enabled, undefined, BORDER_DEFAULTS.enabled),
+    borderWidth: resolve(
+      actionOverrides?.borderWidth,
+      globalBorderSettings.borderWidth,
+      undefined,
+      BORDER_DEFAULTS.borderWidth,
+    ),
+    borderColor,
+    glowEnabled: resolve(
+      actionOverrides?.glowEnabled,
+      globalBorderSettings.glowEnabled,
+      undefined,
+      BORDER_DEFAULTS.glowEnabled,
+    ),
+    glowWidth: resolve(
+      actionOverrides?.glowWidth,
+      globalBorderSettings.glowWidth,
+      undefined,
+      BORDER_DEFAULTS.glowWidth,
+    ),
+  };
 }
 
 /**
@@ -307,18 +457,16 @@ export function resolveBorderOptions(
  * @param options.graphicSvg - Source SVG template with <desc> metadata
  * @param options.colors - Resolved color values for all slots
  * @param options.title - Fully resolved title settings
- * @param options.borderOverrides - Per-action border settings (optional)
- * @param options.borderStateColor - State-driven border color for toggle actions (optional)
+ * @param options.border - Fully resolved border settings
  * @returns SVG data URI string
  */
 export function assembleIcon(options: {
   graphicSvg: string;
   colors: Record<string, string>;
   title: ResolvedTitleSettings;
-  borderOverrides?: BorderOverrides;
-  borderStateColor?: string;
+  border: ResolvedBorderSettings;
 }): string {
-  const { graphicSvg, colors, title } = options;
+  const { graphicSvg, colors, title, border } = options;
 
   const rawGraphic = extractGraphicContent(graphicSvg);
   const graphicContent = title.showGraphics ? renderIconTemplate(rawGraphic, colors) : "";
@@ -334,8 +482,8 @@ export function assembleIcon(options: {
       })
     : "";
 
-  const border = resolveBorderOptions(options.borderOverrides, options.borderStateColor);
-  const borderContent = generateBorderSvg(border);
+  const borderSvg = generateBorderParts(border);
+  const borderContent = borderSvg.defs + borderSvg.rects;
 
   const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
     backgroundColor: colors.backgroundColor ?? "#000000",

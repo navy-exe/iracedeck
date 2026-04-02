@@ -4,6 +4,7 @@ import {
   ConnectionStateAwareAction,
   generateIconText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -13,6 +14,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -144,12 +146,14 @@ export function generateChatSvg(settings: ChatSettings): string {
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
   // Include iconColor as 'color' so the chat icon's {{color}} accent placeholder resolves
   return assembleIcon({
     graphicSvg: iconSvg,
     colors: { ...colors, color: iconColor },
     title,
-    borderOverrides: settings.borderOverrides,
+    border,
   });
 }
 

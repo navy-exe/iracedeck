@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -9,6 +10,7 @@ import {
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -136,7 +138,9 @@ export function generateCockpitMiscSvg(settings: CockpitMiscSettings): string {
     defaultTitle,
   );
 
-  return assembleIcon({ graphicSvg: iconSvg as string, colors, title, borderOverrides: settings.borderOverrides });
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg as string, colors, title, border });
 }
 
 /**

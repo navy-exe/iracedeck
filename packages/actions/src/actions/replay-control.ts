@@ -3,9 +3,10 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   extractGraphicContent,
-  generateBorderSvg,
+  generateBorderParts,
   generateTitleText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   ICON_BASE_TEMPLATE,
@@ -17,7 +18,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -281,7 +282,9 @@ export function generateReplayControlSvg(
           fill: colors.textColor ?? "#ffffff",
         })
       : "";
-    const borderContent = generateBorderSvg(resolveBorderOptions(settings.borderOverrides));
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+    const borderSvg = generateBorderParts(border);
+    const borderContent = borderSvg.defs + borderSvg.rects;
     const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
       backgroundColor: colors.backgroundColor ?? "#000000",
       graphicContent,
@@ -311,7 +314,9 @@ export function generateReplayControlSvg(
           fill: colors.textColor ?? "#ffffff",
         })
       : "";
-    const borderContent = generateBorderSvg(resolveBorderOptions(settings.borderOverrides));
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+    const borderSvg = generateBorderParts(border);
+    const borderContent = borderSvg.defs + borderSvg.rects;
     const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
       backgroundColor: colors.backgroundColor ?? "#000000",
       graphicContent,
@@ -328,13 +333,16 @@ export function generateReplayControlSvg(
     const pauseColors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PAUSE");
 
-    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, borderOverrides: settings.borderOverrides });
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, border });
   }
 
   // All other modes: static title via assembleIcon
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**

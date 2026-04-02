@@ -5,6 +5,7 @@ import {
   generateBorderParts,
   generateTitleText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -13,7 +14,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
-  resolveBorderOptions,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -124,7 +125,9 @@ export function generatePitQuickActionsSvg(
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PIT\nCLEAR ALL");
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
   }
 
   // Dynamic telemetry-driven modes — each has its own template with <desc> defaults
@@ -158,14 +161,20 @@ export function generatePitQuickActionsSvg(
     toggleState = state.windshieldOn ? "on" : "off";
   }
 
-  const border = generateBorderParts(resolveBorderOptions(settings.borderOverrides, borderColorForState(toggleState)));
+  const border = resolveBorderSettings(
+    template,
+    getGlobalBorderSettings(),
+    settings.borderOverrides,
+    borderColorForState(toggleState),
+  );
+  const borderSvg = generateBorderParts(border);
 
   // Status bar is always visible, even when graphics are off
   const svg = renderIconTemplate(template, {
     iconContent: statusBarContent,
     titleContent,
-    borderDefs: border.defs,
-    borderContent: border.rects,
+    borderDefs: borderSvg.defs,
+    borderContent: borderSvg.rects,
     ...colors,
   });
 
@@ -290,7 +299,7 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
 
   private buildStateKey(settings: PitQuickActionsSettings, telemetryState: PitQuickActionTelemetryState): string {
     const bo = settings.borderOverrides;
-    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
     switch (settings.action) {
       case "windshield-tearoff":
