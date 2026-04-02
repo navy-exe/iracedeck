@@ -131,6 +131,64 @@
   }
 </style>
 <script>
+  // Accordion state persistence — store open/closed state in Stream Deck global
+  // settings so it survives PI reloads (SD wipes the webview on each key selection).
+  // Keyed by accordion title so state is shared across all action types.
+  (function() {
+    var SETTING_KEY = '_accordionState';
+    var accordionState = {};
+    var saveFn = null;
+
+    function restoreAccordions() {
+      document.querySelectorAll('.ird-collapsible[data-accordion-id]').forEach(function(el) {
+        var id = el.getAttribute('data-accordion-id');
+        if (id in accordionState) {
+          if (accordionState[id]) {
+            el.setAttribute('open', '');
+          } else {
+            el.removeAttribute('open');
+          }
+        }
+      });
+    }
+
+    function saveState() {
+      if (saveFn) saveFn(JSON.stringify(accordionState));
+    }
+
+    function initAccordions() {
+      // Attach toggle listeners to each accordion
+      document.querySelectorAll('.ird-collapsible[data-accordion-id]').forEach(function(el) {
+        el.addEventListener('toggle', function() {
+          var id = el.getAttribute('data-accordion-id');
+          accordionState[id] = el.open;
+          saveState();
+        });
+      });
+
+      // Subscribe to the global setting via SDPIComponents
+      if (window.SDPIComponents) {
+        var hook = window.SDPIComponents.useGlobalSettings(
+          SETTING_KEY,
+          function(value) {
+            if (value) {
+              try { accordionState = JSON.parse(value); } catch (_) {}
+            }
+            restoreAccordions();
+          },
+          null
+        );
+        saveFn = hook[1];
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAccordions);
+    } else {
+      initAccordions();
+    }
+  })();
+
   // sdpi-textfield and sdpi-textarea don't reliably apply the default attribute
   // for new action instances. Wait for settings to load, then fill empty fields.
   setTimeout(() => {
