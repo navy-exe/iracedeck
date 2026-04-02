@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Control">
 			<sdpi-select setting="control" default="open-camera-tool">
 				<option value="open-camera-tool">Open Camera Tool</option>
@@ -39,18 +41,22 @@
 			</sdpi-select>
 		</sdpi-item>
 
-		<%- include('common-settings') %>
-
 		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['camera-editor-controls'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['camera-editor-controls'] }) %>
+		<%- include('common-settings') %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').cameraEditorControls
 		}) %>
 
-		<%- include('global-settings') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-color-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>
 

@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Mode">
 			<sdpi-select id="mode-select" setting="mode" default="toggle-fuel-fill">
 				<option value="toggle-fuel-fill">Toggle Fuel Fill</option>
@@ -39,17 +41,23 @@
 			</sdpi-item>
 		</div>
 
-		<%- include('common-settings') %>
-
 		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['fuel-service'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['fuel-service'] }) %>
+		<%- include('common-settings') %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<div id="key-bindings-section" class="hidden">
 			<%- include('global-key-bindings', {
 				keyBindings: require('./data/key-bindings.json').fuelService
 			}) %>
+
+		<%- include('global-title-defaults') %>
+		<%- include('global-color-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-common-settings') %>
 		</div>
 
 		<script>
@@ -117,8 +125,6 @@
 		<style>
 			.hidden { display: none !important; }
 		</style>
-
-		<%- include('global-settings') %>
 
 		<%- include('docs-link') %>
 

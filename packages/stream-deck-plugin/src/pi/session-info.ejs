@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Display Mode">
 			<sdpi-select id="mode-select" setting="mode" default="incidents">
 				<option value="incidents">Incident Points</option>
@@ -71,14 +73,18 @@
 			.hidden { display: none !important; }
 		</style>
 
-		<%- include('common-settings') %>
+		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: { backgroundColor: '#2a3444', textColor: '#ffffff' } }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['session-info'] }) %>
+		<%- include('common-settings') %>
 
-		<%- include('title-overrides') %>
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
-		<%- include('global-settings') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-color-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>
 

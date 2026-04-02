@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Adjustment">
 			<sdpi-select id="adjustment-select" setting="adjustment" default="fov">
 				<option value="fov">FOV</option>
@@ -21,16 +23,22 @@
 			</sdpi-select>
 		</sdpi-item>
 
-		<%- include('common-settings') %>
-
 		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['view-adjustment'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['view-adjustment'] }) %>
+		<%- include('common-settings') %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').viewAdjustment
 		}) %>
+
+		<%- include('global-title-defaults') %>
+		<%- include('global-color-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-common-settings') %>
 
 		<script>
 			function updateVisibility(adjustment) {
@@ -79,8 +87,6 @@
 		<style>
 			.hidden { display: none !important; }
 		</style>
-
-		<%- include('global-settings') %>
 
 		<%- include('docs-link') %>
 

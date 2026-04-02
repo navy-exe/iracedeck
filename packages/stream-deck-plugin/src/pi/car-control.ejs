@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Control">
 			<sdpi-select id="control-select" setting="control" default="pit-speed-limiter">
 				<option value="pit-speed-limiter">Pit Speed Limiter</option>
@@ -22,8 +24,6 @@
 		<sdpi-item id="auto-hold-item" label="Auto Hold" class="hidden">
 			<sdpi-checkbox setting="autoHold"></sdpi-checkbox>
 		</sdpi-item>
-
-		<%- include('common-settings') %>
 
 		<%- include('title-overrides') %>
 
@@ -76,12 +76,18 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['car-control'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['car-control'] }) %>
+		<%- include('common-settings') %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').carControl
 		}) %>
 
-		<%- include('global-settings') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-color-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>
 

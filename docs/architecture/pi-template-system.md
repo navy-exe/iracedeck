@@ -15,29 +15,41 @@ Create a build-time template system for Property Inspector HTML files that allow
 **Why EJS:**
 
 - Mature, battle-tested (since 2010), minimal dependencies
-- Simple partial syntax: `<%- include('partials/global-settings') %>`
+- Simple partial syntax: `<%- include('partials/head-common') %>`
 - Full JavaScript support for passing data to partials
 - Zero runtime overhead - compiles to static HTML
 - Already using similar Mustache-style templates for icons
 
 ## File Structure
 
-```
+```text
 packages/
   stream-deck-plugin/
     src/
       pi-templates/                    # Template partials
         partials/
-          global-key-bindings.ejs      # Key binding controls in accordion (reusable)
           accordion.ejs                # Reusable accordion component
-          head-common.ejs              # Common <head> content
+          border-overrides.ejs         # Per-action border settings
+          color-overrides.ejs          # Per-action color overrides
+          common-settings.ejs          # Common settings (flags overlay) in accordion
+          docs-link.ejs                # Documentation link
+          global-border-defaults.ejs   # Global border defaults accordion
+          global-color-defaults.ejs    # Global icon color defaults accordion
+          global-key-bindings.ejs      # Key binding controls in accordion
+          global-common-settings.ejs   # Global common settings (window focus, SimHub server) accordion
+          global-title-defaults.ejs    # Global title defaults accordion
+          head-common.ejs              # Common <head> content + CSS + JS
+          section-header.ejs           # Section divider (Action/Global Settings)
+          title-overrides.ejs          # Per-action title overrides
+          version.ejs                  # Version footer
       build/
         pi-template-plugin.mjs         # Rollup plugin for EJS
-      pi/                              # Source templates
-        black-box-selector.ejs
-        settings.ejs
+      pi/                              # Source templates (one per action)
+        *.ejs                          # Action PI templates
         data/
           key-bindings.json            # Key binding definitions
+          icon-defaults.json           # Icon color defaults (generated)
+          docs-urls.json               # Documentation URL mapping
       shared/
         pi/
           key-binding-input.ts         # `global` attribute support
@@ -148,6 +160,8 @@ plugins: [
   <%- include('head-common') %>
 </head>
 <body>
+  <%- include('section-header', { title: 'Action Settings' }) %>
+
   <sdpi-item label="Mode">
     <sdpi-select setting="mode" default="direct">
       <option value="direct">Direct</option>
@@ -155,10 +169,23 @@ plugins: [
     </sdpi-select>
   </sdpi-item>
 
+  <%- include('title-overrides') %>
+  <%- include('color-overrides', { slots: [...], defaults: ... }) %>
+  <%- include('border-overrides', { defaults: ... }) %>
+  <%- include('common-settings') %>
+
+  <%- include('section-header', { title: 'Global Settings' }) %>
+
   <%- include('global-key-bindings', {
-    title: 'Black Box Key Bindings',
     keyBindings: require('./data/key-bindings.json').blackBox
   }) %>
+  <%- include('global-title-defaults') %>
+  <%- include('global-color-defaults') %>
+  <%- include('global-border-defaults') %>
+  <%- include('global-common-settings') %>
+
+  <%- include('docs-link') %>
+  <%- include('version') %>
 </body>
 </html>
 ```
