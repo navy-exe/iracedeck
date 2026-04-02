@@ -337,7 +337,7 @@ export function getGlobalBorderSettings(): GlobalBorderSettings {
   const str = (key: string): string | undefined => {
     const val = settings[key];
 
-    return typeof val === "string" && val.length > 0 ? val : undefined;
+    return typeof val === "string" && val.length > 0 && val !== "#000001" ? val : undefined;
   };
 
   // Enabled: supports "default" to defer to icon defaults

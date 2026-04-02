@@ -18,9 +18,9 @@ import activeResetRunIconSvg from "@iracedeck/icons/splits-delta-cycle/active-re
 import activeResetSetIconSvg from "@iracedeck/icons/splits-delta-cycle/active-reset-set.svg";
 import customSectorEndIconSvg from "@iracedeck/icons/splits-delta-cycle/custom-sector-end.svg";
 import customSectorStartIconSvg from "@iracedeck/icons/splits-delta-cycle/custom-sector-start.svg";
+import displayRefCarIconSvg from "@iracedeck/icons/splits-delta-cycle/display-ref-car.svg";
 import nextIconSvg from "@iracedeck/icons/splits-delta-cycle/next.svg";
 import previousIconSvg from "@iracedeck/icons/splits-delta-cycle/previous.svg";
-import displayRefCarIconSvg from "@iracedeck/icons/toggle-ui-elements/display-ref-car.svg";
 import z from "zod";
 
 const DIRECTION_ICONS: Record<string, string> = {

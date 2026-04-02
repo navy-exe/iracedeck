@@ -24,7 +24,12 @@
       '<sdpi-range setting="borderOverrides.borderWidth" min="2" max="40" step="2" default="14" showlabels></sdpi-range>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-color" class="hidden" label="Color">' +
-      '<sdpi-color setting="borderOverrides.borderColor" default="' + defaultColor + '"></sdpi-color>' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+      '<sdpi-color id="ird-border-color-picker" setting="borderOverrides.borderColor" default="' + defaultColor + '"></sdpi-color>' +
+      '<a href="#" class="ird-color-reset" data-input="ird-border-color-picker" data-default="#000001" ' +
+        'style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" ' +
+        'title="Reset to default">&#x21BA;</a>' +
+      '</div>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-glow" class="hidden" label="Show Glow">' +
       '<sdpi-select id="ird-border-glow-select" setting="borderOverrides.glowEnabled" default="inherit">' +
@@ -46,6 +51,32 @@
     var glowSelect = document.getElementById('ird-border-glow-select');
     if (!borderSelect) return;
 
+    function clearField(selector) {
+      var el = document.querySelector(selector);
+      if (el && el.value !== '' && el.value !== 'inherit') {
+        el.value = '';
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+
+    function clearSelect(el) {
+      if (el && el.value !== 'inherit') {
+        el.value = 'inherit';
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+
+    function clearAllBorderOverrides() {
+      clearField('[setting="borderOverrides.borderWidth"]');
+      clearField('[setting="borderOverrides.borderColor"]');
+      clearSelect(glowSelect);
+      clearField('[setting="borderOverrides.glowWidth"]');
+    }
+
+    function clearGlowOverrides() {
+      clearField('[setting="borderOverrides.glowWidth"]');
+    }
+
     function isBorderEnabled() {
       return borderSelect.value === 'true';
     }
@@ -65,23 +96,51 @@
       if (glowWidthEl) glowWidthEl.classList.toggle('hidden', !showGlowWidth);
     }
 
+    // Track previous values to detect intentional user changes (not re-fires from settings reload)
+    var prevBorderVal = borderSelect.value || 'inherit';
+    var prevGlowVal = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
+
     updateVisibility();
-    borderSelect.addEventListener('change', updateVisibility);
-    borderSelect.addEventListener('input', updateVisibility);
+
+    function onBorderChange() {
+      var cur = borderSelect.value || 'inherit';
+      // Only clear when user intentionally switches AWAY from "true"
+      if (prevBorderVal === 'true' && cur !== 'true') {
+        clearAllBorderOverrides();
+      }
+      prevBorderVal = cur;
+      updateVisibility();
+    }
+
+    function onGlowChange() {
+      var cur = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
+      if (prevGlowVal === 'true' && cur !== 'true') {
+        clearGlowOverrides();
+      }
+      prevGlowVal = cur;
+      updateVisibility();
+    }
+
+    borderSelect.addEventListener('change', onBorderChange);
+    borderSelect.addEventListener('input', onBorderChange);
     if (glowSelect) {
-      glowSelect.addEventListener('change', updateVisibility);
-      glowSelect.addEventListener('input', updateVisibility);
+      glowSelect.addEventListener('change', onGlowChange);
+      glowSelect.addEventListener('input', onGlowChange);
     }
 
     // Polling fallback (sdpi-select loads asynchronously)
-    var lastBorder = borderSelect.value || 'inherit';
-    var lastGlow = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
     setInterval(function() {
       var curBorder = borderSelect.value || 'inherit';
       var curGlow = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
-      if (curBorder !== lastBorder || curGlow !== lastGlow) {
-        lastBorder = curBorder;
-        lastGlow = curGlow;
+      if (curBorder !== prevBorderVal || curGlow !== prevGlowVal) {
+        if (prevBorderVal === 'true' && curBorder !== 'true') {
+          clearAllBorderOverrides();
+        }
+        if (prevGlowVal === 'true' && curGlow !== 'true') {
+          clearGlowOverrides();
+        }
+        prevBorderVal = curBorder;
+        prevGlowVal = curGlow;
         updateVisibility();
       }
     }, 100);

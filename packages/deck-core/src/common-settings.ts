@@ -99,7 +99,10 @@ export const BorderOverridesSchema = z
       (val) => (val === "" || val === null || val === undefined ? undefined : val),
       z.coerce.number().min(2).max(40).optional(),
     ),
-    borderColor: z.string().optional(),
+    borderColor: z.preprocess(
+      (val) => (val === "" || val === "#000001" || val === null || val === undefined ? undefined : val),
+      z.string().optional(),
+    ),
     glowEnabled: inheritBooleanField,
     glowWidth: z.preprocess(
       (val) => (val === "" || val === null || val === undefined ? undefined : val),
