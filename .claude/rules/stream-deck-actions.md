@@ -72,8 +72,10 @@ Actions use `assembleIcon()` instead of `renderIconTemplate()` + `svgToDataUri()
 ```typescript
 import {
   assembleIcon,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -87,7 +89,8 @@ function generateIcon(settings: MySettings): string {
     settings.titleOverrides,
     "DEFAULT\nTITLE",  // optional: action-specific default text
   );
-  return assembleIcon({ graphicSvg: myIconSvg, colors, title, borderOverrides: settings.borderOverrides });
+  const border = resolveBorderSettings(myIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+  return assembleIcon({ graphicSvg: myIconSvg, colors, title, border });
 }
 ```
 

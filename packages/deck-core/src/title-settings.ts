@@ -337,6 +337,7 @@ export function getGlobalBorderSettings(): GlobalBorderSettings {
   const str = (key: string): string | undefined => {
     const val = settings[key];
 
+    // #000001 is the sentinel value used by sdpi-color when the user clears a color picker
     return typeof val === "string" && val.length > 0 && val !== "#000001" ? val : undefined;
   };
 

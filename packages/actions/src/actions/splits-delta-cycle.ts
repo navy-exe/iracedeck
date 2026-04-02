@@ -85,7 +85,7 @@ const MODE_KEY_MAP: Record<string, string> = {
 export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings): string {
   const { mode, direction } = settings;
 
-  // toggle-ref-car uses an icon from toggle-ui-elements, not splits-delta-cycle
+  // toggle-ref-car uses a dedicated icon from splits-delta-cycle
   if (mode === "toggle-ref-car") {
     const colors = resolveIconColors(displayRefCarIconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(
