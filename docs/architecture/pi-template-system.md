@@ -179,8 +179,8 @@ plugins: [
   <%- include('global-key-bindings', {
     keyBindings: require('./data/key-bindings.json').blackBox
   }) %>
-  <%- include('global-color-defaults') %>
   <%- include('global-title-defaults') %>
+  <%- include('global-color-defaults') %>
   <%- include('global-border-defaults') %>
   <%- include('global-common-settings') %>
 

@@ -117,8 +117,8 @@ Every action EJS template is updated to follow this include order:
   <%- include('section-header', { title: 'Global Settings' }) %>
 
   <%- include('global-key-bindings', { keyBindings: ... }) %>
-  <%- include('global-color-defaults') %>
   <%- include('global-title-defaults') %>
+  <%- include('global-color-defaults') %>
   <%- include('global-border-defaults') %>
   <%- include('global-common-settings') %>
 

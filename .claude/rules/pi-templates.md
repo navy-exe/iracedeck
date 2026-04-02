@@ -51,8 +51,8 @@ packages/stream-deck-plugin-{name}/
     <%- include('global-key-bindings', {
       keyBindings: require('./data/key-bindings.json').category
     }) %>
-    <%- include('global-color-defaults') %>
     <%- include('global-title-defaults') %>
+    <%- include('global-color-defaults') %>
     <%- include('global-border-defaults') %>
     <%- include('global-common-settings') %>
 

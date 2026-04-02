@@ -398,8 +398,8 @@ The final include order in every action template should be:
   <%- include('section-header', { title: 'Global Settings' }) %>
 
   <%- include('global-key-bindings', { ... }) %>   <!-- only if action has key bindings -->
-  <%- include('global-color-defaults') %>
   <%- include('global-title-defaults') %>
+  <%- include('global-color-defaults') %>
   <%- include('global-border-defaults') %>
   <%- include('global-common-settings') %>
 
