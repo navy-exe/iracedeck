@@ -2,8 +2,10 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateBorderParts,
   generateTitleText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -12,6 +14,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -22,7 +25,7 @@ import z from "zod";
 
 import fastRepairTemplate from "../../icons/pit-quick-actions-fast-repair.svg";
 import windshieldTemplate from "../../icons/pit-quick-actions-windshield.svg";
-import { statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
+import { borderColorForState, statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type PitQuickActionType = "clear-all-checkboxes" | "windshield-tearoff" | "request-fast-repair";
 
@@ -122,14 +125,17 @@ export function generatePitQuickActionsSvg(
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PIT\nCLEAR ALL");
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title });
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
   }
 
   // Dynamic telemetry-driven modes — each has its own template with <desc> defaults
   const template = actionType === "request-fast-repair" ? fastRepairTemplate : windshieldTemplate;
+  const state = telemetryState ?? {};
 
   const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
-  const statusBarContent = pitQuickActionDynamicIcon(actionType, telemetryState ?? {});
+  const statusBarContent = pitQuickActionDynamicIcon(actionType, state);
 
   const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
 
@@ -144,10 +150,31 @@ export function generatePitQuickActionsSvg(
       })
     : "";
 
+  // Determine toggle state for border color
+  let toggleState: "on" | "off" | "na";
+
+  if (actionType === "request-fast-repair" && state.fastRepairAvailable === false) {
+    toggleState = "na";
+  } else if (actionType === "request-fast-repair") {
+    toggleState = state.fastRepairOn ? "on" : "off";
+  } else {
+    toggleState = state.windshieldOn ? "on" : "off";
+  }
+
+  const border = resolveBorderSettings(
+    template,
+    getGlobalBorderSettings(),
+    settings.borderOverrides,
+    borderColorForState(toggleState),
+  );
+  const borderSvg = generateBorderParts(border);
+
   // Status bar is always visible, even when graphics are off
   const svg = renderIconTemplate(template, {
     iconContent: statusBarContent,
     titleContent,
+    borderDefs: borderSvg.defs,
+    borderContent: borderSvg.rects,
     ...colors,
   });
 
@@ -271,11 +298,14 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
   }
 
   private buildStateKey(settings: PitQuickActionsSettings, telemetryState: PitQuickActionTelemetryState): string {
+    const bo = settings.borderOverrides;
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
+
     switch (settings.action) {
       case "windshield-tearoff":
-        return `windshield|${telemetryState.windshieldOn ?? false}`;
+        return `windshield|${telemetryState.windshieldOn ?? false}|${borderKey}`;
       case "request-fast-repair":
-        return `fast-repair|${telemetryState.fastRepairOn ?? false}|${telemetryState.fastRepairAvailable ?? true}`;
+        return `fast-repair|${telemetryState.fastRepairOn ?? false}|${telemetryState.fastRepairAvailable ?? true}|${borderKey}`;
       default:
         return settings.action;
     }

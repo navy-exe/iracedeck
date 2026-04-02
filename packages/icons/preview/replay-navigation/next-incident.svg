@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"INCIDENT\nNEXT"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"INCIDENT\nNEXT"},"border":{"color":"#5a6a7a"}}</desc>
 
     <polygon points="60,28 40,68 80,68" fill="none" stroke="#f1c40f" stroke-width="4" stroke-linejoin="round"/>
     <text x="60" y="60" text-anchor="middle" dominant-baseline="central"

@@ -8,7 +8,7 @@ vi.mock("@iracedeck/icons/splits-delta-cycle/next.svg", () => ({
 vi.mock("@iracedeck/icons/splits-delta-cycle/previous.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
 }));
-vi.mock("@iracedeck/icons/toggle-ui-elements/display-ref-car.svg", () => ({
+vi.mock("@iracedeck/icons/splits-delta-cycle/display-ref-car.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg" class="ref-car">{{mainLabel}} {{subLabel}}</svg>',
 }));
 vi.mock("@iracedeck/icons/splits-delta-cycle/custom-sector-start.svg", () => ({
@@ -52,6 +52,8 @@ vi.mock("@iracedeck/deck-core", () => ({
 
     return b.key;
   }),
+  generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
+  getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
@@ -70,6 +72,13 @@ vi.mock("@iracedeck/deck-core", () => ({
   })),
   getGlobalTitleSettings: vi.fn(() => ({})),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
+  resolveBorderSettings: vi.fn((_svg: unknown, _global: unknown, _overrides?: unknown, _stateColor?: string) => ({
+    enabled: false,
+    borderWidth: 14,
+    borderColor: "#00aaff",
+    glowEnabled: true,
+    glowWidth: 36,
+  })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,

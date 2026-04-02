@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -9,6 +10,7 @@ import {
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -16,9 +18,9 @@ import activeResetRunIconSvg from "@iracedeck/icons/splits-delta-cycle/active-re
 import activeResetSetIconSvg from "@iracedeck/icons/splits-delta-cycle/active-reset-set.svg";
 import customSectorEndIconSvg from "@iracedeck/icons/splits-delta-cycle/custom-sector-end.svg";
 import customSectorStartIconSvg from "@iracedeck/icons/splits-delta-cycle/custom-sector-start.svg";
+import displayRefCarIconSvg from "@iracedeck/icons/splits-delta-cycle/display-ref-car.svg";
 import nextIconSvg from "@iracedeck/icons/splits-delta-cycle/next.svg";
 import previousIconSvg from "@iracedeck/icons/splits-delta-cycle/previous.svg";
-import displayRefCarIconSvg from "@iracedeck/icons/toggle-ui-elements/display-ref-car.svg";
 import z from "zod";
 
 const DIRECTION_ICONS: Record<string, string> = {
@@ -83,7 +85,7 @@ const MODE_KEY_MAP: Record<string, string> = {
 export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings): string {
   const { mode, direction } = settings;
 
-  // toggle-ref-car uses an icon from toggle-ui-elements, not splits-delta-cycle
+  // toggle-ref-car uses a dedicated icon from splits-delta-cycle
   if (mode === "toggle-ref-car") {
     const colors = resolveIconColors(displayRefCarIconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(
@@ -93,7 +95,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
       "CAR\nREFERENCE",
     );
 
-    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title });
+    const border = resolveBorderSettings(displayRefCarIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title, border });
   }
 
   const modeIconSvg = MODE_ICONS[mode];
@@ -107,7 +111,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
       MODE_TITLES[mode],
     );
 
-    return assembleIcon({ graphicSvg: modeIconSvg, colors, title });
+    const border = resolveBorderSettings(modeIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: modeIconSvg, colors, title, border });
   }
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS.next;
@@ -115,7 +121,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
   const defaultTitle = direction === "next" ? "SPLITS DELTA\nNEXT" : "SPLITS DELTA\nPREVIOUS";
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**

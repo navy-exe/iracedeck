@@ -27,6 +27,8 @@ export { BaseAction } from "./base-action.js";
 // Common settings (shared by all actions)
 export {
   CommonSettings,
+  BorderOverridesSchema,
+  type BorderOverrides,
   ColorOverridesSchema,
   type ColorOverrides,
   TitleOverridesSchema,
@@ -36,17 +38,22 @@ export {
 // Title settings utilities
 export {
   assembleIcon,
+  BORDER_DEFAULTS,
   generateTitleText,
+  getGlobalBorderSettings,
   getGlobalTitleSettings,
+  resolveBorderSettings,
   resolveTitleSettings,
   TITLE_DEFAULTS,
   type GenerateTitleTextOptions,
+  type GlobalBorderSettings,
   type GlobalTitleSettings,
+  type ResolvedBorderSettings,
   type ResolvedTitleSettings,
 } from "./title-settings.js";
 
 // Icon base template
-export { ICON_BASE_TEMPLATE, extractGraphicContent } from "./icon-base.js";
+export { generateBorderParts, ICON_BASE_TEMPLATE, extractGraphicContent } from "./icon-base.js";
 
 // Connection state aware action (extends BaseAction with iRacing connection tracking)
 export { ConnectionStateAwareAction } from "./connection-state-aware-action.js";
@@ -66,12 +73,14 @@ export {
 export {
   escapeXml,
   generateIconText,
+  parseIconBorderDefaults,
   parseIconDefaults,
   parseIconLocked,
   renderIconTemplate,
   resolveIconColors,
   validateIconTemplate,
   type ColorSlots,
+  type IconBorderDefaults,
   type GenerateIconTextOptions,
 } from "./icon-template.js";
 

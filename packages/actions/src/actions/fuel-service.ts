@@ -3,8 +3,10 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   fuelToDisplayUnits,
+  generateBorderParts,
   generateTitleText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -15,6 +17,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -30,7 +33,7 @@ import { hasFlag, PitSvFlags, type TelemetryData } from "@iracedeck/iracing-sdk"
 import z from "zod";
 
 import fuelServiceTemplate from "../../icons/fuel-service.svg";
-import { statusBarOff, statusBarOn } from "../icons/status-bar.js";
+import { borderColorForState, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type FuelServiceMode =
   | "toggle-fuel-fill"
@@ -287,9 +290,20 @@ export function generateFuelServiceSvg(
 
     const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
 
+    const fuelFillEnabled = state.fuelFillOn ?? false;
+    const border = resolveBorderSettings(
+      fuelServiceTemplate,
+      getGlobalBorderSettings(),
+      settings.borderOverrides,
+      borderColorForState(fuelFillEnabled ? "on" : "off"),
+    );
+    const borderSvg = generateBorderParts(border);
+
     const svg = renderIconTemplate(fuelServiceTemplate, {
       iconContent,
       titleContent,
+      borderDefs: borderSvg.defs,
+      borderContent: borderSvg.rects,
       ...colors,
     });
 
@@ -304,8 +318,9 @@ export function generateFuelServiceSvg(
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -521,7 +536,10 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
 
   private buildStateKey(settings: FuelServiceSettings, telemetryState: FuelServiceTelemetryState): string {
     if (settings.mode === "toggle-fuel-fill") {
-      return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}`;
+      const bo = settings.borderOverrides;
+      const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
+
+      return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
     }
 
     return settings.mode;

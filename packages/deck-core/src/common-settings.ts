@@ -75,6 +75,44 @@ export const TitleOverridesSchema = z
 
 export type TitleOverrides = z.infer<typeof TitleOverridesSchema>;
 
+/**
+ * Inherit/Yes/No tri-state transform for border settings.
+ * "inherit" or "" → undefined (fall through to global → icon default).
+ */
+const inheritBooleanField = z
+  .union([z.boolean(), z.string()])
+  .transform((val) => {
+    if (val === "inherit" || val === "") return undefined;
+
+    return val === true || val === "true";
+  })
+  .optional();
+
+/**
+ * Schema for per-action border overrides.
+ * Fields set to "inherit" (or undefined) fall through to global → icon default.
+ */
+export const BorderOverridesSchema = z
+  .object({
+    enabled: inheritBooleanField,
+    borderWidth: z.preprocess(
+      (val) => (val === "" || val === null || val === undefined ? undefined : val),
+      z.coerce.number().min(2).max(40).optional(),
+    ),
+    borderColor: z.preprocess(
+      (val) => (val === "" || val === "#000001" || val === null || val === undefined ? undefined : val),
+      z.string().optional(),
+    ),
+    glowEnabled: inheritBooleanField,
+    glowWidth: z.preprocess(
+      (val) => (val === "" || val === null || val === undefined ? undefined : val),
+      z.coerce.number().min(2).max(60).optional(),
+    ),
+  })
+  .optional();
+
+export type BorderOverrides = z.infer<typeof BorderOverridesSchema>;
+
 export const CommonSettings = z.object({
   flagsOverlay: z
     .union([z.boolean(), z.string()])
@@ -82,6 +120,7 @@ export const CommonSettings = z.object({
     .optional(),
   colorOverrides: ColorOverridesSchema,
   titleOverrides: TitleOverridesSchema,
+  borderOverrides: BorderOverridesSchema,
 });
 
 export type CommonSettings = z.infer<typeof CommonSettings>;

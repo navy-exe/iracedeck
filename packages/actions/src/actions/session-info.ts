@@ -1,13 +1,16 @@
 import {
   CommonSettings,
   ConnectionStateAwareAction,
+  generateBorderParts,
   generateTitleText,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDidReceiveSettingsEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -161,9 +164,14 @@ export function generateSessionInfoSvg(
       })
     : "";
 
+  const border = resolveBorderSettings(sessionInfoTemplate, getGlobalBorderSettings(), settings.borderOverrides);
+  const borderSvg = generateBorderParts(border);
+
   const svg = renderIconTemplate(sessionInfoTemplate, {
     backgroundColor,
     titleContent,
+    borderDefs: borderSvg.defs,
+    borderContent: borderSvg.rects,
     value,
     valueFontSize,
     valueY,
@@ -419,7 +427,10 @@ export class SessionInfo extends ConnectionStateAwareAction<SessionInfoSettings>
     isFlashing: boolean,
     bgOverride?: string,
   ): string {
-    return `${settings.mode}|${value}|${isFlashing}|${bgOverride || ""}`;
+    const bo = settings.borderOverrides;
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
+
+    return `${settings.mode}|${value}|${isFlashing}|${bgOverride || ""}|${borderKey}`;
   }
 
   private async updateDisplayFromTelemetry(

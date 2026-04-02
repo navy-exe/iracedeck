@@ -10,6 +10,7 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
@@ -17,6 +18,7 @@ import {
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -128,7 +130,9 @@ export function generateRaceAdminSvg(mode: RaceAdminMode, settings: RaceAdminSet
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 // ── Action Class ────────────────────────────────────────────────

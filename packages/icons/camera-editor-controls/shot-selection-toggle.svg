@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nSHOT SEL"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nSHOT SEL"},"border":{"color":"#3a6a5a"}}</desc>
 
     <rect x="36" y="24" width="72" height="48" rx="4" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>
     <line x1="36" y1="36" x2="108" y2="36" stroke="#888888" stroke-width="2"/>

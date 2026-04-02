@@ -4,6 +4,7 @@ import {
   ConnectionStateAwareAction,
   extractGraphicContent,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalSettings,
   getGlobalTitleSettings,
@@ -14,6 +15,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -287,7 +289,7 @@ export function generateCameraControlsSvg(
     if (target === "cycle-camera") {
       const enabledNames = getEnabledGroupNames(settings.cameraGroupSubset);
 
-      return generateCycleCameraGridSvg(enabledNames, direction, settings.colorOverrides);
+      return generateCycleCameraGridSvg(enabledNames, direction, settings.colorOverrides, settings.borderOverrides);
     }
 
     iconSvg = CYCLE_ICONS[target]?.[direction] || CYCLE_ICONS["cycle-camera"]["next"];
@@ -303,8 +305,9 @@ export function generateCameraControlsSvg(
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -315,6 +318,7 @@ function generateCameraSelectSvg(
   groupName: string,
   colorOverrides?: Partial<CommonSettings>["colorOverrides"],
   titleOverrides?: Partial<CommonSettings>["titleOverrides"],
+  borderOverrides?: Partial<CommonSettings>["borderOverrides"],
 ): string {
   const iconSvg = CAMERA_SELECT_ICONS[groupName];
 
@@ -327,8 +331,9 @@ function generateCameraSelectSvg(
     titleOverrides,
     `CAMERA\n${groupName.toUpperCase()}`,
   );
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -476,6 +481,7 @@ export function generateCycleCameraGridSvg(
   enabledGroupNames: string[],
   direction: Direction,
   colorOverrides?: Record<string, string>,
+  borderOverrides?: Partial<CommonSettings>["borderOverrides"],
 ): string {
   // Resolve which groups have icons
   const groupsWithIcons = enabledGroupNames.filter((name) => CAMERA_SELECT_ICONS[name]);
@@ -486,8 +492,9 @@ export function generateCycleCameraGridSvg(
     const titleText = CYCLE_TITLES["cycle-camera"][direction];
     const colors = resolveIconColors(iconSvg, getGlobalColors(), colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), undefined, titleText);
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title });
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
   }
 
   const displayGroups = groupsWithIcons.slice(0, 6);
@@ -914,6 +921,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
           getEnabledGroupNames(settings.cameraGroupSubset),
           settings.direction,
           settings.colorOverrides,
+          settings.borderOverrides,
         );
         await this.updateKeyImage(contextId, svgDataUri);
         this.setRegenerateCallback(contextId, () =>
@@ -921,6 +929,7 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
             getEnabledGroupNames(settings.cameraGroupSubset),
             settings.direction,
             settings.colorOverrides,
+            settings.borderOverrides,
           ),
         );
       }
@@ -944,10 +953,20 @@ export class CameraControls extends ConnectionStateAwareAction<CameraControlsSet
     if (this.lastDisplayedGroup.get(contextId) === nextEntry.groupName) return;
 
     this.lastDisplayedGroup.set(contextId, nextEntry.groupName);
-    const svgDataUri = generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides, settings.titleOverrides);
+    const svgDataUri = generateCameraSelectSvg(
+      nextEntry.groupName,
+      settings.colorOverrides,
+      settings.titleOverrides,
+      settings.borderOverrides,
+    );
     await this.updateKeyImage(contextId, svgDataUri);
     this.setRegenerateCallback(contextId, () =>
-      generateCameraSelectSvg(nextEntry.groupName, settings.colorOverrides, settings.titleOverrides),
+      generateCameraSelectSvg(
+        nextEntry.groupName,
+        settings.colorOverrides,
+        settings.titleOverrides,
+        settings.borderOverrides,
+      ),
     );
   }
 

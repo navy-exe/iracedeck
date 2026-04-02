@@ -3,7 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TitleOverrides } from "./common-settings.js";
 import { getGlobalSettings } from "./global-settings.js";
 import type { GlobalSettings } from "./global-settings.js";
-import { assembleIcon, generateTitleText, getGlobalTitleSettings, resolveTitleSettings } from "./title-settings.js";
+import {
+  assembleIcon,
+  BORDER_DEFAULTS,
+  generateTitleText,
+  getGlobalBorderSettings,
+  getGlobalTitleSettings,
+  resolveBorderSettings,
+  resolveTitleSettings,
+} from "./title-settings.js";
+import type { GlobalBorderSettings, ResolvedBorderSettings } from "./title-settings.js";
 import type { GlobalTitleSettings } from "./title-settings.js";
 
 vi.mock("./global-settings.js", () => ({
@@ -141,7 +150,7 @@ describe("generateTitleText", () => {
     // PI fontSize 20 → SVG 40 (doubled)
     expect(result).toContain('font-size="40"');
     expect(result).toContain('font-weight="bold"');
-    expect(result).toContain('y="140"');
+    expect(result).toContain('y="130"');
   });
 
   it("should generate single-line text at top position", () => {
@@ -153,8 +162,8 @@ describe("generateTitleText", () => {
       customPosition: 0,
       ...defaults,
     });
-    // top startY = doubled(20) - 2 = 38
-    expect(result).toContain('y="38"');
+    // top startY = doubled(20) + 8 = 48
+    expect(result).toContain('y="48"');
   });
 
   it("should generate single-line text at middle position", () => {
@@ -199,8 +208,8 @@ describe("generateTitleText", () => {
     const y1 = parseFloat(lines![0].match(/(\d+\.?\d*)/)![1]);
     const y2 = parseFloat(lines![1].match(/(\d+\.?\d*)/)![1]);
     expect(y1).toBeLessThan(y2);
-    // top startY = doubled(18) - 2 = 34
-    expect(y1).toBe(36 - 2);
+    // top startY = doubled(18) + 8 = 44
+    expect(y1).toBe(36 + 8);
   });
 
   it("should use custom position as offset from middle", () => {
@@ -301,6 +310,7 @@ describe("assembleIcon", () => {
         position: "bottom",
         customPosition: 0,
       },
+      border: BORDER_DEFAULTS,
     });
     const svg = decodeDataUri(result);
     expect(result).toContain("data:image/svg+xml");
@@ -322,6 +332,7 @@ describe("assembleIcon", () => {
         position: "bottom",
         customPosition: 0,
       },
+      border: BORDER_DEFAULTS,
     });
     const svg = decodeDataUri(result);
     expect(svg).toContain("TOGGLE");
@@ -341,6 +352,7 @@ describe("assembleIcon", () => {
         position: "bottom",
         customPosition: 0,
       },
+      border: BORDER_DEFAULTS,
     });
     const svg = decodeDataUri(result);
     expect(svg).not.toContain("TOGGLE");
@@ -409,5 +421,143 @@ describe("getGlobalTitleSettings", () => {
     const result = getGlobalTitleSettings();
     expect(result.position).toBe("default");
     expect(result.customPosition).toBe("default");
+  });
+});
+
+describe("resolveBorderSettings", () => {
+  const GRAPHIC_WITH_BORDER = `<svg><desc>{"colors":{},"border":{"color":"#5a5a5a"}}</desc></svg>`;
+  const GRAPHIC_NO_BORDER = `<svg><desc>{"colors":{}}</desc></svg>`;
+
+  it("should return BORDER_DEFAULTS when no overrides or global", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, {});
+    expect(result).toEqual(BORDER_DEFAULTS);
+  });
+
+  it("should use icon border color default from desc metadata", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = resolveBorderSettings(GRAPHIC_WITH_BORDER, {});
+    expect(result.borderColor).toBe("#5a5a5a");
+  });
+
+  it("should use global settings over defaults", () => {
+    const global: GlobalBorderSettings = { enabled: true, borderWidth: 20 };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global);
+    expect(result.enabled).toBe(true);
+    expect(result.borderWidth).toBe(20);
+  });
+
+  it("should use per-action overrides over global", () => {
+    const global: GlobalBorderSettings = { enabled: true, borderWidth: 20 };
+    const overrides = { enabled: false, borderWidth: 8 };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global, overrides);
+    expect(result.enabled).toBe(false);
+    expect(result.borderWidth).toBe(8);
+  });
+
+  it("should use stateColor over all other color sources", () => {
+    const global: GlobalBorderSettings = { borderColor: "#ffffff" };
+    const overrides = { borderColor: "#00aaff" };
+    const result = resolveBorderSettings(GRAPHIC_WITH_BORDER, global, overrides, "#e74c3c");
+    expect(result.borderColor).toBe("#e74c3c");
+  });
+
+  it("should treat 'default' global as unset and fall through", () => {
+    const global: GlobalBorderSettings = { enabled: "default", glowEnabled: "default" };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global);
+    expect(result.enabled).toBe(BORDER_DEFAULTS.enabled);
+    expect(result.glowEnabled).toBe(BORDER_DEFAULTS.glowEnabled);
+  });
+
+  it("should resolve glowEnabled and glowWidth independently", () => {
+    const global: GlobalBorderSettings = { glowEnabled: false, glowWidth: 50 };
+    const result = resolveBorderSettings(GRAPHIC_NO_BORDER, global);
+    expect(result.glowEnabled).toBe(false);
+    expect(result.glowWidth).toBe(50);
+  });
+});
+
+describe("getGlobalBorderSettings", () => {
+  it("should return empty object when no global border settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({} as unknown as GlobalSettings);
+    const result = getGlobalBorderSettings();
+    expect(result).toEqual({});
+  });
+
+  it("should extract border settings from global settings", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      borderEnabled: true,
+      borderWidth: 20,
+      borderColor: "#ff0000",
+      borderGlowEnabled: false,
+      borderGlowWidth: 40,
+    } as unknown as GlobalSettings);
+    const result = getGlobalBorderSettings();
+    expect(result).toEqual({
+      enabled: true,
+      borderWidth: 20,
+      borderColor: "#ff0000",
+      glowEnabled: false,
+      glowWidth: 40,
+    });
+  });
+
+  it("should return 'default' for enabled when set to 'default'", () => {
+    vi.mocked(getGlobalSettings).mockReturnValue({
+      borderEnabled: "default",
+    } as unknown as GlobalSettings);
+    const result = getGlobalBorderSettings();
+    expect(result.enabled).toBe("default");
+  });
+});
+
+describe("assembleIcon with border", () => {
+  const ENABLED_BORDER: ResolvedBorderSettings = {
+    enabled: true,
+    borderWidth: 8,
+    borderColor: "#2ecc71",
+    glowEnabled: false,
+    glowWidth: 36,
+  };
+
+  const DISABLED_BORDER: ResolvedBorderSettings = { ...BORDER_DEFAULTS };
+
+  it("should include border rect when border is enabled", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TEST",
+        bold: true,
+        fontSize: 9,
+        position: "bottom",
+        customPosition: 0,
+      },
+      border: ENABLED_BORDER,
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).toContain('stroke="#2ecc71"');
+    expect(svg).toContain('stroke-width="8"');
+  });
+
+  it("should not include border rect when border is disabled", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TEST",
+        bold: true,
+        fontSize: 9,
+        position: "bottom",
+        customPosition: 0,
+      },
+      border: DISABLED_BORDER,
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).not.toContain("stroke=");
   });
 });

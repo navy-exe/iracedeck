@@ -105,7 +105,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['race-admin'] }) %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['race-admin'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['race-admin'] }) %>
 
 		<%- include('global-settings') %>
 

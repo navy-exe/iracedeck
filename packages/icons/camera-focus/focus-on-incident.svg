@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"FOCUS\nINCIDENT"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"FOCUS\nINCIDENT"},"border":{"color":"#5a6a7a"}}</desc>
 
     <circle cx="60" cy="48" r="20" fill="none" stroke="#f1c40f" stroke-width="4"/>
     <circle cx="60" cy="48" r="5" fill="#f1c40f"/>

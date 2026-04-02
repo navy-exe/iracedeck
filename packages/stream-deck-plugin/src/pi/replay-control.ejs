@@ -88,7 +88,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['replay-control'] }) %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['replay-control'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['replay-control'] }) %>
 
 		<%- include('global-settings') %>
 

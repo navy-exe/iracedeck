@@ -1,8 +1,43 @@
+import type { ResolvedBorderSettings } from "./title-settings.js";
+
 export const ICON_BASE_TEMPLATE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <rect x="0" y="0" width="144" height="144" fill="{{backgroundColor}}"/>
+  <rect x="0" y="0" width="144" height="144" rx="24" fill="{{backgroundColor}}"/>
+  {{borderContent}}
   {{graphicContent}}
   {{titleContent}}
 </svg>`;
+
+/**
+ * Generates border SVG with defs and rects separated.
+ * Dynamic templates place `defs` as a direct child of `<svg>` (via {{borderDefs}})
+ * and `rects` inside the content group (via {{borderContent}}).
+ * For ICON_BASE_TEMPLATE, callers can concatenate defs + rects into {{borderContent}}
+ * since it's already a direct child of `<svg>`.
+ */
+export function generateBorderParts(border: ResolvedBorderSettings): {
+  defs: string;
+  rects: string;
+} {
+  if (!border.enabled) return { defs: "", rects: "" };
+
+  const glowStdDev = 6;
+  const glowOpacity = 0.4;
+
+  const borderRect = `<rect x="0" y="0" width="144" height="144" rx="24" fill="none" stroke="${border.borderColor}" stroke-width="${border.borderWidth}"/>`;
+
+  if (!border.glowEnabled) {
+    return { defs: "", rects: borderRect };
+  }
+
+  const clampedGlowWidth = Math.min(border.glowWidth, 60);
+  const glowDefs = `<defs><filter id="ird-border-glow"><feGaussianBlur stdDeviation="${glowStdDev}"/></filter></defs>`;
+  const glowRect = `<rect x="0" y="0" width="144" height="144" rx="24" fill="none" stroke="${border.borderColor}" stroke-width="${clampedGlowWidth}" opacity="${glowOpacity}" filter="url(#ird-border-glow)"/>`;
+
+  return {
+    defs: glowDefs,
+    rects: glowRect + borderRect,
+  };
+}
 
 /**
  * Extract the inner content of an SVG, stripping the outer <svg> wrapper,

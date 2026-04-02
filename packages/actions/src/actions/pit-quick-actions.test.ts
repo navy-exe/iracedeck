@@ -50,6 +50,7 @@ vi.mock("../icons/status-bar.js", () => ({
   statusBarOn: () => '<rect class="status-on"/>',
   statusBarOff: () => '<rect class="status-off"/>',
   statusBarNA: () => '<rect class="status-na"/>',
+  borderColorForState: (state: string) => ({ on: "#2ecc71", off: "#e74c3c", na: "#888888" })[state],
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
@@ -78,9 +79,18 @@ vi.mock("@iracedeck/deck-core", () => ({
     async onWillDisappear() {}
   },
   getCommands: mockGetCommands,
+  generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
+  getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
   LogLevel: { Info: 2 },
   getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveBorderSettings: vi.fn((_svg: unknown, _global: unknown, _overrides?: unknown, _stateColor?: string) => ({
+    enabled: false,
+    borderWidth: 14,
+    borderColor: "#00aaff",
+    glowEnabled: true,
+    glowWidth: 36,
+  })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,

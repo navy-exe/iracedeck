@@ -38,3 +38,19 @@ export function statusBarNA(): string {
     <text x="72" y="129" text-anchor="middle" dominant-baseline="central"
           fill="${WHITE}" font-family="Arial, sans-serif" font-size="20" font-weight="bold">N/A</text>`;
 }
+
+/**
+ * @internal Exported for testing
+ *
+ * Maps a toggle state to the corresponding status bar color for border indicators.
+ */
+export function borderColorForState(state: "on" | "off" | "na"): string {
+  switch (state) {
+    case "on":
+      return GREEN;
+    case "off":
+      return RED;
+    case "na":
+      return GRAY;
+  }
+}

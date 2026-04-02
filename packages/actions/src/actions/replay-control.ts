@@ -3,8 +3,10 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   extractGraphicContent,
+  generateBorderParts,
   generateTitleText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   ICON_BASE_TEMPLATE,
@@ -16,6 +18,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -279,10 +282,14 @@ export function generateReplayControlSvg(
           fill: colors.textColor ?? "#ffffff",
         })
       : "";
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+    const borderSvg = generateBorderParts(border);
+    const borderContent = borderSvg.defs + borderSvg.rects;
     const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
       backgroundColor: colors.backgroundColor ?? "#000000",
       graphicContent,
       titleContent,
+      borderContent,
     });
 
     return svgToDataUri(svg);
@@ -307,10 +314,14 @@ export function generateReplayControlSvg(
           fill: colors.textColor ?? "#ffffff",
         })
       : "";
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+    const borderSvg = generateBorderParts(border);
+    const borderContent = borderSvg.defs + borderSvg.rects;
     const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
       backgroundColor: colors.backgroundColor ?? "#000000",
       graphicContent,
       titleContent,
+      borderContent,
     });
 
     return svgToDataUri(svg);
@@ -322,13 +333,16 @@ export function generateReplayControlSvg(
     const pauseColors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PAUSE");
 
-    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title });
+    const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, border });
   }
 
   // All other modes: static title via assembleIcon
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**
@@ -1089,7 +1103,9 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     const isPlaying = this.shouldShowPause(contextId, settings.mode);
     const speed = this.replaySpeed.get(contextId) ?? 0;
     const slowMo = this.replaySlowMotion.get(contextId) ?? false;
-    const stateKey = `${settings.mode}:${speed}:${slowMo}`;
+    const bo = settings.borderOverrides;
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
+    const stateKey = `${settings.mode}:${speed}:${slowMo}:${borderKey}`;
 
     if (this.lastState.get(contextId) === stateKey) return;
 

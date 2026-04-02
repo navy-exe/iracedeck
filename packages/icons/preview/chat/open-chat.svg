@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CHAT\nOPEN"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CHAT\nOPEN"},"border":{"color":"#5a6a7a"}}</desc>
 
     <path d="M32 20 h80 a8 8 0 0 1 8 8 v40 a8 8 0 0 1-8 8 H76 l-6 10 l-6-10 H32 a8 8 0 0 1-8-8 V28 a8 8 0 0 1 8-8 z"
           fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>

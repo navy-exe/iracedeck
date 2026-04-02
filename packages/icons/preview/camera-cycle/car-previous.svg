@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"CAR\nPREV"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"CAR\nPREV"},"border":{"color":"#5a6a7a"}}</desc>
 
     <path d="M 40,60 L 48,40 L 96,40 L 108,60 Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
     <circle cx="56" cy="64" r="6" fill="none" stroke="#ffffff" stroke-width="3"/>

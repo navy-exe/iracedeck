@@ -117,6 +117,24 @@ export function parseIconTitleDefaults(svgTemplate: string): IconTitleDefaults {
   };
 }
 
+export interface IconBorderDefaults {
+  borderColor?: string;
+}
+
+export function parseIconBorderDefaults(svgTemplate: string): IconBorderDefaults {
+  const meta = parseDescMetadata(svgTemplate);
+
+  if (!meta) return {};
+
+  const border = meta.border as Record<string, unknown> | undefined;
+
+  if (!border) return {};
+
+  return {
+    borderColor: typeof border.color === "string" ? border.color : undefined,
+  };
+}
+
 /**
  * Parses locked color slots from an SVG template's <desc> metadata.
  * Locked slots skip global color overrides but still accept per-action overrides.

@@ -3,12 +3,14 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -111,7 +113,9 @@ export function generateToggleUiElementsSvg(settings: ToggleUiElementsSettings):
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
 }
 
 /**

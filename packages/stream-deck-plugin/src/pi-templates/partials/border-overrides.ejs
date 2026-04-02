@@ -1,0 +1,155 @@
+<!--
+  Border Overrides Component
+
+  Provides per-action border settings with Inherit/Yes/No dropdowns.
+  "Inherit" (default) means the field is unset and falls through to global → icon default.
+  For toggle actions, border color is driven by on/off/n/a state automatically.
+
+  Parameters:
+    - defaults: Object with per-action border defaults (e.g., { color: "#5a5a5a" })
+-->
+<% var defaultColor = (defaults && defaults.borderColor) || '#00aaff'; %>
+<%- include('accordion', {
+  title: 'Border',
+  open: false,
+  content:
+    '<sdpi-item label="Show Border">' +
+      '<sdpi-select id="ird-border-enabled" setting="borderOverrides.enabled" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-border-width" class="hidden" label="Width">' +
+      '<sdpi-range setting="borderOverrides.borderWidth" min="2" max="40" step="2" default="14" showlabels></sdpi-range>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-border-color" class="hidden" label="Color">' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+      '<sdpi-color id="ird-border-color-picker" setting="borderOverrides.borderColor" default="' + defaultColor + '"></sdpi-color>' +
+      '<a href="#" class="ird-color-reset" data-input="ird-border-color-picker" data-default="#000001" ' +
+        'style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" ' +
+        'title="Reset to default">&#x21BA;</a>' +
+      '</div>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-border-glow" class="hidden" label="Show Glow">' +
+      '<sdpi-select id="ird-border-glow-select" setting="borderOverrides.glowEnabled" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="true">Yes</option>' +
+        '<option value="false">No</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-border-glow-width" class="hidden" label="Glow Width">' +
+      '<sdpi-range setting="borderOverrides.glowWidth" min="2" max="60" step="2" default="36" showlabels></sdpi-range>' +
+    '</sdpi-item>'
+}) %>
+
+<script>
+(function() {
+  async function initBorderOverrides() {
+    await customElements.whenDefined('sdpi-select');
+    var borderSelect = document.getElementById('ird-border-enabled');
+    var glowSelect = document.getElementById('ird-border-glow-select');
+    if (!borderSelect) return;
+
+    function clearField(selector) {
+      var el = document.querySelector(selector);
+      if (el && el.value !== '' && el.value !== 'inherit') {
+        el.value = '';
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+
+    function clearSelect(el) {
+      if (el && el.value !== 'inherit') {
+        el.value = 'inherit';
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+
+    function clearAllBorderOverrides() {
+      clearField('[setting="borderOverrides.borderWidth"]');
+      clearField('[setting="borderOverrides.borderColor"]');
+      clearSelect(glowSelect);
+      clearField('[setting="borderOverrides.glowWidth"]');
+    }
+
+    function clearGlowOverrides() {
+      clearField('[setting="borderOverrides.glowWidth"]');
+    }
+
+    function isBorderEnabled() {
+      return borderSelect.value === 'true';
+    }
+
+    function updateVisibility() {
+      var showBorderSettings = isBorderEnabled();
+      var items = ['ird-border-width', 'ird-border-color', 'ird-border-glow'];
+      items.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden', !showBorderSettings);
+      });
+
+      // Glow width visible only when border settings are shown AND glow is not "false"
+      var glowVal = glowSelect ? glowSelect.value : 'inherit';
+      var showGlowWidth = showBorderSettings && glowVal !== 'false';
+      var glowWidthEl = document.getElementById('ird-border-glow-width');
+      if (glowWidthEl) glowWidthEl.classList.toggle('hidden', !showGlowWidth);
+    }
+
+    // Track previous values to detect intentional user changes (not re-fires from settings reload)
+    var prevBorderVal = borderSelect.value || 'inherit';
+    var prevGlowVal = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
+
+    updateVisibility();
+
+    function onBorderChange() {
+      var cur = borderSelect.value || 'inherit';
+      // Only clear when user intentionally switches AWAY from "true"
+      if (prevBorderVal === 'true' && cur !== 'true') {
+        clearAllBorderOverrides();
+      }
+      prevBorderVal = cur;
+      updateVisibility();
+    }
+
+    function onGlowChange() {
+      var cur = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
+      if (prevGlowVal === 'true' && cur !== 'true') {
+        clearGlowOverrides();
+      }
+      prevGlowVal = cur;
+      updateVisibility();
+    }
+
+    borderSelect.addEventListener('change', onBorderChange);
+    borderSelect.addEventListener('input', onBorderChange);
+    if (glowSelect) {
+      glowSelect.addEventListener('change', onGlowChange);
+      glowSelect.addEventListener('input', onGlowChange);
+    }
+
+    // Polling fallback (sdpi-select loads asynchronously)
+    setInterval(function() {
+      var curBorder = borderSelect.value || 'inherit';
+      var curGlow = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
+      if (curBorder !== prevBorderVal || curGlow !== prevGlowVal) {
+        if (prevBorderVal === 'true' && curBorder !== 'true') {
+          clearAllBorderOverrides();
+        }
+        if (prevGlowVal === 'true' && curGlow !== 'true') {
+          clearGlowOverrides();
+        }
+        prevBorderVal = curBorder;
+        prevGlowVal = curGlow;
+        updateVisibility();
+      }
+    }, 100);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBorderOverrides);
+  } else {
+    initBorderOverrides();
+  }
+})();
+</script>

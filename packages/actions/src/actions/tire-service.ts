@@ -2,8 +2,10 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateBorderParts,
   generateIconText,
   getCommands,
+  getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   getSDK,
@@ -13,6 +15,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -232,7 +235,14 @@ export function generateTireServiceSvg(
         "ALL TIRES\nCHANGE",
       );
 
-      return assembleIcon({ graphicSvg: changeAllTiresIconSvg, colors, title });
+      const border = resolveBorderSettings(changeAllTiresIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+      return assembleIcon({
+        graphicSvg: changeAllTiresIconSvg,
+        colors,
+        title,
+        border,
+      });
     }
     case "change-compound": {
       const compoundType = getCompoundName(compoundState.pitSv);
@@ -253,10 +263,14 @@ export function generateTireServiceSvg(
       }
 
       const compoundColors = resolveIconColors(tireServiceTemplate, getGlobalColors(), settings.colorOverrides);
+      const border = resolveBorderSettings(tireServiceTemplate, getGlobalBorderSettings(), settings.borderOverrides);
+      const borderSvg = generateBorderParts(border);
 
       const compoundSvg = renderIconTemplate(tireServiceTemplate, {
         iconContent,
         textElement,
+        borderDefs: borderSvg.defs,
+        borderContent: borderSvg.rects,
         ...compoundColors,
       });
 
@@ -271,7 +285,9 @@ export function generateTireServiceSvg(
         "TIRES\nCLEAR",
       );
 
-      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title });
+      const border = resolveBorderSettings(clearTiresIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+
+      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title, border });
     }
     default: {
       iconContent = generateToggleTiresIconContent(settings, currentState);
@@ -287,10 +303,14 @@ export function generateTireServiceSvg(
       const titleColor = anyTireOn ? "#FFFFFF" : toggleColors.textColor;
 
       textElement = generateIconText({ text: titleText, fontSize: 24, fill: titleColor, centerX: 72 });
+      const border = resolveBorderSettings(tireServiceTemplate, getGlobalBorderSettings(), settings.borderOverrides);
+      const borderSvg = generateBorderParts(border);
 
       const toggleSvg = renderIconTemplate(tireServiceTemplate, {
         iconContent,
         textElement,
+        borderDefs: borderSvg.defs,
+        borderContent: borderSvg.rects,
         ...toggleColors,
       });
 
@@ -415,8 +435,10 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
     const tires = getDriverTires();
     const compoundType = getCompoundName(compound.pitSv);
+    const bo = settings.borderOverrides;
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
-    return `${settings.action}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}`;
+    return `${settings.action}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}|${borderKey}`;
   }
 
   private executeAction(rawSettings: unknown): void {

@@ -165,7 +165,7 @@ Standalone 144x144 SVGs with Mustache label placeholders and `<desc>` color meta
 </svg>
 ```
 
-- The `<desc>` element contains a JSON object mapping color slot names to their default hex values. This metadata is used by `resolveIconColors()` and by `scripts/generate-color-defaults.mjs`.
+- The `<desc>` element contains a JSON object mapping color slot names to their default hex values. This metadata is used by `resolveIconColors()` and by `scripts/generate-icon-defaults.mjs`.
 - Background rect uses `{{backgroundColor}}` (no `rx` attribute — corners are handled by Stream Deck)
 - Text elements use `{{textColor}}` instead of hardcoded `#ffffff`
 - Graphic elements use `{{graphic1Color}}` (or `{{graphic2Color}}` if needed)
@@ -216,12 +216,13 @@ Property Inspector template. For actions with only global key bindings:
 
 For actions with per-action settings, add `sdpi-item` elements before the key bindings include. See `splits-delta-cycle.ejs` or `car-control.ejs` for examples.
 
-Every action PI template must include the color-overrides and common-settings partials. Place them between action-specific settings and global sections:
+Every action PI template must include the color-overrides, border-overrides, and common-settings partials. Place them between action-specific settings and global sections:
 ```ejs
-<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['{action-name}'] }) %>
+<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['{action-name}'] }) %>
+<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['{action-name}'] }) %>
 <%- include('common-settings') %>
 ```
-The color-overrides partial adds per-action color customization controls. The common-settings partial adds the "Flags Overlay" checkbox and any future common settings.
+The color-overrides partial adds per-action color customization controls. The border-overrides partial adds per-action border settings (enable, width, color). The common-settings partial adds the "Flags Overlay" checkbox and any future common settings.
 
 ### Files to modify
 
@@ -325,7 +326,7 @@ pnpm build       # Build succeeds (skip if watch mode is running)
 If icons were added or modified, also run:
 ```bash
 node scripts/generate-icon-previews.mjs
-node scripts/generate-color-defaults.mjs
+node scripts/generate-icon-defaults.mjs
 ```
 
 **Also update the actions reference** when adding, removing, or modifying actions:
