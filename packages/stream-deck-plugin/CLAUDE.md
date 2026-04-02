@@ -216,12 +216,13 @@ Property Inspector template. For actions with only global key bindings:
 
 For actions with per-action settings, add `sdpi-item` elements before the key bindings include. See `splits-delta-cycle.ejs` or `car-control.ejs` for examples.
 
-Every action PI template must include the color-overrides and common-settings partials. Place them between action-specific settings and global sections:
+Every action PI template must include the color-overrides, border-overrides, and common-settings partials. Place them between action-specific settings and global sections:
 ```ejs
 <%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['{action-name}'] }) %>
+<%- include('border-overrides') %>
 <%- include('common-settings') %>
 ```
-The color-overrides partial adds per-action color customization controls. The common-settings partial adds the "Flags Overlay" checkbox and any future common settings.
+The color-overrides partial adds per-action color customization controls. The border-overrides partial adds per-action border settings (enable, width, color). The common-settings partial adds the "Flags Overlay" checkbox and any future common settings.
 
 ### Files to modify
 

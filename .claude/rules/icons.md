@@ -117,6 +117,8 @@ packages/icons/preview/   # Mirrors source structure with colors resolved
 
 Actions where icon content changes at runtime based on telemetry (e.g., tire colors, speed values) keep their templates in the plugin's `icons/` directory (e.g., `packages/stream-deck-plugin/icons/`). These use 144x144 viewBox, `<desc>` color metadata, and can have arbitrary placeholders.
 
+All dynamic templates include a `{{borderContent}}` placeholder after the background rect. Actions must pass `borderContent` (from `generateBorderSvg(resolveBorderOptions(...))`) when calling `renderIconTemplate()`. Pass `borderContent: ""` if border is not used.
+
 Current dynamic templates: `car-control.svg`, `session-info.svg`, `tire-service.svg`, `telemetry-display.svg`.
 
 ## Design Specs

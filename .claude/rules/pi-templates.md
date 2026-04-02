@@ -59,6 +59,7 @@ Located in `packages/stream-deck-plugin/src/pi-templates/partials/`:
 - **accordion.ejs** - Collapsible section component
 - **common-settings.ejs** - Common settings shared by all actions (flags overlay)
 - **color-overrides.ejs** - Per-action color override controls with Default/White/Black presets
+- **border-overrides.ejs** - Per-action border settings (enable, width, color). Place after color-overrides.
 - **title-overrides.ejs** - Per-action title override controls (show/hide title and graphics, title text, bold, font size, position)
 - **global-key-bindings.ejs** - Key bindings in collapsible section
 - **global-settings.ejs** - Global plugin settings accordion (focus window, icon colors, title defaults)
@@ -81,6 +82,23 @@ No parameters needed. The partial provides controls for:
 - **Position** — select (Inherit / Top / Middle / Bottom / Custom); Custom reveals offset slider (−100 to +100)
 
 Place between `color-overrides` and `global-key-bindings`/`global-settings` includes.
+
+## Border Overrides Partial
+
+Adds per-action border settings. Settings are stored under the `borderOverrides` key in action settings.
+
+```ejs
+<%- include('border-overrides') %>
+```
+
+No parameters needed. The partial provides controls for:
+- **Enable Border** — checkbox to toggle the border on/off (disabled by default)
+- **Width** — range slider (2–40, step 2, default 14), hidden when disabled
+- **Color** — color picker (default `#00aaff`), hidden when disabled
+
+For toggle actions (DRS, Push-to-Pass, Fuel Toggle, Windshield Tearoff, Fast Repair), the color picker is ignored — border color is driven by on/off/n/a state automatically.
+
+Place after `color-overrides` include, before `global-key-bindings`/`global-settings` includes.
 
 ## Color Overrides Partial
 

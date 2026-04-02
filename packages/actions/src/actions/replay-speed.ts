@@ -52,7 +52,7 @@ export function generateReplaySpeedSvg(settings: ReplaySpeedSettings): string {
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
 }
 
 /**

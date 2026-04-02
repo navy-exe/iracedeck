@@ -3,6 +3,7 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   fuelToDisplayUnits,
+  generateBorderParts,
   generateTitleText,
   getCommands,
   getGlobalColors,
@@ -15,6 +16,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderOptions,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -30,7 +32,7 @@ import { hasFlag, PitSvFlags, type TelemetryData } from "@iracedeck/iracing-sdk"
 import z from "zod";
 
 import fuelServiceTemplate from "../../icons/fuel-service.svg";
-import { statusBarOff, statusBarOn } from "../icons/status-bar.js";
+import { borderColorForState, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type FuelServiceMode =
   | "toggle-fuel-fill"
@@ -287,9 +289,16 @@ export function generateFuelServiceSvg(
 
     const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
 
+    const fuelFillEnabled = state.fuelFillOn ?? false;
+    const border = generateBorderParts(
+      resolveBorderOptions(settings.borderOverrides, borderColorForState(fuelFillEnabled ? "on" : "off")),
+    );
+
     const svg = renderIconTemplate(fuelServiceTemplate, {
       iconContent,
       titleContent,
+      borderDefs: border.defs,
+      borderContent: border.rects,
       ...colors,
     });
 
@@ -305,7 +314,7 @@ export function generateFuelServiceSvg(
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
 }
 
 /**
@@ -521,7 +530,10 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
 
   private buildStateKey(settings: FuelServiceSettings, telemetryState: FuelServiceTelemetryState): string {
     if (settings.mode === "toggle-fuel-fill") {
-      return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}`;
+      const bo = settings.borderOverrides;
+      const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+
+      return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
     }
 
     return settings.mode;

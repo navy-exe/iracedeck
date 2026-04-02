@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { TitleOverrides } from "./common-settings.js";
+import type { BorderOverrides, TitleOverrides } from "./common-settings.js";
 import { getGlobalSettings } from "./global-settings.js";
 import type { GlobalSettings } from "./global-settings.js";
-import { assembleIcon, generateTitleText, getGlobalTitleSettings, resolveTitleSettings } from "./title-settings.js";
+import {
+  assembleIcon,
+  generateTitleText,
+  getGlobalTitleSettings,
+  resolveBorderOptions,
+  resolveTitleSettings,
+} from "./title-settings.js";
 import type { GlobalTitleSettings } from "./title-settings.js";
 
 vi.mock("./global-settings.js", () => ({
@@ -141,7 +147,7 @@ describe("generateTitleText", () => {
     // PI fontSize 20 → SVG 40 (doubled)
     expect(result).toContain('font-size="40"');
     expect(result).toContain('font-weight="bold"');
-    expect(result).toContain('y="140"');
+    expect(result).toContain('y="130"');
   });
 
   it("should generate single-line text at top position", () => {
@@ -153,8 +159,8 @@ describe("generateTitleText", () => {
       customPosition: 0,
       ...defaults,
     });
-    // top startY = doubled(20) - 2 = 38
-    expect(result).toContain('y="38"');
+    // top startY = doubled(20) + 8 = 48
+    expect(result).toContain('y="48"');
   });
 
   it("should generate single-line text at middle position", () => {
@@ -199,8 +205,8 @@ describe("generateTitleText", () => {
     const y1 = parseFloat(lines![0].match(/(\d+\.?\d*)/)![1]);
     const y2 = parseFloat(lines![1].match(/(\d+\.?\d*)/)![1]);
     expect(y1).toBeLessThan(y2);
-    // top startY = doubled(18) - 2 = 34
-    expect(y1).toBe(36 - 2);
+    // top startY = doubled(18) + 8 = 44
+    expect(y1).toBe(36 + 8);
   });
 
   it("should use custom position as offset from middle", () => {
@@ -409,5 +415,122 @@ describe("getGlobalTitleSettings", () => {
     const result = getGlobalTitleSettings();
     expect(result.position).toBe("default");
     expect(result.customPosition).toBe("default");
+  });
+});
+
+describe("resolveBorderOptions", () => {
+  it("should return disabled defaults when no overrides", () => {
+    const result = resolveBorderOptions();
+    expect(result).toEqual({ enabled: false, width: 14, color: "#00aaff" });
+  });
+
+  it("should return disabled defaults when overrides are undefined", () => {
+    const result = resolveBorderOptions(undefined);
+    expect(result).toEqual({ enabled: false, width: 14, color: "#00aaff" });
+  });
+
+  it("should use overrides when provided", () => {
+    const overrides: BorderOverrides = { enabled: true, width: 10, color: "#ff0000" };
+    const result = resolveBorderOptions(overrides);
+    expect(result).toEqual({ enabled: true, width: 10, color: "#ff0000" });
+  });
+
+  it("should use stateColor over overrides color", () => {
+    const overrides: BorderOverrides = { enabled: true, width: 8, color: "#ff0000" };
+    const result = resolveBorderOptions(overrides, "#2ecc71");
+    expect(result).toEqual({ enabled: true, width: 8, color: "#2ecc71" });
+  });
+
+  it("should use stateColor even when overrides color is undefined", () => {
+    const overrides: BorderOverrides = { enabled: true, width: 6, color: "#ffffff" };
+    const result = resolveBorderOptions(overrides, "#e74c3c");
+    expect(result.color).toBe("#e74c3c");
+  });
+
+  it("should use partial overrides with defaults for missing fields", () => {
+    const result = resolveBorderOptions({ enabled: true } as BorderOverrides);
+    expect(result.enabled).toBe(true);
+    expect(result.width).toBe(14);
+    expect(result.color).toBe("#00aaff");
+  });
+});
+
+describe("assembleIcon with border", () => {
+  it("should include border rect when border is enabled", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TEST",
+        bold: true,
+        fontSize: 9,
+        position: "bottom",
+        customPosition: 0,
+      },
+      borderOverrides: { enabled: true, width: 8, color: "#2ecc71" },
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).toContain('stroke="#2ecc71"');
+    expect(svg).toContain('stroke-width="8"');
+    expect(svg).toContain('fill="none"');
+  });
+
+  it("should not include border rect when border is disabled", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TEST",
+        bold: true,
+        fontSize: 9,
+        position: "bottom",
+        customPosition: 0,
+      },
+      borderOverrides: { enabled: false, width: 8, color: "#2ecc71" },
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).not.toContain('stroke="#2ecc71"');
+  });
+
+  it("should not include border when borderOverrides is undefined", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TEST",
+        bold: true,
+        fontSize: 9,
+        position: "bottom",
+        customPosition: 0,
+      },
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).not.toContain("stroke=");
+  });
+
+  it("should use borderStateColor over borderOverrides color", () => {
+    const result = assembleIcon({
+      graphicSvg: MOCK_GRAPHIC,
+      colors: { backgroundColor: "#2a3444", textColor: "#ffffff" },
+      title: {
+        showTitle: true,
+        showGraphics: true,
+        titleText: "TEST",
+        bold: true,
+        fontSize: 9,
+        position: "bottom",
+        customPosition: 0,
+      },
+      borderOverrides: { enabled: true, width: 6, color: "#00aaff" },
+      borderStateColor: "#e74c3c",
+    });
+    const svg = decodeDataUri(result);
+    expect(svg).toContain('stroke="#e74c3c"');
   });
 });

@@ -136,7 +136,7 @@ export function generateCockpitMiscSvg(settings: CockpitMiscSettings): string {
     defaultTitle,
   );
 
-  return assembleIcon({ graphicSvg: iconSvg as string, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg as string, colors, title, borderOverrides: settings.borderOverrides });
 }
 
 /**

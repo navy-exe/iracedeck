@@ -1,0 +1,62 @@
+<!--
+  Border Overrides Component
+
+  Provides per-action border settings: enable/disable, width, and color.
+  For toggle actions (DRS, Push-to-Pass, etc.), border color is driven by
+  on/off/n/a state automatically; the color picker applies to static actions.
+-->
+<%- include('accordion', {
+  title: 'Border',
+  open: false,
+  content:
+    '<sdpi-item label="Enable Border">' +
+      '<sdpi-checkbox id="ird-border-enabled" setting="borderOverrides.enabled"></sdpi-checkbox>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-border-width" class="hidden" label="Width">' +
+      '<sdpi-range setting="borderOverrides.width" min="2" max="40" step="2" default="14" showlabels></sdpi-range>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-border-color" class="hidden" label="Color">' +
+      '<sdpi-color setting="borderOverrides.color" default="#00aaff"></sdpi-color>' +
+    '</sdpi-item>'
+}) %>
+
+<script>
+(function() {
+  async function initBorderOverrides() {
+    await customElements.whenDefined('sdpi-checkbox');
+    var checkbox = document.getElementById('ird-border-enabled');
+    if (!checkbox) return;
+
+    function isChecked() {
+      return checkbox.checked === true || checkbox.value === true || checkbox.value === 'true';
+    }
+
+    function updateBorderVisibility() {
+      var enabled = isChecked();
+      var widthItem = document.getElementById('ird-border-width');
+      var colorItem = document.getElementById('ird-border-color');
+      if (widthItem) widthItem.classList.toggle('hidden', !enabled);
+      if (colorItem) colorItem.classList.toggle('hidden', !enabled);
+    }
+
+    updateBorderVisibility();
+    checkbox.addEventListener('change', updateBorderVisibility);
+
+    // Polling fallback (sdpi-checkbox loads asynchronously)
+    var lastChecked = isChecked();
+    setInterval(function() {
+      var current = isChecked();
+      if (current !== lastChecked) {
+        lastChecked = current;
+        updateBorderVisibility();
+      }
+    }, 100);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBorderOverrides);
+  } else {
+    initBorderOverrides();
+  }
+})();
+</script>

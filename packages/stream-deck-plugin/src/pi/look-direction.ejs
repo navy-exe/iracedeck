@@ -18,6 +18,7 @@
 		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['look-direction'] }) %>
+		<%- include('border-overrides') %>
 
 		<!-- Global Key Bindings section -->
 		<%- include('global-key-bindings', {

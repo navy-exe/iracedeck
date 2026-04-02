@@ -50,6 +50,7 @@ vi.mock("../../icons/fuel-service.svg", () => ({
 vi.mock("../icons/status-bar.js", () => ({
   statusBarOn: () => '<rect class="status-on"/>',
   statusBarOff: () => '<rect class="status-off"/>',
+  borderColorForState: (state: string) => ({ on: "#2ecc71", off: "#e74c3c", na: "#888888" })[state],
 }));
 
 vi.mock("@iracedeck/icons/fuel-service/add-fuel.svg", () => ({
@@ -111,6 +112,8 @@ vi.mock("@iracedeck/deck-core", () => ({
     return b.key;
   }),
   getCommands: mockGetCommands,
+  generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
+  generateBorderSvg: vi.fn(() => ""),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: mockGetGlobalSettings,
   getKeyboard: vi.fn(() => ({
@@ -136,6 +139,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     return liters * 0.264172;
   }),
   getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveBorderOptions: vi.fn((_overrides?: unknown, _stateColor?: string) => ({
+    enabled: false,
+    width: 14,
+    color: "#00aaff",
+  })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,

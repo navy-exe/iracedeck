@@ -93,7 +93,7 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
       "CAR\nREFERENCE",
     );
 
-    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title });
+    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title, borderOverrides: settings.borderOverrides });
   }
 
   const modeIconSvg = MODE_ICONS[mode];
@@ -107,7 +107,7 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
       MODE_TITLES[mode],
     );
 
-    return assembleIcon({ graphicSvg: modeIconSvg, colors, title });
+    return assembleIcon({ graphicSvg: modeIconSvg, colors, title, borderOverrides: settings.borderOverrides });
   }
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS.next;
@@ -115,7 +115,7 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
   const defaultTitle = direction === "next" ? "SPLITS DELTA\nNEXT" : "SPLITS DELTA\nPREVIOUS";
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
 }
 
 /**

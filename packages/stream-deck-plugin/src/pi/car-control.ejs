@@ -75,6 +75,7 @@
 		</style>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['car-control'] }) %>
+		<%- include('border-overrides') %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').carControl

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { statusBarNA, statusBarOff, statusBarOn } from "./status-bar.js";
+import { borderColorForState, statusBarNA, statusBarOff, statusBarOn } from "./status-bar.js";
 
 describe("statusBarOn", () => {
   it("should return SVG with green fill and ON text", () => {
@@ -38,5 +38,19 @@ describe("statusBarNA", () => {
   it("should have correct position and dimensions", () => {
     const result = statusBarNA();
     expect(result).toContain('x="0" y="100" width="144" height="44"');
+  });
+});
+
+describe("borderColorForState", () => {
+  it("should return green for 'on' state", () => {
+    expect(borderColorForState("on")).toBe("#2ecc71");
+  });
+
+  it("should return red for 'off' state", () => {
+    expect(borderColorForState("off")).toBe("#e74c3c");
+  });
+
+  it("should return gray for 'na' state", () => {
+    expect(borderColorForState("na")).toBe("#888888");
   });
 });

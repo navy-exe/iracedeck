@@ -52,6 +52,8 @@ vi.mock("@iracedeck/deck-core", () => ({
 
     return b.key;
   }),
+  generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
+  generateBorderSvg: vi.fn(() => ""),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: vi.fn(() => ({})),
   getKeyboard: vi.fn(() => ({
@@ -70,6 +72,11 @@ vi.mock("@iracedeck/deck-core", () => ({
   })),
   getGlobalTitleSettings: vi.fn(() => ({})),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
+  resolveBorderOptions: vi.fn((_overrides?: unknown, _stateColor?: string) => ({
+    enabled: false,
+    width: 14,
+    color: "#00aaff",
+  })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,

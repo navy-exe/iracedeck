@@ -3,6 +3,7 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   extractGraphicContent,
+  generateBorderSvg,
   generateTitleText,
   getCommands,
   getGlobalColors,
@@ -16,6 +17,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderOptions,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -279,10 +281,12 @@ export function generateReplayControlSvg(
           fill: colors.textColor ?? "#ffffff",
         })
       : "";
+    const borderContent = generateBorderSvg(resolveBorderOptions(settings.borderOverrides));
     const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
       backgroundColor: colors.backgroundColor ?? "#000000",
       graphicContent,
       titleContent,
+      borderContent,
     });
 
     return svgToDataUri(svg);
@@ -307,10 +311,12 @@ export function generateReplayControlSvg(
           fill: colors.textColor ?? "#ffffff",
         })
       : "";
+    const borderContent = generateBorderSvg(resolveBorderOptions(settings.borderOverrides));
     const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
       backgroundColor: colors.backgroundColor ?? "#000000",
       graphicContent,
       titleContent,
+      borderContent,
     });
 
     return svgToDataUri(svg);
@@ -322,13 +328,13 @@ export function generateReplayControlSvg(
     const pauseColors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, "PAUSE");
 
-    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title });
+    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, borderOverrides: settings.borderOverrides });
   }
 
   // All other modes: static title via assembleIcon
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
 }
 
 /**
@@ -1089,7 +1095,9 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     const isPlaying = this.shouldShowPause(contextId, settings.mode);
     const speed = this.replaySpeed.get(contextId) ?? 0;
     const slowMo = this.replaySlowMotion.get(contextId) ?? false;
-    const stateKey = `${settings.mode}:${speed}:${slowMo}`;
+    const bo = settings.borderOverrides;
+    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+    const stateKey = `${settings.mode}:${speed}:${slowMo}:${borderKey}`;
 
     if (this.lastState.get(contextId) === stateKey) return;
 

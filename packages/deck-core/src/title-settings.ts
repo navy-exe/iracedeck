@@ -1,6 +1,6 @@
-import type { TitleOverrides } from "./common-settings.js";
+import type { BorderOverrides, TitleOverrides } from "./common-settings.js";
 import { getGlobalSettings } from "./global-settings.js";
-import { extractGraphicContent, ICON_BASE_TEMPLATE } from "./icon-base.js";
+import { extractGraphicContent, generateBorderSvg, ICON_BASE_TEMPLATE } from "./icon-base.js";
 import { escapeXml, parseIconTitleDefaults, renderIconTemplate } from "./icon-template.js";
 import { svgToDataUri } from "./overlay-utils.js";
 
@@ -74,7 +74,7 @@ function calculateYPositions(
 
   switch (position) {
     case "top": {
-      const startY = fontSize - 2;
+      const startY = fontSize + 8;
 
       for (let i = 0; i < lineCount; i++) {
         positions.push(startY + i * lineHeight);
@@ -94,7 +94,7 @@ function calculateYPositions(
       break;
     }
     case "bottom": {
-      const endY = 140;
+      const endY = 130;
       const startY = endY - totalHeight;
 
       for (let i = 0; i < lineCount; i++) {
@@ -277,24 +277,46 @@ export function resolveTitleSettings(
 }
 
 /**
+ * Resolves border options from per-action overrides and an optional state-driven color.
+ *
+ * @param overrides - Per-action border overrides from settings
+ * @param stateColor - Optional state-driven color (e.g., green for ON, red for OFF) that overrides the user-chosen color
+ */
+export function resolveBorderOptions(
+  overrides?: BorderOverrides,
+  stateColor?: string,
+): { enabled: boolean; width: number; color: string } {
+  const enabled = overrides?.enabled ?? false;
+  const width = overrides?.width ?? 14;
+  const color = stateColor ?? overrides?.color ?? "#00aaff";
+
+  return { enabled, width, color };
+}
+
+/**
  * Assembles a final icon data URI from a graphic SVG, resolved colors, and resolved title settings.
  *
  * Steps:
  * 1. Extracts graphic artwork from the SVG (strips wrapper, background, labels)
  * 2. Colorizes the graphic with renderIconTemplate
  * 3. Generates title text with generateTitleText
- * 4. Fills the base template (background + graphic + title)
- * 5. Converts to a data URI
+ * 4. Generates optional border SVG
+ * 5. Fills the base template (background + border + graphic + title)
+ * 6. Converts to a data URI
  *
  * @param options.graphicSvg - Source SVG template with <desc> metadata
  * @param options.colors - Resolved color values for all slots
  * @param options.title - Fully resolved title settings
+ * @param options.borderOverrides - Per-action border settings (optional)
+ * @param options.borderStateColor - State-driven border color for toggle actions (optional)
  * @returns SVG data URI string
  */
 export function assembleIcon(options: {
   graphicSvg: string;
   colors: Record<string, string>;
   title: ResolvedTitleSettings;
+  borderOverrides?: BorderOverrides;
+  borderStateColor?: string;
 }): string {
   const { graphicSvg, colors, title } = options;
 
@@ -312,8 +334,12 @@ export function assembleIcon(options: {
       })
     : "";
 
+  const border = resolveBorderOptions(options.borderOverrides, options.borderStateColor);
+  const borderContent = generateBorderSvg(border);
+
   const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
     backgroundColor: colors.backgroundColor ?? "#000000",
+    borderContent,
     graphicContent,
     titleContent,
   });

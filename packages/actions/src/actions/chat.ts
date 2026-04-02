@@ -145,7 +145,12 @@ export function generateChatSvg(settings: ChatSettings): string {
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
   // Include iconColor as 'color' so the chat icon's {{color}} accent placeholder resolves
-  return assembleIcon({ graphicSvg: iconSvg, colors: { ...colors, color: iconColor }, title });
+  return assembleIcon({
+    graphicSvg: iconSvg,
+    colors: { ...colors, color: iconColor },
+    title,
+    borderOverrides: settings.borderOverrides,
+  });
 }
 
 /**

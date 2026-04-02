@@ -34,6 +34,7 @@
 		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: require('./data/color-defaults.json')['black-box-selector'] }) %>
+		<%- include('border-overrides') %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').blackBox

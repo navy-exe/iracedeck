@@ -102,6 +102,8 @@ vi.mock("@iracedeck/deck-core", () => ({
 
     return b.key;
   }),
+  generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
+  generateBorderSvg: vi.fn(() => ""),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalSettings: vi.fn(() => ({})),
   getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
@@ -122,6 +124,11 @@ vi.mock("@iracedeck/deck-core", () => ({
     stopRole: vi.fn().mockResolvedValue(true),
   })),
   getGlobalTitleSettings: vi.fn(() => ({})),
+  resolveBorderOptions: vi.fn((_overrides?: unknown, _stateColor?: string) => ({
+    enabled: false,
+    width: 14,
+    color: "#00aaff",
+  })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,

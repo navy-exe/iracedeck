@@ -2,6 +2,7 @@ import {
   CommonSettings,
   ConnectionStateAwareAction,
   escapeXml,
+  generateBorderParts,
   generateTitleText,
   getGlobalColors,
   getGlobalTitleSettings,
@@ -9,6 +10,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderOptions,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -79,9 +81,13 @@ export function generateTelemetryDisplaySvg(title: string, value: string, settin
       })
     : "";
 
+  const border = generateBorderParts(resolveBorderOptions(settings.borderOverrides));
+
   const svg = renderIconTemplate(telemetryDisplayTemplate, {
     ...colors,
     titleContent,
+    borderDefs: border.defs,
+    borderContent: border.rects,
     valueContent,
   });
 
@@ -165,8 +171,10 @@ export class TelemetryDisplay extends ConnectionStateAwareAction<TelemetryDispla
 
   private buildStateKey(title: string, value: string, settings: TelemetryDisplaySettings): string {
     const co = settings.colorOverrides;
+    const bo = settings.borderOverrides;
+    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
 
-    return `${title}|${value}|${co?.backgroundColor || ""}|${co?.textColor || ""}|${settings.fontSize}`;
+    return `${title}|${value}|${co?.backgroundColor || ""}|${co?.textColor || ""}|${settings.fontSize}|${borderKey}`;
   }
 
   private async updateDisplayFromTelemetry(contextId: string, settings: TelemetryDisplaySettings): Promise<void> {

@@ -2,6 +2,7 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  generateBorderParts,
   generateTitleText,
   getGlobalColors,
   getGlobalTitleSettings,
@@ -15,6 +16,7 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   renderIconTemplate,
+  resolveBorderOptions,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -35,7 +37,7 @@ import z from "zod";
 import drsTemplate from "../../icons/car-control-drs.svg";
 import pushToPassTemplate from "../../icons/car-control-push-to-pass.svg";
 import carControlTemplate from "../../icons/car-control.svg";
-import { statusBarOff, statusBarOn } from "../icons/status-bar.js";
+import { borderColorForState, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 const WHITE = "#ffffff";
 const GRAY = "#888888";
@@ -329,22 +331,22 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   // Pit-speed-limiter uses the template approach (dynamic speed number)
   if (control === "pit-speed-limiter") {
     const speed = telemetryState?.pitSpeedLimit ?? DEFAULT_PIT_SPEED;
-    const iconContent =
-      telemetryState?.pitLimiterActive !== undefined && telemetryState.pitLimiterActive
-        ? pitLimiterActiveIcon(speed)
-        : pitLimiterInactiveIcon(speed);
+    const isActive = telemetryState?.pitLimiterActive ?? false;
+    const iconContent = isActive ? pitLimiterActiveIcon(speed) : pitLimiterInactiveIcon(speed);
+    const border = generateBorderParts(
+      resolveBorderOptions(settings.borderOverrides, borderColorForState(isActive ? "on" : "off")),
+    );
 
-    return renderDynamicIcon(settings, iconContent);
+    return renderDynamicIcon(settings, iconContent, border);
   }
 
   // Push To Pass and DRS use dedicated templates with their own <desc> defaults
   if (control === "push-to-pass" || control === "drs") {
     const template = control === "push-to-pass" ? pushToPassTemplate : drsTemplate;
     const colors = resolveIconColors(template, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
-    const iconContent =
-      control === "push-to-pass"
-        ? pushToPassIcon(telemetryState?.pushToPassActive ?? false)
-        : drsIcon(telemetryState?.drsActive ?? false);
+    const isActive =
+      control === "push-to-pass" ? (telemetryState?.pushToPassActive ?? false) : (telemetryState?.drsActive ?? false);
+    const iconContent = control === "push-to-pass" ? pushToPassIcon(isActive) : drsIcon(isActive);
 
     const resolvedTitle = resolveTitleSettings(template, getGlobalTitleSettings(), settings.titleOverrides);
 
@@ -359,10 +361,16 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
         })
       : "";
 
+    const border = generateBorderParts(
+      resolveBorderOptions(settings.borderOverrides, borderColorForState(isActive ? "on" : "off")),
+    );
+
     // Status bar is always visible, even when Show Graphics is off
     const svg = renderIconTemplate(template, {
       iconContent,
       titleContent,
+      borderDefs: border.defs,
+      borderContent: border.rects,
       ...colors,
     });
 
@@ -378,7 +386,7 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
     const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title });
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
   }
 
   // Static modes use standalone SVGs from @iracedeck/icons
@@ -388,10 +396,14 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title });
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, borderOverrides: settings.borderOverrides });
 }
 
-function renderDynamicIcon(settings: CarControlSettings, iconContent: string): string {
+function renderDynamicIcon(
+  settings: CarControlSettings,
+  iconContent: string,
+  border: { defs: string; rects: string },
+): string {
   const labels = CAR_CONTROL_LABELS[settings.control] || CAR_CONTROL_LABELS["starter"];
   const defaultTitle = `${labels.line2}\n${labels.line1}`;
 
@@ -417,6 +429,8 @@ function renderDynamicIcon(settings: CarControlSettings, iconContent: string): s
   const svg = renderIconTemplate(carControlTemplate, {
     iconContent: resolvedTitle.showGraphics ? iconContent : "",
     titleContent,
+    borderDefs: border.defs,
+    borderContent: border.rects,
     ...colors,
   });
 
@@ -645,20 +659,23 @@ export class CarControl extends ConnectionStateAwareAction<CarControlSettings> {
   }
 
   private buildStateKey(settings: CarControlSettings, telemetryState: CarControlTelemetryState): string {
+    const bo = settings.borderOverrides;
+    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+
     if (settings.control === "pit-speed-limiter") {
-      return `pit-speed-limiter|${telemetryState.pitLimiterActive ?? false}|${telemetryState.pitSpeedLimit ?? DEFAULT_PIT_SPEED}`;
+      return `pit-speed-limiter|${telemetryState.pitLimiterActive ?? false}|${telemetryState.pitSpeedLimit ?? DEFAULT_PIT_SPEED}|${borderKey}`;
     }
 
     if (settings.control === "push-to-pass") {
-      return `push-to-pass|${telemetryState.pushToPassActive ?? false}`;
+      return `push-to-pass|${telemetryState.pushToPassActive ?? false}|${borderKey}`;
     }
 
     if (settings.control === "drs") {
-      return `drs|${telemetryState.drsActive ?? false}`;
+      return `drs|${telemetryState.drsActive ?? false}|${borderKey}`;
     }
 
     if (settings.control === "enter-exit-tow") {
-      return `enter-exit-tow|${telemetryState.enterExitTowState ?? "enter-car"}`;
+      return `enter-exit-tow|${telemetryState.enterExitTowState ?? "enter-car"}|${borderKey}`;
     }
 
     return settings.control;

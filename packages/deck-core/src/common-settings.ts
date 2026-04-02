@@ -75,6 +75,23 @@ export const TitleOverridesSchema = z
 
 export type TitleOverrides = z.infer<typeof TitleOverridesSchema>;
 
+/**
+ * Schema for per-action border overrides.
+ * Disabled by default; users opt in per action instance.
+ */
+export const BorderOverridesSchema = z
+  .object({
+    enabled: z
+      .union([z.boolean(), z.string()])
+      .transform((val) => val === true || val === "true")
+      .default(false),
+    width: z.coerce.number().min(2).max(40).default(14),
+    color: z.string().default("#00aaff"),
+  })
+  .optional();
+
+export type BorderOverrides = z.infer<typeof BorderOverridesSchema>;
+
 export const CommonSettings = z.object({
   flagsOverlay: z
     .union([z.boolean(), z.string()])
@@ -82,6 +99,7 @@ export const CommonSettings = z.object({
     .optional(),
   colorOverrides: ColorOverridesSchema,
   titleOverrides: TitleOverridesSchema,
+  borderOverrides: BorderOverridesSchema,
 });
 
 export type CommonSettings = z.infer<typeof CommonSettings>;
