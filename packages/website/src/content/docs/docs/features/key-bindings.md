@@ -44,7 +44,7 @@ SimHub Control Mapper lets you map physical controller inputs (buttons, switches
 
 ### SimHub connection settings
 
-iRaceDeck connects to SimHub's HTTP API to fetch available roles and trigger them. The default connection is `127.0.0.1:8888` (SimHub's default). If your SimHub instance runs on a different host or port, update the settings in the **Global Settings** section of any action's Property Inspector.
+iRaceDeck connects to SimHub's HTTP API to fetch available roles and trigger them. The default connection is `127.0.0.1:8888` (SimHub's default). If your SimHub instance runs on a different host or port, update the settings in the **Plugin Settings** section of any action's Property Inspector.
 
 When SimHub is not running or unreachable, bindings configured in SimHub mode will show an inactive overlay on the button.
 
