@@ -22,13 +22,11 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['look-direction'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['look-direction'] }) %>
 
-		<!-- Global Key Bindings section -->
 		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').lookDirection
 		}) %>
-
 
 		<%- include('global-color-defaults') %>
 		<%- include('global-title-defaults') %>

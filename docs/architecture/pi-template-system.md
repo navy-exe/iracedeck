@@ -15,7 +15,7 @@ Create a build-time template system for Property Inspector HTML files that allow
 **Why EJS:**
 
 - Mature, battle-tested (since 2010), minimal dependencies
-- Simple partial syntax: `<%- include('partials/global-settings') %>`
+- Simple partial syntax: `<%- include('partials/head-common') %>`
 - Full JavaScript support for passing data to partials
 - Zero runtime overhead - compiles to static HTML
 - Already using similar Mustache-style templates for icons
