@@ -73,10 +73,9 @@
 			.hidden { display: none !important; }
 		</style>
 
-		<%- include('common-settings') %>
-
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: { backgroundColor: '#2a3444', textColor: '#ffffff' } }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['session-info'] }) %>
+		<%- include('common-settings') %>
 
 		<%- include('title-overrides') %>
 
@@ -85,7 +84,7 @@
 		<%- include('global-color-defaults') %>
 		<%- include('global-title-defaults') %>
 		<%- include('global-border-defaults') %>
-		<%- include('global-plugin-settings') %>
+		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>
 

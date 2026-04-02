@@ -28,10 +28,9 @@
 			<sdpi-textfield setting="fontSize" default="15" type="number" min="5" max="36"></sdpi-textfield>
 		</sdpi-item>
 
-		<%- include('common-settings') %>
-
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: require('./data/icon-defaults.json')['telemetry-display'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['telemetry-display'] }) %>
+		<%- include('common-settings') %>
 
 		<%- include('title-overrides') %>
 
@@ -40,7 +39,7 @@
 		<%- include('global-color-defaults') %>
 		<%- include('global-title-defaults') %>
 		<%- include('global-border-defaults') %>
-		<%- include('global-plugin-settings') %>
+		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>
 

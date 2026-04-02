@@ -41,10 +41,10 @@ packages/stream-deck-plugin-{name}/
       </sdpi-select>
     </sdpi-item>
 
-    <%- include('common-settings') %>
     <%- include('title-overrides') %>
     <%- include('color-overrides', { slots: [...], defaults: require('./data/icon-defaults.json')['action-name'] }) %>
     <%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['action-name'] }) %>
+    <%- include('common-settings') %>
 
     <%- include('section-header', { title: 'Global Settings' }) %>
 
@@ -54,7 +54,7 @@ packages/stream-deck-plugin-{name}/
     <%- include('global-color-defaults') %>
     <%- include('global-title-defaults') %>
     <%- include('global-border-defaults') %>
-    <%- include('global-plugin-settings') %>
+    <%- include('global-common-settings') %>
 
     <script>
       // PI-specific JavaScript
@@ -81,7 +81,7 @@ Located in `packages/stream-deck-plugin/src/pi-templates/partials/`:
 - **global-color-defaults.ejs** - Global icon color defaults (presets, color pickers) in accordion
 - **global-title-defaults.ejs** - Global title defaults (show/hide, bold, font size, position) in accordion
 - **global-border-defaults.ejs** - Global border defaults (enable, width, color, glow) in accordion
-- **global-plugin-settings.ejs** - Global plugin settings (iRacing, SimHub) in accordion
+- **global-common-settings.ejs** - Global common settings (window focus, SimHub server) in accordion
 - **docs-link.ejs** - Documentation link to the action's page on iracedeck.com (conditional, hidden when no URL mapped)
 - **version.ejs** - Version footer with downloads link
 
@@ -100,7 +100,7 @@ No parameters needed. The partial provides controls for:
 - **Font Size** — gated by "Override font size" checkbox; when enabled, shows range slider (5–100, doubled for SVG)
 - **Position** — select (Inherit / Top / Middle / Bottom / Custom); Custom reveals offset slider (−100 to +100)
 
-Place between `color-overrides` and the "Global Settings" section header.
+Place before `color-overrides`, after action-specific settings.
 
 ## Border Overrides Partial
 
@@ -117,7 +117,7 @@ No parameters needed. The partial provides controls for:
 
 For toggle actions (DRS, Push-to-Pass, Fuel Toggle, Windshield Tearoff, Fast Repair), the color picker is ignored — border color is driven by on/off/n/a state automatically.
 
-Place after `color-overrides` include, before the "Global Settings" section header.
+Place after `color-overrides` include, before `common-settings`.
 
 ## Color Overrides Partial
 
@@ -134,7 +134,7 @@ Parameters:
 - `slots` — Array of slot names to show: `backgroundColor`, `textColor`, `graphic1Color`, `graphic2Color`
 - `defaults` — Object from `icon-defaults.json` with default hex colors per slot
 
-Place between `common-settings` and the "Global Settings" section header.
+Place after `title-overrides`, before `border-overrides`.
 
 ### icon-defaults.json
 

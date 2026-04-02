@@ -4,7 +4,7 @@
 
 **Goal:** Reorganize Property Inspector layout with section headers and split the monolithic Global Settings accordion into 4 focused accordions.
 
-**Architecture:** Add a `section-header.ejs` partial for visual section dividers. Split `global-settings.ejs` into `global-color-defaults.ejs`, `global-title-defaults.ejs`, `global-border-defaults.ejs`, and `global-plugin-settings.ejs`. Wrap `common-settings.ejs` in an accordion. Rename "Border" accordion to "Border Overrides". Update all 32 action templates to use the new include order with section headers.
+**Architecture:** Add a `section-header.ejs` partial for visual section dividers. Split `global-settings.ejs` into `global-color-defaults.ejs`, `global-title-defaults.ejs`, `global-border-defaults.ejs`, and `global-common-settings.ejs`. Wrap `common-settings.ejs` in an accordion. Rename "Border" accordion to "Border Overrides". Update all 32 action templates to use the new include order with section headers.
 
 **Tech Stack:** EJS templates, CSS
 
@@ -17,7 +17,7 @@
 - `packages/stream-deck-plugin/src/pi-templates/partials/global-color-defaults.ejs` — color defaults accordion
 - `packages/stream-deck-plugin/src/pi-templates/partials/global-title-defaults.ejs` — title defaults accordion
 - `packages/stream-deck-plugin/src/pi-templates/partials/global-border-defaults.ejs` — border defaults accordion
-- `packages/stream-deck-plugin/src/pi-templates/partials/global-plugin-settings.ejs` — iRacing + SimHub accordion
+- `packages/stream-deck-plugin/src/pi-templates/partials/global-common-settings.ejs` — iRacing + SimHub accordion
 
 ### Modified files
 - `packages/stream-deck-plugin/src/pi-templates/partials/head-common.ejs` — add section header CSS
@@ -138,7 +138,7 @@ git commit -m "feat(pi): wrap common-settings in accordion, rename Border to Bor
 - Create: `packages/stream-deck-plugin/src/pi-templates/partials/global-color-defaults.ejs`
 - Create: `packages/stream-deck-plugin/src/pi-templates/partials/global-title-defaults.ejs`
 - Create: `packages/stream-deck-plugin/src/pi-templates/partials/global-border-defaults.ejs`
-- Create: `packages/stream-deck-plugin/src/pi-templates/partials/global-plugin-settings.ejs`
+- Create: `packages/stream-deck-plugin/src/pi-templates/partials/global-common-settings.ejs`
 - Delete: `packages/stream-deck-plugin/src/pi-templates/partials/global-settings.ejs`
 
 - [ ] **Step 1: Create global-color-defaults.ejs**
@@ -306,20 +306,20 @@ Extract the "Border Defaults" section (lines 92–119 of old global-settings.ejs
 }) %>
 ```
 
-- [ ] **Step 4: Create global-plugin-settings.ejs**
+- [ ] **Step 4: Create global-common-settings.ejs**
 
 Extract the "iRacing" and "SimHub" sections (lines 120–142 of old global-settings.ejs):
 
 ```ejs
 <!--
-  Global Plugin Settings
+  Global Common Settings
 
-  Plugin-wide settings (iRacing, SimHub) in a collapsible "Plugin Settings" accordion.
+  Plugin-wide settings (iRacing, SimHub) in a collapsible "Common Settings" accordion.
   Settings are stored in global settings (shared across all action instances).
   Collapsed by default.
 -->
 <%- include('accordion', {
-  title: 'Plugin Settings',
+  title: 'Common Settings',
   open: false,
   content: `
     <div class="ird-section-subtitle">iRacing</div>
@@ -358,7 +358,7 @@ git rm packages/stream-deck-plugin/src/pi-templates/partials/global-settings.ejs
 - [ ] **Step 6: Commit**
 
 ```bash
-git add packages/stream-deck-plugin/src/pi-templates/partials/global-color-defaults.ejs packages/stream-deck-plugin/src/pi-templates/partials/global-title-defaults.ejs packages/stream-deck-plugin/src/pi-templates/partials/global-border-defaults.ejs packages/stream-deck-plugin/src/pi-templates/partials/global-plugin-settings.ejs
+git add packages/stream-deck-plugin/src/pi-templates/partials/global-color-defaults.ejs packages/stream-deck-plugin/src/pi-templates/partials/global-title-defaults.ejs packages/stream-deck-plugin/src/pi-templates/partials/global-border-defaults.ejs packages/stream-deck-plugin/src/pi-templates/partials/global-common-settings.ejs
 git commit -m "feat(pi): split global-settings into 4 focused accordion partials (#246)"
 ```
 
@@ -379,7 +379,7 @@ Each action template needs two changes:
    <%- include('global-color-defaults') %>
    <%- include('global-title-defaults') %>
    <%- include('global-border-defaults') %>
-   <%- include('global-plugin-settings') %>
+   <%- include('global-common-settings') %>
    ```
 
 The final include order in every action template should be:
@@ -401,7 +401,7 @@ The final include order in every action template should be:
   <%- include('global-color-defaults') %>
   <%- include('global-title-defaults') %>
   <%- include('global-border-defaults') %>
-  <%- include('global-plugin-settings') %>
+  <%- include('global-common-settings') %>
 
   <!-- action-specific <script> and <style> blocks -->
 
@@ -422,9 +422,6 @@ The final include order in every action template should be:
 - fuel-service.ejs
 - look-direction.ejs
 - media-capture.ejs
-- pit-quick-actions.ejs (NOTE: does NOT have global-key-bindings — verify at implementation time)
-- race-admin.ejs (NOTE: does NOT have global-key-bindings — verify at implementation time)
-- replay-control.ejs (NOTE: does NOT have global-key-bindings — verify at implementation time)
 - setup-aero.ejs
 - setup-brakes.ejs
 - setup-chassis.ejs
@@ -437,7 +434,7 @@ The final include order in every action template should be:
 - toggle-ui-elements.ejs
 - view-adjustment.ejs
 
-**Templates WITHOUT global-key-bindings (11 templates):**
+**Templates WITHOUT global-key-bindings (10 templates):**
 - camera-focus.ejs
 - pit-quick-actions.ejs
 - race-admin.ejs
@@ -483,7 +480,7 @@ Update the "Available Partials" list to add:
 - **global-color-defaults.ejs** — Global icon color defaults (presets, color pickers) in accordion
 - **global-title-defaults.ejs** — Global title defaults (show/hide, bold, font size, position) in accordion
 - **global-border-defaults.ejs** — Global border defaults (enable, width, color, glow) in accordion
-- **global-plugin-settings.ejs** — Global plugin settings (iRacing, SimHub) in accordion
+- **global-common-settings.ejs** — Global plugin settings (iRacing, SimHub) in accordion
 
 Remove the entry for **global-settings.ejs**.
 
@@ -529,7 +526,7 @@ Read one compiled HTML file (e.g., `com.iracedeck.sd.core.sdPlugin/ui/splits-del
 - "Common Settings" is in an accordion
 - "Border Overrides" (not "Border") accordion title
 - "Global Settings" section header appears before global accordions
-- 4 separate global accordions: Color Defaults, Title Defaults, Border Defaults, Plugin Settings
+- 4 separate global accordions: Color Defaults, Title Defaults, Border Defaults, Common Settings
 - No reference to old `global-settings` partial
 
 - [ ] **Step 5: Commit any lint/format fixes**
@@ -552,7 +549,7 @@ git add -A && git commit -m "chore: lint and format fixes (#246)"
 
 This is an early architecture doc that predates the current partial structure. Update the "File Structure" section (lines 25–46) to reflect the current partials, including the new split partials:
 
-```
+```text
 packages/
   stream-deck-plugin/
     src/
@@ -566,7 +563,7 @@ packages/
           global-border-defaults.ejs   # Global border defaults accordion
           global-color-defaults.ejs    # Global icon color defaults accordion
           global-key-bindings.ejs      # Key binding controls in accordion
-          global-plugin-settings.ejs   # Global plugin settings (iRacing, SimHub) accordion
+          global-common-settings.ejs   # Global plugin settings (iRacing, SimHub) accordion
           global-title-defaults.ejs    # Global title defaults accordion
           head-common.ejs              # Common <head> content + CSS + JS
           section-header.ejs           # Section divider (Action/Global Settings)
@@ -584,7 +581,7 @@ Also update the "Example Usage" section (lines 142–163) to show the new includ
 
 - [ ] **Step 2: Update key-bindings.md on the website**
 
-In `packages/website/src/content/docs/docs/features/key-bindings.md`, line 47 references "the **Global Settings** section". Update this to reference "the **Plugin Settings** section" since SimHub connection settings now live in the "Plugin Settings" accordion:
+In `packages/website/src/content/docs/docs/features/key-bindings.md`, line 47 references "the **Global Settings** section". Update this to reference "the **Common Settings** section" since SimHub connection settings now live in the "Common Settings" accordion:
 
 Change:
 ```markdown
@@ -593,7 +590,7 @@ update the settings in the **Global Settings** section of any action's Property 
 
 To:
 ```markdown
-update the settings in the **Plugin Settings** section of any action's Property Inspector.
+update the settings in the **Common Settings** section of any action's Property Inspector.
 ```
 
 - [ ] **Step 3: Commit**

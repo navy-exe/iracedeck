@@ -55,7 +55,7 @@ The first section header ("Action Settings") uses reduced top margin since it's 
   ▶ Color Defaults          (accordion, collapsed — NEW, split from global-settings)
   ▶ Title Defaults          (accordion, collapsed — NEW, split from global-settings)
   ▶ Border Defaults         (accordion, collapsed — NEW, split from global-settings)
-  ▶ Plugin Settings         (accordion, collapsed — RENAMED, iRacing + SimHub only)
+  ▶ Common Settings         (accordion, collapsed — RENAMED, iRacing + SimHub only)
 
   [docs link]               (outside sections, at bottom)
   [version footer]          (outside sections, at bottom)
@@ -82,7 +82,7 @@ The current monolithic `global-settings.ejs` is split into 4 new partials:
 1. **`global-color-defaults.ejs`** — Icon Colors section (preset buttons + color pickers), wrapped in accordion titled "Color Defaults"
 2. **`global-title-defaults.ejs`** — Title Defaults section (show/hide, bold, font size, position), wrapped in accordion titled "Title Defaults"
 3. **`global-border-defaults.ejs`** — Border Defaults section (show border, width, color, glow), wrapped in accordion titled "Border Defaults"
-4. **`global-plugin-settings.ejs`** — iRacing + SimHub sections only, wrapped in accordion titled "Plugin Settings"
+4. **`global-common-settings.ejs`** — iRacing + SimHub sections only, wrapped in accordion titled "Common Settings"
 
 The original `global-settings.ejs` is removed.
 
@@ -109,10 +109,10 @@ Every action EJS template is updated to follow this include order:
 
   <!-- action-specific controls (inline, no accordion) -->
 
-  <%- include('common-settings') %>
-  <%- include('color-overrides', { slots: [...], defaults: ... }) %>
   <%- include('title-overrides') %>
+  <%- include('color-overrides', { slots: [...], defaults: ... }) %>
   <%- include('border-overrides', { defaults: ... }) %>
+  <%- include('common-settings') %>
 
   <%- include('section-header', { title: 'Global Settings' }) %>
 
@@ -120,7 +120,7 @@ Every action EJS template is updated to follow this include order:
   <%- include('global-color-defaults') %>
   <%- include('global-title-defaults') %>
   <%- include('global-border-defaults') %>
-  <%- include('global-plugin-settings') %>
+  <%- include('global-common-settings') %>
 
   <%- include('docs-link', { docsUrl: ... }) %>
   <%- include('version', { version: ... }) %>

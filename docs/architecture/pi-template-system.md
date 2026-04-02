@@ -36,7 +36,7 @@ packages/
           global-border-defaults.ejs   # Global border defaults accordion
           global-color-defaults.ejs    # Global icon color defaults accordion
           global-key-bindings.ejs      # Key binding controls in accordion
-          global-plugin-settings.ejs   # Global plugin settings (iRacing, SimHub) accordion
+          global-common-settings.ejs   # Global common settings (window focus, SimHub server) accordion
           global-title-defaults.ejs    # Global title defaults accordion
           head-common.ejs              # Common <head> content + CSS + JS
           section-header.ejs           # Section divider (Action/Global Settings)
@@ -169,10 +169,10 @@ plugins: [
     </sdpi-select>
   </sdpi-item>
 
-  <%- include('common-settings') %>
   <%- include('title-overrides') %>
   <%- include('color-overrides', { slots: [...], defaults: ... }) %>
   <%- include('border-overrides', { defaults: ... }) %>
+  <%- include('common-settings') %>
 
   <%- include('section-header', { title: 'Global Settings' }) %>
 
@@ -182,7 +182,7 @@ plugins: [
   <%- include('global-color-defaults') %>
   <%- include('global-title-defaults') %>
   <%- include('global-border-defaults') %>
-  <%- include('global-plugin-settings') %>
+  <%- include('global-common-settings') %>
 
   <%- include('docs-link') %>
   <%- include('version') %>

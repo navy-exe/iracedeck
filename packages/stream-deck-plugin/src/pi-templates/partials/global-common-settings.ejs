@@ -1,15 +1,15 @@
 <!--
-  Global Plugin Settings
+  Global Common Settings
 
-  Plugin-wide settings (iRacing, SimHub) in a collapsible "Plugin Settings" accordion.
+  Plugin-wide common settings (window focus, SimHub) in a collapsible "Common Settings" accordion.
   Settings are stored in global settings (shared across all action instances).
   Collapsed by default.
 -->
 <%- include('accordion', {
-  title: 'Plugin Settings',
+  title: 'Common Settings',
   open: false,
   content: `
-    <div class="ird-section-subtitle">iRacing</div>
+    <div class="ird-section-subtitle">Window Focus</div>
     <sdpi-item label="Focus iRacing">
       <sdpi-checkbox
         setting="focusIRacingWindow"
@@ -21,7 +21,7 @@
       Automatically focuses the iRacing window before sending key inputs.
       Enable if actions aren't working when iRacing is in the background.
     </div>
-    <div class="ird-section-subtitle">SimHub</div>
+    <div class="ird-section-subtitle">SimHub Server</div>
     <sdpi-item label="Host">
       <sdpi-textfield setting="simHubHost" default="127.0.0.1" global></sdpi-textfield>
     </sdpi-item>
