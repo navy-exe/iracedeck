@@ -8,7 +8,7 @@ vi.mock("@iracedeck/icons/splits-delta-cycle/next.svg", () => ({
 vi.mock("@iracedeck/icons/splits-delta-cycle/previous.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
 }));
-vi.mock("@iracedeck/icons/toggle-ui-elements/display-ref-car.svg", () => ({
+vi.mock("@iracedeck/icons/splits-delta-cycle/display-ref-car.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg" class="ref-car">{{mainLabel}} {{subLabel}}</svg>',
 }));
 vi.mock("@iracedeck/icons/splits-delta-cycle/custom-sector-start.svg", () => ({
