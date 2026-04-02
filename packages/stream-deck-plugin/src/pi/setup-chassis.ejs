@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Component">
 			<sdpi-select setting="setting" default="differential-preload">
 				<option value="differential-preload">Differential Preload</option>
@@ -36,11 +38,17 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['setup-chassis'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['setup-chassis'] }) %>
 
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').setupChassis
 		}) %>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

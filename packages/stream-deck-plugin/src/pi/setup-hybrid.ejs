@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Setting">
 			<sdpi-select id="setting-select" setting="setting" default="mguk-regen-gain">
 				<option value="mguk-regen-gain">MGU-K Re-Gen Gain</option>
@@ -28,6 +30,8 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['setup-hybrid'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['setup-hybrid'] }) %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').setupHybrid
@@ -81,7 +85,11 @@
 			.hidden { display: none !important; }
 		</style>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

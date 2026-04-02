@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Title">
 			<sdpi-textfield setting="title" default="I AM"></sdpi-textfield>
 		</sdpi-item>
@@ -33,7 +35,12 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('global-settings') %>
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Action">
 			<sdpi-select id="action-select" setting="action" default="change-all-tires">
 				<option value="change-all-tires">Change All Tires</option>
@@ -82,7 +84,12 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['tire-service'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['tire-service'] }) %>
 
-		<%- include('global-settings') %>
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

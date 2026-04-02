@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Navigation">
 			<sdpi-select id="navigation-select" setting="navigation" default="next-session">
 				<option value="next-session">Next Session</option>
@@ -90,7 +92,12 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: require('./data/icon-defaults.json')['replay-navigation'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['replay-navigation'] }) %>
 
-		<%- include('global-settings') %>
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

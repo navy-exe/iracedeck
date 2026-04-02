@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Action">
 			<sdpi-select setting="action" default="toggle-logging">
 				<option value="toggle-logging">Toggle Logging</option>
@@ -21,11 +23,17 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['telemetry-control'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['telemetry-control'] }) %>
 
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').telemetryControl
 		}) %>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

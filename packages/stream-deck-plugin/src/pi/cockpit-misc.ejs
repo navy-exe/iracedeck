@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Control">
 			<sdpi-select id="control-select" setting="control" default="toggle-wipers">
 				<option value="toggle-wipers">Toggle Wipers</option>
@@ -29,6 +31,8 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['cockpit-misc'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['cockpit-misc'] }) %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').cockpitMisc
@@ -84,7 +88,11 @@
 			.hidden { display: none !important; }
 		</style>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

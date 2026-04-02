@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Action">
 			<sdpi-select setting="action" default="clear-all-checkboxes">
 				<option value="clear-all-checkboxes">Clear All Checkboxes</option>
@@ -19,7 +21,12 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['pit-quick-actions'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['pit-quick-actions'] }) %>
 
-		<%- include('global-settings') %>
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

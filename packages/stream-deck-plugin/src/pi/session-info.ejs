@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Display Mode">
 			<sdpi-select id="mode-select" setting="mode" default="incidents">
 				<option value="incidents">Incident Points</option>
@@ -78,7 +80,12 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('global-settings') %>
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

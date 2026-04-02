@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Mode">
 			<sdpi-select id="mode-select" setting="mode" default="cycle">
 				<option value="cycle">Cycle Splits Delta</option>
@@ -29,11 +31,17 @@
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['splits-delta-cycle'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['splits-delta-cycle'] }) %>
 
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').splitsDelta
 		}) %>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<script>
 			async function initialize() {

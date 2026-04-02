@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Mode">
 			<sdpi-select id="mode-select" setting="mode" default="toggle-fuel-fill">
 				<option value="toggle-fuel-fill">Toggle Fuel Fill</option>
@@ -47,6 +49,8 @@
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['fuel-service'] }) %>
 
 		<div id="key-bindings-section" class="hidden">
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
 			<%- include('global-key-bindings', {
 				keyBindings: require('./data/key-bindings.json').fuelService
 			}) %>
@@ -118,7 +122,11 @@
 			.hidden { display: none !important; }
 		</style>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 

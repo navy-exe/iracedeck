@@ -4,6 +4,8 @@
 		<%- include('head-common') %>
 	</head>
 	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
 		<sdpi-item label="Adjustment">
 			<sdpi-select id="adjustment-select" setting="adjustment" default="fov">
 				<option value="fov">FOV</option>
@@ -27,6 +29,8 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['view-adjustment'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['view-adjustment'] }) %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').viewAdjustment
@@ -80,7 +84,11 @@
 			.hidden { display: none !important; }
 		</style>
 
-		<%- include('global-settings') %>
+
+		<%- include('global-color-defaults') %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-plugin-settings') %>
 
 		<%- include('docs-link') %>
 
