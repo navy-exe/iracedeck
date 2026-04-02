@@ -20,8 +20,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['media-capture'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['media-capture'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['media-capture'] }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').mediaCapture

@@ -43,8 +43,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['fuel-service'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['fuel-service'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['fuel-service'] }) %>
 
 		<div id="key-bindings-section" class="hidden">
 			<%- include('global-key-bindings', {

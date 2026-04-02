@@ -149,8 +149,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['camera-focus'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['camera-focus'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['camera-focus'] }) %>
 
 		<%- include('global-settings') %>
 

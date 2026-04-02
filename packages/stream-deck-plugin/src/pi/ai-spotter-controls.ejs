@@ -20,8 +20,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color', 'graphic2Color'], defaults: require('./data/color-defaults.json')['ai-spotter-controls'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color', 'graphic2Color'], defaults: require('./data/icon-defaults.json')['ai-spotter-controls'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['ai-spotter-controls'] }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').aiSpotterControls

@@ -26,8 +26,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['splits-delta-cycle'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['splits-delta-cycle'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['splits-delta-cycle'] }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').splitsDelta

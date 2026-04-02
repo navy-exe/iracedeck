@@ -1104,7 +1104,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     const speed = this.replaySpeed.get(contextId) ?? 0;
     const slowMo = this.replaySlowMotion.get(contextId) ?? false;
     const bo = settings.borderOverrides;
-    const borderKey = bo?.enabled ? `${bo.width}|${bo.color}` : "";
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
     const stateKey = `${settings.mode}:${speed}:${slowMo}:${borderKey}`;
 
     if (this.lastState.get(contextId) === stateKey) return;

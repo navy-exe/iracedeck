@@ -99,7 +99,7 @@ vi.mock("@iracedeck/deck-core", () => ({
     borderWidth: 14,
     borderColor: "#00aaff",
     glowEnabled: true,
-    glowWidth: 35,
+    glowWidth: 36,
   })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,

@@ -297,7 +297,7 @@ const BORDER_DEFAULTS: ResolvedBorderSettings = {
   borderWidth: 14,
   borderColor: "#00aaff",
   glowEnabled: true,
-  glowWidth: 35,
+  glowWidth: 36,
 };
 
 export { BORDER_DEFAULTS };

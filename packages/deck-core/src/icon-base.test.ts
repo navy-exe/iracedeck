@@ -8,7 +8,7 @@ const DEFAULTS: ResolvedBorderSettings = {
   borderWidth: 14,
   borderColor: "#00aaff",
   glowEnabled: true,
-  glowWidth: 35,
+  glowWidth: 36,
 };
 
 describe("generateBorderParts", () => {
@@ -31,7 +31,7 @@ describe("generateBorderParts", () => {
     const result = generateBorderParts({ ...DEFAULTS, enabled: true });
     expect(result.defs).toContain("<defs>");
     expect(result.defs).toContain("ird-border-glow");
-    expect(result.rects).toContain('stroke-width="35"'); // glow width
+    expect(result.rects).toContain('stroke-width="36"'); // glow width
     expect(result.rects).toContain('opacity="0.4"');
     expect(result.rects).toContain('stroke-width="14"'); // border width
   });

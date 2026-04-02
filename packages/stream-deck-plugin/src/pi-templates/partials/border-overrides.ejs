@@ -4,7 +4,11 @@
   Provides per-action border settings with Inherit/Yes/No dropdowns.
   "Inherit" (default) means the field is unset and falls through to global → icon default.
   For toggle actions, border color is driven by on/off/n/a state automatically.
+
+  Parameters:
+    - defaults: Object with per-action border defaults (e.g., { color: "#5a5a5a" })
 -->
+<% var defaultColor = (defaults && defaults.borderColor) || '#00aaff'; %>
 <%- include('accordion', {
   title: 'Border',
   open: false,
@@ -17,10 +21,10 @@
       '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-width" class="hidden" label="Width">' +
-      '<sdpi-range setting="borderOverrides.borderWidth" min="2" max="40" step="2" showlabels></sdpi-range>' +
+      '<sdpi-range setting="borderOverrides.borderWidth" min="2" max="40" step="2" default="14" showlabels></sdpi-range>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-color" class="hidden" label="Color">' +
-      '<sdpi-color setting="borderOverrides.borderColor"></sdpi-color>' +
+      '<sdpi-color setting="borderOverrides.borderColor" default="' + defaultColor + '"></sdpi-color>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-glow" class="hidden" label="Show Glow">' +
       '<sdpi-select id="ird-border-glow-select" setting="borderOverrides.glowEnabled" default="inherit">' +
@@ -30,7 +34,7 @@
       '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-glow-width" class="hidden" label="Glow Width">' +
-      '<sdpi-range setting="borderOverrides.glowWidth" min="2" max="60" step="2" showlabels></sdpi-range>' +
+      '<sdpi-range setting="borderOverrides.glowWidth" min="2" max="60" step="2" default="36" showlabels></sdpi-range>' +
     '</sdpi-item>'
 }) %>
 
@@ -43,9 +47,7 @@
     if (!borderSelect) return;
 
     function isBorderEnabled() {
-      var val = borderSelect.value;
-      // "true" = explicitly enabled; "inherit" = could be enabled via global
-      return val === 'true' || val === 'inherit';
+      return borderSelect.value === 'true';
     }
 
     function updateVisibility() {

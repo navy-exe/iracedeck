@@ -15,8 +15,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: require('./data/color-defaults.json')['replay-speed'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: require('./data/icon-defaults.json')['replay-speed'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['replay-speed'] }) %>
 
 		<%- include('global-settings') %>
 

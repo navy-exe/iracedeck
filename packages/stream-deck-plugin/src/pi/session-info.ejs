@@ -74,7 +74,7 @@
 		<%- include('common-settings') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: { backgroundColor: '#2a3444', textColor: '#ffffff' } }) %>
-		<%- include('border-overrides') %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['session-info'] }) %>
 
 		<%- include('title-overrides') %>
 

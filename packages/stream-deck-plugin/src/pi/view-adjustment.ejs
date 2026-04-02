@@ -25,8 +25,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['view-adjustment'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['view-adjustment'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['view-adjustment'] }) %>
 
 		<%- include('global-key-bindings', {
 			keyBindings: require('./data/key-bindings.json').viewAdjustment

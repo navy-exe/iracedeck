@@ -79,8 +79,8 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/color-defaults.json')['tire-service'] }) %>
-		<%- include('border-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['tire-service'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['tire-service'] }) %>
 
 		<%- include('global-settings') %>
 
