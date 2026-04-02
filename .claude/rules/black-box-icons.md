@@ -43,6 +43,7 @@ Single-line labels at bottom:
 - Title text is rendered by `assembleIcon()` from the `<desc>` metadata
 
 Label configurations:
+
 | Black Box | Label |
 |-----------|-------|
 | Lap Timing | LAP TIMING |
