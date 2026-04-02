@@ -32,6 +32,8 @@ packages/stream-deck-plugin-{name}/
     <%- include('head-common') %>
   </head>
   <body>
+    <%- include('section-header', { title: 'Action Settings' }) %>
+
     <!-- Action-specific settings -->
     <sdpi-item label="Setting">
       <sdpi-select setting="mySetting" default="value">
@@ -39,14 +41,27 @@ packages/stream-deck-plugin-{name}/
       </sdpi-select>
     </sdpi-item>
 
-    <!-- Global settings section (if needed) -->
+    <%- include('common-settings') %>
+    <%- include('title-overrides') %>
+    <%- include('color-overrides', { slots: [...], defaults: require('./data/icon-defaults.json')['action-name'] }) %>
+    <%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['action-name'] }) %>
+
+    <%- include('section-header', { title: 'Global Settings' }) %>
+
     <%- include('global-key-bindings', {
       keyBindings: require('./data/key-bindings.json').category
     }) %>
+    <%- include('global-color-defaults') %>
+    <%- include('global-title-defaults') %>
+    <%- include('global-border-defaults') %>
+    <%- include('global-plugin-settings') %>
 
     <script>
       // PI-specific JavaScript
     </script>
+
+    <%- include('docs-link') %>
+    <%- include('version') %>
   </body>
 </html>
 ```
@@ -57,12 +72,16 @@ Located in `packages/stream-deck-plugin/src/pi-templates/partials/`:
 
 - **head-common.ejs** - Required scripts, common styles, and color preset/reset handlers
 - **accordion.ejs** - Collapsible section component
-- **common-settings.ejs** - Common settings shared by all actions (flags overlay)
+- **section-header.ejs** - Section divider with title label and horizontal rule. Parameters: `title` (string). Used to separate "Action Settings" from "Global Settings".
+- **common-settings.ejs** - Common settings shared by all actions (flags overlay), wrapped in accordion
 - **color-overrides.ejs** - Per-action color override controls with Default/White/Black presets
 - **border-overrides.ejs** - Per-action border settings (enable, width, color). Place after color-overrides.
 - **title-overrides.ejs** - Per-action title override controls (show/hide title and graphics, title text, bold, font size, position)
 - **global-key-bindings.ejs** - Key bindings in collapsible section
-- **global-settings.ejs** - Global plugin settings accordion (focus window, icon colors, title defaults)
+- **global-color-defaults.ejs** - Global icon color defaults (presets, color pickers) in accordion
+- **global-title-defaults.ejs** - Global title defaults (show/hide, bold, font size, position) in accordion
+- **global-border-defaults.ejs** - Global border defaults (enable, width, color, glow) in accordion
+- **global-plugin-settings.ejs** - Global plugin settings (iRacing, SimHub) in accordion
 - **docs-link.ejs** - Documentation link to the action's page on iracedeck.com (conditional, hidden when no URL mapped)
 - **version.ejs** - Version footer with downloads link
 
@@ -81,7 +100,7 @@ No parameters needed. The partial provides controls for:
 - **Font Size** — gated by "Override font size" checkbox; when enabled, shows range slider (5–100, doubled for SVG)
 - **Position** — select (Inherit / Top / Middle / Bottom / Custom); Custom reveals offset slider (−100 to +100)
 
-Place between `color-overrides` and `global-key-bindings`/`global-settings` includes.
+Place between `color-overrides` and the "Global Settings" section header.
 
 ## Border Overrides Partial
 
@@ -98,7 +117,7 @@ No parameters needed. The partial provides controls for:
 
 For toggle actions (DRS, Push-to-Pass, Fuel Toggle, Windshield Tearoff, Fast Repair), the color picker is ignored — border color is driven by on/off/n/a state automatically.
 
-Place after `color-overrides` include, before `global-key-bindings`/`global-settings` includes.
+Place after `color-overrides` include, before the "Global Settings" section header.
 
 ## Color Overrides Partial
 
@@ -115,7 +134,7 @@ Parameters:
 - `slots` — Array of slot names to show: `backgroundColor`, `textColor`, `graphic1Color`, `graphic2Color`
 - `defaults` — Object from `icon-defaults.json` with default hex colors per slot
 
-Place between `common-settings` and `global-key-bindings`/`global-settings` includes.
+Place between `common-settings` and the "Global Settings" section header.
 
 ### icon-defaults.json
 
