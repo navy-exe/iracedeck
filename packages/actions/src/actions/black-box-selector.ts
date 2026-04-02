@@ -51,17 +51,17 @@ const CYCLE_ICONS: Record<string, string> = {
  * Title text for each black box type (format: "subLabel\nmainLabel")
  */
 const BLACK_BOX_TITLE_TEXT: Record<string, string> = {
-  "lap-timing": "TOGGLE\nLAP TIMING",
-  standings: "TOGGLE\nSTANDINGS",
-  relative: "TOGGLE\nRELATIVE",
-  fuel: "ADJUSTMENTS\nFUEL",
-  tires: "ADJUSTMENTS\nTIRES",
-  "tire-info": "TOGGLE\nTIRE INFO",
-  "pit-stop": "ADJUSTMENTS\nPIT-STOP",
-  "in-car": "ADJUSTMENTS\nIN-CAR",
-  mirror: "ADJUSTMENTS\nGRAPHICS",
-  radio: "CHANNELS\nRADIO",
-  weather: "FORECAST\nWEATHER",
+  "lap-timing": "\nLAP TIMING",
+  standings: "\nSTANDINGS",
+  relative: "\nRELATIVE",
+  fuel: "\nFUEL",
+  tires: "\nTIRES",
+  "tire-info": "\nTIRE INFO",
+  "pit-stop": "\nPIT-STOP",
+  "in-car": "\nIN-CAR",
+  mirror: "\nGRAPHICS",
+  radio: "\nRADIO",
+  weather: "\nWEATHER",
 };
 
 /**
@@ -125,13 +125,13 @@ export function generateBlackBoxSelectorSvg(settings: BlackBoxSelectorSettings):
 
   if (mode === "next") {
     iconSvg = CYCLE_ICONS.next;
-    defaultTitle = "BLACK BOX\nNEXT";
+    defaultTitle = "\nNEXT";
   } else if (mode === "previous") {
     iconSvg = CYCLE_ICONS.previous;
-    defaultTitle = "BLACK BOX\nPREVIOUS";
+    defaultTitle = "\nPREVIOUS";
   } else {
     iconSvg = DIRECT_ICONS[blackBox] || DIRECT_ICONS["lap-timing"];
-    defaultTitle = BLACK_BOX_TITLE_TEXT[blackBox] || "TOGGLE\nBLACK BOX";
+    defaultTitle = BLACK_BOX_TITLE_TEXT[blackBox] || "\nBLACK BOX";
   }
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
