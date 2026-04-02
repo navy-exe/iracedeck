@@ -1,8 +1,10 @@
 <!--
   Collapsible Component - A collapsible section with divider and arrow.
   Parameters: title (String), content (HTML String), open (Boolean, optional)
+  Accordion open/closed state is persisted via Stream Deck global settings by
+  title, so it survives PI reloads when switching between keys.
 -->
-<details class="ird-collapsible" <%= (typeof open !== 'undefined' && open) ? 'open' : '' %>>
+<details class="ird-collapsible" data-accordion-id="<%= title %>" <%= (typeof open !== 'undefined' && open) ? 'open' : '' %>>
   <summary class="ird-collapsible-header">
     <span class="ird-collapsible-icon">&#9654;</span>
     <span class="ird-collapsible-title"><%= title %></span>

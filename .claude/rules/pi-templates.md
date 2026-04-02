@@ -71,7 +71,7 @@ packages/stream-deck-plugin-{name}/
 Located in `packages/stream-deck-plugin/src/pi-templates/partials/`:
 
 - **head-common.ejs** - Required scripts, common styles, and color preset/reset handlers
-- **accordion.ejs** - Collapsible section component
+- **accordion.ejs** - Collapsible section component. Open/closed state is persisted via Stream Deck global settings (key `_accordionState`) so it survives PI reloads when switching between keys. State is shared across action types since most actions use the same accordion titles.
 - **section-header.ejs** - Section divider with title label and horizontal rule. Parameters: `title` (string). Used to separate "Action Settings" from "Global Settings".
 - **common-settings.ejs** - Common settings shared by all actions (flags overlay), wrapped in accordion
 - **color-overrides.ejs** - Per-action color override controls with Default/White/Black presets
