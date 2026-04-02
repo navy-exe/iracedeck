@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"TOGGLE\nTIRE INFO"},"border":{"color":"#5a5a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"\nTIRE INFO"},"border":{"color":"#5a5a5a"}}</desc>
 
-    <rect x="16" y="16" width="112" height="56" rx="6" fill="#2d2510" stroke="#4a3728" stroke-width="4"/>
-    <circle cx="56" cy="44" r="20" fill="none" stroke="#888888" stroke-width="3"/>
-    <circle cx="56" cy="44" r="10" fill="none" stroke="#888888" stroke-width="2"/>
-    <path d="M36 44 A20 20 0 0 1 42 28" fill="none" stroke="#3498db" stroke-width="6" stroke-linecap="round"/>
-    <path d="M42 28 A20 20 0 0 1 56 24" fill="none" stroke="#2ecc71" stroke-width="6" stroke-linecap="round"/>
-    <path d="M56 24 A20 20 0 0 1 70 28" fill="none" stroke="#f39c12" stroke-width="6" stroke-linecap="round"/>
-    <path d="M70 28 A20 20 0 0 1 76 44" fill="none" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>
-    <text x="96" y="36" fill="#ffffff" font-family="Arial, sans-serif" font-size="10">TEMP</text>
-    <text x="96" y="54" fill="#2ecc71" font-family="Arial, sans-serif" font-size="14" font-weight="bold">85°</text>
+    <rect x="16" y="31" width="112" height="56" rx="6" fill="#2d2510" stroke="#4a3728" stroke-width="4"/>
+    <circle cx="56" cy="59" r="20" fill="none" stroke="#888888" stroke-width="3"/>
+    <circle cx="56" cy="59" r="10" fill="none" stroke="#888888" stroke-width="2"/>
+    <path d="M36 59 A20 20 0 0 1 42 43" fill="none" stroke="#3498db" stroke-width="6" stroke-linecap="round"/>
+    <path d="M42 43 A20 20 0 0 1 56 39" fill="none" stroke="#2ecc71" stroke-width="6" stroke-linecap="round"/>
+    <path d="M56 39 A20 20 0 0 1 70 43" fill="none" stroke="#f39c12" stroke-width="6" stroke-linecap="round"/>
+    <path d="M70 43 A20 20 0 0 1 76 59" fill="none" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>
+    <text x="96" y="51" fill="#ffffff" font-family="Arial, sans-serif" font-size="10">TEMP</text>
+    <text x="96" y="69" fill="#2ecc71" font-family="Arial, sans-serif" font-size="14" font-weight="bold">85°</text>
 
 </svg>
