@@ -129,8 +129,10 @@ export class ColorPicker extends HTMLElement {
       gap: "6px",
     });
 
-    // Swatch (clickable color preview)
+    // Swatch (clickable/keyboard-accessible color preview)
     this.swatch = document.createElement("div");
+    this.swatch.setAttribute("tabindex", "0");
+    this.swatch.setAttribute("role", "button");
     Object.assign(this.swatch.style, {
       width: "26px",
       height: "26px",
@@ -198,12 +200,22 @@ export class ColorPicker extends HTMLElement {
     this.updateDisplay();
   }
 
+  private openNativePicker(): void {
+    this.nativeInput!.value = this.currentValue || "#000000";
+    this.nativeInput!.click();
+  }
+
   private attachListeners(): void {
-    // Swatch click opens native picker
+    // Swatch click/keyboard opens native picker
     this.swatch!.addEventListener("click", () => {
-      // Set the native input to current value or a sensible default
-      this.nativeInput!.value = this.currentValue || "#000000";
-      this.nativeInput!.click();
+      this.openNativePicker();
+    });
+
+    this.swatch!.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        this.openNativePicker();
+      }
     });
 
     // Native picker live preview
