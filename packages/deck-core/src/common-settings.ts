@@ -95,19 +95,25 @@ const inheritBooleanField = z
 export const BorderOverridesSchema = z
   .object({
     enabled: inheritBooleanField,
-    borderWidth: z.preprocess(
-      (val) => (val === "" || val === null || val === undefined ? undefined : val),
-      z.coerce.number().min(1).max(20).optional(),
-    ),
+    borderWidth: z.preprocess((val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+
+      const n = Number(val);
+
+      return Number.isFinite(n) ? Math.min(n, 20) : val;
+    }, z.coerce.number().min(1).max(20).optional()),
     borderColor: z.preprocess(
       (val) => (val === "" || val === "#000001" || val === null || val === undefined ? undefined : val),
       z.string().optional(),
     ),
     glowEnabled: inheritBooleanField,
-    glowWidth: z.preprocess(
-      (val) => (val === "" || val === null || val === undefined ? undefined : val),
-      z.coerce.number().min(1).max(30).optional(),
-    ),
+    glowWidth: z.preprocess((val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+
+      const n = Number(val);
+
+      return Number.isFinite(n) ? Math.min(n, 30) : val;
+    }, z.coerce.number().min(1).max(30).optional()),
   })
   .optional();
 
