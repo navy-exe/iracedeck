@@ -47,3 +47,4 @@ You can import or reference specific rule files from other markdown using `@.cla
 - `stream-deck-actions.md`: Action requirements (`ConnectionStateAwareAction`), SDK-first principle, PI components (`sdpi-select` quirks, conditional visibility), global settings setup, and encoder support.
 - `terminology-and-refs.md`: Project terminology (Property Inspector, Key Icon, Encoder, Action ID) and external reference links.
 - `testing.md`: Vitest conventions, test file naming, mocking patterns for Stream Deck SDK, and action test structure.
+- `svg-platform-compatibility.md`: SVG feature support across platforms (QT5 SVG Tiny 1.2 for Mirabox vs QT6.7+ for Elgato): safe features, Elgato-only features, unsupported features, and guidelines for new icons.
