@@ -97,7 +97,7 @@ export const BorderOverridesSchema = z
     enabled: inheritBooleanField,
     borderWidth: z.preprocess(
       (val) => (val === "" || val === null || val === undefined ? undefined : val),
-      z.coerce.number().min(2).max(40).optional(),
+      z.coerce.number().min(1).max(20).optional(),
     ),
     borderColor: z.preprocess(
       (val) => (val === "" || val === "#000001" || val === null || val === undefined ? undefined : val),
@@ -106,7 +106,7 @@ export const BorderOverridesSchema = z
     glowEnabled: inheritBooleanField,
     glowWidth: z.preprocess(
       (val) => (val === "" || val === null || val === undefined ? undefined : val),
-      z.coerce.number().min(2).max(60).optional(),
+      z.coerce.number().min(1).max(30).optional(),
     ),
   })
   .optional();

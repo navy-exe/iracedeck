@@ -294,10 +294,10 @@ export interface GlobalBorderSettings {
 
 const BORDER_DEFAULTS: ResolvedBorderSettings = {
   enabled: false,
-  borderWidth: 14,
+  borderWidth: 7,
   borderColor: "#00aaff",
   glowEnabled: true,
-  glowWidth: 36,
+  glowWidth: 18,
 };
 
 export { BORDER_DEFAULTS };

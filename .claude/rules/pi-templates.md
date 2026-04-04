@@ -112,8 +112,10 @@ Adds per-action border settings. Settings are stored under the `borderOverrides`
 
 No parameters needed. The partial provides controls for:
 - **Enable Border** — checkbox to toggle the border on/off (disabled by default)
-- **Width** — range slider (2–40, step 2, default 14), hidden when disabled
+- **Width** — range slider (1–20, step 1, default 7), hidden when disabled
 - **Color** — color picker (default `#00aaff`), hidden when disabled
+- **Show Glow** — three-state select (Inherit / Yes / No), hidden when border disabled
+- **Glow Width** — range slider (1–30, step 1, default 18), hidden when border or glow disabled
 
 For toggle actions (DRS, Push-to-Pass, Fuel Toggle, Windshield Tearoff, Fast Repair), the color picker is ignored — border color is driven by on/off/n/a state automatically.
 

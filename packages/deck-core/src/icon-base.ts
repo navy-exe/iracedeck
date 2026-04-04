@@ -23,15 +23,19 @@ export function generateBorderParts(border: ResolvedBorderSettings): {
   const glowStdDev = 6;
   const glowOpacity = 0.4;
 
-  const borderRect = `<rect x="0" y="0" width="144" height="144" rx="24" fill="none" stroke="${border.borderColor}" stroke-width="${border.borderWidth}"/>`;
+  const borderInset = border.borderWidth / 2;
+  const borderRx = Math.max(0, 24 - borderInset);
+  const borderRect = `<rect x="${borderInset}" y="${borderInset}" width="${144 - 2 * borderInset}" height="${144 - 2 * borderInset}" rx="${borderRx}" fill="none" stroke="${border.borderColor}" stroke-width="${border.borderWidth}"/>`;
 
   if (!border.glowEnabled) {
     return { defs: "", rects: borderRect };
   }
 
-  const clampedGlowWidth = Math.min(border.glowWidth, 60);
+  const clampedGlowWidth = Math.min(border.glowWidth, 30);
+  const glowInset = border.borderWidth;
+  const glowRx = Math.max(0, 24 - glowInset);
   const glowDefs = `<defs><filter id="ird-border-glow"><feGaussianBlur stdDeviation="${glowStdDev}"/></filter></defs>`;
-  const glowRect = `<rect x="0" y="0" width="144" height="144" rx="24" fill="none" stroke="${border.borderColor}" stroke-width="${clampedGlowWidth}" opacity="${glowOpacity}" filter="url(#ird-border-glow)"/>`;
+  const glowRect = `<rect x="${glowInset}" y="${glowInset}" width="${144 - 2 * glowInset}" height="${144 - 2 * glowInset}" rx="${glowRx}" fill="none" stroke="${border.borderColor}" stroke-width="${clampedGlowWidth}" opacity="${glowOpacity}" filter="url(#ird-border-glow)"/>`;
 
   return {
     defs: glowDefs,
