@@ -517,7 +517,7 @@ describe("assembleIcon with border", () => {
     borderWidth: 8,
     borderColor: "#2ecc71",
     glowEnabled: false,
-    glowWidth: 36,
+    glowWidth: 18,
   };
 
   const DISABLED_BORDER: ResolvedBorderSettings = { ...BORDER_DEFAULTS };
