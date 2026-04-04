@@ -212,7 +212,7 @@
     ['bg', 'text', 'g1', 'g2'].forEach(function(key) {
       var color = btn.getAttribute('data-' + key);
       var el = document.getElementById(mapping[key]);
-      if (el && color) {
+      if (el && color !== null) {
         el.value = color;
         el.dispatchEvent(new Event('change', { bubbles: true }));
       }
@@ -232,26 +232,11 @@
     ['bg', 'text', 'g1', 'g2'].forEach(function(key) {
       var color = btn.getAttribute('data-' + key);
       var el = document.getElementById(mapping[key]);
-      if (el && color) {
+      if (el && color !== null) {
         el.value = color;
         el.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
-  });
-
-  // Color picker reset buttons — event delegation for all .ird-color-reset links
-  // Per-action: resets to icon default color. Global: resets to #000001 (treated as "not set").
-  document.addEventListener('click', function(ev) {
-    var link = ev.target.closest('.ird-color-reset');
-    if (!link) return;
-    ev.preventDefault();
-    var inputId = link.getAttribute('data-input');
-    var defaultColor = link.getAttribute('data-default') || '#000000';
-    var colorEl = document.getElementById(inputId);
-    if (colorEl) {
-      colorEl.value = defaultColor;
-      colorEl.dispatchEvent(new Event('change', { bubbles: true }));
-    }
   });
 
   // Custom position visibility: per-action title position select

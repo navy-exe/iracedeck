@@ -116,17 +116,6 @@ interface KeyboardLayoutMapLike {
 // Re-export for backwards compatibility and public API
 export { formatKeyBinding, parseKeyBinding, parseSimpleDefault, type KeyBindingValue };
 
-type SettingsHook = [() => Promise<string>, (value: string) => void];
-
-declare global {
-  interface Window {
-    SDPIComponents?: {
-      useSettings: (key: string, callback: (value: string) => void, debounceMs?: number | null) => SettingsHook;
-      useGlobalSettings: (key: string, callback: (value: string) => void, debounceMs?: number | null) => SettingsHook;
-    };
-  }
-}
-
 /**
  * Mode option configuration for the custom dropdown.
  */

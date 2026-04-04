@@ -180,7 +180,7 @@ export function resolveIconColors(
       continue;
     }
 
-    // Filter empty strings and #000001 sentinel (means "not set" — used by reset buttons)
+    // Filter empty strings and #000001 (legacy sentinel from <sdpi-color> era — kept for backward compat)
     const pick = (v: string | undefined) => (v && v.length > 0 && v !== "#000001" ? v : undefined);
 
     const globalValue = locked.has(key) ? undefined : pick(globalColors[key]);

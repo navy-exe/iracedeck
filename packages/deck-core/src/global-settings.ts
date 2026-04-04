@@ -233,9 +233,8 @@ export function getGlobalColors(): {
   const color = (key: string): string | undefined => {
     const val = settings[key];
 
-    // Ignore empty strings and #000001 (sentinel for "not set" — HTML color inputs
-    // can't be empty, so reset buttons set to #000001 which is visually indistinguishable
-    // from black but signals "no override")
+    // Ignore empty strings (current "not set" value from <ird-color-picker>)
+    // and #000001 (legacy sentinel from <sdpi-color> era — kept for backward compat)
     if (typeof val !== "string" || val.length === 0 || val === "#000001") {
       return undefined;
     }

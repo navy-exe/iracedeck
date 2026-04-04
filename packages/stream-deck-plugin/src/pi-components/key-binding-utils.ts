@@ -29,6 +29,19 @@ export const SDPI_THEME = {
   recordingBorder: "#0084ff",
 } as const;
 
+/** Settings hook tuple returned by SDPIComponents.useSettings / useGlobalSettings */
+export type SettingsHook = [() => Promise<string>, (value: string) => void];
+
+/** SDPIComponents global type declaration for Property Inspector settings integration */
+declare global {
+  interface Window {
+    SDPIComponents?: {
+      useSettings: (key: string, callback: (value: string) => void, debounceMs?: number | null) => SettingsHook;
+      useGlobalSettings: (key: string, callback: (value: string) => void, debounceMs?: number | null) => SettingsHook;
+    };
+  }
+}
+
 export interface KeyBindingValue {
   type?: "keyboard";
   key: string;

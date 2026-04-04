@@ -11,7 +11,7 @@
   content: `
     <sdpi-item label="Presets">
       <div style="display:flex;gap:6px;">
-        <button class="ird-color-preset" data-bg="#000001" data-text="#000001" data-g1="#000001" data-g2="#000001"
+        <button class="ird-color-preset" data-bg="" data-text="" data-g1="" data-g2=""
           style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#2a2a2a;color:#808080;">Default</button>
         <button class="ird-color-preset" data-bg="#ffffff" data-text="#000000" data-g1="#000000" data-g2="#ffffff"
           style="padding:4px 10px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:11px;background:#ffffff;color:#000000;">White</button>
@@ -20,28 +20,16 @@
       </div>
     </sdpi-item>
     <sdpi-item label="Background">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <sdpi-color id="global-color-bg" setting="colorBackgroundColor" global></sdpi-color>
-        <a href="#" class="ird-color-reset" data-input="global-color-bg" data-default="#000001" style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" title="Clear global override">&#x21BA;</a>
-      </div>
+      <ird-color-picker id="global-color-bg" setting="colorBackgroundColor" global></ird-color-picker>
     </sdpi-item>
     <sdpi-item label="Text">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <sdpi-color id="global-color-text" setting="colorTextColor" global></sdpi-color>
-        <a href="#" class="ird-color-reset" data-input="global-color-text" data-default="#000001" style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" title="Clear global override">&#x21BA;</a>
-      </div>
+      <ird-color-picker id="global-color-text" setting="colorTextColor" global></ird-color-picker>
     </sdpi-item>
     <sdpi-item label="Graphic 1">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <sdpi-color id="global-color-g1" setting="colorGraphic1Color" global></sdpi-color>
-        <a href="#" class="ird-color-reset" data-input="global-color-g1" data-default="#000001" style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" title="Clear global override">&#x21BA;</a>
-      </div>
+      <ird-color-picker id="global-color-g1" setting="colorGraphic1Color" global></ird-color-picker>
     </sdpi-item>
     <sdpi-item label="Graphic 2">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <sdpi-color id="global-color-g2" setting="colorGraphic2Color" global></sdpi-color>
-        <a href="#" class="ird-color-reset" data-input="global-color-g2" data-default="#000001" style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" title="Clear global override">&#x21BA;</a>
-      </div>
+      <ird-color-picker id="global-color-g2" setting="colorGraphic2Color" global></ird-color-picker>
     </sdpi-item>
   `
 }) %>

@@ -20,11 +20,7 @@
       <sdpi-range setting="borderWidth" min="1" max="20" step="1" default="7" global showlabels></sdpi-range>
     </sdpi-item>
     <sdpi-item id="global-border-color-item" class="hidden" label="Color">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <sdpi-color id="global-border-color" setting="borderColor" global></sdpi-color>
-        <a href="#" class="ird-color-reset" data-input="global-border-color" data-default="#000001"
-          style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" title="Clear global override">&#x21BA;</a>
-      </div>
+      <ird-color-picker id="global-border-color" setting="borderColor" global></ird-color-picker>
     </sdpi-item>
     <sdpi-item id="global-border-glow-item" class="hidden" label="Show Glow">
       <sdpi-select id="global-border-glow-enabled" setting="borderGlowEnabled" default="default" global>
