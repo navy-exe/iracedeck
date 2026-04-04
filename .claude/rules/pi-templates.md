@@ -123,7 +123,7 @@ Place after `color-overrides` include, before `common-settings`.
 
 ## Color Overrides Partial
 
-Adds per-action color customization with `<sdpi-color>` pickers and preset buttons.
+Adds per-action color customization with `<ird-color-picker>` components and preset buttons.
 
 ```ejs
 <%- include('color-overrides', {

@@ -15,12 +15,18 @@ import z from "zod";
  * Schema for per-action color overrides.
  * Only set fields override; unset fields fall through to global → icon default.
  */
+// Normalize empty strings and legacy #000001 sentinel to undefined (meaning "not set")
+const colorField = z.preprocess(
+  (val) => (val === "" || val === "#000001" || val === null || val === undefined ? undefined : val),
+  z.string().optional(),
+);
+
 export const ColorOverridesSchema = z
   .object({
-    backgroundColor: z.string().optional(),
-    textColor: z.string().optional(),
-    graphic1Color: z.string().optional(),
-    graphic2Color: z.string().optional(),
+    backgroundColor: colorField,
+    textColor: colorField,
+    graphic1Color: colorField,
+    graphic2Color: colorField,
   })
   .optional();
 
@@ -102,6 +108,7 @@ export const BorderOverridesSchema = z
 
       return Number.isFinite(n) ? Math.min(n, 20) : val;
     }, z.coerce.number().min(1).max(20).optional()),
+    // #000001 is the legacy "not set" sentinel from <sdpi-color> era — kept for backward compat
     borderColor: z.preprocess(
       (val) => (val === "" || val === "#000001" || val === null || val === undefined ? undefined : val),
       z.string().optional(),

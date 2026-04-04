@@ -102,18 +102,37 @@ Value type: array/Set of selected option values — NOT individual booleans.
 
 Persisted value example: `{"fav_numbers": ["1", "3"]}`
 
-### `<sdpi-color>` — Color Picker
+### `<sdpi-color>` — Color Picker (DEPRECATED)
 
-Value type: hex string (e.g., `"#00aaff"`).
+**Replaced by `<ird-color-picker>` from `pi-components.js`.** Do not use `<sdpi-color>` in new code. The native component has no "not set" state and required the `#000001` sentinel hack.
+
+### `<ird-color-picker>` — Color Picker (Custom)
+
+Custom component from `pi-components.js`. Supports a "not set" state, inline hex display, and built-in clear button.
+
+Value type: hex string (e.g., `"#00aaff"`) or empty string `""` for "not set".
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `setting` | `string` | Settings key. |
-| `default` | `string` | Default hex color. |
+| `setting` | `string` | Settings key. Supports dot-notation for nested paths. |
+| `default` | `string` | Default hex color when no saved value exists. |
+| `global` | `boolean` | When present, persists to global settings. |
 
 ```html
-<sdpi-color setting="selected_color" default="#00aaff"></sdpi-color>
+<sdpi-item label="Background">
+  <ird-color-picker id="my-color" setting="colorOverrides.backgroundColor"></ird-color-picker>
+</sdpi-item>
+
+<!-- Global setting -->
+<ird-color-picker id="global-bg" setting="colorBackgroundColor" global></ird-color-picker>
 ```
+
+Features:
+- **"Not set" state**: White swatch with red diagonal line (Illustrator-style). Stores empty string `""`.
+- **Inline hex display**: Editable text field next to the swatch. Accepts 3/6-digit hex with or without `#`.
+- **Clear button**: Built-in `×` button to reset to "not set".
+- **Legacy compat**: Normalizes stored `#000001` sentinel values to `""` on load.
+- **Preset button compat**: Works with `.value` setter + `change` event dispatch pattern.
 
 ### `<sdpi-select>` — Dropdown
 
@@ -474,6 +493,7 @@ Use `__MSG_{key}__` template syntax in text attributes (e.g., `label="__MSG_name
 | `<sdpi-checkbox>` | `boolean` | No | No |
 | `<sdpi-checkbox-list>` | `Set` (array) | Yes | `<option>` |
 | `<sdpi-color>` | hex `string` | No | No |
+| `<ird-color-picker>` | hex `string` or `""` | No | No |
 | `<sdpi-select>` | `string`/`number`/`boolean` | Yes | `<option>`, `<optgroup>` |
 | `<sdpi-radio>` | `string`/`number`/`boolean` | Yes | `<option>` |
 | `<sdpi-range>` | `number` | No | `min`, `max` |

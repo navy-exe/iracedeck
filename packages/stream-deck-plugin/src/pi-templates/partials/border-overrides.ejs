@@ -24,12 +24,7 @@
       '<sdpi-range setting="borderOverrides.borderWidth" min="1" max="20" step="1" default="7" showlabels></sdpi-range>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-color" class="hidden" label="Color">' +
-      '<div style="display:flex;align-items:center;gap:6px;">' +
-      '<sdpi-color id="ird-border-color-picker" setting="borderOverrides.borderColor" default="' + defaultColor + '"></sdpi-color>' +
-      '<a href="#" class="ird-color-reset" data-input="ird-border-color-picker" data-default="#000001" ' +
-        'style="font-size:10px;color:#808080;text-decoration:none;white-space:nowrap;" ' +
-        'title="Reset to default">&#x21BA;</a>' +
-      '</div>' +
+      '<ird-color-picker id="ird-border-color-picker" setting="borderOverrides.borderColor" default="' + defaultColor + '"></ird-color-picker>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-glow" class="hidden" label="Show Glow">' +
       '<sdpi-select id="ird-border-glow-select" setting="borderOverrides.glowEnabled" default="inherit">' +

@@ -13,6 +13,9 @@
 // Autocomplete Input - text input with dropdown suggestions
 export { AutocompleteInput } from "./autocomplete-input.js";
 
+// Color Picker - custom color picker with "not set" state and inline hex display
+export { ColorPicker } from "./color-picker.js";
+
 // Key Binding Input - click-to-record keyboard shortcut input
 export {
   KeyBindingInput,
