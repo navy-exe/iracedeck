@@ -173,50 +173,14 @@ Always include both scripts in PI HTML files:
 - Keyboard mode stores: `{"type":"keyboard","key":"f1","modifiers":[]}`
 - SimHub mode stores: `{"type":"simhub","role":"My Role Name"}`
 
-### sdpi-checkbox Pitfalls
+### sdpi-components Library
 
-**NEVER use `default="false"`** on `sdpi-checkbox`. HTML attributes are always strings, so `"false"` is truthy and the checkbox will render as checked:
+See `@.claude/rules/sdpi-components.md` for the full component reference (attributes, value types, helpers, communication).
 
-```html
-<!-- BAD: checkbox starts checked because "false" is a truthy string -->
-<sdpi-checkbox setting="myBool" default="false"></sdpi-checkbox>
-
-<!-- GOOD: omit default entirely — checkbox starts unchecked -->
-<sdpi-checkbox setting="myBool"></sdpi-checkbox>
-```
-
-**Zod boolean schema**: `z.coerce.boolean()` uses `Boolean(value)`, so `Boolean("false")` === `true`. Use a union+transform instead:
-
-```typescript
-// BAD: z.coerce.boolean() — "false" string becomes true
-positionShowTotal: z.coerce.boolean().default(false),
-
-// GOOD: explicit string-to-boolean transform
-positionShowTotal: z
-  .union([z.boolean(), z.string()])
-  .transform((val) => val === true || val === "true")
-  .default(false),
-```
-
-### sdpi-select Event Handling
-
-**IMPORTANT**: `sdpi-select` fires `input` events, NOT standard `change` events. For reliable value change detection, use this pattern:
-
-```javascript
-// Listen to both events for maximum compatibility
-select.addEventListener("change", handleChange);
-select.addEventListener("input", handleChange);
-
-// Polling fallback - sdpi-select events can be unreliable
-let lastValue = select.value || "default";
-setInterval(() => {
-  const currentValue = select.value;
-  if (currentValue && currentValue !== lastValue) {
-    lastValue = currentValue;
-    handleChange();
-  }
-}, 100);
-```
+Key pitfalls summarized here for quick reference:
+- **`sdpi-checkbox`**: Never use `default="false"` — it renders checked (HTML attribute is truthy string). Omit `default` for unchecked.
+- **`sdpi-select`**: Fires `input` events, not `change`. Listen to both + polling fallback for reliable detection.
+- **Zod booleans**: `z.coerce.boolean()` treats `"false"` as `true`. Use `z.union([z.boolean(), z.string()]).transform(val => val === true || val === "true")`.
 
 ### Conditional Visibility in Property Inspector
 
@@ -236,24 +200,14 @@ sdpi-components are web components. To show/hide elements based on select values
 
 <script>
 async function initialize() {
-  // Wait for web components to be defined
   await customElements.whenDefined("sdpi-select");
-
   const modeSelect = document.getElementById("mode-select");
   if (modeSelect) {
-    // Initial update
     updateVisibility(modeSelect.value || "direct");
-
-    // sdpi-select fires 'input' events (not 'change'), listen to both for safety
-    modeSelect.addEventListener("change", (ev) => {
-      updateVisibility(ev.target.value);
-    });
-    modeSelect.addEventListener("input", (ev) => {
-      updateVisibility(ev.target.value);
-    });
-
-    // Polling fallback for reliable detection
-    let lastMode = modeSelect.value || "direct";
+    modeSelect.addEventListener("change", (ev) => updateVisibility(ev.target.value));
+    modeSelect.addEventListener("input", (ev) => updateVisibility(ev.target.value));
+    // Polling fallback — sdpi-select events can be unreliable
+    let lastMode = modeSelect.value || "default";
     setInterval(() => {
       const currentMode = modeSelect.value;
       if (currentMode && currentMode !== lastMode) {
@@ -266,19 +220,12 @@ async function initialize() {
 
 function updateVisibility(mode) {
   const item = document.getElementById("conditional-item");
-  if (mode === "direct") {
-    item?.classList.add("hidden");
-  } else {
-    item?.classList.remove("hidden");
-  }
+  if (mode === "direct") item?.classList.add("hidden");
+  else item?.classList.remove("hidden");
 }
 
-// Initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initialize);
-} else {
-  initialize();
-}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize);
+else initialize();
 </script>
 
 <style>

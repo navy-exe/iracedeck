@@ -44,6 +44,7 @@ You can import or reference specific rule files from other markdown using `@.cla
 - `logging.md`: Log levels, info vs debug separation, `createScope()` usage, and dependency-injected logger patterns.
 - `pi-templates.md`: EJS templates for Property Inspector HTML: directory structure, available partials, Rollup plugin config, key bindings JSON format.
 - `plugin-structure.md`: Plugin package naming conventions, Rollup config, native module handling (`keysender`), app monitoring, and critical initialization order in `plugin.ts`.
+- `sdpi-components.md`: Comprehensive reference for the `sdpi-components` web component library used in all Property Inspectors: every component's attributes and value types, Stream Deck client communication helpers, data sources, and localization. Scoped to PI files.
 - `stream-deck-actions.md`: Action requirements (`ConnectionStateAwareAction`), SDK-first principle, PI components (`sdpi-select` quirks, conditional visibility), global settings setup, and encoder support.
 - `terminology-and-refs.md`: Project terminology (Property Inspector, Key Icon, Encoder, Action ID) and external reference links.
 - `testing.md`: Vitest conventions, test file naming, mocking patterns for Stream Deck SDK, and action test structure.
