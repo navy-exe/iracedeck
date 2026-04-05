@@ -205,13 +205,16 @@ export class RangeInput extends HTMLElement {
       this.notifyChange();
     });
 
-    // Number input: sync to range on input
+    // Number input: sync to range on input (skip empty to allow typing)
     this.numberInput!.addEventListener("input", () => {
+      if (this.numberInput!.value === "") return;
+
       const clamped = this.clampValue(this.numberInput!.value);
 
       if (clamped !== null) {
         this.currentValue = clamped;
         this.rangeInput!.value = this.currentValue;
+        this.numberInput!.value = this.currentValue;
         this.notifyChange();
       }
     });

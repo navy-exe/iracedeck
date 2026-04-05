@@ -140,6 +140,33 @@ describe("ird-range-input", () => {
       expect(rangeInput.value).toBe("8");
       expect((range as HTMLInputElement).value).toBe("8");
     });
+
+    it("should not sync when number input is empty (user clearing to retype)", () => {
+      const rangeInput = range.querySelector('input[type="range"]') as HTMLInputElement;
+      const numberInput = range.querySelector('input[type="number"]') as HTMLInputElement;
+
+      // Set initial value
+      (range as HTMLInputElement).value = "10";
+
+      // Simulate user clearing the field to type a new number
+      numberInput.value = "";
+      numberInput.dispatchEvent(new Event("input"));
+
+      // Should not change the component value or range slider
+      expect((range as HTMLInputElement).value).toBe("10");
+      expect(rangeInput.value).toBe("10");
+    });
+
+    it("should write clamped value back to number input on input event", () => {
+      const numberInput = range.querySelector('input[type="number"]') as HTMLInputElement;
+
+      numberInput.value = "25";
+      numberInput.dispatchEvent(new Event("input"));
+
+      // Clamped to max (20), written back to number input
+      expect(numberInput.value).toBe("20");
+      expect((range as HTMLInputElement).value).toBe("20");
+    });
   });
 
   describe("value clamping", () => {
