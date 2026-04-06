@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
   <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"REPLAY\nFASTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":42,"y":12,"width":68,"height":70}}</desc>
 
-    <g fill="{{graphic1Color}}" transform="translate(24, 14) scale(0.75)">
-      <ellipse cx="60" cy="62" rx="28" ry="20"/>
-      <circle cx="94" cy="50" r="14"/>
-      <ellipse cx="84" cy="22" rx="5" ry="18" transform="rotate(-10, 84, 22)"/>
-      <ellipse cx="98" cy="18" rx="5" ry="20" transform="rotate(10, 98, 18)"/>
-      <circle cx="100" cy="47" r="2.5" fill="#2a3a4a"/>
-      <ellipse cx="82" cy="78" rx="5" ry="10"/>
-      <ellipse cx="38" cy="72" rx="10" ry="12" transform="rotate(15, 38, 72)"/>
-      <circle cx="30" cy="54" r="6"/>
-    </g>
+    
+      <ellipse fill="{{graphic1Color}}" cx="69" cy="60.5" rx="21" ry="15"/>
+      <circle fill="{{graphic1Color}}" cx="94.5" cy="51.5" r="10.5"/>
+      <ellipse fill="{{graphic1Color}}" cx="87" cy="30.5" rx="3.75" ry="13.5"/>
+      <ellipse fill="{{graphic1Color}}" cx="97.5" cy="27.5" rx="3.75" ry="15"/>
+      <circle cx="99" cy="49.25" r="1.88" fill="#2a3a4a"/>
+      <ellipse fill="{{graphic1Color}}" cx="85.5" cy="72.5" rx="3.75" ry="7.5"/>
+      <ellipse fill="{{graphic1Color}}" cx="52.5" cy="68" rx="7.5" ry="9"/>
+      <circle fill="{{graphic1Color}}" cx="46.5" cy="54.5" r="4.5"/>
+    
 
 </svg>
