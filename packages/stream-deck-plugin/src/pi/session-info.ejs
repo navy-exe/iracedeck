@@ -77,6 +77,7 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor'], defaults: { backgroundColor: '#2a3444', textColor: '#ffffff' } }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['session-info'] }) %>
+		<%- include('graphic-overrides') %>
 		<%- include('common-settings') %>
 
 		<%- include('section-header', { title: 'Global Settings' }) %>
@@ -84,6 +85,7 @@
 		<%- include('global-title-defaults') %>
 		<%- include('global-color-defaults') %>
 		<%- include('global-border-defaults') %>
+		<%- include('global-graphic-defaults') %>
 		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>

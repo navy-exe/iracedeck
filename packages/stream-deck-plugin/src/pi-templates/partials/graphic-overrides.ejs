@@ -1,0 +1,74 @@
+<!--
+  Graphic Overrides Component
+
+  Provides per-action graphic scale settings with Inherit/Icon Default/Override dropdown.
+  "Inherit" (default) uses the global graphic scale setting.
+  "Icon Default" uses 100% (ignores global).
+  "Override" shows a range slider for custom scale value.
+-->
+<%- include('accordion', {
+  title: 'Graphic Overrides',
+  open: false,
+  content:
+    '<sdpi-item label="Scale Mode">' +
+      '<sdpi-select id="ird-graphic-scale-mode" setting="graphicOverrides.scaleMode" default="inherit">' +
+        '<option value="inherit">Inherit</option>' +
+        '<option value="default">Icon Default</option>' +
+        '<option value="override">Override</option>' +
+      '</sdpi-select>' +
+    '</sdpi-item>' +
+    '<sdpi-item id="ird-graphic-scale-value" class="hidden" label="Scale %">' +
+      '<ird-range-input setting="graphicOverrides.scale" min="50" max="150" step="5" default="100" showlabels></ird-range-input>' +
+    '</sdpi-item>'
+}) %>
+
+<script>
+(function() {
+  async function initGraphicOverrides() {
+    await customElements.whenDefined('sdpi-select');
+    var modeSelect = document.getElementById('ird-graphic-scale-mode');
+    if (!modeSelect) return;
+
+    function updateVisibility() {
+      var showScale = modeSelect.value === 'override';
+      var scaleEl = document.getElementById('ird-graphic-scale-value');
+      if (scaleEl) scaleEl.classList.toggle('hidden', !showScale);
+    }
+
+    var prevVal = modeSelect.value || 'inherit';
+
+    updateVisibility();
+
+    function onChange() {
+      var cur = modeSelect.value || 'inherit';
+      // Clear scale value when switching away from override
+      if (prevVal === 'override' && cur !== 'override') {
+        var rangeEl = document.querySelector('[setting="graphicOverrides.scale"]');
+        if (rangeEl && rangeEl.value !== '') {
+          rangeEl.value = '';
+          rangeEl.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+      prevVal = cur;
+      updateVisibility();
+    }
+
+    modeSelect.addEventListener('change', onChange);
+    modeSelect.addEventListener('input', onChange);
+
+    // Polling fallback
+    setInterval(function() {
+      var cur = modeSelect.value || 'inherit';
+      if (cur !== prevVal) {
+        onChange();
+      }
+    }, 100);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGraphicOverrides);
+  } else {
+    initGraphicOverrides();
+  }
+})();
+</script>
