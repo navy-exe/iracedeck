@@ -49,7 +49,7 @@ describe("resolveTitleSettings", () => {
 
   it("should use per-action overrides over global", () => {
     const global: GlobalTitleSettings = { fontSize: 24, bold: false };
-    const action: TitleOverrides = { fontSize: 30 };
+    const action: TitleOverrides = { fontSizeEnabled: true, fontSize: 30 };
     const result = resolveTitleSettings(GRAPHIC_WITH_TITLE, global, action);
     expect(result.fontSize).toBe(30);
     expect(result.bold).toBe(false);
