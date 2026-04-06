@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a1a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"TOGGLE\nRF BRAKE"},"border":{"color":"#3a3a6a"},"artworkBounds":{"x":42,"y":18,"width":60,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a1a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"TOGGLE\nRF BRAKE"},"border":{"color":"#3a3a6a"},"artworkBounds":{"x":40,"y":16,"width":64,"height":64}}</desc>
 
     <circle cx="72" cy="48" r="28" fill="none" stroke="#ffffff" stroke-width="4"/>
     <circle cx="72" cy="48" r="14" fill="none" stroke="#888888" stroke-width="2"/>

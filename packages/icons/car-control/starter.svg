@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff"},"title":{"text":"ENGINE\nSTART"},"border":{"color":"#5a6a5a"},"artworkBounds":{"x":40,"y":16,"width":64,"height":64}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff"},"title":{"text":"ENGINE\nSTART"},"border":{"color":"#5a6a5a"},"artworkBounds":{"x":38,"y":14,"width":68,"height":68}}</desc>
 
     <circle cx="72" cy="48" r="30" fill="#e74c3c"/>
     <circle cx="72" cy="48" r="24" fill="#c0392b"/>

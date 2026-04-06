@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"TO START\nRESET"},"border":{"color":"#714474"},"artworkBounds":{"x":26,"y":18,"width":56,"height":44}}</desc>
+  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"TO START\nRESET"},"border":{"color":"#714474"},"artworkBounds":{"x":24,"y":16,"width":60,"height":48}}</desc>
 
     <path d="M72 20 A32 32 0 1 1 40 52" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
     <polygon points="40,38 28,54 52,54" fill="#ffffff"/>

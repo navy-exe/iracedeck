@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"TOGGLE\nLOGGING"},"border":{"color":"#6a5a6a"},"artworkBounds":{"x":26,"y":12,"width":92,"height":58}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"TOGGLE\nLOGGING"},"border":{"color":"#6a5a6a"},"artworkBounds":{"x":24,"y":10,"width":96,"height":62}}</desc>
 
     <polyline points="28,56 44,36 60,48 76,24 92,40 108,20" fill="none"
               stroke="{{graphic1Color}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>

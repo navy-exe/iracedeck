@@ -91,6 +91,8 @@ vi.mock("@iracedeck/deck-core", () => ({
     async onWillDisappear() {}
   },
   getCommands: mockGetCommands,
+  applyGraphicTransform: vi.fn((_content: string) => _content),
+  computeGraphicArea: vi.fn(() => ({ x: 8, y: 8, width: 128, height: 128 })),
   extractGraphicContent: vi.fn((svg: string) =>
     svg
       .replace(/<\/?svg[^>]*>/g, "")
@@ -107,6 +109,7 @@ vi.mock("@iracedeck/deck-core", () => ({
   getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
   ICON_BASE_TEMPLATE: "<svg>{{backgroundColor}}|{{borderContent}}|{{graphicContent}}|{{titleContent}}</svg>",
   LogLevel: { Info: 2 },
+  parseIconArtworkBounds: vi.fn(() => undefined),
   generateIconText: vi.fn(
     (opts: { text: string; fontSize: number; fill: string }) => `<text fill="${opts.fill}">${opts.text}</text>`,
   ),

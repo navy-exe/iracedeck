@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a2a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"ABS\nDECREASE"},"border":{"color":"#6a5a3a"},"artworkBounds":{"x":42,"y":22,"width":84,"height":52}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a2a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"ABS\nDECREASE"},"border":{"color":"#6a5a3a"},"artworkBounds":{"x":40,"y":20,"width":88,"height":56}}</desc>
 
     <circle cx="68" cy="48" r="24" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>
     <circle cx="68" cy="48" r="12" fill="none" stroke="#888888" stroke-width="2"/>

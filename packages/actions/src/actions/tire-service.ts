@@ -1,6 +1,8 @@
 import {
+  applyGraphicTransform,
   assembleIcon,
   CommonSettings,
+  computeGraphicArea,
   ConnectionStateAwareAction,
   extractGraphicContent,
   generateBorderParts,
@@ -18,6 +20,7 @@ import {
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  parseIconArtworkBounds,
   renderIconTemplate,
   resolveBorderSettings,
   resolveGraphicSettings,
@@ -323,7 +326,14 @@ export function generateTireServiceSvg(
 
       const rawCarGraphic = extractGraphicContent(toggleTiresCarSvg);
       const colorizedCar = title.showGraphics ? renderIconTemplate(rawCarGraphic, colors) : "";
-      const graphicContent = colorizedCar + "\n" + tireElements;
+      let graphicContent = colorizedCar + "\n" + tireElements;
+
+      const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+      const artworkBounds = parseIconArtworkBounds(toggleTiresCarSvg);
+
+      if (graphicContent && artworkBounds) {
+        graphicContent = applyGraphicTransform(graphicContent, artworkBounds, computeGraphicArea(title), graphic.scale);
+      }
 
       const titleContent = title.showTitle
         ? generateTitleText({

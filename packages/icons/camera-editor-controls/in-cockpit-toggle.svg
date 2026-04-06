@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nIN COCKPIT"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":42,"y":14,"width":60,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nIN COCKPIT"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":40,"y":12,"width":64,"height":64}}</desc>
 
     <circle cx="72" cy="44" r="28" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>
     <circle cx="72" cy="44" r="8" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>

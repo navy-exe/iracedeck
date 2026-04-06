@@ -491,8 +491,8 @@ function processIcon(filePath) {
     return;
   }
 
-  // Add 2px padding, round to integers
-  const PAD = 2;
+  // Add 4px padding to account for stroke widths the parser may underestimate
+  const PAD = 4;
   const artworkBounds = {
     x: Math.max(0, Math.floor(bounds.minX - PAD)),
     y: Math.max(0, Math.floor(bounds.minY - PAD)),

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"CAMERA\nNEXT"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":34,"y":22,"width":92,"height":52}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"CAMERA\nNEXT"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":32,"y":20,"width":96,"height":56}}</desc>
 
     <rect x="36" y="28" width="44" height="36" rx="4" fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>
     <polygon points="80,34 104,24 104,72 80,62" fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linejoin="round"/>

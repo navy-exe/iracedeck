@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"MUTE\nSPOTTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":34,"y":22,"width":68,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"MUTE\nSPOTTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":32,"y":20,"width":72,"height":64}}</desc>
 
     <path d="M40 40v24h12l16 16V24l-16 16h-12z" fill="none" stroke="#888888" stroke-width="4" stroke-linejoin="round"/>
     <path d="M80 34a16 16 0 0 1 0 36" fill="none" stroke="#888888" stroke-width="3" stroke-linecap="round"/>

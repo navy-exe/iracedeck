@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nSHOW CAM"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":26,"y":14,"width":92,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nSHOW CAM"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":24,"y":12,"width":96,"height":64}}</desc>
 
     <path d="M28 44 Q72 16 116 44 Q72 72 28 44 Z" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>
     <circle cx="72" cy="44" r="12" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>

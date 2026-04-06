@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"RESET POINT\nSET"},"border":{"color":"#714474"},"artworkBounds":{"x":38,"y":12,"width":68,"height":72}}</desc>
+  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"RESET POINT\nSET"},"border":{"color":"#714474"},"artworkBounds":{"x":36,"y":10,"width":72,"height":76}}</desc>
 
     <path d="M72 14 C52 14 40 28 40 44 C40 64 72 82 72 82 C72 82 104 64 104 44 C104 28 92 14 72 14 Z"
           fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>

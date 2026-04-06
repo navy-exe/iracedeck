@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#8B1A1A","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAUTION\nYELLOW"},"border":{"color":"#bb4a4a"},"artworkBounds":{"x":38,"y":22,"width":68,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#8B1A1A","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAUTION\nYELLOW"},"border":{"color":"#bb4a4a"},"artworkBounds":{"x":36,"y":20,"width":72,"height":64}}</desc>
     <polygon points="72,24 104,80 40,80" fill="none" stroke="{{graphic1Color}}" stroke-width="5" stroke-linejoin="round"/>
     <line x1="72" y1="46" x2="72" y2="62" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round"/>
     <circle cx="72" cy="70" r="3" fill="{{graphic1Color}}"/>

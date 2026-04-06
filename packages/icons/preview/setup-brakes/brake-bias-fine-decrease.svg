@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a2a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"BIAS FINE\nDECREASE"},"border":{"color":"#6a5a3a"},"artworkBounds":{"x":26,"y":30,"width":92,"height":36}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a2a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"BIAS FINE\nDECREASE"},"border":{"color":"#6a5a3a"},"artworkBounds":{"x":24,"y":28,"width":96,"height":40}}</desc>
 
     <rect x="28" y="40" width="88" height="20" rx="6" fill="none" stroke="#888888" stroke-width="3"/>
     <rect x="28" y="40" width="52" height="20" rx="6" fill="#e74c3c" opacity="0.4"/>

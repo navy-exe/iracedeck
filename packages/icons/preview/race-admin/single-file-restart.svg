@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#8B1A1A","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"RESTART\nSINGLE"},"border":{"color":"#bb4a4a"},"artworkBounds":{"x":52,"y":12,"width":40,"height":78}}</desc>
+  <desc>{"colors":{"backgroundColor":"#8B1A1A","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"RESTART\nSINGLE"},"border":{"color":"#bb4a4a"},"artworkBounds":{"x":50,"y":10,"width":44,"height":82}}</desc>
     <rect x="62" y="22" width="20" height="12" rx="4" fill="#ffffff"/>
     <rect x="62" y="40" width="20" height="12" rx="4" fill="#ffffff"/>
     <rect x="62" y="58" width="20" height="12" rx="4" fill="#ffffff"/>

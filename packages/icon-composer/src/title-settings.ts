@@ -454,6 +454,7 @@ export function applyGraphicTransform(
   availableArea: GraphicArea,
   userScale: number,
 ): string {
+  // Whichever dimension is larger must fit — the other scales proportionally
   const fitScale = Math.min(availableArea.width / artworkBounds.width, availableArea.height / artworkBounds.height);
   // Base scale 0.85 gives comfortable padding at 100% user setting
   const BASE_SCALE = 0.85;

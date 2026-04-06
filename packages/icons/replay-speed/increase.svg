@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"REPLAY\nFASTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":44,"y":28,"width":56,"height":48}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"REPLAY\nFASTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":40,"y":24,"width":64,"height":56}}</desc>
 
     <polyline points="44,28 72,52 44,76" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
     <polyline points="72,28 100,52 72,76" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>

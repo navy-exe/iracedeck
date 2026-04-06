@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nSHOT RNG"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":26,"y":30,"width":92,"height":28}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nSHOT RNG"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":24,"y":28,"width":96,"height":32}}</desc>
 
     <line x1="40" y1="44" x2="104" y2="44" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
     <line x1="40" y1="32" x2="40" y2="56" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>

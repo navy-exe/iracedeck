@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"VOL UP\nSPOTTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":38,"y":22,"width":88,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"VOL UP\nSPOTTER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":36,"y":20,"width":92,"height":64}}</desc>
 
     <path d="M40 40v24h12l16 16V24l-16 16h-12z" fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linejoin="round"/>
     <path d="M80 34a16 16 0 0 1 0 36" fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round"/>
