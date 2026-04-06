@@ -312,7 +312,7 @@ export function generateTireServiceSvg(
 
       const rawCarGraphic = extractGraphicContent(toggleTiresCarSvg);
       const colorizedCar = title.showGraphics ? renderIconTemplate(rawCarGraphic, colors) : "";
-      let graphicContent = colorizedCar + "\n" + tireElements;
+      let graphicContent = title.showGraphics ? colorizedCar + "\n" + tireElements : "";
 
       const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
       const artworkBounds = parseIconArtworkBounds(toggleTiresCarSvg);

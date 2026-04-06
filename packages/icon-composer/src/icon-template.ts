@@ -48,8 +48,8 @@ export function renderIconTemplate(template: string, values: Record<string, stri
   let result = template;
 
   for (const [key, value] of Object.entries(values)) {
-    // Replace all occurrences of {{key}} with value
-    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
+    // split/join avoids String.replace special $-sequences ($&, $`, $', etc.)
+    result = result.split(`{{${key}}}`).join(value);
   }
 
   return result;

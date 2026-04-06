@@ -320,7 +320,17 @@ describe("resolveTitleSettings", () => {
   });
 
   it("should use action overrides over global", () => {
-    const result = resolveTitleSettings(GRAPHIC, { fontSize: 20 }, { fontSize: 30 });
+    const result = resolveTitleSettings(GRAPHIC, { fontSize: 20 }, { fontSizeEnabled: true, fontSize: 30 });
     expect(result.fontSize).toBe(30);
+  });
+
+  it("should ignore action fontSize when fontSizeEnabled is false", () => {
+    const result = resolveTitleSettings(GRAPHIC, { fontSize: 20 }, { fontSizeEnabled: false, fontSize: 30 });
+    expect(result.fontSize).toBe(20);
+  });
+
+  it("should ignore action fontSize when fontSizeEnabled is undefined", () => {
+    const result = resolveTitleSettings(GRAPHIC, { fontSize: 20 }, { fontSize: 30 });
+    expect(result.fontSize).toBe(20);
   });
 });

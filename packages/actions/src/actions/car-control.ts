@@ -418,7 +418,7 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
 
-/** Artwork bounds for dynamic icon content (pit limiter speed sign: circle r=38 at 72,46) */
+/** Bounding box for pit-limiter dynamic content (derived from circle r=38 centered at 72,46) */
 const DYNAMIC_ICON_BOUNDS = { x: 34, y: 8, width: 76, height: 76 };
 
 function renderDynamicIcon(

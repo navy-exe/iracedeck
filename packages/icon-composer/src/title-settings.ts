@@ -204,7 +204,7 @@ export function resolveTitleSettings(
     titleText,
     bold: resolve(actionOverrides?.bold, globalTitleSettings.bold, undefined, TITLE_DEFAULTS.bold),
     fontSize: resolve(
-      actionOverrides?.fontSize,
+      actionOverrides?.fontSizeEnabled ? actionOverrides?.fontSize : undefined,
       globalTitleSettings.fontSize,
       iconDefaults.fontSize,
       TITLE_DEFAULTS.fontSize,
@@ -377,15 +377,20 @@ export function resolveGraphicSettings(
   }
 
   if (actionOverrides?.scaleMode === "override") {
-    return { scale: actionOverrides.scale ?? GRAPHIC_DEFAULTS.scale };
+    return { scale: clampScale(actionOverrides.scale ?? GRAPHIC_DEFAULTS.scale) };
   }
 
   // Inherit from global
   if (globalSettings.scale !== undefined && globalSettings.scale !== "default") {
-    return { scale: globalSettings.scale };
+    return { scale: clampScale(globalSettings.scale) };
   }
 
   return { scale: GRAPHIC_DEFAULTS.scale };
+}
+
+/** Clamp scale to valid 50–150 range for safety (global settings are not Zod-validated). */
+function clampScale(value: number): number {
+  return Math.max(50, Math.min(150, value));
 }
 
 // ---------------------------------------------------------------------------
