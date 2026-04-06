@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"RF SHOCK\nDECREASE"},"border":{"color":"#3a6a3a"},"artworkBounds":{"x":16,"y":20,"width":68,"height":64}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"RF SHOCK\nDECREASE"},"border":{"color":"#3a6a3a"},"artworkBounds":{"x":19,"y":23,"width":62,"height":58}}</desc>
 
     <rect x="60" y="24" width="20" height="32" rx="4" fill="none" stroke="{{graphic1Color}}" stroke-width="3"/>
     <line x1="70" y1="56" x2="70" y2="80" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round"/>

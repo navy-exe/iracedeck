@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"NEXT\nLAP"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":38,"y":22,"width":68,"height":52}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"NEXT\nLAP"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":41,"y":25,"width":62,"height":46}}</desc>
 
     <path d="M 84,36 A 24,24 0 1,1 60,28" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round"/>
     <polygon points="84,26 84,46 96,36" fill="#2ecc71"/>

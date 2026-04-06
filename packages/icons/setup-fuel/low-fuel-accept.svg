@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a3a1a","textColor":"#ffffff"},"title":{"text":"LOW FUEL\nACCEPT"},"border":{"color":"#6a6a3a"},"artworkBounds":{"x":42,"y":20,"width":72,"height":54}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a3a1a","textColor":"#ffffff"},"title":{"text":"LOW FUEL\nACCEPT"},"border":{"color":"#6a6a3a"},"artworkBounds":{"x":45,"y":23,"width":66,"height":48}}</desc>
 
     <path d="M64 24 C64 24 48 44 48 54 C48 64 54 70 64 70 C74 70 80 64 80 54 C80 44 64 24 64 24Z"
           fill="none" stroke="#888888" stroke-width="3"/>

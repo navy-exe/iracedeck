@@ -491,8 +491,8 @@ function processIcon(filePath) {
     return;
   }
 
-  // Add 4px padding to account for stroke widths the parser may underestimate
-  const PAD = 4;
+  // Add 1px padding — tighter bounds produce ~5% larger icons
+  const PAD = 1;
   const artworkBounds = {
     x: Math.max(0, Math.floor(bounds.minX - PAD)),
     y: Math.max(0, Math.floor(bounds.minY - PAD)),

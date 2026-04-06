@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"FOCUS\nYOUR CAR"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":36,"y":12,"width":72,"height":72}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"FOCUS\nYOUR CAR"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":39,"y":15,"width":66,"height":66}}</desc>
 
     <circle cx="72" cy="48" r="24" fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>
     <circle cx="72" cy="48" r="6" fill="{{graphic1Color}}"/>

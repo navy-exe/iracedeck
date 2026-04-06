@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"LOOK\nUP"},"border":{"color":"#3a5a6a"},"artworkBounds":{"x":32,"y":12,"width":88,"height":68}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"LOOK\nUP"},"border":{"color":"#3a5a6a"},"artworkBounds":{"x":35,"y":15,"width":82,"height":62}}</desc>
 
     <path d="M36 52 Q72 28 108 52 Q72 76 36 52 Z" fill="none" stroke="#ffffff" stroke-width="3"/>
     <circle cx="72" cy="52" r="10" fill="none" stroke="#ffffff" stroke-width="3"/>

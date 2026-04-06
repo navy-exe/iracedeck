@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"SET\nCAM STATE"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":44,"y":20,"width":56,"height":56}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff"},"title":{"text":"SET\nCAM STATE"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":47,"y":23,"width":50,"height":50}}</desc>
 
     <circle cx="72" cy="48" r="16" fill="none" stroke="#888888" stroke-width="4"/>
     <circle cx="72" cy="48" r="6" fill="#888888"/>

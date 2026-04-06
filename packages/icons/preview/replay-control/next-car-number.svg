@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAR #\nNEXT"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":10,"y":32,"width":122,"height":42}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAR #\nNEXT"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":13,"y":35,"width":116,"height":36}}</desc>
 
     <g transform="translate(128, -3) scale(-0.34, 0.34)" fill="#ffffff">
       <path d="M37.796,201.027c0.582,0.938,1.245,1.803,1.934,2.651c5.023,6.255,12.637,10.336,21.274,10.336 c8.575,0,16.13-4.019,21.15-10.19c0.696-0.85,1.375-1.699,1.962-2.631c0.536-0.839,0.992-1.729,1.432-2.631 c1.771-3.624,2.848-7.643,2.848-11.951c0-15.125-12.265-27.395-27.397-27.395c-15.128,0-27.393,12.27-27.393,27.395 c0,4.236,1.038,8.192,2.752,11.766C36.794,199.293,37.265,200.179,37.796,201.027z"/>

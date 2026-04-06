@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nBND FENCE"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":28,"y":12,"width":84,"height":60}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOGGLE\nBND FENCE"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":31,"y":15,"width":78,"height":54}}</desc>
 
     <line x1="32" y1="68" x2="32" y2="28" stroke="{{graphic1Color}}" stroke-width="3" stroke-linecap="round"/>
     <line x1="60" y1="68" x2="60" y2="28" stroke="{{graphic1Color}}" stroke-width="3" stroke-linecap="round"/>

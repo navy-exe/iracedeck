@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"BOOST\nINCREASE"},"border":{"color":"#5a6a3a"},"artworkBounds":{"x":32,"y":28,"width":88,"height":48}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"BOOST\nINCREASE"},"border":{"color":"#5a6a3a"},"artworkBounds":{"x":35,"y":31,"width":82,"height":42}}</desc>
 
     <path d="M36,68 A32,32 0 0,1 100,68" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
     <line x1="68" y1="68" x2="52" y2="40" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>

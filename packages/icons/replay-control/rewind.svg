@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"\nREWIND"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":36,"y":24,"width":68,"height":56}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"\nREWIND"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":39,"y":27,"width":62,"height":50}}</desc>
 
     <polygon points="100,28 68,52 100,76" fill="{{graphic1Color}}"/>
     <polygon points="72,28 40,52 72,76" fill="{{graphic1Color}}"/>

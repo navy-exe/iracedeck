@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"SECTOR\nSTART"},"border":{"color":"#714474"},"artworkBounds":{"x":38,"y":12,"width":66,"height":78}}</desc>
+  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"SECTOR\nSTART"},"border":{"color":"#714474"},"artworkBounds":{"x":41,"y":15,"width":60,"height":72}}</desc>
 
     <line x1="48" y1="16" x2="48" y2="80" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round"/>
     <polygon points="52,16 100,30 52,44" fill="#2ecc71"/>
