@@ -337,7 +337,7 @@ export function resolveBorderSettings(
 // ---------------------------------------------------------------------------
 
 export interface ResolvedGraphicSettings {
-  /** Scale percentage (50–150). 100 = fit artwork to available area exactly. */
+  /** Scale percentage (50–150). 100 = 85% of available area (comfortable fit). */
   scale: number;
 }
 
@@ -456,7 +456,9 @@ function applyGraphicTransform(
   userScale: number,
 ): string {
   const fitScale = Math.min(availableArea.width / artworkBounds.width, availableArea.height / artworkBounds.height);
-  const scale = fitScale * (userScale / 100);
+  // Base scale 0.85 gives comfortable padding at 100% user setting
+  const BASE_SCALE = 0.85;
+  const scale = fitScale * BASE_SCALE * (userScale / 100);
 
   const areaCenterX = availableArea.x + availableArea.width / 2;
   const areaCenterY = availableArea.y + availableArea.height / 2;
