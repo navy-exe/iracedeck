@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"DRIVER HEIGHT\nUP"},"border":{"color":"#3a5a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"DRIVER HEIGHT\nUP"},"border":{"color":"#3a5a6a"},"artworkBounds":{"x":26,"y":20,"width":94,"height":50}}</desc>
 
     <circle cx="36" cy="40" r="5" fill="none" stroke="#888888" stroke-width="3"/>
     <line x1="36" y1="46" x2="36" y2="58" stroke="#888888" stroke-width="3" stroke-linecap="round"/>

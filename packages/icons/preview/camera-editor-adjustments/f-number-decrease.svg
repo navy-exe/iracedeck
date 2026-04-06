@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"F-NUMBER\n-"},"border":{"color":"#3a5a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"F-NUMBER\n-"},"border":{"color":"#3a5a6a"},"artworkBounds":{"x":42,"y":14,"width":76,"height":60}}</desc>
 
     <circle cx="72" cy="44" r="28" fill="none" stroke="#888888" stroke-width="2"/>
     <polygon points="72,20 88,28 88,60 72,68 56,60 56,28" fill="none" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>

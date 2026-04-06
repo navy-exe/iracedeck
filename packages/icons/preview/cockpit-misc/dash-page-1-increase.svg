@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"NEXT\nDASH PG 1"},"border":{"color":"#5a5a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"NEXT\nDASH PG 1"},"border":{"color":"#5a5a6a"},"artworkBounds":{"x":28,"y":22,"width":90,"height":52}}</desc>
 
     <rect x="32" y="24" width="80" height="48" rx="6" fill="none" stroke="#ffffff" stroke-width="3"/>
     <text x="72" y="52" text-anchor="middle" dominant-baseline="central"

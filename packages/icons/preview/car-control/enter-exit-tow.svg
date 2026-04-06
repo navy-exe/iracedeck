@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOW\nENTER/EXIT"},"border":{"color":"#5a6a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TOW\nENTER/EXIT"},"border":{"color":"#5a6a5a"},"artworkBounds":{"x":38,"y":30,"width":68,"height":54}}</desc>
 
     <rect x="40" y="32" width="64" height="28" rx="8" fill="none" stroke="#ffffff" stroke-width="3"/>
     <circle cx="56" cy="60" r="6" fill="none" stroke="#888888" stroke-width="3"/>

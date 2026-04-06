@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nLF SUSP"},"border":{"color":"#5a7a8a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nLF SUSP"},"border":{"color":"#5a7a8a"},"artworkBounds":{"x":44,"y":26,"width":46,"height":73}}</desc>
 
     <g transform="translate(38, 28) scale(1.447)">
       <path d="M29.395,0H17.636c-3.117,0-5.643,3.467-5.643,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759

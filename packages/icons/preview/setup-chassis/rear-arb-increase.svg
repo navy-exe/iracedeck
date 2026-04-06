@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"REAR ARB\nINCREASE"},"border":{"color":"#3a6a3a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"REAR ARB\nINCREASE"},"border":{"color":"#3a6a3a"},"artworkBounds":{"x":34,"y":30,"width":84,"height":51}}</desc>
 
     <line x1="36" y1="36" x2="56" y2="36" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
     <path d="M56,36 C56,56 80,56 80,36" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>

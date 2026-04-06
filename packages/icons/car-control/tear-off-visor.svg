@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"VISOR\nTEAR OFF"},"border":{"color":"#5a6a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"VISOR\nTEAR OFF"},"border":{"color":"#5a6a5a"},"artworkBounds":{"x":36,"y":22,"width":72,"height":54}}</desc>
 
     <path d="M38 62 Q38 24 72 24 Q106 24 106 62 L106 68 Q106 74 100 74 L44 74 Q38 74 38 68 Z"
           fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linejoin="round"/>

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nSCENIC"},"border":{"color":"#5a7a8a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nSCENIC"},"border":{"color":"#5a7a8a"},"artworkBounds":{"x":30,"y":15,"width":84,"height":83}}</desc>
 
     <g transform="translate(32, 17) scale(0.176)">
       <path d="M41.035,155.681h136.152c22.28,0,40.406-18.127,40.406-40.407s-18.126-40.407-40.406-40.407

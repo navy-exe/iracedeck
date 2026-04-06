@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"EXIT\n"},"border":{"color":"#5a5a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"EXIT\n"},"border":{"color":"#5a5a6a"},"artworkBounds":{"x":37,"y":15,"width":66,"height":85}}</desc>
 
     <g transform="translate(30, 17) scale(0.155)">
       <path d="M445.223,0H142.589c-6.683,0-12.105,5.423-12.105,12.105v180.979h16.65c-5.006-6.392-7.725-14.224-7.725-22.467

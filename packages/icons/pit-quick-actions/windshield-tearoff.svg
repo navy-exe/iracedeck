@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TEAROFF\nWINDSHIELD"},"border":{"color":"#6a5a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TEAROFF\nWINDSHIELD"},"border":{"color":"#6a5a5a"},"artworkBounds":{"x":34,"y":14,"width":76,"height":52}}</desc>
 
     <path d="M36 60 Q72 16 108 60" fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round"/>
     <line x1="52" y1="44" x2="92" y2="44" stroke="#888888" stroke-width="2" stroke-linecap="round"/>

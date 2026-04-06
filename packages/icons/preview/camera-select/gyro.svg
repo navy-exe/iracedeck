@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nGYRO"},"border":{"color":"#5a7a8a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAMERA\nGYRO"},"border":{"color":"#5a7a8a"},"artworkBounds":{"x":34,"y":22,"width":76,"height":60}}</desc>
 
     <g stroke="#ffffff" fill="none">
       <ellipse cx="72" cy="52" rx="36" ry="28" stroke-width="3"/>

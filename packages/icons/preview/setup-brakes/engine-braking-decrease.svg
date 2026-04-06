@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a2a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"ENG BRAKE\nDECREASE"},"border":{"color":"#6a5a3a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a2a1a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"ENG BRAKE\nDECREASE"},"border":{"color":"#6a5a3a"},"artworkBounds":{"x":22,"y":18,"width":64,"height":52}}</desc>
 
     <rect x="36" y="28" width="48" height="40" rx="6" fill="none" stroke="#ffffff" stroke-width="3"/>
     <line x1="44" y1="28" x2="44" y2="20" stroke="#888888" stroke-width="3" stroke-linecap="round"/>

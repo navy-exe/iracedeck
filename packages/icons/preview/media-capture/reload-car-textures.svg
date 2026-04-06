@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a1a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TEXTURES\nRELOAD CAR"},"border":{"color":"#5a3a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a1a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"TEXTURES\nRELOAD CAR"},"border":{"color":"#5a3a6a"},"artworkBounds":{"x":30,"y":18,"width":84,"height":46}}</desc>
 
     <path d="M36 56 L44 40 L64 36 L80 36 L100 40 L108 56 Z" fill="none" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
     <line x1="32" y1="56" x2="112" y2="56" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
