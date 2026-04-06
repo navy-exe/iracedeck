@@ -200,27 +200,42 @@ Value type: `boolean`, `number`, or `string` (default).
 </sdpi-radio>
 ```
 
-### `<sdpi-range>` — Range Slider
+### `<sdpi-range>` — Range Slider (DEPRECATED)
 
-Value type: `number`.
+**Replaced by `<ird-range-input>` from `pi-components.js`.** Do not use `<sdpi-range>` in new code. The native component lacks a number input for precise values and only updates on mouse release.
+
+### `<ird-range-input>` — Range Slider with Number Input (Custom)
+
+Custom component from `pi-components.js`. Provides a range slider with a synced number input for precise value entry. Live updates during drag.
+
+Value type: numeric `string` (e.g., `"7"`) or empty `""` for "not set".
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `setting` | `string` | Settings key. |
-| `default` | `string` | Default value. |
+| `setting` | `string` | Settings key. Supports dot-notation for nested paths. |
 | `min` | `number` | Minimum value. |
 | `max` | `number` | Maximum value. |
-| `step` | `number` | Increment size. |
-| `showlabels` | `boolean` | Show min/max labels. |
-
-**Slots:** `min` and `max` for custom label content.
+| `step` | `number` | Increment size (default: 1). |
+| `default` | `string` | Default value when no saved value exists. |
+| `global` | `boolean` | When present, persists to global settings. |
+| `showlabels` | `boolean` | Show min/max labels beside the slider. |
 
 ```html
-<sdpi-range setting="brightness" min="0" max="100" step="5" showlabels>
-  <span slot="min">0%</span>
-  <span slot="max">100%</span>
-</sdpi-range>
+<sdpi-item label="Width">
+  <ird-range-input setting="borderOverrides.borderWidth" min="1" max="20" step="1" default="7" showlabels></ird-range-input>
+</sdpi-item>
+
+<!-- Global setting -->
+<sdpi-item label="Font Size">
+  <ird-range-input setting="titleFontSize" min="5" max="100" default="9" global showlabels></ird-range-input>
+</sdpi-item>
 ```
+
+Features:
+- **Bidirectional sync**: Range slider and number input stay in sync.
+- **Live drag updates**: Value updates in real time as the user drags the slider.
+- **Precise entry**: Number input for exact values, clamped to min/max.
+- **Toggle script compat**: Works with `.value` setter + `change` event dispatch pattern.
 
 ### `<sdpi-textfield>` — Text Input
 
@@ -496,7 +511,8 @@ Use `__MSG_{key}__` template syntax in text attributes (e.g., `label="__MSG_name
 | `<ird-color-picker>` | hex `string` or `""` | No | No |
 | `<sdpi-select>` | `string`/`number`/`boolean` | Yes | `<option>`, `<optgroup>` |
 | `<sdpi-radio>` | `string`/`number`/`boolean` | Yes | `<option>` |
-| `<sdpi-range>` | `number` | No | `min`, `max` |
+| `<sdpi-range>` | `number` (DEPRECATED) | No | `min`, `max` |
+| `<ird-range-input>` | numeric `string` or `""` | No | No |
 | `<sdpi-textfield>` | `string` | No | No |
 | `<sdpi-textarea>` | `string` | No | No |
 | `<sdpi-password>` | `string` | No | No |

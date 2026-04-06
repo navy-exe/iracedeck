@@ -21,10 +21,10 @@
       '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-width" class="hidden" label="Width">' +
-      '<sdpi-range setting="borderOverrides.borderWidth" min="1" max="20" step="1" default="7" showlabels></sdpi-range>' +
+      '<ird-range-input setting="borderOverrides.borderWidth" min="1" max="20" step="1" default="7" showlabels></ird-range-input>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-color" class="hidden" label="Color">' +
-      '<ird-color-picker id="ird-border-color-picker" setting="borderOverrides.borderColor" default="' + defaultColor + '"></ird-color-picker>' +
+      '<ird-color-picker id="ird-border-color-picker" setting="borderOverrides.borderColor" data-default-color="' + defaultColor + '"></ird-color-picker>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-glow" class="hidden" label="Show Glow">' +
       '<sdpi-select id="ird-border-glow-select" setting="borderOverrides.glowEnabled" default="inherit">' +
@@ -34,7 +34,7 @@
       '</sdpi-select>' +
     '</sdpi-item>' +
     '<sdpi-item id="ird-border-glow-width" class="hidden" label="Glow Width">' +
-      '<sdpi-range setting="borderOverrides.glowWidth" min="1" max="30" step="1" default="18" showlabels></sdpi-range>' +
+      '<ird-range-input setting="borderOverrides.glowWidth" min="1" max="30" step="1" default="18" showlabels></ird-range-input>' +
     '</sdpi-item>'
 }) %>
 
@@ -97,11 +97,26 @@
 
     updateVisibility();
 
+    function applyBorderDefaults() {
+      var picker = document.getElementById('ird-border-color-picker');
+      if (picker && !picker.value) {
+        var defaultColor = picker.getAttribute('data-default-color');
+        if (defaultColor) {
+          picker.value = defaultColor;
+          picker.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
+
     function onBorderChange() {
       var cur = borderSelect.value || 'inherit';
       // Only clear when user intentionally switches AWAY from "true"
       if (prevBorderVal === 'true' && cur !== 'true') {
         clearAllBorderOverrides();
+      }
+      // When enabling border, populate empty fields with icon defaults
+      if (cur === 'true' && prevBorderVal !== 'true') {
+        applyBorderDefaults();
       }
       prevBorderVal = cur;
       updateVisibility();
@@ -123,20 +138,15 @@
       glowSelect.addEventListener('input', onGlowChange);
     }
 
-    // Polling fallback (sdpi-select loads asynchronously)
+    // Polling fallback (sdpi-select events are unreliable)
     setInterval(function() {
       var curBorder = borderSelect.value || 'inherit';
       var curGlow = glowSelect ? (glowSelect.value || 'inherit') : 'inherit';
-      if (curBorder !== prevBorderVal || curGlow !== prevGlowVal) {
-        if (prevBorderVal === 'true' && curBorder !== 'true') {
-          clearAllBorderOverrides();
-        }
-        if (prevGlowVal === 'true' && curGlow !== 'true') {
-          clearGlowOverrides();
-        }
-        prevBorderVal = curBorder;
-        prevGlowVal = curGlow;
-        updateVisibility();
+      if (curBorder !== prevBorderVal) {
+        onBorderChange();
+      }
+      if (curGlow !== prevGlowVal) {
+        onGlowChange();
       }
     }, 100);
   }

@@ -276,11 +276,11 @@ export class ColorPicker extends HTMLElement {
           // Normalize legacy #000001 sentinel to empty string on load
           if (isLegacySentinel(value)) value = "";
 
-          // Apply default attribute when no saved value exists
+          // Apply default for display only — don't persist, so per-action
+          // overrides stay empty until the user explicitly sets a value
           if (!value && defaultValue) {
             this.currentValue = normalizeHex(defaultValue) || "";
             this.updateDisplay();
-            save(this.currentValue);
 
             return;
           }
