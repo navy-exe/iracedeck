@@ -336,14 +336,13 @@ describe("TireService", () => {
   });
 
   describe("generateToggleTiresIconContent", () => {
-    it("should return SVG with tire paths in a transform group", () => {
+    it("should return SVG with 4 tire indicator rects", () => {
       const result = generateToggleTiresIconContent(
         { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
         { lf: false, rf: false, lr: false, rr: false },
       );
-      expect(result).toContain('<g transform="');
-      const paths = result.match(/<path[^>]+>/g) ?? [];
-      expect(paths).toHaveLength(4);
+      const rects = result.match(/<rect[^>]+>/g) ?? [];
+      expect(rects).toHaveLength(4);
     });
 
     it("should use correct colors per tire position", () => {
@@ -356,17 +355,17 @@ describe("TireService", () => {
       // LR: configured + off = red
       // RR: not configured = black
 
-      const paths = result.match(/<path[^>]+>/g) ?? [];
-      expect(paths).toHaveLength(4);
+      const rects = result.match(/<rect[^>]+>/g) ?? [];
+      expect(rects).toHaveLength(4);
 
-      // LF tire (first path): green
-      expect(paths[0]).toContain('fill="#44FF44"');
-      // RF tire (second path): black
-      expect(paths[1]).toContain('fill="#000000ff"');
-      // LR tire (third path): red
-      expect(paths[2]).toContain('fill="#FF4444"');
-      // RR tire (fourth path): black
-      expect(paths[3]).toContain('fill="#000000ff"');
+      // LF tire (first rect): green
+      expect(rects[0]).toContain('fill="#44FF44"');
+      // RF tire (second rect): black
+      expect(rects[1]).toContain('fill="#000000ff"');
+      // LR tire (third rect): red
+      expect(rects[2]).toContain('fill="#FF4444"');
+      // RR tire (fourth rect): black
+      expect(rects[3]).toContain('fill="#000000ff"');
     });
 
     it("should show all green when all configured and active", () => {
@@ -374,11 +373,11 @@ describe("TireService", () => {
         { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
         { lf: true, rf: true, lr: true, rr: true },
       );
-      const paths = result.match(/<path[^>]+>/g) ?? [];
-      expect(paths).toHaveLength(4);
+      const rects = result.match(/<rect[^>]+>/g) ?? [];
+      expect(rects).toHaveLength(4);
 
-      for (const path of paths) {
-        expect(path).toContain('fill="#44FF44"');
+      for (const rect of rects) {
+        expect(rect).toContain('fill="#44FF44"');
       }
     });
 
@@ -387,11 +386,11 @@ describe("TireService", () => {
         { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
         { lf: false, rf: false, lr: false, rr: false },
       );
-      const paths = result.match(/<path[^>]+>/g) ?? [];
-      expect(paths).toHaveLength(4);
+      const rects = result.match(/<rect[^>]+>/g) ?? [];
+      expect(rects).toHaveLength(4);
 
-      for (const path of paths) {
-        expect(path).toContain('fill="#FF4444"');
+      for (const rect of rects) {
+        expect(rect).toContain('fill="#FF4444"');
       }
     });
   });
