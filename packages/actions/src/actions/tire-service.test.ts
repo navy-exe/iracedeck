@@ -44,6 +44,11 @@ vi.mock("@iracedeck/icons/tire-service/clear-tires.svg", () => ({
   default: "<svg>clear-tires-icon</svg>",
 }));
 
+vi.mock("@iracedeck/icons/tire-service/toggle-tires.svg", () => ({
+  default:
+    '<svg><desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#888888"},"title":{"text":"TIRES"}}</desc><g>toggle-tires-car</g></svg>',
+}));
+
 vi.mock("@iracedeck/iracing-sdk", () => ({
   hasFlag: vi.fn((value: number, flag: number) => (value & flag) !== 0),
   PitSvFlags: {
@@ -85,10 +90,20 @@ vi.mock("@iracedeck/deck-core", () => ({
     async onWillDisappear() {}
   },
   getCommands: mockGetCommands,
+  extractGraphicContent: vi.fn((svg: string) =>
+    svg
+      .replace(/<\/?svg[^>]*>/g, "")
+      .replace(/<desc>[\s\S]*?<\/desc>/, "")
+      .trim(),
+  ),
   generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
+  generateTitleText: vi.fn((opts: { text: string; fill: string }) =>
+    opts.text ? `<text fill="${opts.fill}">${opts.text}</text>` : "",
+  ),
   getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
   getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
+  ICON_BASE_TEMPLATE: "<svg>{{backgroundColor}}|{{borderContent}}|{{graphicContent}}|{{titleContent}}</svg>",
   LogLevel: { Info: 2 },
   generateIconText: vi.fn(
     (opts: { text: string; fontSize: number; fill: string }) => `<text fill="${opts.fill}">${opts.text}</text>`,
@@ -118,10 +133,22 @@ vi.mock("@iracedeck/deck-core", () => ({
     },
   ),
   resolveIconColors: vi.fn((_svg, _global, _overrides) => ({})),
-  renderIconTemplate: vi.fn((_template: string, data: Record<string, string>) => {
-    const parts = [data.iconContent, data.textElement, data.mainLabel, data.subLabel].filter(Boolean).join("|");
+  renderIconTemplate: vi.fn((template: string, data: Record<string, string>) => {
+    const knownKeys = ["iconContent", "textElement", "graphicContent", "titleContent", "mainLabel", "subLabel"];
+    const parts = knownKeys.map((k) => data[k]).filter(Boolean);
 
-    return `<svg>${parts}</svg>`;
+    if (parts.length > 0) {
+      return `<svg>${parts.join("|")}</svg>`;
+    }
+
+    // For colorization calls (no known keys), return template with mustache vars replaced
+    let result = template;
+
+    for (const [key, val] of Object.entries(data)) {
+      result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), val);
+    }
+
+    return result;
   }),
   svgToDataUri: vi.fn((svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`),
 }));
@@ -342,7 +369,6 @@ describe("TireService", () => {
         );
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("#FF4444");
-        expect(decoded).toContain("No Change");
       });
 
       it("should show green for configured and active tires", () => {
@@ -352,7 +378,6 @@ describe("TireService", () => {
         );
         const decoded = decodeURIComponent(result);
         expect(decoded).toContain("#44FF44");
-        expect(decoded).toContain("Change");
       });
 
       it("should show black for unconfigured tires", () => {
@@ -364,23 +389,22 @@ describe("TireService", () => {
         expect(decoded).toContain("#000000ff");
       });
 
-      it("should show Change when any configured tire is on", () => {
-        const result = generateTireServiceSvg(
-          { action: "toggle-tires", lf: true, rf: false, lr: false, rr: false },
-          { lf: true, rf: false, lr: false, rr: false },
-        );
-        const decoded = decodeURIComponent(result);
-        expect(decoded).toContain("Change");
-        expect(decoded).not.toContain("No Change");
-      });
-
-      it("should show No Change when no configured tire is on", () => {
+      it("should include car content in output", () => {
         const result = generateTireServiceSvg(
           { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
           noTires,
         );
         const decoded = decodeURIComponent(result);
-        expect(decoded).toContain("No Change");
+        expect(decoded).toContain("toggle-tires-car");
+      });
+
+      it("should include title text", () => {
+        const result = generateTireServiceSvg(
+          { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
+          noTires,
+        );
+        const decoded = decodeURIComponent(result);
+        expect(decoded).toContain("TIRES");
       });
     });
 

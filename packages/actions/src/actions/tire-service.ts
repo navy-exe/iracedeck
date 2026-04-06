@@ -2,13 +2,16 @@ import {
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
+  extractGraphicContent,
   generateBorderParts,
   generateIconText,
+  generateTitleText,
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
   getGlobalTitleSettings,
   getSDK,
+  ICON_BASE_TEMPLATE,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
@@ -22,6 +25,7 @@ import {
 } from "@iracedeck/deck-core";
 import changeAllTiresIconSvg from "@iracedeck/icons/tire-service/change-all-tires.svg";
 import clearTiresIconSvg from "@iracedeck/icons/tire-service/clear-tires.svg";
+import toggleTiresCarSvg from "@iracedeck/icons/tire-service/toggle-tires.svg";
 import { hasFlag, PitSvFlags, TelemetryData } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
@@ -191,11 +195,18 @@ export function buildTireToggleMacro(settings: TireServiceSettings): string | nu
 }
 
 /**
+ * Shared transform for the 512->144 car coordinate space.
+ * Rotates 90 deg CCW, scales from 512 to ~90px, centers at (72, 53).
+ */
+const CAR_TRANSFORM = "translate(72, 53) rotate(-90) scale(0.176) translate(-256, -256)";
+
+/**
  * @internal Exported for testing
  *
- * Generates the car body SVG content with colored tires for the toggle-tires action.
+ * Generates dynamic tire indicator SVG paths for the toggle-tires action.
+ * Uses the same coordinate space and transform as the static car silhouette.
  */
-function generateToggleTiresIconContent(
+export function generateToggleTiresIconContent(
   settings: TireServiceSettings,
   currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
 ): string {
@@ -204,12 +215,12 @@ function generateToggleTiresIconContent(
   const lrColor = getTireColor(settings.lr ?? false, currentState.lr);
   const rrColor = getTireColor(settings.rr ?? false, currentState.rr);
 
-  return `
-    <rect x="52" y="12" width="40" height="64" rx="6" fill="none" stroke="${GRAY}" stroke-width="4"/>
-    <rect x="28" y="16" width="16" height="20" rx="3" fill="${lfColor}" stroke="${GRAY}" stroke-width="2"/>
-    <rect x="100" y="16" width="16" height="20" rx="3" fill="${rfColor}" stroke="${GRAY}" stroke-width="2"/>
-    <rect x="28" y="52" width="16" height="20" rx="3" fill="${lrColor}" stroke="${GRAY}" stroke-width="2"/>
-    <rect x="100" y="52" width="16" height="20" rx="3" fill="${rrColor}" stroke="${GRAY}" stroke-width="2"/>`;
+  return `<g transform="${CAR_TRANSFORM}">
+    <path fill="${lfColor}" stroke="${GRAY}" stroke-width="8" d="M346.451,158.291h68.507c5.779,0,10.451-4.682,10.451-10.452V119.88c0-5.77-4.672-10.442-10.451-10.442h-68.507c-5.77,0-10.452,4.672-10.452,10.442v27.959C335.999,153.609,340.681,158.291,346.451,158.291z"/>
+    <path fill="${rfColor}" stroke="${GRAY}" stroke-width="8" d="M414.958,353.711h-68.507c-5.77,0-10.452,4.672-10.452,10.442v27.959c0,5.77,4.682,10.461,10.452,10.461h68.507c5.779,0,10.451-4.692,10.451-10.461v-27.959C425.409,358.383,420.737,353.711,414.958,353.711z"/>
+    <path fill="${lrColor}" stroke="${GRAY}" stroke-width="8" d="M62.217,159.681h72.206c5.77,0,10.452-4.692,10.452-10.461v-35.328c0-5.779-4.682-10.451-10.452-10.451H62.217c-5.769,0-10.442,4.672-10.442,10.451v35.328C51.775,154.99,56.448,159.681,62.217,159.681z"/>
+    <path fill="${rrColor}" stroke="${GRAY}" stroke-width="8" d="M134.422,352.329H62.217c-5.769,0-10.451,4.682-10.451,10.461v35.317c0,5.77,4.682,10.451,10.451,10.451h72.206c5.77,0,10.452-4.682,10.452-10.451v-35.317C144.874,357.011,140.192,352.329,134.422,352.329z"/>
+  </g>`;
 }
 
 /**
@@ -290,31 +301,38 @@ export function generateTireServiceSvg(
       return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title, border });
     }
     default: {
-      iconContent = generateToggleTiresIconContent(settings, currentState);
+      const tireElements = generateToggleTiresIconContent(settings, currentState);
 
-      const anyTireOn =
-        (settings.lf && currentState.lf) ||
-        (settings.rf && currentState.rf) ||
-        (settings.lr && currentState.lr) ||
-        (settings.rr && currentState.rr);
+      const colors = resolveIconColors(toggleTiresCarSvg, getGlobalColors(), settings.colorOverrides);
+      const title = resolveTitleSettings(toggleTiresCarSvg, getGlobalTitleSettings(), settings.titleOverrides, "TIRES");
+      const border = resolveBorderSettings(toggleTiresCarSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-      const toggleColors = resolveIconColors(tireServiceTemplate, getGlobalColors(), settings.colorOverrides);
-      const titleText = anyTireOn ? "Change" : "No Change";
-      const titleColor = anyTireOn ? "#FFFFFF" : toggleColors.textColor;
+      const rawCarGraphic = extractGraphicContent(toggleTiresCarSvg);
+      const colorizedCar = title.showGraphics ? renderIconTemplate(rawCarGraphic, colors) : "";
+      const graphicContent = colorizedCar + "\n" + tireElements;
 
-      textElement = generateIconText({ text: titleText, fontSize: 24, fill: titleColor, centerX: 72 });
-      const border = resolveBorderSettings(tireServiceTemplate, getGlobalBorderSettings(), settings.borderOverrides);
+      const titleContent = title.showTitle
+        ? generateTitleText({
+            text: title.titleText,
+            fontSize: title.fontSize,
+            bold: title.bold,
+            position: title.position,
+            customPosition: title.customPosition,
+            fill: colors.textColor ?? "#ffffff",
+          })
+        : "";
+
       const borderSvg = generateBorderParts(border);
+      const borderContent = borderSvg.defs + borderSvg.rects;
 
-      const toggleSvg = renderIconTemplate(tireServiceTemplate, {
-        iconContent,
-        textElement,
-        borderDefs: borderSvg.defs,
-        borderContent: borderSvg.rects,
-        ...toggleColors,
+      const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+        backgroundColor: colors.backgroundColor ?? "#000000",
+        borderContent,
+        graphicContent,
+        titleContent,
       });
 
-      return svgToDataUri(toggleSvg);
+      return svgToDataUri(svg);
     }
   }
 }
