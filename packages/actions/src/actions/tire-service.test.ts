@@ -337,7 +337,8 @@ describe("TireService", () => {
         { lf: false, rf: false, lr: false, rr: false },
       );
       expect(result).toContain('<g transform="');
-      expect(result).toContain("</g>");
+      const paths = result.match(/<path[^>]+>/g) ?? [];
+      expect(paths).toHaveLength(4);
     });
 
     it("should use correct colors per tire position", () => {
@@ -350,17 +351,16 @@ describe("TireService", () => {
       // LR: configured + off = red
       // RR: not configured = black
 
-      // Split into individual paths to check each tire
       const paths = result.match(/<path[^>]+>/g) ?? [];
       expect(paths).toHaveLength(4);
 
-      // LF tire (first path, front-left): green
+      // LF tire (first path): green
       expect(paths[0]).toContain('fill="#44FF44"');
-      // RF tire (second path, front-right): black
+      // RF tire (second path): black
       expect(paths[1]).toContain('fill="#000000ff"');
-      // LR tire (third path, rear-left): red
+      // LR tire (third path): red
       expect(paths[2]).toContain('fill="#FF4444"');
-      // RR tire (fourth path, rear-right): black
+      // RR tire (fourth path): black
       expect(paths[3]).toContain('fill="#000000ff"');
     });
 
