@@ -456,7 +456,7 @@ export function applyGraphicTransform(
 ): string {
   // Whichever dimension is larger must fit — the other scales proportionally
   const fitScale = Math.min(availableArea.width / artworkBounds.width, availableArea.height / artworkBounds.height);
-  const BASE_SCALE = 1.0;
+  const BASE_SCALE = 0.9;
   const scale = fitScale * BASE_SCALE * (userScale / 100);
 
   const areaCenterX = availableArea.x + availableArea.width / 2;
