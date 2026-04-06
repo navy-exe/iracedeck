@@ -4,6 +4,7 @@ import {
   buildTireToggleMacro,
   generateTireIcon,
   generateTireServiceSvg,
+  generateToggleTiresIconContent,
   getCompoundColor,
   getCompoundName,
   getDriverTires,
@@ -326,6 +327,67 @@ describe("TireService", () => {
 
     it("should return null when no tires configured", () => {
       expect(buildTireToggleMacro({ action: "toggle-tires", lf: false, rf: false, lr: false, rr: false })).toBeNull();
+    });
+  });
+
+  describe("generateToggleTiresIconContent", () => {
+    it("should return SVG with tire paths in a transform group", () => {
+      const result = generateToggleTiresIconContent(
+        { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
+        { lf: false, rf: false, lr: false, rr: false },
+      );
+      expect(result).toContain('<g transform="');
+      expect(result).toContain("</g>");
+    });
+
+    it("should use correct colors per tire position", () => {
+      const result = generateToggleTiresIconContent(
+        { action: "toggle-tires", lf: true, rf: false, lr: true, rr: false },
+        { lf: true, rf: false, lr: false, rr: false },
+      );
+      // LF: configured + on = green
+      // RF: not configured = black
+      // LR: configured + off = red
+      // RR: not configured = black
+
+      // Split into individual paths to check each tire
+      const paths = result.match(/<path[^>]+>/g) ?? [];
+      expect(paths).toHaveLength(4);
+
+      // LF tire (first path, front-left): green
+      expect(paths[0]).toContain('fill="#44FF44"');
+      // RF tire (second path, front-right): black
+      expect(paths[1]).toContain('fill="#000000ff"');
+      // LR tire (third path, rear-left): red
+      expect(paths[2]).toContain('fill="#FF4444"');
+      // RR tire (fourth path, rear-right): black
+      expect(paths[3]).toContain('fill="#000000ff"');
+    });
+
+    it("should show all green when all configured and active", () => {
+      const result = generateToggleTiresIconContent(
+        { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
+        { lf: true, rf: true, lr: true, rr: true },
+      );
+      const paths = result.match(/<path[^>]+>/g) ?? [];
+      expect(paths).toHaveLength(4);
+
+      for (const path of paths) {
+        expect(path).toContain('fill="#44FF44"');
+      }
+    });
+
+    it("should show all red when all configured but inactive", () => {
+      const result = generateToggleTiresIconContent(
+        { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
+        { lf: false, rf: false, lr: false, rr: false },
+      );
+      const paths = result.match(/<path[^>]+>/g) ?? [];
+      expect(paths).toHaveLength(4);
+
+      for (const path of paths) {
+        expect(path).toContain('fill="#FF4444"');
+      }
     });
   });
 

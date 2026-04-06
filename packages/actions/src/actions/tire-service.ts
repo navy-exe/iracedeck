@@ -233,9 +233,6 @@ export function generateTireServiceSvg(
   currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
   compoundState: { player: number; pitSv: number } = { player: 0, pitSv: 0 },
 ): string {
-  let iconContent: string;
-  let textElement: string;
-
   switch (settings.action) {
     case "change-all-tires": {
       const colors = resolveIconColors(changeAllTiresIconSvg, getGlobalColors(), settings.colorOverrides);
@@ -256,6 +253,8 @@ export function generateTireServiceSvg(
       });
     }
     case "change-compound": {
+      let iconContent: string;
+      let textElement: string;
       const compoundType = getCompoundName(compoundState.pitSv);
       const isChanging = compoundState.player !== compoundState.pitSv;
 
