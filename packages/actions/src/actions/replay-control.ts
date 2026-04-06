@@ -8,6 +8,7 @@ import {
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   ICON_BASE_TEMPLATE,
   type IDeckDialDownEvent,
@@ -19,6 +20,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -335,14 +337,18 @@ export function generateReplayControlSvg(
 
     const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, border, graphic });
   }
 
   // All other modes: static title via assembleIcon
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
 
 /**

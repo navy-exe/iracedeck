@@ -7,6 +7,7 @@ import {
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -15,6 +16,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -127,7 +129,9 @@ export function generatePitQuickActionsSvg(
 
     const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
   }
 
   // Dynamic telemetry-driven modes — each has its own template with <desc> defaults

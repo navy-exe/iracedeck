@@ -6,6 +6,7 @@ import {
   generateTitleText,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   getKeyboard,
   getSDK,
@@ -18,6 +19,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -396,7 +398,9 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
     const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
   }
 
   // Static modes use standalone SVGs from @iracedeck/icons
@@ -407,7 +411,9 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
 
 function renderDynamicIcon(

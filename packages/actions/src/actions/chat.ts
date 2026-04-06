@@ -6,6 +6,7 @@ import {
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
@@ -15,6 +16,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -149,11 +151,14 @@ export function generateChatSvg(settings: ChatSettings): string {
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
   // Include iconColor as 'color' so the chat icon's {{color}} accent placeholder resolves
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
   return assembleIcon({
     graphicSvg: iconSvg,
     colors: { ...colors, color: iconColor },
     title,
     border,
+    graphic,
   });
 }
 

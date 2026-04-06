@@ -4,6 +4,7 @@ import {
   ConnectionStateAwareAction,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
@@ -11,6 +12,7 @@ import {
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -155,7 +157,9 @@ export function generateSetupBrakesSvg(settings: SetupBrakesSettings): string {
 
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
 
 /**

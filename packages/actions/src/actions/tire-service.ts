@@ -9,6 +9,7 @@ import {
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   getSDK,
   ICON_BASE_TEMPLATE,
@@ -19,6 +20,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -253,11 +255,14 @@ export function generateTireServiceSvg(
 
       const border = resolveBorderSettings(changeAllTiresIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
+      const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
       return assembleIcon({
         graphicSvg: changeAllTiresIconSvg,
         colors,
         title,
         border,
+        graphic,
       });
     }
     case "change-compound": {
@@ -305,7 +310,9 @@ export function generateTireServiceSvg(
 
       const border = resolveBorderSettings(clearTiresIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title, border });
+      const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title, border, graphic });
     }
     default: {
       const tireElements = generateToggleTiresIconContent(settings, currentState);
