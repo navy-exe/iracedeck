@@ -1,6 +1,8 @@
 import {
+  applyGraphicTransform,
   assembleIcon,
   CommonSettings,
+  computeGraphicArea,
   ConnectionStateAwareAction,
   extractGraphicContent,
   generateBorderParts,
@@ -18,6 +20,7 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  parseIconArtworkBounds,
   renderIconTemplate,
   resolveBorderSettings,
   resolveGraphicSettings,
@@ -271,9 +274,16 @@ export function generateReplayControlSvg(
     const slowMo = replaySlowMotion ?? false;
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
     const rawGraphic = extractGraphicContent(iconSvg);
-    const graphicContent = title.showGraphics
+    let graphicContent = title.showGraphics
       ? renderIconTemplate(rawGraphic, { speedText: formatSpeedDisplay(speed, slowMo), ...colors })
       : "";
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+    const artworkBounds = parseIconArtworkBounds(iconSvg);
+
+    if (graphicContent && artworkBounds) {
+      graphicContent = applyGraphicTransform(graphicContent, artworkBounds, computeGraphicArea(title), graphic.scale);
+    }
+
     const titleContent = title.showTitle
       ? generateTitleText({
           text: title.titleText,
@@ -303,9 +313,16 @@ export function generateReplayControlSvg(
     const needleAngle = String(calculateNeedleAngle(settings.speed));
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
     const rawGraphic = extractGraphicContent(iconSvg);
-    const graphicContent = title.showGraphics
+    let graphicContent = title.showGraphics
       ? renderIconTemplate(rawGraphic, { mainLabel, needleAngle, ...colors })
       : "";
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+    const artworkBounds = parseIconArtworkBounds(iconSvg);
+
+    if (graphicContent && artworkBounds) {
+      graphicContent = applyGraphicTransform(graphicContent, artworkBounds, computeGraphicArea(title), graphic.scale);
+    }
+
     const titleContent = title.showTitle
       ? generateTitleText({
           text: title.titleText,

@@ -12,6 +12,7 @@ import { getGlobalSettings } from "./global-settings.js";
 
 // Re-export everything from icon-composer for backward compatibility
 export {
+  applyGraphicTransform,
   assembleIcon,
   BORDER_DEFAULTS,
   calculateYPositions,

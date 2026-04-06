@@ -36,6 +36,7 @@ export {
 
 // Title, border, and graphic settings (re-exports from icon-composer + global readers)
 export {
+  applyGraphicTransform,
   assembleIcon,
   BORDER_DEFAULTS,
   calculateYPositions,

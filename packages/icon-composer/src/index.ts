@@ -33,6 +33,7 @@ export {
 
 // Title, border, graphic settings and icon assembly
 export {
+  applyGraphicTransform,
   assembleIcon,
   BORDER_DEFAULTS,
   calculateYPositions,

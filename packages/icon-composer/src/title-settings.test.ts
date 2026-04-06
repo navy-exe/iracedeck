@@ -92,14 +92,14 @@ describe("computeGraphicArea", () => {
     expect(area.height).toBeLessThan(100);
   });
 
-  it("should shift graphic down when title is at top", () => {
-    const area = computeGraphicArea({ ...baseTitle, position: "top" });
-    // Title at top: startY = 18 + 8 = 26, second line y = 26 + 21.6 = 47.6
-    // titleBottom = 47.6 + 9 = 56.6
-    // topY = 56.6 + 8 = 64.6, height = 144 - 8 - 64.6 = 71.4
-    expect(area.y).toBeGreaterThan(50);
-    expect(area.height).toBeGreaterThan(60);
-    expect(area.height).toBeLessThan(90);
+  it("should mirror bottom position when title is at top", () => {
+    const bottomArea = computeGraphicArea(baseTitle);
+    const topArea = computeGraphicArea({ ...baseTitle, position: "top" });
+    // Same size, symmetric position (mirrored around canvas center)
+    expect(topArea.height).toBe(bottomArea.height);
+    expect(topArea.y).toBeGreaterThan(bottomArea.y);
+    // Symmetric: bottomArea.y + topArea.y + height ≈ 144
+    expect(topArea.y + topArea.height + bottomArea.y).toBe(144);
   });
 
   it("should return full canvas when title is at middle", () => {

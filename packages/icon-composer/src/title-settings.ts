@@ -416,13 +416,10 @@ export function computeGraphicArea(title: ResolvedTitleSettings): GraphicArea {
   const fontSize = title.fontSize * 2;
   const lines = title.titleText.split("\n");
   const lineHeight = fontSize * 1.2;
-  const yPositions = calculateYPositions(lines.length, fontSize, lineHeight, title.position, title.customPosition);
-
-  // Title block bottom extent (needed for "top" position to know where graphic starts)
-  const titleBottom = yPositions[yPositions.length - 1] + fontSize / 2;
 
   // Compute the "bottom" case height as the reference — used for both top and bottom
-  // so the graphic is the same size regardless of title position.
+  // so the graphic is the same size AND position regardless of title placement.
+  // The graphic stays put; only the title moves between top and bottom.
   const bottomPositions = calculateYPositions(lines.length, fontSize, lineHeight, "bottom", 0);
   const bottomTitleTop = bottomPositions[0] - fontSize / 2;
   const sharedHeight = Math.max(0, bottomTitleTop - PADDING - PADDING);
@@ -430,11 +427,9 @@ export function computeGraphicArea(title: ResolvedTitleSettings): GraphicArea {
   switch (title.position) {
     case "bottom":
       return { x: PADDING, y: PADDING, width: CANVAS - 2 * PADDING, height: sharedHeight };
-    case "top": {
-      const topY = titleBottom + PADDING;
-
-      return { x: PADDING, y: topY, width: CANVAS - 2 * PADDING, height: sharedHeight };
-    }
+    case "top":
+      // Mirror the bottom case: graphic in the lower portion, symmetric distance from edge
+      return { x: PADDING, y: CANVAS - PADDING - sharedHeight, width: CANVAS - 2 * PADDING, height: sharedHeight };
     case "middle":
     case "custom":
       // Graphic goes behind text — no auto-scaling
@@ -449,8 +444,11 @@ export function computeGraphicArea(title: ResolvedTitleSettings): GraphicArea {
 /**
  * Wraps graphic content in a `<g transform>` to center and scale it
  * within the available area based on its declared artworkBounds.
+ *
+ * Exported for use by actions that do manual icon assembly (e.g., speed-display
+ * and set-speed modes that inject dynamic template variables before assembly).
  */
-function applyGraphicTransform(
+export function applyGraphicTransform(
   content: string,
   artworkBounds: IconArtworkBounds,
   availableArea: GraphicArea,
