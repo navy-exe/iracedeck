@@ -16,6 +16,9 @@ export { AutocompleteInput } from "./autocomplete-input.js";
 // Color Picker - custom color picker with "not set" state and inline hex display
 export { ColorPicker } from "./color-picker.js";
 
+// Range Input - slider with synced number input for numeric settings
+export { RangeInput } from "./range-input.js";
+
 // Key Binding Input - click-to-record keyboard shortcut input
 export {
   KeyBindingInput,
