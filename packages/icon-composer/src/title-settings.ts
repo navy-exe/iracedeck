@@ -418,21 +418,22 @@ export function computeGraphicArea(title: ResolvedTitleSettings): GraphicArea {
   const lineHeight = fontSize * 1.2;
   const yPositions = calculateYPositions(lines.length, fontSize, lineHeight, title.position, title.customPosition);
 
-  // Title block extents (top of first line to bottom of last line)
-  const titleTop = yPositions[0] - fontSize / 2;
+  // Title block bottom extent (needed for "top" position to know where graphic starts)
   const titleBottom = yPositions[yPositions.length - 1] + fontSize / 2;
 
-  switch (title.position) {
-    case "bottom": {
-      const height = Math.max(0, titleTop - PADDING - PADDING);
+  // Compute the "bottom" case height as the reference — used for both top and bottom
+  // so the graphic is the same size regardless of title position.
+  const bottomPositions = calculateYPositions(lines.length, fontSize, lineHeight, "bottom", 0);
+  const bottomTitleTop = bottomPositions[0] - fontSize / 2;
+  const sharedHeight = Math.max(0, bottomTitleTop - PADDING - PADDING);
 
-      return { x: PADDING, y: PADDING, width: CANVAS - 2 * PADDING, height };
-    }
+  switch (title.position) {
+    case "bottom":
+      return { x: PADDING, y: PADDING, width: CANVAS - 2 * PADDING, height: sharedHeight };
     case "top": {
       const topY = titleBottom + PADDING;
-      const height = Math.max(0, CANVAS - PADDING - topY);
 
-      return { x: PADDING, y: topY, width: CANVAS - 2 * PADDING, height };
+      return { x: PADDING, y: topY, width: CANVAS - 2 * PADDING, height: sharedHeight };
     }
     case "middle":
     case "custom":
