@@ -1,7 +1,7 @@
 {
-  "name": "@iracedeck/deck-core",
+  "name": "@iracedeck/icon-composer",
   "version": "1.11.0",
-  "description": "Platform-agnostic core interfaces and base classes for deck device plugins",
+  "description": "Standalone SVG icon assembly and composition for Stream Deck plugins",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,12 +14,6 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist"
-  },
-  "dependencies": {
-    "@iracedeck/icon-composer": "workspace:*",
-    "@iracedeck/iracing-sdk": "workspace:*",
-    "@iracedeck/logger": "workspace:*",
-    "zod": "4.3.6"
   },
   "devDependencies": {
     "@tsconfig/node22": "22.0.5",

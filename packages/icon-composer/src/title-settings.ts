@@ -1,0 +1,544 @@
+/**
+ * Title Settings, Border Settings, Graphic Settings, and Icon Assembly
+ *
+ * Pure functions for resolving settings and assembling final icons.
+ * No dependencies on global settings stores — all inputs are parameters.
+ */
+import { extractGraphicContent, generateBorderParts, ICON_BASE_TEMPLATE } from "./icon-base.js";
+import {
+  escapeXml,
+  parseIconArtworkBounds,
+  parseIconBorderDefaults,
+  parseIconTitleDefaults,
+  renderIconTemplate,
+} from "./icon-template.js";
+import type { IconArtworkBounds } from "./icon-template.js";
+import { svgToDataUri } from "./svg-utils.js";
+
+// ---------------------------------------------------------------------------
+// Title Settings
+// ---------------------------------------------------------------------------
+
+export interface ResolvedTitleSettings {
+  showTitle: boolean;
+  showGraphics: boolean;
+  titleText: string;
+  bold: boolean;
+  fontSize: number;
+  position: "top" | "middle" | "bottom" | "custom";
+  customPosition: number;
+}
+
+export interface GlobalTitleSettings {
+  showTitle?: boolean;
+  showGraphics?: boolean;
+  bold?: boolean | "default";
+  fontSize?: number | "default";
+  position?: "top" | "middle" | "bottom" | "custom" | "default";
+  customPosition?: number | "default";
+}
+
+/**
+ * Per-action title overrides. Fields set to undefined fall through
+ * to global → icon default → hardcoded default.
+ */
+export interface TitleOverrides {
+  showTitle?: boolean;
+  showGraphics?: boolean;
+  titleText?: string;
+  bold?: boolean;
+  fontSizeEnabled?: boolean;
+  fontSize?: number;
+  position?: "top" | "middle" | "bottom" | "custom";
+  customPosition?: number;
+}
+
+const TITLE_DEFAULTS: Omit<ResolvedTitleSettings, "titleText"> = {
+  showTitle: true,
+  showGraphics: true,
+  bold: true,
+  fontSize: 9,
+  position: "bottom",
+  customPosition: 0,
+};
+
+export { TITLE_DEFAULTS };
+
+export interface GenerateTitleTextOptions {
+  text: string;
+  fontSize: number;
+  bold: boolean;
+  position: "top" | "middle" | "bottom" | "custom";
+  customPosition: number;
+  fill: string;
+}
+
+export function generateTitleText(options: GenerateTitleTextOptions): string {
+  const { text, bold, position, customPosition, fill } = options;
+  // Double the PI font size for SVG rendering (consistent with telemetry-display and chat)
+  const fontSize = options.fontSize * 2;
+
+  if (!text) return "";
+
+  const lines = text.split("\n");
+  const lineHeight = fontSize * 1.2;
+  const weight = bold ? "bold" : "normal";
+
+  const makeTextEl = (content: string, y: number): string =>
+    `<text x="72" y="${y}" text-anchor="middle" dominant-baseline="central" fill="${fill}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="${weight}">${escapeXml(content)}</text>`;
+
+  const yPositions = calculateYPositions(lines.length, fontSize, lineHeight, position, customPosition);
+
+  return lines.map((line, i) => makeTextEl(line, yPositions[i])).join("\n  ");
+}
+
+/**
+ * @internal Exported for testing and for computeGraphicArea
+ */
+export function calculateYPositions(
+  lineCount: number,
+  fontSize: number,
+  lineHeight: number,
+  position: "top" | "middle" | "bottom" | "custom",
+  customPosition: number,
+): number[] {
+  const positions: number[] = [];
+  const totalHeight = (lineCount - 1) * lineHeight;
+
+  switch (position) {
+    case "top": {
+      const startY = fontSize + 8;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+    case "middle": {
+      // Dynamic center that adjusts with font size, matching telemetry-display pattern
+      const centerY = 88 + (fontSize - 44) / 3;
+      const startY = centerY - totalHeight / 2;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+    case "bottom": {
+      const endY = 130;
+      const startY = endY - totalHeight;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+    case "custom": {
+      const centerY = 88 + (fontSize - 44) / 3 + customPosition;
+      const startY = centerY - totalHeight / 2;
+
+      for (let i = 0; i < lineCount; i++) {
+        positions.push(startY + i * lineHeight);
+      }
+
+      break;
+    }
+  }
+
+  return positions;
+}
+
+/**
+ * Resolves title settings by merging per-action overrides, global settings, and defaults.
+ *
+ * Resolution chain for non-text fields: actionOverrides → globalTitleSettings → TITLE_DEFAULTS
+ * Resolution chain for titleText: actionOverrides.titleText → actionDefaultText → desc metadata → ""
+ *
+ * @param graphicSvg - SVG template string with optional <desc> title metadata
+ * @param globalTitleSettings - Plugin-level global title settings
+ * @param actionOverrides - Per-action title overrides from action settings (optional)
+ * @param actionDefaultText - Default title text provided by action code (optional)
+ * @returns Fully resolved title settings with all fields populated
+ */
+export function resolveTitleSettings(
+  graphicSvg: string,
+  globalTitleSettings: GlobalTitleSettings,
+  actionOverrides?: TitleOverrides,
+  actionDefaultText?: string,
+): ResolvedTitleSettings {
+  const iconDefaults = parseIconTitleDefaults(graphicSvg);
+
+  // Resolution: per-action → global (if not "default") → icon <desc> default → TITLE_DEFAULTS
+  const resolve = <T>(
+    actionVal: T | undefined,
+    globalVal: T | "default" | undefined,
+    iconDefault: T | undefined,
+    fallback: T,
+  ): T => {
+    if (actionVal !== undefined) return actionVal;
+
+    if (globalVal !== undefined && globalVal !== "default") return globalVal as T;
+
+    if (iconDefault !== undefined) return iconDefault;
+
+    return fallback;
+  };
+
+  const titleText =
+    (actionOverrides?.titleText && actionOverrides.titleText.length > 0 ? actionOverrides.titleText : undefined) ??
+    actionDefaultText ??
+    iconDefaults.text ??
+    "";
+
+  return {
+    showTitle: resolve(actionOverrides?.showTitle, globalTitleSettings.showTitle, undefined, TITLE_DEFAULTS.showTitle),
+    showGraphics: resolve(
+      actionOverrides?.showGraphics,
+      globalTitleSettings.showGraphics,
+      undefined,
+      TITLE_DEFAULTS.showGraphics,
+    ),
+    titleText,
+    bold: resolve(actionOverrides?.bold, globalTitleSettings.bold, undefined, TITLE_DEFAULTS.bold),
+    fontSize: resolve(
+      actionOverrides?.fontSize,
+      globalTitleSettings.fontSize,
+      iconDefaults.fontSize,
+      TITLE_DEFAULTS.fontSize,
+    ),
+    position: resolve(
+      actionOverrides?.position,
+      globalTitleSettings.position,
+      iconDefaults.position,
+      TITLE_DEFAULTS.position,
+    ),
+    customPosition: resolve(
+      actionOverrides?.customPosition,
+      globalTitleSettings.customPosition,
+      iconDefaults.customPosition,
+      TITLE_DEFAULTS.customPosition,
+    ),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Border Settings
+// ---------------------------------------------------------------------------
+
+export interface ResolvedBorderSettings {
+  enabled: boolean;
+  borderWidth: number;
+  borderColor: string;
+  glowEnabled: boolean;
+  glowWidth: number;
+}
+
+export interface GlobalBorderSettings {
+  enabled?: boolean | "default";
+  borderWidth?: number | "default";
+  borderColor?: string;
+  glowEnabled?: boolean | "default";
+  glowWidth?: number | "default";
+}
+
+/**
+ * Per-action border overrides. Fields set to undefined fall through
+ * to global → icon default → hardcoded default.
+ */
+export interface BorderOverrides {
+  enabled?: boolean;
+  borderWidth?: number;
+  borderColor?: string;
+  glowEnabled?: boolean;
+  glowWidth?: number;
+}
+
+const BORDER_DEFAULTS: ResolvedBorderSettings = {
+  enabled: false,
+  borderWidth: 7,
+  borderColor: "#00aaff",
+  glowEnabled: true,
+  glowWidth: 18,
+};
+
+export { BORDER_DEFAULTS };
+
+/**
+ * Resolves border settings by merging per-action overrides, global settings, and icon defaults.
+ *
+ * Resolution chain: actionOverrides → globalBorderSettings → icon <desc> border defaults → BORDER_DEFAULTS
+ *
+ * @param graphicSvg - SVG template string with optional <desc> border metadata
+ * @param globalBorderSettings - Plugin-level global border settings
+ * @param actionOverrides - Per-action border overrides from settings (optional)
+ * @param stateColor - State-driven color for toggle actions (overrides all color sources)
+ */
+export function resolveBorderSettings(
+  graphicSvg: string,
+  globalBorderSettings: GlobalBorderSettings,
+  actionOverrides?: BorderOverrides,
+  stateColor?: string,
+): ResolvedBorderSettings {
+  const iconDefaults = parseIconBorderDefaults(graphicSvg);
+
+  const resolve = <T>(
+    actionVal: T | undefined,
+    globalVal: T | "default" | undefined,
+    iconDefault: T | undefined,
+    fallback: T,
+  ): T => {
+    if (actionVal !== undefined) return actionVal;
+
+    if (globalVal !== undefined && globalVal !== "default") return globalVal as T;
+
+    if (iconDefault !== undefined) return iconDefault;
+
+    return fallback;
+  };
+
+  const borderColor =
+    stateColor ??
+    resolve(
+      actionOverrides?.borderColor,
+      globalBorderSettings.borderColor,
+      iconDefaults.borderColor,
+      BORDER_DEFAULTS.borderColor,
+    );
+
+  return {
+    enabled: resolve(actionOverrides?.enabled, globalBorderSettings.enabled, undefined, BORDER_DEFAULTS.enabled),
+    borderWidth: resolve(
+      actionOverrides?.borderWidth,
+      globalBorderSettings.borderWidth,
+      undefined,
+      BORDER_DEFAULTS.borderWidth,
+    ),
+    borderColor,
+    glowEnabled: resolve(
+      actionOverrides?.glowEnabled,
+      globalBorderSettings.glowEnabled,
+      undefined,
+      BORDER_DEFAULTS.glowEnabled,
+    ),
+    glowWidth: resolve(
+      actionOverrides?.glowWidth,
+      globalBorderSettings.glowWidth,
+      undefined,
+      BORDER_DEFAULTS.glowWidth,
+    ),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Graphic Settings (scaling & positioning)
+// ---------------------------------------------------------------------------
+
+export interface ResolvedGraphicSettings {
+  /** Scale percentage (50–150). 100 = fit artwork to available area exactly. */
+  scale: number;
+}
+
+export interface GlobalGraphicSettings {
+  scale?: number | "default";
+}
+
+/**
+ * Per-action graphic overrides.
+ * scaleMode undefined = inherit from global.
+ */
+export interface GraphicOverrides {
+  scaleMode?: "default" | "override";
+  scale?: number;
+}
+
+const GRAPHIC_DEFAULTS: ResolvedGraphicSettings = {
+  scale: 100,
+};
+
+export { GRAPHIC_DEFAULTS };
+
+/**
+ * Resolves graphic settings from per-action overrides and global settings.
+ *
+ * scaleMode resolution:
+ *   undefined (inherit) → use global (if not "default") → GRAPHIC_DEFAULTS (100)
+ *   "default"           → use 100% (ignores global)
+ *   "override"          → use actionOverrides.scale (or 100 if not set)
+ */
+export function resolveGraphicSettings(
+  globalSettings: GlobalGraphicSettings,
+  actionOverrides?: GraphicOverrides,
+): ResolvedGraphicSettings {
+  if (actionOverrides?.scaleMode === "default") {
+    return { scale: GRAPHIC_DEFAULTS.scale };
+  }
+
+  if (actionOverrides?.scaleMode === "override") {
+    return { scale: actionOverrides.scale ?? GRAPHIC_DEFAULTS.scale };
+  }
+
+  // Inherit from global
+  if (globalSettings.scale !== undefined && globalSettings.scale !== "default") {
+    return { scale: globalSettings.scale };
+  }
+
+  return { scale: GRAPHIC_DEFAULTS.scale };
+}
+
+// ---------------------------------------------------------------------------
+// Graphic Area Computation
+// ---------------------------------------------------------------------------
+
+export interface GraphicArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Computes the available rectangle for the graphic based on resolved title settings.
+ * The graphic should be scaled and centered within this area.
+ *
+ * @param title - Fully resolved title settings
+ * @returns Available area rectangle within the 144x144 canvas
+ */
+export function computeGraphicArea(title: ResolvedTitleSettings): GraphicArea {
+  const CANVAS = 144;
+  const PADDING = 8;
+  const fullArea = { x: PADDING, y: PADDING, width: CANVAS - 2 * PADDING, height: CANVAS - 2 * PADDING };
+
+  if (!title.showTitle || !title.titleText) return fullArea;
+
+  const fontSize = title.fontSize * 2;
+  const lines = title.titleText.split("\n");
+  const lineHeight = fontSize * 1.2;
+  const yPositions = calculateYPositions(lines.length, fontSize, lineHeight, title.position, title.customPosition);
+
+  // Title block extents (top of first line to bottom of last line)
+  const titleTop = yPositions[0] - fontSize / 2;
+  const titleBottom = yPositions[yPositions.length - 1] + fontSize / 2;
+
+  switch (title.position) {
+    case "bottom": {
+      const height = Math.max(0, titleTop - PADDING - PADDING);
+
+      return { x: PADDING, y: PADDING, width: CANVAS - 2 * PADDING, height };
+    }
+    case "top": {
+      const topY = titleBottom + PADDING;
+      const height = Math.max(0, CANVAS - PADDING - topY);
+
+      return { x: PADDING, y: topY, width: CANVAS - 2 * PADDING, height };
+    }
+    case "middle":
+    case "custom":
+      // Graphic goes behind text — no auto-scaling
+      return fullArea;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Graphic Transform
+// ---------------------------------------------------------------------------
+
+/**
+ * Wraps graphic content in a `<g transform>` to center and scale it
+ * within the available area based on its declared artworkBounds.
+ */
+function applyGraphicTransform(
+  content: string,
+  artworkBounds: IconArtworkBounds,
+  availableArea: GraphicArea,
+  userScale: number,
+): string {
+  const fitScale = Math.min(availableArea.width / artworkBounds.width, availableArea.height / artworkBounds.height);
+  const scale = fitScale * (userScale / 100);
+
+  const areaCenterX = availableArea.x + availableArea.width / 2;
+  const areaCenterY = availableArea.y + availableArea.height / 2;
+  const artCenterX = artworkBounds.x + artworkBounds.width / 2;
+  const artCenterY = artworkBounds.y + artworkBounds.height / 2;
+
+  const tx = areaCenterX - artCenterX * scale;
+  const ty = areaCenterY - artCenterY * scale;
+
+  // Round to 2 decimals for cleaner SVG output
+  const txR = Math.round(tx * 100) / 100;
+  const tyR = Math.round(ty * 100) / 100;
+  const sR = Math.round(scale * 10000) / 10000;
+
+  return `<g transform="translate(${txR}, ${tyR}) scale(${sR})">${content}</g>`;
+}
+
+// ---------------------------------------------------------------------------
+// Icon Assembly
+// ---------------------------------------------------------------------------
+
+/**
+ * Assembles a final icon data URI from a graphic SVG, resolved colors, and resolved settings.
+ *
+ * Steps:
+ * 1. Extracts graphic artwork from the SVG (strips wrapper, background, labels)
+ * 2. Colorizes the graphic with renderIconTemplate
+ * 3. Optionally scales and positions the graphic based on artworkBounds and title state
+ * 4. Generates title text with generateTitleText
+ * 5. Generates optional border SVG
+ * 6. Fills the base template (background + border + graphic + title)
+ * 7. Converts to a data URI
+ *
+ * @param options.graphicSvg - Source SVG template with <desc> metadata
+ * @param options.colors - Resolved color values for all slots
+ * @param options.title - Fully resolved title settings
+ * @param options.border - Fully resolved border settings
+ * @param options.graphic - Fully resolved graphic settings (optional — omit for no scaling)
+ * @returns SVG data URI string
+ */
+export function assembleIcon(options: {
+  graphicSvg: string;
+  colors: Record<string, string>;
+  title: ResolvedTitleSettings;
+  border: ResolvedBorderSettings;
+  graphic?: ResolvedGraphicSettings;
+}): string {
+  const { graphicSvg, colors, title, border, graphic } = options;
+
+  const rawGraphic = extractGraphicContent(graphicSvg);
+  let graphicContent = title.showGraphics ? renderIconTemplate(rawGraphic, colors) : "";
+
+  // Apply dynamic scaling if artworkBounds metadata exists and graphic settings provided
+  if (graphicContent && graphic) {
+    const artworkBounds = parseIconArtworkBounds(graphicSvg);
+
+    if (artworkBounds) {
+      const area = computeGraphicArea(title);
+      graphicContent = applyGraphicTransform(graphicContent, artworkBounds, area, graphic.scale);
+    }
+  }
+
+  const titleContent = title.showTitle
+    ? generateTitleText({
+        text: title.titleText,
+        fontSize: title.fontSize,
+        bold: title.bold,
+        position: title.position,
+        customPosition: title.customPosition,
+        fill: colors.textColor ?? "#ffffff",
+      })
+    : "";
+
+  const borderSvg = generateBorderParts(border);
+  const borderContent = borderSvg.defs + borderSvg.rects;
+
+  const svg = renderIconTemplate(ICON_BASE_TEMPLATE, {
+    backgroundColor: colors.backgroundColor ?? "#000000",
+    borderContent,
+    graphicContent,
+    titleContent,
+  });
+
+  return svgToDataUri(svg);
+}
