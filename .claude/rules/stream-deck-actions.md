@@ -62,6 +62,7 @@ Actions with no custom settings use `CommonSettings` directly.
 - `colorOverrides` (optional object with `backgroundColor`, `textColor`, `graphic1Color`, `graphic2Color`) — per-action color overrides
 - `titleOverrides` (optional `TitleOverridesSchema` object) — per-action title overrides (showTitle, showGraphics, titleText, bold, fontSize, position, customPosition)
 - `borderOverrides` (optional `BorderOverridesSchema` object) — per-action border settings (enabled, width, color). For toggle actions, pass `borderStateColor` to `assembleIcon()` to override color with state-driven green/red/gray.
+- `graphicOverrides` (optional `GraphicOverridesSchema` object) — per-action graphic scaling settings (scaleMode: inherit/default/override, scale: 50-150). Only effective when the icon declares `artworkBounds` in its `<desc>` metadata.
 
 All fields are automatically available in all action settings schemas.
 
@@ -74,8 +75,10 @@ import {
   assembleIcon,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -90,7 +93,8 @@ function generateIcon(settings: MySettings): string {
     "DEFAULT\nTITLE",  // optional: action-specific default text
   );
   const border = resolveBorderSettings(myIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
-  return assembleIcon({ graphicSvg: myIconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+  return assembleIcon({ graphicSvg: myIconSvg, colors, title, border, graphic });
 }
 ```
 

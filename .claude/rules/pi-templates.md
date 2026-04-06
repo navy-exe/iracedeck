@@ -44,6 +44,7 @@ packages/stream-deck-plugin-{name}/
     <%- include('title-overrides') %>
     <%- include('color-overrides', { slots: [...], defaults: require('./data/icon-defaults.json')['action-name'] }) %>
     <%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['action-name'] }) %>
+    <%- include('graphic-overrides') %>
     <%- include('common-settings') %>
 
     <%- include('section-header', { title: 'Global Settings' }) %>
@@ -54,6 +55,7 @@ packages/stream-deck-plugin-{name}/
     <%- include('global-title-defaults') %>
     <%- include('global-color-defaults') %>
     <%- include('global-border-defaults') %>
+    <%- include('global-graphic-defaults') %>
     <%- include('global-common-settings') %>
 
     <script>
@@ -76,11 +78,13 @@ Located in `packages/stream-deck-plugin/src/pi-templates/partials/`:
 - **common-settings.ejs** - Common settings shared by all actions (flags overlay), wrapped in accordion
 - **color-overrides.ejs** - Per-action color override controls with Default/White/Black presets
 - **border-overrides.ejs** - Per-action border settings (enable, width, color). Place after color-overrides.
+- **graphic-overrides.ejs** - Per-action graphic scale settings (Inherit/Icon Default/Override). Place after border-overrides, before common-settings.
 - **title-overrides.ejs** - Per-action title override controls (show/hide title and graphics, title text, bold, font size, position)
 - **global-key-bindings.ejs** - Key bindings in collapsible section
 - **global-color-defaults.ejs** - Global icon color defaults (presets, color pickers) in accordion
 - **global-title-defaults.ejs** - Global title defaults (show/hide, bold, font size, position) in accordion
 - **global-border-defaults.ejs** - Global border defaults (enable, width, color, glow) in accordion
+- **global-graphic-defaults.ejs** - Global graphic scale default (50-150%, default 100%) in accordion
 - **global-common-settings.ejs** - Global common settings (window focus, SimHub server) in accordion
 - **docs-link.ejs** - Documentation link to the action's page on iracedeck.com (conditional, hidden when no URL mapped)
 - **version.ejs** - Version footer with downloads link
@@ -119,7 +123,34 @@ No parameters needed. The partial provides controls for:
 
 For toggle actions (DRS, Push-to-Pass, Fuel Toggle, Windshield Tearoff, Fast Repair), the color picker is ignored — border color is driven by on/off/n/a state automatically.
 
-Place after `color-overrides` include, before `common-settings`.
+Place after `color-overrides` include, before `graphic-overrides`.
+
+## Graphic Overrides Partial
+
+Adds per-action graphic scale settings. Settings are stored under the `graphicOverrides` key in action settings. Only effective when the icon declares `artworkBounds` in its `<desc>` metadata.
+
+```ejs
+<%- include('graphic-overrides') %>
+```
+
+No parameters needed. The partial provides controls for:
+- **Scale Mode** — dropdown (Inherit / Icon Default / Override). "Inherit" uses global graphic scale. "Icon Default" uses 100%. "Override" shows the scale slider.
+- **Scale %** — range slider (50-150, step 5, default 100), hidden unless Scale Mode is "Override"
+
+Place after `border-overrides`, before `common-settings`.
+
+## Global Graphic Defaults Partial
+
+Adds a plugin-wide graphic scale default in a collapsible "Graphic Defaults" accordion. The setting is stored in global settings (`graphicScale` key).
+
+```ejs
+<%- include('global-graphic-defaults') %>
+```
+
+No parameters needed. The partial provides:
+- **Graphic Scale %** — range slider (50-150, step 5, default 100, stored globally)
+
+Place after `global-border-defaults`, before `global-common-settings`.
 
 ## Color Overrides Partial
 

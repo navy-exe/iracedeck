@@ -17,7 +17,7 @@ Icon SVGs contain only artwork — the background and title are assembled at ren
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"subLabel\nmainLabel"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"subLabel\nmainLabel"},"artworkBounds":{"x":20,"y":18,"width":104,"height":68}}</desc>
 
   <!-- Icon content area: y=18 to y=86 (recommended) -->
   {icon content using {{graphic1Color}} for eligible artwork}
@@ -74,7 +74,7 @@ All icon SVGs now use this graphic snippet format:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CATEGORY\nACTION"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CATEGORY\nACTION"},"artworkBounds":{"x":20,"y":18,"width":104,"height":68}}</desc>
 
   <!-- Icon content area: y=18 to y=86 -->
   <!-- ... artwork using {{graphic1Color}} ... -->
@@ -83,6 +83,8 @@ All icon SVGs now use this graphic snippet format:
 ```
 
 The default title text format is `"subLabel\nmainLabel"` — first line is the secondary (smaller) label, second line is the primary (bold) label. These are rendered at the bottom of the icon at position y≈118–140 by `generateTitleText()`.
+
+The `artworkBounds` field declares the bounding box of the artwork content (`x`, `y`, `width`, `height`). When present and the `graphic` parameter is passed to `assembleIcon()`, the artwork is dynamically scaled and repositioned to fit the available area based on title placement. Auto-detect bounds with `node scripts/generate-artwork-bounds.mjs`.
 
 ## Specialized Types
 
