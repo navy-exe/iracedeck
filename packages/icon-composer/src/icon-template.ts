@@ -117,7 +117,13 @@ export function parseIconTitleDefaults(svgTemplate: string): IconTitleDefaults {
     position: typeof pos === "string" && validPositions.has(pos) ? (pos as IconTitleDefaults["position"]) : undefined,
     fontSize: typeof title.fontSize === "number" ? title.fontSize : undefined,
     customPosition: typeof title.customPosition === "number" ? title.customPosition : undefined,
-    locked: Array.isArray(title.locked) ? (title.locked as string[]) : undefined,
+    locked: (() => {
+      if (!Array.isArray(title.locked)) return undefined;
+
+      const filtered = title.locked.filter((item): item is string => typeof item === "string");
+
+      return filtered.length > 0 ? filtered : undefined;
+    })(),
   };
 }
 

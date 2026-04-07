@@ -339,6 +339,18 @@ describe("parseIconTitleDefaults", () => {
     const result = parseIconTitleDefaults(svg);
     expect(result.locked).toBeUndefined();
   });
+
+  it("should filter non-string entries from locked array", () => {
+    const svg = `<svg><desc>{"title":{"text":"TEST","locked":["showTitle",42,true,"fontSize"]}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.locked).toEqual(["showTitle", "fontSize"]);
+  });
+
+  it("should return undefined for locked when all entries are non-string", () => {
+    const svg = `<svg><desc>{"title":{"text":"TEST","locked":[1,2,3]}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.locked).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
