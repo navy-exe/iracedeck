@@ -52,9 +52,9 @@ vi.mock("@iracedeck/icons/tire-service/clear-tires.svg", () => ({
   default: "<svg>clear-tires-icon</svg>",
 }));
 
-vi.mock("@iracedeck/icons/tire-service/toggle-tires.svg", () => ({
+vi.mock("../../icons/tire-service.svg", () => ({
   default:
-    '<svg><desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#888888"},"title":{"text":"TIRES"}}</desc><g>toggle-tires-car</g></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>{{borderDefs}}<g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" rx="24" fill="{{backgroundColor}}"/>{{borderContent}}{{iconContent}}{{textElement}}</g></svg>',
 }));
 
 vi.mock("@iracedeck/iracing-sdk", () => ({
@@ -120,14 +120,10 @@ vi.mock("@iracedeck/deck-core", () => ({
       .trim(),
   ),
   generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
-  generateTitleText: vi.fn((opts: { text: string; fill: string }) =>
-    opts.text ? `<text fill="${opts.fill}">${opts.text}</text>` : "",
-  ),
   getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
   getGlobalGraphicSettings: vi.fn(() => ({})),
   getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
-  ICON_BASE_TEMPLATE: "<svg>{{backgroundColor}}|{{borderContent}}|{{graphicContent}}|{{titleContent}}</svg>",
   LogLevel: { Info: 2 },
   parseIconArtworkBounds: vi.fn(() => undefined),
   generateIconText: vi.fn(
@@ -497,11 +493,13 @@ describe("TireService", () => {
   });
 
   describe("generateToggleTiresIconContent", () => {
-    it("should return SVG with 4 tire indicator rects", () => {
+    it("should return SVG with car body path and tire rects", () => {
       const result = generateToggleTiresIconContent(
         { mode: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] },
         { lf: false, rf: false, lr: false, rr: false },
+        "#ffffff",
       );
+      expect(result).toContain("<path");
       const rects = result.match(/<rect[^>]+>/g) ?? [];
       expect(rects).toHaveLength(4);
     });
@@ -510,6 +508,7 @@ describe("TireService", () => {
       const result = generateToggleTiresIconContent(
         { mode: "toggle-tires", tires: ["lf", "lr"] },
         { lf: true, rf: false, lr: false, rr: false },
+        "#ffffff",
       );
       // LF: configured + on = green
       // RF: not configured = black
@@ -533,6 +532,7 @@ describe("TireService", () => {
       const result = generateToggleTiresIconContent(
         { mode: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] },
         { lf: true, rf: true, lr: true, rr: true },
+        "#ffffff",
       );
       const rects = result.match(/<rect[^>]+>/g) ?? [];
       expect(rects).toHaveLength(4);
@@ -546,6 +546,7 @@ describe("TireService", () => {
       const result = generateToggleTiresIconContent(
         { mode: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] },
         { lf: false, rf: false, lr: false, rr: false },
+        "#ffffff",
       );
       const rects = result.match(/<rect[^>]+>/g) ?? [];
       expect(rects).toHaveLength(4);
@@ -553,6 +554,15 @@ describe("TireService", () => {
       for (const rect of rects) {
         expect(rect).toContain('fill="#FF4444"');
       }
+    });
+
+    it("should apply bodyColor to the car body path", () => {
+      const result = generateToggleTiresIconContent(
+        { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
+        { lf: true, rf: true, lr: true, rr: true },
+        "#ff0000",
+      );
+      expect(result).toContain('fill="#ff0000"');
     });
   });
 
