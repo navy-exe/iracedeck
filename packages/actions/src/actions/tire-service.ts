@@ -60,7 +60,10 @@ const TireCode = z.enum(["lf", "rf", "lr", "rr"]);
 
 const TireServiceSettings = CommonSettings.extend({
   action: z.enum(["change-all-tires", "clear-tires", "toggle-tires", "change-compound"]).default("change-all-tires"),
-  tires: z.array(TireCode).default(["lf", "rf", "lr", "rr"]),
+  tires: z
+    .array(TireCode)
+    .default(["lf", "rf", "lr", "rr"])
+    .transform((arr) => [...new Set(arr)]),
   // Legacy boolean fields — kept for backward-compatible migration only
   lf: z.coerce.boolean().optional(),
   rf: z.coerce.boolean().optional(),

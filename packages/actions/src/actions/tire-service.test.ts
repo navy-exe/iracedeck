@@ -355,6 +355,11 @@ describe("TireService", () => {
       expect(areLeftTiresOn({ tires: ["lf"] })).toBe(false);
       expect(areLeftTiresOn({ tires: ["lr"] })).toBe(false);
     });
+
+    it("should return false for duplicate entries", () => {
+      expect(areLeftTiresOn({ tires: ["lf", "lf"] as any })).toBe(false);
+      expect(areLeftTiresOn({ tires: ["lr", "lr"] as any })).toBe(false);
+    });
   });
 
   describe("areRightTiresOn", () => {
@@ -374,6 +379,11 @@ describe("TireService", () => {
     it("should return false when only one right tire is selected", () => {
       expect(areRightTiresOn({ tires: ["rf"] })).toBe(false);
       expect(areRightTiresOn({ tires: ["rr"] })).toBe(false);
+    });
+
+    it("should return false for duplicate entries", () => {
+      expect(areRightTiresOn({ tires: ["rf", "rf"] as any })).toBe(false);
+      expect(areRightTiresOn({ tires: ["rr", "rr"] as any })).toBe(false);
     });
   });
 
