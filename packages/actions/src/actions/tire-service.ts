@@ -237,7 +237,7 @@ function getCompoundState(telemetry: TelemetryData | null): { player: number; pi
  * Check if all four tires are selected.
  */
 export function areAllTiresOn(settings: Pick<TireServiceSettings, "tires">): boolean {
-  return settings.tires.length === 4;
+  return new Set(settings.tires).size === 4;
 }
 
 /**

@@ -331,6 +331,10 @@ describe("TireService", () => {
     it("should return false when no tires are selected", () => {
       expect(areAllTiresOn({ tires: [] })).toBe(false);
     });
+
+    it("should return false for duplicate entries that reach length 4", () => {
+      expect(areAllTiresOn({ tires: ["lf", "lf", "lf", "lf"] as any })).toBe(false);
+    });
   });
 
   describe("areLeftTiresOn", () => {
