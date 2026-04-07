@@ -6,8 +6,9 @@
 	<body>
 		<%- include('section-header', { title: 'Action Settings' }) %>
 
-		<sdpi-item label="Category">
-			<sdpi-select id="category-select" setting="category" default="voice-chat">
+		<sdpi-item label="Mode">
+			<sdpi-select id="category-select" setting="category" default="push-to-talk">
+				<option value="push-to-talk">Push to Talk</option>
 				<option value="voice-chat">Voice Chat</option>
 				<option value="master">Master</option>
 			</sdpi-select>
@@ -23,7 +24,7 @@
 
 		<%- include('title-overrides') %>
 
-		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['audio-controls'] }) %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color', 'graphic2Color'], defaults: require('./data/icon-defaults.json')['audio-controls'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['audio-controls'] }) %>
 		<%- include('graphic-overrides') %>
 		<%- include('common-settings') %>
@@ -42,18 +43,27 @@
 
 		<script>
 			function updateVisibility(category) {
+				const actionItem = document.getElementById("action-item");
 				const actionSelect = document.getElementById("action-select");
 				const muteOption = document.querySelector('#action-select option[value="mute"]');
-				if (!muteOption) return;
 
-				if (category === "master") {
-					muteOption.style.display = "none";
-					// If mute was selected, switch to volume-up
-					if (actionSelect && actionSelect.value === "mute") {
-						actionSelect.value = "volume-up";
-					}
+				if (category === "push-to-talk") {
+					// Hide the entire action dropdown for PTT
+					if (actionItem) actionItem.classList.add("hidden");
 				} else {
-					muteOption.style.display = "";
+					if (actionItem) actionItem.classList.remove("hidden");
+
+					if (muteOption) {
+						if (category === "master") {
+							muteOption.style.display = "none";
+							// If mute was selected, switch to volume-up
+							if (actionSelect && actionSelect.value === "mute") {
+								actionSelect.value = "volume-up";
+							}
+						} else {
+							muteOption.style.display = "";
+						}
+					}
 				}
 			}
 
@@ -63,18 +73,18 @@
 				const categorySelect = document.getElementById("category-select");
 
 				if (categorySelect) {
-					const initialValue = categorySelect.value || "voice-chat";
+					const initialValue = categorySelect.value || "push-to-talk";
 					updateVisibility(initialValue);
 
 					categorySelect.addEventListener("change", (ev) => {
-						updateVisibility(ev.target.value || "voice-chat");
+						updateVisibility(ev.target.value || "push-to-talk");
 					});
 					categorySelect.addEventListener("input", (ev) => {
-						updateVisibility(ev.target.value || "voice-chat");
+						updateVisibility(ev.target.value || "push-to-talk");
 					});
 
 					// Polling fallback for reliable detection
-					let lastValue = categorySelect.value || "voice-chat";
+					let lastValue = categorySelect.value || "push-to-talk";
 					setInterval(() => {
 						const currentValue = categorySelect.value;
 						if (currentValue && currentValue !== lastValue) {
