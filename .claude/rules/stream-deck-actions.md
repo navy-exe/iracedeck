@@ -100,9 +100,11 @@ function generateIcon(settings: MySettings): string {
 
 The `resolveTitleSettings()` resolution order for each field:
 1. `settings.titleOverrides` — per-action override (from Title Overrides PI section)
-2. `getGlobalTitleSettings()` — plugin-level global setting
+2. `getGlobalTitleSettings()` — plugin-level global setting (skipped if field is in `<desc>` title `locked` array)
 3. `<desc>` title metadata in the SVG — icon default
-4. Hard-coded defaults (showTitle=true, bold=true, fontSize=18, position="bottom")
+4. `TITLE_DEFAULTS` (showTitle=true, bold=true, fontSize=9 (doubled to 18 at SVG render), position="bottom")
+
+Icons where the title is integral to the design (e.g., DRS, Push-to-Pass) should declare `"locked":["showTitle","fontSize"]` in their `<desc>` title metadata. See `icons.md` for details.
 
 ### Super Calls
 

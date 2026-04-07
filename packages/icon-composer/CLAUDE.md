@@ -25,7 +25,7 @@ Standalone SVG icon assembly and composition library for Stream Deck plugins. Co
 **Metadata Parsers** (all read from `<desc>` JSON in SVG):
 - `parseDescMetadata()` — Raw JSON parser for `<desc>` element
 - `parseIconDefaults()` — Color slot defaults (`colors` field)
-- `parseIconTitleDefaults()` — Title defaults (`title` field)
+- `parseIconTitleDefaults()` — Title defaults (`title` field), including `showTitle` and `locked` array for protecting fields from global overrides
 - `parseIconBorderDefaults()` — Border defaults (`border` field)
 - `parseIconArtworkBounds()` — Artwork bounding box (`artworkBounds` field)
 - `parseIconLocked()` — Locked color slot names (`locked` field)
@@ -33,7 +33,7 @@ Standalone SVG icon assembly and composition library for Stream Deck plugins. Co
 
 ### Title, Border, Graphic Settings & Assembly (`title-settings.ts`)
 
-- `resolveTitleSettings()` — Merges per-action, global, icon default, and hardcoded title settings
+- `resolveTitleSettings()` — Merges per-action, global, icon default, and hardcoded title settings; respects `locked` title fields from `<desc>` metadata (skips global for locked fields)
 - `resolveBorderSettings()` — Merges per-action, global, icon default, and hardcoded border settings
 - `resolveGraphicSettings()` — Merges per-action graphic overrides and global graphic settings
 - `generateTitleText()` — Generates positioned SVG title text elements
