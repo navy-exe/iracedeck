@@ -51,7 +51,7 @@ const AUDIO_ICONS: Record<string, string> = {
  * Title text for each category + action combination (format: "subLabel\nmainLabel")
  */
 const AUDIO_CONTROLS_TITLES: Record<string, string> = {
-  "push-to-talk": "PUSH\nTO TALK",
+  "push-to-talk": "TALK",
   "voice-chat-volume-up": "VOL UP\nVOICE",
   "voice-chat-volume-down": "VOL DOWN\nVOICE",
   "voice-chat-mute": "MUTE\nVOICE",
@@ -94,7 +94,7 @@ export function generateAudioControlsSvg(settings: AudioControlsSettings): strin
 
   if (category === "push-to-talk") {
     iconKey = "push-to-talk";
-    defaultTitle = AUDIO_CONTROLS_TITLES["push-to-talk"] || "PUSH\nTO TALK";
+    defaultTitle = AUDIO_CONTROLS_TITLES["push-to-talk"] || "TALK";
   } else {
     // For master category with mute, fall back to volume-up display
     const effectiveAction = category === "master" && audioAction === "mute" ? "volume-up" : audioAction;

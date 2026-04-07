@@ -268,8 +268,7 @@ describe("AudioControls", () => {
       const result = generateAudioControlsSvg({ category: "push-to-talk", action: "volume-up" });
       const decoded = decodeURIComponent(result);
 
-      expect(decoded).toContain("TO TALK");
-      expect(decoded).toContain("PUSH");
+      expect(decoded).toContain("TALK");
     });
 
     it("should produce a different icon for push-to-talk vs voice-chat", () => {
