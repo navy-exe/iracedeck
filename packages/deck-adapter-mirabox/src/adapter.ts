@@ -40,6 +40,10 @@ class VSDActionContext implements IDeckActionContext {
     this.client.setTitle(this.id, title);
   }
 
+  async setSettings(settings: Record<string, unknown>): Promise<void> {
+    this.client.setSettings(this.id, settings);
+  }
+
   isKey(): boolean {
     return this.controllerType === "Keypad";
   }
@@ -73,6 +77,9 @@ function wrapDisappearEvent<T>(data: VSDEvent & { context: string }): IDeckWillD
         /* no-op: action is disappearing */
       },
       async setTitle() {
+        /* no-op: action is disappearing */
+      },
+      async setSettings() {
         /* no-op: action is disappearing */
       },
       isKey() {

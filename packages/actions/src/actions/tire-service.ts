@@ -56,15 +56,67 @@ const DEFAULT_TIRES: DriverTire[] = [{ TireIndex: 0, TireCompoundType: "Dry" }];
 
 type DriverTire = { TireIndex: number; TireCompoundType: string };
 
+const TireCode = z.enum(["lf", "rf", "lr", "rr"]);
+
 const TireServiceSettings = CommonSettings.extend({
   action: z.enum(["change-all-tires", "clear-tires", "toggle-tires", "change-compound"]).default("change-all-tires"),
-  lf: z.coerce.boolean().default(true),
-  rf: z.coerce.boolean().default(true),
-  lr: z.coerce.boolean().default(true),
-  rr: z.coerce.boolean().default(true),
+  tires: z.array(TireCode).default(["lf", "rf", "lr", "rr"]),
+  // Legacy boolean fields — kept for backward-compatible migration only
+  lf: z.coerce.boolean().optional(),
+  rf: z.coerce.boolean().optional(),
+  lr: z.coerce.boolean().optional(),
+  rr: z.coerce.boolean().optional(),
 });
 
 type TireServiceSettings = z.infer<typeof TireServiceSettings>;
+
+/**
+ * @internal Exported for testing
+ *
+ * Migrates legacy boolean tire settings (lf/rf/lr/rr) to the new tires array.
+ * Only runs when tires key is absent from the raw settings and legacy booleans are present.
+ */
+export function migrateTireSettings(raw: unknown): TireServiceSettings {
+  const parsed = TireServiceSettings.safeParse(raw);
+  const data = parsed.success ? parsed.data : TireServiceSettings.parse({});
+
+  const rawRecord = raw as Record<string, unknown> | undefined;
+
+  if (!rawRecord || rawRecord.tires !== undefined) {
+    return data;
+  }
+
+  const hasLegacy =
+    rawRecord.lf !== undefined ||
+    rawRecord.rf !== undefined ||
+    rawRecord.lr !== undefined ||
+    rawRecord.rr !== undefined;
+
+  if (hasLegacy) {
+    const migrated: Array<"lf" | "rf" | "lr" | "rr"> = [];
+
+    if (data.lf !== false) migrated.push("lf");
+
+    if (data.rf !== false) migrated.push("rf");
+
+    if (data.lr !== false) migrated.push("lr");
+
+    if (data.rr !== false) migrated.push("rr");
+
+    return { ...data, tires: migrated };
+  }
+
+  return data;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Returns whether a tire position is selected in the tires array.
+ */
+export function isTireSelected(settings: TireServiceSettings, tire: "lf" | "rf" | "lr" | "rr"): boolean {
+  return settings.tires.includes(tire);
+}
 
 /**
  * @internal Exported for testing
@@ -186,15 +238,7 @@ function getCompoundState(telemetry: TelemetryData | null): { player: number; pi
  * Returns null if no tires are configured.
  */
 export function buildTireToggleMacro(settings: TireServiceSettings): string | null {
-  const parts: string[] = [];
-
-  if (settings.lf) parts.push("!lf");
-
-  if (settings.rf) parts.push("!rf");
-
-  if (settings.lr) parts.push("!lr");
-
-  if (settings.rr) parts.push("!rr");
+  const parts = settings.tires.map((t) => `!${t}`);
 
   return parts.length > 0 ? `#${parts.join(" ")}` : null;
 }
@@ -209,10 +253,10 @@ export function generateToggleTiresIconContent(
   settings: TireServiceSettings,
   currentState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
 ): string {
-  const lfColor = getTireColor(settings.lf ?? false, currentState.lf);
-  const rfColor = getTireColor(settings.rf ?? false, currentState.rf);
-  const lrColor = getTireColor(settings.lr ?? false, currentState.lr);
-  const rrColor = getTireColor(settings.rr ?? false, currentState.rr);
+  const lfColor = getTireColor(isTireSelected(settings, "lf"), currentState.lf);
+  const rfColor = getTireColor(isTireSelected(settings, "rf"), currentState.rf);
+  const lrColor = getTireColor(isTireSelected(settings, "lr"), currentState.lr);
+  const rrColor = getTireColor(isTireSelected(settings, "rr"), currentState.rr);
 
   return [
     `<rect x="39.57" y="22.94" width="14.88" height="16.13" rx="2" fill="${lfColor}" stroke="${GRAY}" stroke-width="1"/>`,
@@ -361,8 +405,20 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
   override async onWillAppear(ev: IDeckWillAppearEvent<TireServiceSettings>): Promise<void> {
     await super.onWillAppear(ev);
+    const raw = ev.payload.settings as Record<string, unknown> | undefined;
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
+
+    // Persist Zod defaults on fresh instances so the PI checkbox-list sees the tires array
+    if (!raw || raw.tires === undefined) {
+      try {
+        await ev.action.setSettings({ ...(raw ?? {}), tires: settings.tires });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to persist default settings: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
 
     await this.updateDisplayWithEvent(ev, settings);
 
@@ -411,9 +467,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
   }
 
   private parseSettings(settings: unknown): TireServiceSettings {
-    const parsed = TireServiceSettings.safeParse(settings);
-
-    return parsed.success ? parsed.data : TireServiceSettings.parse({});
+    return migrateTireSettings(settings);
   }
 
   private async updateDisplayWithEvent(
@@ -466,7 +520,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     const bo = settings.borderOverrides;
     const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
-    return `${settings.action}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}|${borderKey}`;
+    return `${settings.action}|${settings.tires.join(",")}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}|${borderKey}`;
   }
 
   private executeAction(rawSettings: unknown): void {
