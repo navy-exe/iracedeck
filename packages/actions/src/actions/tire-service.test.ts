@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  areAllTiresOn,
+  areLeftTiresOn,
+  areRightTiresOn,
   buildTireToggleMacro,
   generateTireIcon,
   generateTireServiceSvg,
@@ -315,19 +318,98 @@ describe("TireService", () => {
     });
   });
 
-  describe("buildTireToggleMacro", () => {
-    it("should build macro for all tires", () => {
-      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] } as any)).toBe(
-        "#!lf !rf !lr !rr",
-      );
+  describe("areAllTiresOn", () => {
+    it("should return true when all four tires are selected", () => {
+      expect(areAllTiresOn({ tires: ["lf", "rf", "lr", "rr"] })).toBe(true);
     });
 
-    it("should build macro for front tires only", () => {
+    it("should return false when any tire is missing", () => {
+      expect(areAllTiresOn({ tires: ["lf", "rf", "lr"] })).toBe(false);
+      expect(areAllTiresOn({ tires: ["rf", "lr", "rr"] })).toBe(false);
+    });
+
+    it("should return false when no tires are selected", () => {
+      expect(areAllTiresOn({ tires: [] })).toBe(false);
+    });
+
+    it("should return false for duplicate entries that reach length 4", () => {
+      expect(areAllTiresOn({ tires: ["lf", "lf", "lf", "lf"] as any })).toBe(false);
+    });
+  });
+
+  describe("areLeftTiresOn", () => {
+    it("should return true when exactly LF and LR are selected", () => {
+      expect(areLeftTiresOn({ tires: ["lf", "lr"] })).toBe(true);
+    });
+
+    it("should return false when right-side tires are also selected", () => {
+      expect(areLeftTiresOn({ tires: ["lf", "rf", "lr"] })).toBe(false);
+      expect(areLeftTiresOn({ tires: ["lf", "lr", "rr"] })).toBe(false);
+    });
+
+    it("should return false when all tires are selected", () => {
+      expect(areLeftTiresOn({ tires: ["lf", "rf", "lr", "rr"] })).toBe(false);
+    });
+
+    it("should return false when only one left tire is selected", () => {
+      expect(areLeftTiresOn({ tires: ["lf"] })).toBe(false);
+      expect(areLeftTiresOn({ tires: ["lr"] })).toBe(false);
+    });
+
+    it("should return false for duplicate entries", () => {
+      expect(areLeftTiresOn({ tires: ["lf", "lf"] as any })).toBe(false);
+      expect(areLeftTiresOn({ tires: ["lr", "lr"] as any })).toBe(false);
+    });
+  });
+
+  describe("areRightTiresOn", () => {
+    it("should return true when exactly RF and RR are selected", () => {
+      expect(areRightTiresOn({ tires: ["rf", "rr"] })).toBe(true);
+    });
+
+    it("should return false when left-side tires are also selected", () => {
+      expect(areRightTiresOn({ tires: ["lf", "rf", "rr"] })).toBe(false);
+      expect(areRightTiresOn({ tires: ["rf", "lr", "rr"] })).toBe(false);
+    });
+
+    it("should return false when all tires are selected", () => {
+      expect(areRightTiresOn({ tires: ["lf", "rf", "lr", "rr"] })).toBe(false);
+    });
+
+    it("should return false when only one right tire is selected", () => {
+      expect(areRightTiresOn({ tires: ["rf"] })).toBe(false);
+      expect(areRightTiresOn({ tires: ["rr"] })).toBe(false);
+    });
+
+    it("should return false for duplicate entries", () => {
+      expect(areRightTiresOn({ tires: ["rf", "rf"] as any })).toBe(false);
+      expect(areRightTiresOn({ tires: ["rr", "rr"] as any })).toBe(false);
+    });
+  });
+
+  describe("buildTireToggleMacro", () => {
+    it("should use shorthand #!t for all tires", () => {
+      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] } as any)).toBe("#!t");
+    });
+
+    it("should use shorthand #!l for left side only", () => {
+      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lf", "lr"] } as any)).toBe("#!l");
+    });
+
+    it("should use shorthand #!r for right side only", () => {
+      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["rf", "rr"] } as any)).toBe("#!r");
+    });
+
+    it("should use per-tire macro for front tires only", () => {
       expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lf", "rf"] } as any)).toBe("#!lf !rf");
     });
 
-    it("should build macro for left side only", () => {
-      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lf", "lr"] } as any)).toBe("#!lf !lr");
+    it("should use per-tire macro for rear tires only", () => {
+      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lr", "rr"] } as any)).toBe("#!lr !rr");
+    });
+
+    it("should use per-tire macro for diagonal tires", () => {
+      expect(buildTireToggleMacro({ action: "toggle-tires", tires: ["lf", "rr"] } as any)).toBe("#!lf !rr");
     });
 
     it("should build macro for single tire", () => {
@@ -606,18 +688,32 @@ describe("TireService", () => {
     });
 
     describe("toggle-tires mode", () => {
-      it("should send toggle macro for all configured tires", async () => {
+      it("should send shorthand #!t for all configured tires", async () => {
         await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
 
         expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
+        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
       });
 
-      it("should send toggle macro for only configured tires", async () => {
+      it("should send shorthand #!l for left side only", async () => {
         await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "lr"] }) as any);
 
         expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!lf !lr");
+        expect(mockSendMessage).toHaveBeenCalledWith("#!l");
+      });
+
+      it("should send shorthand #!r for right side only", async () => {
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["rf", "rr"] }) as any);
+
+        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+      });
+
+      it("should send per-tire macro for non-group combinations", async () => {
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"] }) as any);
+
+        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf");
       });
 
       it("should not send message when no tires configured", async () => {
@@ -762,11 +858,11 @@ describe("TireService", () => {
       expect(mockSendMessage).toHaveBeenCalledWith("#t");
     });
 
-    it("should send toggle macro on dial down", async () => {
+    it("should send shorthand #!t on dial down for all tires", async () => {
       await action.onDialDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
 
       expect(mockSendMessage).toHaveBeenCalledOnce();
-      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
+      expect(mockSendMessage).toHaveBeenCalledWith("#!t");
     });
 
     it("should cycle compound on dial down for change-compound", async () => {

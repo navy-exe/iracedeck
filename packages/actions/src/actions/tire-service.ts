@@ -60,7 +60,10 @@ const TireCode = z.enum(["lf", "rf", "lr", "rr"]);
 
 const TireServiceSettings = CommonSettings.extend({
   action: z.enum(["change-all-tires", "clear-tires", "toggle-tires", "change-compound"]).default("change-all-tires"),
-  tires: z.array(TireCode).default(["lf", "rf", "lr", "rr"]),
+  tires: z
+    .array(TireCode)
+    .default(["lf", "rf", "lr", "rr"])
+    .transform((arr) => [...new Set(arr)]),
   // Legacy boolean fields — kept for backward-compatible migration only
   lf: z.coerce.boolean().optional(),
   rf: z.coerce.boolean().optional(),
@@ -234,10 +237,44 @@ function getCompoundState(telemetry: TelemetryData | null): { player: number; pi
 /**
  * @internal Exported for testing
  *
+ * Check if all four tires are selected.
+ */
+export function areAllTiresOn(settings: Pick<TireServiceSettings, "tires">): boolean {
+  return new Set(settings.tires).size === 4;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Check if exactly the left-side tires (LF + LR) are selected.
+ */
+export function areLeftTiresOn(settings: Pick<TireServiceSettings, "tires">): boolean {
+  return settings.tires.length === 2 && settings.tires.includes("lf") && settings.tires.includes("lr");
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Check if exactly the right-side tires (RF + RR) are selected.
+ */
+export function areRightTiresOn(settings: Pick<TireServiceSettings, "tires">): boolean {
+  return settings.tires.length === 2 && settings.tires.includes("rf") && settings.tires.includes("rr");
+}
+
+/**
+ * @internal Exported for testing
+ *
  * Builds a pit macro string to toggle the configured tires.
+ * Uses shorthand macros (#!t, #!l, #!r) when tires match a recognized group pattern.
  * Returns null if no tires are configured.
  */
 export function buildTireToggleMacro(settings: TireServiceSettings): string | null {
+  if (areAllTiresOn(settings)) return "#!t";
+
+  if (areLeftTiresOn(settings)) return "#!l";
+
+  if (areRightTiresOn(settings)) return "#!r";
+
   const parts = settings.tires.map((t) => `!${t}`);
 
   return parts.length > 0 ? `#${parts.join(" ")}` : null;
