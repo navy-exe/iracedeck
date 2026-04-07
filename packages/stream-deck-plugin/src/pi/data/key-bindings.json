@@ -893,6 +893,12 @@
   ],
   "audioControls": [
     {
+      "id": "pushToTalk",
+      "label": "Push to Talk",
+      "default": "",
+      "setting": "audioControlsPushToTalk"
+    },
+    {
       "id": "voiceChatVolumeUp",
       "label": "Voice Chat Volume Up",
       "default": "Shift+Ctrl+Alt+numpad_add",
