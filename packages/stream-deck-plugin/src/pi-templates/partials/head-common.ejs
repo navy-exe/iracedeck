@@ -429,7 +429,11 @@
       var el = document.querySelector('[setting="' + setting + '"]');
       if (el) {
         el.value = value;
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+        if (typeof el.save === 'function') {
+          el.save();
+        } else {
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
       }
     });
 
