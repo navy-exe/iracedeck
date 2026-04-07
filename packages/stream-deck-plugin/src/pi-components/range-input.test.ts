@@ -228,18 +228,31 @@ describe("ird-range-input", () => {
     });
   });
 
-  describe("external change events", () => {
-    it("should handle external value + change pattern (toggle scripts)", () => {
-      (range as HTMLInputElement).value = "9";
-      range.dispatchEvent(new Event("change", { bubbles: true }));
-      expect((range as HTMLInputElement).value).toBe("9");
+  describe("save", () => {
+    it("should call saveToStreamDeck with current value", () => {
+      const saveFn = vi.fn();
+      (range as unknown as Record<string, unknown>).saveToStreamDeck = saveFn;
+
+      (range as HTMLInputElement).value = "15";
+      (range as unknown as { save(): void }).save();
+
+      expect(saveFn).toHaveBeenCalledWith("15");
     });
 
-    it("should handle cleared value from toggle scripts", () => {
-      (range as HTMLInputElement).value = "9";
+    it("should call saveToStreamDeck with empty string when cleared", () => {
+      const saveFn = vi.fn();
+      (range as unknown as Record<string, unknown>).saveToStreamDeck = saveFn;
+
       (range as HTMLInputElement).value = "";
-      range.dispatchEvent(new Event("change", { bubbles: true }));
-      expect((range as HTMLInputElement).value).toBe("");
+      (range as unknown as { save(): void }).save();
+
+      expect(saveFn).toHaveBeenCalledWith("");
+    });
+
+    it("should be a no-op when saveToStreamDeck is null", () => {
+      (range as HTMLInputElement).value = "10";
+      // saveToStreamDeck is null by default (no SDPIComponents in test)
+      expect(() => (range as unknown as { save(): void }).save()).not.toThrow();
     });
   });
 
