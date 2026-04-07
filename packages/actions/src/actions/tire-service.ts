@@ -1,15 +1,12 @@
 import {
-  applyGraphicTransform,
   assembleIcon,
   CommonSettings,
-  computeGraphicArea,
   ConnectionStateAwareAction,
   generateBorderParts,
   generateIconText,
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
-  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   getSDK,
   type IDeckDialDownEvent,
@@ -21,7 +18,6 @@ import {
   parseIconArtworkBounds,
   renderIconTemplate,
   resolveBorderSettings,
-  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -304,16 +300,9 @@ export function doCurrentTiresMatch(
  * @internal Exported for testing
  *
  * Builds a pit macro string to toggle the configured tires.
- * Uses shorthand macros (#!t, #!l, #!r) when tires match a recognized group pattern.
  * Returns null if no tires are configured.
  */
 export function buildTireToggleMacro(settings: TireServiceSettings): string | null {
-  if (areAllTiresOn(settings)) return "#!t";
-
-  if (areLeftTiresOn(settings)) return "#!l";
-
-  if (areRightTiresOn(settings)) return "#!r";
-
   const parts = settings.tires.map((t) => `!${t}`);
 
   return parts.length > 0 ? `#${parts.join(" ")}` : null;
@@ -322,8 +311,8 @@ export function buildTireToggleMacro(settings: TireServiceSettings): string | nu
 /**
  * @internal Exported for testing
  *
- * Generates dynamic tire indicator SVG rectangles for the toggle-tires action.
- * Uses native 144x144 coordinates matching the pre-rotated car body graphic.
+ * Generates dynamic tire indicator SVG paths for the toggle-tires action.
+ * Uses the same coordinate space as the car body with per-tire scaling for visibility.
  */
 export function generateToggleTiresIconContent(
   settings: TireServiceSettings,
@@ -365,14 +354,11 @@ export function generateTireServiceSvg(
 
       const border = resolveBorderSettings(changeAllTiresIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-      const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
-
       return assembleIcon({
         graphicSvg: changeAllTiresIconSvg,
         colors,
         title,
         border,
-        graphic,
       });
     }
     case "change-compound": {
@@ -420,9 +406,7 @@ export function generateTireServiceSvg(
 
       const border = resolveBorderSettings(clearTiresIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-      const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
-
-      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title, border, graphic });
+      return assembleIcon({ graphicSvg: clearTiresIconSvg, colors, title, border });
     }
     default: {
       const toggleColors = resolveIconColors(tireServiceTemplate, getGlobalColors(), settings.colorOverrides);

@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  areAllTiresOn,
-  areLeftTiresOn,
-  areRightTiresOn,
   buildTireToggleMacro,
   doCurrentTiresMatch,
   generateTireIcon,
@@ -122,10 +119,8 @@ vi.mock("@iracedeck/deck-core", () => ({
   generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
   getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
-  getGlobalGraphicSettings: vi.fn(() => ({})),
   getSDK: vi.fn(() => ({ sdk: { getSessionInfo: mockGetSessionInfo } })),
   LogLevel: { Info: 2 },
-  parseIconArtworkBounds: vi.fn(() => undefined),
   generateIconText: vi.fn(
     (opts: { text: string; fontSize: number; fill: string }) => `<text fill="${opts.fill}">${opts.text}</text>`,
   ),
@@ -137,7 +132,6 @@ vi.mock("@iracedeck/deck-core", () => ({
     glowEnabled: true,
     glowWidth: 18,
   })),
-  resolveGraphicSettings: vi.fn(() => ({ scale: 1 })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,
@@ -177,13 +171,7 @@ vi.mock("@iracedeck/deck-core", () => ({
 
 function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
   return {
-    action: {
-      id: actionId,
-      setTitle: vi.fn(),
-      setImage: vi.fn(),
-      setSettings: vi.fn().mockResolvedValue(undefined),
-      isKey: () => true,
-    },
+    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn(), isKey: () => true },
     payload: { settings },
   };
 }
@@ -329,72 +317,44 @@ describe("TireService", () => {
     });
   });
 
-  describe("areAllTiresOn", () => {
-    it("should return true when all four tires are selected", () => {
-      expect(areAllTiresOn({ tires: ["lf", "rf", "lr", "rr"] })).toBe(true);
+  describe("isTireSelected", () => {
+    it("should return true when tire is in array", () => {
+      expect(isTireSelected({ action: "toggle-tires", tires: ["lf", "rf"] }, "lf")).toBe(true);
     });
 
-    it("should return false when any tire is missing", () => {
-      expect(areAllTiresOn({ tires: ["lf", "rf", "lr"] })).toBe(false);
-      expect(areAllTiresOn({ tires: ["rf", "lr", "rr"] })).toBe(false);
+    it("should return false when tire is not in array", () => {
+      expect(isTireSelected({ action: "toggle-tires", tires: ["lf", "rf"] }, "lr")).toBe(false);
     });
 
-    it("should return false when no tires are selected", () => {
-      expect(areAllTiresOn({ tires: [] })).toBe(false);
-    });
-
-    it("should return false for duplicate entries that reach length 4", () => {
-      expect(areAllTiresOn({ tires: ["lf", "lf", "lf", "lf"] as any })).toBe(false);
+    it("should return false for empty array", () => {
+      expect(isTireSelected({ action: "toggle-tires", tires: [] }, "lf")).toBe(false);
     });
   });
 
-  describe("areLeftTiresOn", () => {
-    it("should return true when exactly LF and LR are selected", () => {
-      expect(areLeftTiresOn({ tires: ["lf", "lr"] })).toBe(true);
+  describe("migrateTireSettings", () => {
+    it("should migrate old boolean settings when tires key is absent", () => {
+      const result = migrateTireSettings({ action: "toggle-tires", lf: true, rf: true, lr: false, rr: false });
+      expect(result.tires).toEqual(["lf", "rf"]);
     });
 
-    it("should return false when right-side tires are also selected", () => {
-      expect(areLeftTiresOn({ tires: ["lf", "rf", "lr"] })).toBe(false);
-      expect(areLeftTiresOn({ tires: ["lf", "lr", "rr"] })).toBe(false);
+    it("should not migrate when tires key is present", () => {
+      const result = migrateTireSettings({ action: "toggle-tires", tires: ["lf"], lf: true, rf: true });
+      expect(result.tires).toEqual(["lf"]);
     });
 
-    it("should return false when all tires are selected", () => {
-      expect(areLeftTiresOn({ tires: ["lf", "rf", "lr", "rr"] })).toBe(false);
+    it("should keep all tires when all legacy booleans are true", () => {
+      const result = migrateTireSettings({ action: "toggle-tires", lf: true, rf: true, lr: true, rr: true });
+      expect(result.tires).toEqual(["lf", "rf", "lr", "rr"]);
     });
 
-    it("should return false when only one left tire is selected", () => {
-      expect(areLeftTiresOn({ tires: ["lf"] })).toBe(false);
-      expect(areLeftTiresOn({ tires: ["lr"] })).toBe(false);
+    it("should produce empty array when all legacy booleans are false", () => {
+      const result = migrateTireSettings({ action: "toggle-tires", lf: false, rf: false, lr: false, rr: false });
+      expect(result.tires).toEqual([]);
     });
 
-    it("should return false for duplicate entries", () => {
-      expect(areLeftTiresOn({ tires: ["lf", "lf"] as any })).toBe(false);
-      expect(areLeftTiresOn({ tires: ["lr", "lr"] as any })).toBe(false);
-    });
-  });
-
-  describe("areRightTiresOn", () => {
-    it("should return true when exactly RF and RR are selected", () => {
-      expect(areRightTiresOn({ tires: ["rf", "rr"] })).toBe(true);
-    });
-
-    it("should return false when left-side tires are also selected", () => {
-      expect(areRightTiresOn({ tires: ["lf", "rf", "rr"] })).toBe(false);
-      expect(areRightTiresOn({ tires: ["rf", "lr", "rr"] })).toBe(false);
-    });
-
-    it("should return false when all tires are selected", () => {
-      expect(areRightTiresOn({ tires: ["lf", "rf", "lr", "rr"] })).toBe(false);
-    });
-
-    it("should return false when only one right tire is selected", () => {
-      expect(areRightTiresOn({ tires: ["rf"] })).toBe(false);
-      expect(areRightTiresOn({ tires: ["rr"] })).toBe(false);
-    });
-
-    it("should return false for duplicate entries", () => {
-      expect(areRightTiresOn({ tires: ["rf", "rf"] as any })).toBe(false);
-      expect(areRightTiresOn({ tires: ["rr", "rr"] as any })).toBe(false);
+    it("should default to all tires when no settings provided", () => {
+      const result = migrateTireSettings({});
+      expect(result.tires).toEqual(["lf", "rf", "lr", "rr"]);
     });
   });
 
@@ -558,7 +518,7 @@ describe("TireService", () => {
 
     it("should apply bodyColor to the car body path", () => {
       const result = generateToggleTiresIconContent(
-        { action: "toggle-tires", lf: true, rf: true, lr: true, rr: true },
+        { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] },
         { lf: true, rf: true, lr: true, rr: true },
         "#ff0000",
       );
@@ -1033,7 +993,7 @@ describe("TireService", () => {
 
       expect(mockPitClearTires).toHaveBeenCalledOnce();
       expect(mockSendMessage).toHaveBeenCalledOnce();
-      expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
     });
 
     it("should not clear on dial down in select mode when tires match", async () => {
