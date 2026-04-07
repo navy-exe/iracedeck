@@ -446,5 +446,11 @@ describe("AudioControls", () => {
       expect(mockTapBinding).not.toHaveBeenCalled();
       expect(mockHoldBinding).not.toHaveBeenCalled();
     });
+
+    it("should release binding on willDisappear", async () => {
+      await action.onWillDisappear(fakeEvent("action-1", { category: "push-to-talk" }) as any);
+
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
+    });
   });
 });

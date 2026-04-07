@@ -62,6 +62,7 @@
           "encoder": true,
           "settingsKeys": ["category", "action"],
           "modes": [
+            { "category": "push-to-talk", "label": "Push to Talk" },
             { "category": "voice-chat", "action": "volume-up", "label": "Voice Chat Volume Up" },
             { "category": "voice-chat", "action": "volume-down", "label": "Voice Chat Volume Down" },
             { "category": "voice-chat", "action": "mute", "label": "Voice Chat Mute" },
