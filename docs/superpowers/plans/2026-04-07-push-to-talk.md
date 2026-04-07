@@ -40,7 +40,7 @@ Design coordinates:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff","graphic2Color":"#000000"},"title":{"text":"PUSH\nTO TALK"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":38,"y":14,"width":68,"height":68}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#55aa00","graphic2Color":"#ffffff"},"title":{"text":"TALK"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":38,"y":14,"width":68,"height":68}}</desc>
 
   <!-- Circle -->
   <circle cx="72" cy="48" r="34" fill="{{graphic1Color}}"/>
@@ -107,7 +107,7 @@ Add PTT entry to `AUDIO_ICONS`:
 Add PTT entry to `AUDIO_CONTROLS_TITLES`:
 
 ```typescript
-"push-to-talk": "PUSH\nTO TALK",
+"push-to-talk": "TALK",
 ```
 
 Add PTT entry to `AUDIO_CONTROLS_GLOBAL_KEYS`:
@@ -166,7 +166,7 @@ export function generateAudioControlsSvg(settings: AudioControlsSettings): strin
 
   if (category === "push-to-talk") {
     iconKey = "push-to-talk";
-    defaultTitle = AUDIO_CONTROLS_TITLES["push-to-talk"] || "PUSH\nTO TALK";
+    defaultTitle = AUDIO_CONTROLS_TITLES["push-to-talk"] || "TALK";
   } else {
     // For master category with mute, fall back to volume-up display
     const effectiveAction = category === "master" && audioAction === "mute" ? "volume-up" : audioAction;
