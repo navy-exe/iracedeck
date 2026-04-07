@@ -411,7 +411,13 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
     // Persist Zod defaults on fresh instances so the PI checkbox-list sees the tires array
     if (!raw || raw.tires === undefined) {
-      await ev.action.setSettings(settings as unknown as Record<string, unknown>);
+      try {
+        await ev.action.setSettings(settings as unknown as Record<string, unknown>);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to persist default settings: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
 
     await this.updateDisplayWithEvent(ev, settings);
@@ -514,7 +520,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     const bo = settings.borderOverrides;
     const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
-    return `${settings.action}|${settings.lf}|${settings.rf}|${settings.lr}|${settings.rr}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}|${borderKey}`;
+    return `${settings.action}|${settings.tires.join(",")}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}|${borderKey}`;
   }
 
   private executeAction(rawSettings: unknown): void {

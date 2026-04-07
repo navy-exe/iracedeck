@@ -163,7 +163,13 @@ vi.mock("@iracedeck/deck-core", () => ({
 
 function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
   return {
-    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn(), isKey: () => true },
+    action: {
+      id: actionId,
+      setTitle: vi.fn(),
+      setImage: vi.fn(),
+      setSettings: vi.fn().mockResolvedValue(undefined),
+      isKey: () => true,
+    },
     payload: { settings },
   };
 }
