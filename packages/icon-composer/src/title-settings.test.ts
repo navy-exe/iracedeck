@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseIconArtworkBounds } from "./icon-template.js";
+import { parseIconArtworkBounds, parseIconTitleDefaults } from "./icon-template.js";
 import {
   assembleIcon,
   BORDER_DEFAULTS,
@@ -300,6 +300,48 @@ describe("assembleIcon with graphic scaling", () => {
 });
 
 // ---------------------------------------------------------------------------
+// parseIconTitleDefaults
+// ---------------------------------------------------------------------------
+
+describe("parseIconTitleDefaults", () => {
+  it("should parse showTitle from desc metadata", () => {
+    const svg = `<svg><desc>{"title":{"text":"DRS","showTitle":true}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.showTitle).toBe(true);
+  });
+
+  it("should parse locked array from desc metadata", () => {
+    const svg = `<svg><desc>{"title":{"text":"DRS","locked":["showTitle","fontSize"]}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.locked).toEqual(["showTitle", "fontSize"]);
+  });
+
+  it("should return undefined for showTitle when not present", () => {
+    const svg = `<svg><desc>{"title":{"text":"TEST"}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.showTitle).toBeUndefined();
+  });
+
+  it("should return undefined for locked when not present", () => {
+    const svg = `<svg><desc>{"title":{"text":"TEST"}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.locked).toBeUndefined();
+  });
+
+  it("should ignore non-boolean showTitle", () => {
+    const svg = `<svg><desc>{"title":{"text":"TEST","showTitle":"yes"}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.showTitle).toBeUndefined();
+  });
+
+  it("should ignore non-array locked", () => {
+    const svg = `<svg><desc>{"title":{"text":"TEST","locked":"showTitle"}}</desc></svg>`;
+    const result = parseIconTitleDefaults(svg);
+    expect(result.locked).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // resolveTitleSettings (basic — existing tests in deck-core cover more)
 // ---------------------------------------------------------------------------
 
@@ -332,5 +374,62 @@ describe("resolveTitleSettings", () => {
   it("should ignore action fontSize when fontSizeEnabled is undefined", () => {
     const result = resolveTitleSettings(GRAPHIC, { fontSize: 20 }, { fontSize: 30 });
     expect(result.fontSize).toBe(20);
+  });
+
+  it("should use icon default showTitle when present", () => {
+    const svg = `<svg><desc>{"colors":{},"title":{"text":"DRS","showTitle":true}}</desc></svg>`;
+    const result = resolveTitleSettings(svg, {});
+    expect(result.showTitle).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveTitleSettings — locked title fields
+// ---------------------------------------------------------------------------
+
+describe("resolveTitleSettings locked fields", () => {
+  const LOCKED_GRAPHIC = `<svg><desc>{"colors":{},"title":{"text":"DRS","fontSize":30,"showTitle":true,"locked":["showTitle","fontSize"]}}</desc></svg>`;
+
+  it("should skip global showTitle when locked", () => {
+    const result = resolveTitleSettings(LOCKED_GRAPHIC, { showTitle: false });
+    expect(result.showTitle).toBe(true);
+  });
+
+  it("should skip global fontSize when locked", () => {
+    const result = resolveTitleSettings(LOCKED_GRAPHIC, { fontSize: 9 });
+    expect(result.fontSize).toBe(30);
+  });
+
+  it("should still allow per-action override on locked showTitle", () => {
+    const result = resolveTitleSettings(LOCKED_GRAPHIC, { showTitle: false }, { showTitle: false });
+    expect(result.showTitle).toBe(false);
+  });
+
+  it("should still allow per-action override on locked fontSize", () => {
+    const result = resolveTitleSettings(LOCKED_GRAPHIC, { fontSize: 9 }, { fontSizeEnabled: true, fontSize: 12 });
+    expect(result.fontSize).toBe(12);
+  });
+
+  it("should not lock fields that are not in the locked array", () => {
+    const result = resolveTitleSettings(LOCKED_GRAPHIC, { position: "top" });
+    expect(result.position).toBe("top");
+  });
+
+  it("should behave normally when no locked array is present", () => {
+    const svg = `<svg><desc>{"colors":{},"title":{"text":"TEST","fontSize":20}}</desc></svg>`;
+    const result = resolveTitleSettings(svg, { fontSize: 9 });
+    expect(result.fontSize).toBe(9);
+  });
+
+  it("should behave normally when locked array is empty", () => {
+    const svg = `<svg><desc>{"colors":{},"title":{"text":"TEST","fontSize":20,"locked":[]}}</desc></svg>`;
+    const result = resolveTitleSettings(svg, { fontSize: 9 });
+    expect(result.fontSize).toBe(9);
+  });
+
+  it("should fall to TITLE_DEFAULTS when locked field has no icon default", () => {
+    const svg = `<svg><desc>{"colors":{},"title":{"text":"DRS","locked":["bold"]}}</desc></svg>`;
+    const result = resolveTitleSettings(svg, { bold: false });
+    expect(result.bold).toBe(TITLE_DEFAULTS.bold);
   });
 });

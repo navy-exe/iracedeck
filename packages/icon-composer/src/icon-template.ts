@@ -92,9 +92,11 @@ export function parseIconDefaults(svgTemplate: string): ColorSlots {
 
 export interface IconTitleDefaults {
   text?: string;
+  showTitle?: boolean;
   position?: "top" | "middle" | "bottom" | "custom";
   fontSize?: number;
   customPosition?: number;
+  locked?: string[];
 }
 
 export function parseIconTitleDefaults(svgTemplate: string): IconTitleDefaults {
@@ -111,9 +113,11 @@ export function parseIconTitleDefaults(svgTemplate: string): IconTitleDefaults {
 
   return {
     text: typeof title.text === "string" ? title.text : undefined,
+    showTitle: typeof title.showTitle === "boolean" ? title.showTitle : undefined,
     position: typeof pos === "string" && validPositions.has(pos) ? (pos as IconTitleDefaults["position"]) : undefined,
     fontSize: typeof title.fontSize === "number" ? title.fontSize : undefined,
     customPosition: typeof title.customPosition === "number" ? title.customPosition : undefined,
+    locked: Array.isArray(title.locked) ? (title.locked as string[]) : undefined,
   };
 }
 
