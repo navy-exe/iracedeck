@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AUDIO_CONTROLS_GLOBAL_KEYS, AudioControls, generateAudioControlsSvg } from "./audio-controls.js";
 
-const { mockTapBinding } = vi.hoisted(() => ({
+const { mockTapBinding, mockHoldBinding, mockReleaseBinding } = vi.hoisted(() => ({
   mockTapBinding: vi.fn().mockResolvedValue(undefined),
+  mockHoldBinding: vi.fn().mockResolvedValue(undefined),
+  mockReleaseBinding: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@iracedeck/icons/audio-controls/voice-chat-volume-up.svg", () => ({
@@ -23,6 +25,9 @@ vi.mock("@iracedeck/icons/audio-controls/master-volume-down.svg", () => ({
 }));
 vi.mock("@iracedeck/icons/audio-controls/master-mute.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
+}));
+vi.mock("@iracedeck/icons/audio-controls/push-to-talk.svg", () => ({
+  default: '<svg xmlns="http://www.w3.org/2000/svg">push-to-talk</svg>',
 }));
 
 vi.mock("@iracedeck/deck-core", () => ({
@@ -47,8 +52,8 @@ vi.mock("@iracedeck/deck-core", () => ({
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn().mockResolvedValue(true);
     tapBinding = mockTapBinding;
-    holdBinding = vi.fn().mockResolvedValue(undefined);
-    releaseBinding = vi.fn().mockResolvedValue(undefined);
+    holdBinding = mockHoldBinding;
+    releaseBinding = mockReleaseBinding;
     setActiveBinding = vi.fn();
     async onWillAppear() {}
     async onDidReceiveSettings() {}
@@ -124,6 +129,22 @@ function fakeDialRotateEvent(actionId: string, settings: Record<string, unknown>
   };
 }
 
+/** Create a minimal fake key up event. */
+function fakeKeyUpEvent(actionId: string, settings: Record<string, unknown> = {}) {
+  return {
+    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn() },
+    payload: { settings },
+  };
+}
+
+/** Create a minimal fake dial up event. */
+function fakeDialUpEvent(actionId: string, settings: Record<string, unknown> = {}) {
+  return {
+    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn() },
+    payload: { settings },
+  };
+}
+
 describe("AudioControls", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -150,8 +171,12 @@ describe("AudioControls", () => {
       expect(AUDIO_CONTROLS_GLOBAL_KEYS["master-volume-down"]).toBe("audioMasterVolumeDown");
     });
 
-    it("should have exactly 5 entries", () => {
-      expect(Object.keys(AUDIO_CONTROLS_GLOBAL_KEYS)).toHaveLength(5);
+    it("should have correct mapping for push-to-talk", () => {
+      expect(AUDIO_CONTROLS_GLOBAL_KEYS["push-to-talk"]).toBe("audioControlsPushToTalk");
+    });
+
+    it("should have exactly 6 entries", () => {
+      expect(Object.keys(AUDIO_CONTROLS_GLOBAL_KEYS)).toHaveLength(6);
     });
 
     it("should not have a mapping for master-mute", () => {
@@ -231,6 +256,27 @@ describe("AudioControls", () => {
 
       expect(decoded).toContain("MASTER");
       expect(decoded).toContain("VOL DOWN");
+    });
+
+    it("should generate a valid data URI for push-to-talk", () => {
+      const result = generateAudioControlsSvg({ category: "push-to-talk", action: "volume-up" });
+
+      expect(result).toContain("data:image/svg+xml");
+    });
+
+    it("should include correct labels for push-to-talk", () => {
+      const result = generateAudioControlsSvg({ category: "push-to-talk", action: "volume-up" });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("TO TALK");
+      expect(decoded).toContain("PUSH");
+    });
+
+    it("should produce a different icon for push-to-talk vs voice-chat", () => {
+      const ptt = generateAudioControlsSvg({ category: "push-to-talk", action: "volume-up" });
+      const voiceChat = generateAudioControlsSvg({ category: "voice-chat", action: "volume-up" });
+
+      expect(ptt).not.toBe(voiceChat);
     });
 
     it("should include correct labels for all combinations", () => {
@@ -352,6 +398,53 @@ describe("AudioControls", () => {
       await action.onDialRotate(fakeDialRotateEvent("action-1", { category: "voice-chat", action: "mute" }, 1) as any);
 
       expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatVolumeUp");
+    });
+  });
+
+  describe("push-to-talk hold behavior", () => {
+    let action: AudioControls;
+
+    beforeEach(() => {
+      action = new AudioControls();
+    });
+
+    it("should call holdBinding on keyDown for push-to-talk", async () => {
+      await action.onKeyDown(fakeEvent("action-1", { category: "push-to-talk" }) as any);
+
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "audioControlsPushToTalk");
+      expect(mockTapBinding).not.toHaveBeenCalled();
+    });
+
+    it("should call releaseBinding on keyUp for push-to-talk", async () => {
+      await action.onKeyUp(fakeKeyUpEvent("action-1", { category: "push-to-talk" }) as any);
+
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
+    });
+
+    it("should not call holdBinding on keyDown for non-PTT modes", async () => {
+      await action.onKeyDown(fakeEvent("action-1", { category: "voice-chat", action: "volume-up" }) as any);
+
+      expect(mockHoldBinding).not.toHaveBeenCalled();
+      expect(mockTapBinding).toHaveBeenCalledWith("audioVoiceChatVolumeUp");
+    });
+
+    it("should call holdBinding on dialDown for push-to-talk", async () => {
+      await action.onDialDown(fakeEvent("action-1", { category: "push-to-talk" }) as any);
+
+      expect(mockHoldBinding).toHaveBeenCalledWith("action-1", "audioControlsPushToTalk");
+    });
+
+    it("should call releaseBinding on dialUp for push-to-talk", async () => {
+      await action.onDialUp(fakeDialUpEvent("action-1", { category: "push-to-talk" }) as any);
+
+      expect(mockReleaseBinding).toHaveBeenCalledWith("action-1");
+    });
+
+    it("should ignore dial rotation for push-to-talk", async () => {
+      await action.onDialRotate(fakeDialRotateEvent("action-1", { category: "push-to-talk" }, 1) as any);
+
+      expect(mockTapBinding).not.toHaveBeenCalled();
+      expect(mockHoldBinding).not.toHaveBeenCalled();
     });
   });
 });
