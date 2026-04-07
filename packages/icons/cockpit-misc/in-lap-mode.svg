@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"MODE\nIN LAP"},"border":{"color":"#5a5a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"MODE\nIN LAP"},"border":{"color":"#5a5a6a"},"artworkBounds":{"x":27,"y":31,"width":90,"height":42}}</desc>
 
     <rect x="28" y="32" width="88" height="40" rx="6" fill="none" stroke="#888888" stroke-width="3"/>
     <line x1="72" y1="32" x2="72" y2="72" stroke="#888888" stroke-width="1"/>

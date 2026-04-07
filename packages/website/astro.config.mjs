@@ -98,6 +98,7 @@ export default defineConfig({
             { slug: "docs/features/focus-iracing-window" },
             { slug: "docs/features/icon-colors" },
             { slug: "docs/features/title-customization" },
+            { slug: "docs/features/graphic-scaling" },
             { slug: "docs/features/border-indicator" },
             { slug: "docs/features/template-variables" },
           ],

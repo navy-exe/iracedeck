@@ -18,11 +18,15 @@ Replace `{action-name}` with the kebab-case name (e.g., `my-action`) and `{Actio
 
 ```typescript
 import {
+  assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
   formatKeyBinding,
+  getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalSettings,
+  getGlobalTitleSettings,
   getKeyboard,
   type IDeckDialRotateEvent,
   type IDeckDidReceiveSettingsEvent,
@@ -34,9 +38,10 @@ import {
   type KeyboardModifier,
   type KeyCombination,
   parseKeyBinding,
-  renderIconTemplate,
+  resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
-  svgToDataUri,
+  resolveTitleSettings,
 } from "@iracedeck/deck-core";
 import z from "zod";
 
@@ -59,12 +64,10 @@ export const GLOBAL_KEY_NAME = "{camelCaseCategory}{CamelCaseBinding}";
  */
 export function generate{ActionName}Svg(settings: {ActionName}Settings): string {
   const colors = resolveIconColors(defaultIconSvg, getGlobalColors(), settings.colorOverrides);
-  const svg = renderIconTemplate(defaultIconSvg, {
-    mainLabel: "LABEL",
-    subLabel: "SUBLABEL",
-    ...colors,
-  });
-  return svgToDataUri(svg);
+  const title = resolveTitleSettings(defaultIconSvg, getGlobalTitleSettings(), settings.titleOverrides);
+  const border = resolveBorderSettings(defaultIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+  return assembleIcon({ graphicSvg: defaultIconSvg, colors, title, border, graphic });
 }
 
 /**
@@ -216,13 +219,19 @@ Property Inspector template. For actions with only global key bindings:
 
 For actions with per-action settings, add `sdpi-item` elements before the key bindings include. See `splits-delta-cycle.ejs` or `car-control.ejs` for examples.
 
-Every action PI template must include the color-overrides, border-overrides, and common-settings partials. Place them between action-specific settings and global sections:
+Every action PI template must include the color-overrides, border-overrides, graphic-overrides, and common-settings partials. Place them between action-specific settings and global sections:
 ```ejs
 <%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['{action-name}'] }) %>
 <%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['{action-name}'] }) %>
+<%- include('graphic-overrides') %>
 <%- include('common-settings') %>
 ```
-The color-overrides partial adds per-action color customization controls. The border-overrides partial adds per-action border settings (enable, width, color). The common-settings partial adds the "Flags Overlay" checkbox and any future common settings.
+The color-overrides partial adds per-action color customization controls. The border-overrides partial adds per-action border settings (enable, width, color). The graphic-overrides partial adds per-action graphic scale settings (Inherit/Icon Default/Override). The common-settings partial adds the "Flags Overlay" checkbox and any future common settings.
+
+For the global sections, also include `global-graphic-defaults` after `global-border-defaults`:
+```ejs
+<%- include('global-graphic-defaults') %>
+```
 
 ### Files to modify
 

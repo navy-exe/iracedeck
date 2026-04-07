@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"SPLITS DELTA\nPREVIOUS"},"border":{"color":"#714474"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"SPLITS DELTA\nPREVIOUS"},"border":{"color":"#714474"},"artworkBounds":{"x":25,"y":19,"width":94,"height":66}}</desc>
 
     <rect x="26" y="20" width="28" height="20" rx="4" fill="#9b59b6"/>
     <rect x="58" y="20" width="28" height="20" rx="4" fill="#2ecc71"/>

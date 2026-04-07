@@ -28,31 +28,42 @@ export { BaseAction } from "./base-action.js";
 export {
   CommonSettings,
   BorderOverridesSchema,
-  type BorderOverrides,
   ColorOverridesSchema,
   type ColorOverrides,
+  GraphicOverridesSchema,
   TitleOverridesSchema,
-  type TitleOverrides,
 } from "./common-settings.js";
 
-// Title settings utilities
+// Title, border, and graphic settings (re-exports from icon-composer + global readers)
 export {
+  applyGraphicTransform,
   assembleIcon,
   BORDER_DEFAULTS,
+  calculateYPositions,
+  computeGraphicArea,
   generateTitleText,
   getGlobalBorderSettings,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
+  GRAPHIC_DEFAULTS,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveTitleSettings,
   TITLE_DEFAULTS,
+  type BorderOverrides,
   type GenerateTitleTextOptions,
   type GlobalBorderSettings,
-  type GlobalTitleSettings,
+  type GlobalGraphicSettings,
+  type GraphicArea,
+  type GraphicOverrides,
   type ResolvedBorderSettings,
+  type ResolvedGraphicSettings,
   type ResolvedTitleSettings,
+  type GlobalTitleSettings,
+  type TitleOverrides,
 } from "./title-settings.js";
 
-// Icon base template
+// Icon base template (re-exports from icon-composer)
 export { generateBorderParts, ICON_BASE_TEMPLATE, extractGraphicContent } from "./icon-base.js";
 
 // Connection state aware action (extends BaseAction with iRacing connection tracking)
@@ -69,18 +80,23 @@ export {
   overlayConfig,
 } from "./overlay-utils.js";
 
-// Icon template utilities
+// Icon template utilities (re-exports from icon-composer)
 export {
   escapeXml,
   generateIconText,
+  parseDescMetadata,
+  parseIconArtworkBounds,
   parseIconBorderDefaults,
   parseIconDefaults,
   parseIconLocked,
+  parseIconTitleDefaults,
   renderIconTemplate,
   resolveIconColors,
   validateIconTemplate,
   type ColorSlots,
+  type IconArtworkBounds,
   type IconBorderDefaults,
+  type IconTitleDefaults,
   type GenerateIconTextOptions,
 } from "./icon-template.js";
 

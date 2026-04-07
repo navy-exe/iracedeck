@@ -1,6 +1,8 @@
 import {
+  applyGraphicTransform,
   assembleIcon,
   CommonSettings,
+  computeGraphicArea,
   ConnectionStateAwareAction,
   extractGraphicContent,
   generateBorderParts,
@@ -8,6 +10,7 @@ import {
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   ICON_BASE_TEMPLATE,
   type IDeckDialDownEvent,
@@ -17,8 +20,10 @@ import {
   type IDeckKeyUpEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  parseIconArtworkBounds,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -269,9 +274,16 @@ export function generateReplayControlSvg(
     const slowMo = replaySlowMotion ?? false;
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
     const rawGraphic = extractGraphicContent(iconSvg);
-    const graphicContent = title.showGraphics
+    let graphicContent = title.showGraphics
       ? renderIconTemplate(rawGraphic, { speedText: formatSpeedDisplay(speed, slowMo), ...colors })
       : "";
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+    const artworkBounds = parseIconArtworkBounds(iconSvg);
+
+    if (graphicContent && artworkBounds) {
+      graphicContent = applyGraphicTransform(graphicContent, artworkBounds, computeGraphicArea(title), graphic.scale);
+    }
+
     const titleContent = title.showTitle
       ? generateTitleText({
           text: title.titleText,
@@ -301,9 +313,16 @@ export function generateReplayControlSvg(
     const needleAngle = String(calculateNeedleAngle(settings.speed));
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
     const rawGraphic = extractGraphicContent(iconSvg);
-    const graphicContent = title.showGraphics
+    let graphicContent = title.showGraphics
       ? renderIconTemplate(rawGraphic, { mainLabel, needleAngle, ...colors })
       : "";
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+    const artworkBounds = parseIconArtworkBounds(iconSvg);
+
+    if (graphicContent && artworkBounds) {
+      graphicContent = applyGraphicTransform(graphicContent, artworkBounds, computeGraphicArea(title), graphic.scale);
+    }
+
     const titleContent = title.showTitle
       ? generateTitleText({
           text: title.titleText,
@@ -335,14 +354,18 @@ export function generateReplayControlSvg(
 
     const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors: pauseColors, title, border, graphic });
   }
 
   // All other modes: static title via assembleIcon
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
 
 /**

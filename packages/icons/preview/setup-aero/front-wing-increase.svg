@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a1a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"FRONT WING\nINCREASE"},"border":{"color":"#3a3a6a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a1a3a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"FRONT WING\nINCREASE"},"border":{"color":"#3a3a6a"},"artworkBounds":{"x":23,"y":27,"width":94,"height":42}}</desc>
 
     <path d="M24,56 Q40,28 80,36 Q100,40 112,48" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
     <line x1="100" y1="44" x2="100" y2="68" stroke="#888888" stroke-width="3" stroke-linecap="round"/>

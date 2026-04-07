@@ -146,10 +146,14 @@ vi.mock("@iracedeck/deck-core", () => ({
       switchNum: vi.fn(() => true),
     },
   })),
+  applyGraphicTransform: vi.fn((_content: string) => _content),
+  computeGraphicArea: vi.fn(() => ({ x: 8, y: 8, width: 128, height: 128 })),
   generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
   getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
+  getGlobalGraphicSettings: vi.fn(() => ({})),
   LogLevel: { Info: 2 },
+  parseIconArtworkBounds: vi.fn(() => undefined),
   getGlobalTitleSettings: vi.fn(() => ({})),
   resolveBorderSettings: vi.fn((_svg: unknown, _global: unknown, _overrides?: unknown, _stateColor?: string) => ({
     enabled: false,
@@ -158,6 +162,7 @@ vi.mock("@iracedeck/deck-core", () => ({
     glowEnabled: true,
     glowWidth: 18,
   })),
+  resolveGraphicSettings: vi.fn(() => ({ scale: 1 })),
   resolveTitleSettings: vi.fn((_svg: unknown, _global: unknown, _overrides: unknown, defaultTitle?: string) => ({
     showTitle: true,
     showGraphics: true,

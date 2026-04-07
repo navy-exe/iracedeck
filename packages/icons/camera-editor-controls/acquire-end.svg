@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"ACQUIRE\nACQ END"},"border":{"color":"#3a6a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"ACQUIRE\nACQ END"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":31,"y":27,"width":82,"height":34}}</desc>
 
     <line x1="32" y1="44" x2="112" y2="44" stroke="#888888" stroke-width="3" stroke-linecap="round"/>
     <line x1="88" y1="28" x2="88" y2="60" stroke="{{graphic1Color}}" stroke-width="4" stroke-linecap="round"/>

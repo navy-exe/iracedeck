@@ -1,11 +1,14 @@
 import {
+  applyGraphicTransform,
   assembleIcon,
   CommonSettings,
+  computeGraphicArea,
   ConnectionStateAwareAction,
   generateBorderParts,
   generateTitleText,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   getKeyboard,
   getSDK,
@@ -18,6 +21,7 @@ import {
   type IDeckWillDisappearEvent,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -396,7 +400,9 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
     const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
     const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
   }
 
   // Static modes use standalone SVGs from @iracedeck/icons
@@ -407,8 +413,13 @@ export function generateCarControlSvg(settings: CarControlSettings, telemetrySta
   const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
+
+/** Bounding box for pit-limiter dynamic content (derived from circle r=38 centered at 72,46) */
+const DYNAMIC_ICON_BOUNDS = { x: 34, y: 8, width: 76, height: 76 };
 
 function renderDynamicIcon(
   settings: CarControlSettings,
@@ -426,6 +437,18 @@ function renderDynamicIcon(
     defaultTitle,
   );
 
+  let scaledContent = resolvedTitle.showGraphics ? iconContent : "";
+
+  if (scaledContent) {
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+    scaledContent = applyGraphicTransform(
+      scaledContent,
+      DYNAMIC_ICON_BOUNDS,
+      computeGraphicArea(resolvedTitle),
+      graphic.scale,
+    );
+  }
+
   const titleContent = resolvedTitle.showTitle
     ? generateTitleText({
         text: resolvedTitle.titleText,
@@ -438,7 +461,7 @@ function renderDynamicIcon(
     : "";
 
   const svg = renderIconTemplate(carControlTemplate, {
-    iconContent: resolvedTitle.showGraphics ? iconContent : "",
+    iconContent: scaledContent,
     titleContent,
     borderDefs: border.defs,
     borderContent: border.rects,

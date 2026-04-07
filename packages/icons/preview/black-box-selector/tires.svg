@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"\nTIRES"},"border":{"color":"#5a5a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"\nTIRES"},"border":{"color":"#5a5a5a"},"artworkBounds":{"x":15,"y":30,"width":114,"height":58}}</desc>
 
     <rect x="16" y="31" width="112" height="56" rx="6" fill="#2d2510" stroke="#4a3728" stroke-width="4"/>
     <circle cx="56" cy="59" r="20" fill="none" stroke="#888888" stroke-width="4"/>

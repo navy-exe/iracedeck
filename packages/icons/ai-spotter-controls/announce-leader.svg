@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"SPOTTER\nLEADER"},"border":{"color":"#6a7a8a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a4a5a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"SPOTTER\nLEADER"},"border":{"color":"#6a7a8a"},"artworkBounds":{"x":47,"y":35,"width":71,"height":50}}</desc>
 
     <path d="M48 36v48l24-8V44l-24-8z" fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linejoin="round"/>
     <path d="M72 44v32" stroke="{{graphic1Color}}" stroke-width="4"/>

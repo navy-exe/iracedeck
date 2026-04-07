@@ -20,6 +20,7 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['telemetry-control'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['telemetry-control'] }) %>
+		<%- include('graphic-overrides') %>
 		<%- include('common-settings') %>
 
 		<%- include('section-header', { title: 'Global Settings' }) %>
@@ -31,6 +32,7 @@
 		<%- include('global-title-defaults') %>
 		<%- include('global-color-defaults') %>
 		<%- include('global-border-defaults') %>
+		<%- include('global-graphic-defaults') %>
 		<%- include('global-common-settings') %>
 
 		<%- include('docs-link') %>

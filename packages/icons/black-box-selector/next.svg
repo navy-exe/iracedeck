@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"\nNEXT"},"border":{"color":"#5a5a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"\nNEXT"},"border":{"color":"#5a5a5a"},"artworkBounds":{"x":35,"y":19,"width":74,"height":78}}</desc>
 
     <rect x="36" y="64" width="72" height="8" rx="2" fill="#ffffff" opacity="0.4"/>
     <rect x="36" y="76" width="72" height="8" rx="2" fill="#ffffff" opacity="0.5"/>

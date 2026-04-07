@@ -4,6 +4,7 @@ import {
   ConnectionStateAwareAction,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
@@ -11,6 +12,7 @@ import {
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
 } from "@iracedeck/deck-core";
@@ -97,7 +99,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
 
     const border = resolveBorderSettings(displayRefCarIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: displayRefCarIconSvg, colors, title, border, graphic });
   }
 
   const modeIconSvg = MODE_ICONS[mode];
@@ -113,7 +117,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
 
     const border = resolveBorderSettings(modeIconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-    return assembleIcon({ graphicSvg: modeIconSvg, colors, title, border });
+    const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+    return assembleIcon({ graphicSvg: modeIconSvg, colors, title, border, graphic });
   }
 
   const iconSvg = DIRECTION_ICONS[direction] || DIRECTION_ICONS.next;
@@ -123,7 +129,9 @@ export function generateSplitsDeltaCycleSvg(settings: SplitsDeltaCycleSettings):
 
   const border = resolveBorderSettings(iconSvg, getGlobalBorderSettings(), settings.borderOverrides);
 
-  return assembleIcon({ graphicSvg: iconSvg, colors, title, border });
+  const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+  return assembleIcon({ graphicSvg: iconSvg, colors, title, border, graphic });
 }
 
 /**

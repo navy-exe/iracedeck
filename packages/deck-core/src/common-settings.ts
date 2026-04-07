@@ -126,6 +126,32 @@ export const BorderOverridesSchema = z
 
 export type BorderOverrides = z.infer<typeof BorderOverridesSchema>;
 
+/**
+ * Schema for per-action graphic overrides (scaling).
+ * scaleMode controls how the scale is determined:
+ *   "inherit" (default) → falls through to global graphic scale setting
+ *   "default" → uses 100% (icon's natural fit-to-area scale, ignoring global)
+ *   "override" → uses the custom scale value from the range slider
+ */
+export const GraphicOverridesSchema = z
+  .object({
+    scaleMode: z
+      .union([z.enum(["inherit", "default", "override"]), z.string()])
+      .transform((val) => {
+        if (val === "inherit" || val === "") return undefined;
+
+        return val as "default" | "override";
+      })
+      .optional(),
+    scale: z.preprocess(
+      (val) => (val === "" || val === null || val === undefined ? undefined : val),
+      z.coerce.number().min(50).max(150).optional(),
+    ),
+  })
+  .optional();
+
+export type GraphicOverrides = z.infer<typeof GraphicOverridesSchema>;
+
 export const CommonSettings = z.object({
   flagsOverlay: z
     .union([z.boolean(), z.string()])
@@ -134,6 +160,7 @@ export const CommonSettings = z.object({
   colorOverrides: ColorOverridesSchema,
   titleOverrides: TitleOverridesSchema,
   borderOverrides: BorderOverridesSchema,
+  graphicOverrides: GraphicOverridesSchema,
 });
 
 export type CommonSettings = z.infer<typeof CommonSettings>;

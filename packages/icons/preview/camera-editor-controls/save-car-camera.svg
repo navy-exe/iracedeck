@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAR CAM\nSAVE"},"border":{"color":"#3a6a5a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#1a3a2a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CAR CAM\nSAVE"},"border":{"color":"#3a6a5a"},"artworkBounds":{"x":35,"y":19,"width":94,"height":66}}</desc>
 
     <rect x="36" y="20" width="44" height="48" rx="4" fill="none" stroke="#ffffff" stroke-width="3"/>
     <rect x="44" y="20" width="28" height="16" rx="2" fill="none" stroke="#888888" stroke-width="2"/>

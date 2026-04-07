@@ -1,0 +1,17 @@
+<!--
+  Global Graphic Defaults
+
+  Plugin-wide graphic scale default in a collapsible "Graphic Defaults" accordion.
+  Settings are stored in global settings (shared across all action instances).
+  100% default is the natural fit-to-area scale.
+  Collapsed by default.
+-->
+<%- include('accordion', {
+  title: 'Graphic Defaults',
+  open: false,
+  content: `
+    <sdpi-item label="Graphic Scale %">
+      <ird-range-input setting="graphicScale" min="50" max="150" step="5" default="100" global showlabels></ird-range-input>
+    </sdpi-item>
+  `
+}) %>

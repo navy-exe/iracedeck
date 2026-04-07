@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"INCIDENT\nPREVIOUS"},"border":{"color":"#5a6a7a"}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"INCIDENT\nPREVIOUS"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":35,"y":27,"width":86,"height":46}}</desc>
 
     <polygon points="84,28 104,68 64,68" fill="{{graphic1Color}}"/>
     <text x="84" y="60" text-anchor="middle" dominant-baseline="central"

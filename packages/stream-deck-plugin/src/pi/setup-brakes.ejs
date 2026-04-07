@@ -29,6 +29,7 @@
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['setup-brakes'] }) %>
 		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['setup-brakes'] }) %>
+		<%- include('graphic-overrides') %>
 		<%- include('common-settings') %>
 
 		<%- include('section-header', { title: 'Global Settings' }) %>
@@ -40,6 +41,7 @@
 		<%- include('global-title-defaults') %>
 		<%- include('global-color-defaults') %>
 		<%- include('global-border-defaults') %>
+		<%- include('global-graphic-defaults') %>
 		<%- include('global-common-settings') %>
 
 		<script>
