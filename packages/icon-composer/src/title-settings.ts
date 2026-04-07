@@ -170,17 +170,19 @@ export function resolveTitleSettings(
   actionDefaultText?: string,
 ): ResolvedTitleSettings {
   const iconDefaults = parseIconTitleDefaults(graphicSvg);
+  const locked = new Set(iconDefaults.locked ?? []);
 
-  // Resolution: per-action → global (if not "default") → icon <desc> default → TITLE_DEFAULTS
+  // Resolution: per-action → global (if not "default" and not locked) → icon <desc> default → TITLE_DEFAULTS
   const resolve = <T>(
     actionVal: T | undefined,
     globalVal: T | "default" | undefined,
     iconDefault: T | undefined,
     fallback: T,
+    field?: string,
   ): T => {
     if (actionVal !== undefined) return actionVal;
 
-    if (globalVal !== undefined && globalVal !== "default") return globalVal as T;
+    if (!(field && locked.has(field)) && globalVal !== undefined && globalVal !== "default") return globalVal as T;
 
     if (iconDefault !== undefined) return iconDefault;
 
@@ -194,32 +196,42 @@ export function resolveTitleSettings(
     "";
 
   return {
-    showTitle: resolve(actionOverrides?.showTitle, globalTitleSettings.showTitle, undefined, TITLE_DEFAULTS.showTitle),
+    showTitle: resolve(
+      actionOverrides?.showTitle,
+      globalTitleSettings.showTitle,
+      iconDefaults.showTitle,
+      TITLE_DEFAULTS.showTitle,
+      "showTitle",
+    ),
     showGraphics: resolve(
       actionOverrides?.showGraphics,
       globalTitleSettings.showGraphics,
       undefined,
       TITLE_DEFAULTS.showGraphics,
+      "showGraphics",
     ),
     titleText,
-    bold: resolve(actionOverrides?.bold, globalTitleSettings.bold, undefined, TITLE_DEFAULTS.bold),
+    bold: resolve(actionOverrides?.bold, globalTitleSettings.bold, undefined, TITLE_DEFAULTS.bold, "bold"),
     fontSize: resolve(
       actionOverrides?.fontSizeEnabled ? actionOverrides?.fontSize : undefined,
       globalTitleSettings.fontSize,
       iconDefaults.fontSize,
       TITLE_DEFAULTS.fontSize,
+      "fontSize",
     ),
     position: resolve(
       actionOverrides?.position,
       globalTitleSettings.position,
       iconDefaults.position,
       TITLE_DEFAULTS.position,
+      "position",
     ),
     customPosition: resolve(
       actionOverrides?.customPosition,
       globalTitleSettings.customPosition,
       iconDefaults.customPosition,
       TITLE_DEFAULTS.customPosition,
+      "customPosition",
     ),
   };
 }

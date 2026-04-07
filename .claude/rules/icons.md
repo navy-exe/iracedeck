@@ -103,6 +103,19 @@ Icons can declare slots as `"locked"` in their `<desc>` metadata to protect them
 - Use `"locked"` when an icon mixes a colorizable slot (e.g., white outlines via `{{graphic1Color}}`) with hardcoded semantic colors (green arrows, red indicators) that would visually clash under global presets
 - Omitting `"locked"` or using `[]` means all slots are globally overridable (backward compatible)
 
+### Locked title fields
+
+Icons can declare title fields as `"locked"` in their `<desc>` title metadata to protect them from global title overrides:
+
+```json
+{"colors":{...},"title":{"text":"DRS","fontSize":30,"showTitle":true,"locked":["showTitle","fontSize"]}}
+```
+
+- Locked title fields skip the global title settings step — they use the icon default unless the user sets a per-action override
+- Use `"locked"` when the title is an integral part of the icon design (e.g., DRS, Push-to-Pass) and hiding it or changing the font size would make the button unidentifiable
+- Supported lockable fields: `showTitle`, `showGraphics`, `bold`, `fontSize`, `position`, `customPosition`
+- Omitting `"locked"` or using `[]` means all title fields are globally overridable (backward compatible)
+
 ### What stays fixed (never colorizable)
 
 - Semantic data colors: green (`#2ecc71`), red (`#e74c3c`), yellow (`#f39c12`), blue (`#3498db`)
