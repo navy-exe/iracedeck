@@ -214,7 +214,7 @@
       var el = document.getElementById(mapping[key]);
       if (el && color !== null) {
         el.value = color;
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.save();
       }
     });
   });
@@ -234,7 +234,7 @@
       var el = document.getElementById(mapping[key]);
       if (el && color !== null) {
         el.value = color;
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.save();
       }
     });
   });
@@ -340,7 +340,7 @@
         setVisibility(checked);
         if (!checked) {
           range.value = '';
-          range.dispatchEvent(new Event('change', { bubbles: true }));
+          range.save();
         }
       });
 
@@ -429,7 +429,11 @@
       var el = document.querySelector('[setting="' + setting + '"]');
       if (el) {
         el.value = value;
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+        if (typeof el.save === 'function') {
+          el.save();
+        } else {
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
       }
     });
 

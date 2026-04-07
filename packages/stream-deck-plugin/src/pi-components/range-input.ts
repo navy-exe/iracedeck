@@ -53,7 +53,6 @@ export class RangeInput extends HTMLElement {
   private numberInput: HTMLInputElement | null = null;
   private currentValue = "";
   private saveToStreamDeck: ((value: string) => void) | null = null;
-  private _dispatching = false;
   private _initialized = false;
 
   static get observedAttributes(): string[] {
@@ -67,6 +66,10 @@ export class RangeInput extends HTMLElement {
   set value(val: string) {
     this.currentValue = val;
     this.updateDisplay();
+  }
+
+  public save(): void {
+    this.saveToStreamDeck?.(this.currentValue);
   }
 
   connectedCallback(): void {
@@ -232,13 +235,6 @@ export class RangeInput extends HTMLElement {
         this.numberInput!.blur();
       }
     });
-
-    // Handle external change events (from toggle scripts: el.value = x; el.dispatchEvent(change))
-    this.addEventListener("change", (_e: Event) => {
-      if (!this._dispatching) {
-        this.saveToStreamDeck?.(this.currentValue);
-      }
-    });
   }
 
   private hookSettings(): void {
@@ -296,10 +292,8 @@ export class RangeInput extends HTMLElement {
   }
 
   private notifyChange(): void {
-    this._dispatching = true;
     this.saveToStreamDeck?.(this.currentValue);
     this.dispatchEvent(new Event("change", { bubbles: true }));
-    this._dispatching = false;
   }
 
   private updateDisplay(): void {

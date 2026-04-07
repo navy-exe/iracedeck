@@ -85,7 +85,6 @@ export class ColorPicker extends HTMLElement {
   private clearBtn: HTMLButtonElement | null = null;
   private currentValue = "";
   private saveToStreamDeck: ((value: string) => void) | null = null;
-  private _dispatching = false;
   private _initialized = false;
 
   static get observedAttributes(): string[] {
@@ -102,6 +101,10 @@ export class ColorPicker extends HTMLElement {
 
     this.currentValue = val;
     this.updateDisplay();
+  }
+
+  public save(): void {
+    this.saveToStreamDeck?.(this.currentValue);
   }
 
   connectedCallback(): void {
@@ -253,13 +256,6 @@ export class ColorPicker extends HTMLElement {
       this.updateDisplay();
       this.notifyChange();
     });
-
-    // Handle external change events (from preset buttons: el.value = x; el.dispatchEvent(change))
-    this.addEventListener("change", (_e: Event) => {
-      if (!this._dispatching) {
-        this.saveToStreamDeck?.(this.currentValue);
-      }
-    });
   }
 
   private hookSettings(): void {
@@ -322,10 +318,8 @@ export class ColorPicker extends HTMLElement {
   }
 
   private notifyChange(): void {
-    this._dispatching = true;
     this.saveToStreamDeck?.(this.currentValue);
     this.dispatchEvent(new Event("change", { bubbles: true }));
-    this._dispatching = false;
   }
 
   private updateDisplay(): void {
