@@ -132,7 +132,7 @@ Features:
 - **Inline hex display**: Editable text field next to the swatch. Accepts 3/6-digit hex with or without `#`.
 - **Clear button**: Built-in `×` button to reset to "not set".
 - **Legacy compat**: Normalizes stored `#000001` sentinel values to `""` on load.
-- **Preset button compat**: Works with `.value` setter + `change` event dispatch pattern.
+- **Programmatic persistence**: Call `.save()` after setting `.value` to persist to Stream Deck settings.
 
 ### `<sdpi-select>` — Dropdown
 
@@ -235,7 +235,7 @@ Features:
 - **Bidirectional sync**: Range slider and number input stay in sync.
 - **Live drag updates**: Value updates in real time as the user drags the slider.
 - **Precise entry**: Number input for exact values, clamped to min/max.
-- **Toggle script compat**: Works with `.value` setter + `change` event dispatch pattern.
+- **Programmatic persistence**: Call `.save()` after setting `.value` to persist to Stream Deck settings.
 
 ### `<sdpi-textfield>` — Text Input
 
