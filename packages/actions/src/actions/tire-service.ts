@@ -412,7 +412,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     // Persist Zod defaults on fresh instances so the PI checkbox-list sees the tires array
     if (!raw || raw.tires === undefined) {
       try {
-        await ev.action.setSettings(settings as unknown as Record<string, unknown>);
+        await ev.action.setSettings({ ...(raw ?? {}), tires: settings.tires });
       } catch (error) {
         this.logger.warn(
           `Failed to persist default settings: ${error instanceof Error ? error.message : String(error)}`,

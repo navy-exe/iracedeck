@@ -531,6 +531,64 @@ describe("TireService", () => {
     });
   });
 
+  describe("onWillAppear setSettings", () => {
+    let action: TireService;
+
+    beforeEach(() => {
+      action = new TireService();
+    });
+
+    it("should call setSettings on fresh instance (no tires key)", async () => {
+      const ev = fakeEvent("a1", {});
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setSettings).toHaveBeenCalledOnce();
+      // Should merge raw ({}) with parsed tires value
+      expect(ev.action.setSettings).toHaveBeenCalledWith(expect.objectContaining({ tires: expect.anything() }));
+    });
+
+    it("should not call setSettings when tires key already exists", async () => {
+      const ev = fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"] });
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setSettings).not.toHaveBeenCalled();
+    });
+
+    it("should call setSettings for legacy boolean settings", async () => {
+      const ev = fakeEvent("a1", { action: "toggle-tires", lf: true, rf: true, lr: false, rr: false });
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setSettings).toHaveBeenCalledOnce();
+      expect(ev.action.setSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lf: true,
+          rf: true,
+          lr: false,
+          rr: false,
+          tires: expect.any(Array),
+        }),
+      );
+    });
+
+    it("should not overwrite unrelated settings keys", async () => {
+      const ev = fakeEvent("a1", { action: "toggle-tires", customKey: "userValue" });
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setSettings).toHaveBeenCalledOnce();
+      const calledWith = (ev.action.setSettings as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(calledWith).toHaveProperty("customKey", "userValue");
+    });
+
+    it("should continue rendering if setSettings throws", async () => {
+      const ev = fakeEvent("a1", {});
+      (ev.action.setSettings as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("fail"));
+      await action.onWillAppear(ev as any);
+
+      // Should not throw — rendering continues (setKeyImage is on the base class mock)
+      expect(action.setKeyImage).toHaveBeenCalled();
+    });
+  });
+
   describe("key press behavior", () => {
     let action: TireService;
 
