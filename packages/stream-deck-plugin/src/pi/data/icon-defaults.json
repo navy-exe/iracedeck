@@ -9,6 +9,7 @@
     "backgroundColor": "#2a3a4a",
     "textColor": "#ffffff",
     "graphic1Color": "#ffffff",
+    "graphic2Color": "#000000",
     "borderColor": "#5a6a7a"
   },
   "black-box-selector": {
