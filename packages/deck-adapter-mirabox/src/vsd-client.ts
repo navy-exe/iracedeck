@@ -215,6 +215,14 @@ export class VSDClient {
     });
   }
 
+  setSettings(context: string, settings: Record<string, unknown>): void {
+    this.send({
+      event: "setSettings",
+      context,
+      payload: settings,
+    });
+  }
+
   setGlobalSettings(settings: Record<string, unknown>): void {
     this.send({
       event: "setGlobalSettings",

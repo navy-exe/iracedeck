@@ -405,8 +405,14 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
   override async onWillAppear(ev: IDeckWillAppearEvent<TireServiceSettings>): Promise<void> {
     await super.onWillAppear(ev);
+    const raw = ev.payload.settings as Record<string, unknown> | undefined;
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
+
+    // Persist Zod defaults on fresh instances so the PI checkbox-list sees the tires array
+    if (!raw || raw.tires === undefined) {
+      await ev.action.setSettings(settings as unknown as Record<string, unknown>);
+    }
 
     await this.updateDisplayWithEvent(ev, settings);
 

@@ -18,6 +18,8 @@ export interface IDeckActionContext {
   setImage(dataUri: string): Promise<void>;
   /** Set the button/key title text */
   setTitle(title: string): Promise<void>;
+  /** Persist action-level settings (triggers didReceiveSettings on both plugin and PI) */
+  setSettings(settings: Record<string, unknown>): Promise<void>;
   /** Whether this context is a key (button) rather than a dial/encoder */
   isKey(): boolean;
 }
