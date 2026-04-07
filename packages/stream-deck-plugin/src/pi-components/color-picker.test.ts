@@ -177,24 +177,31 @@ describe("ird-color-picker", () => {
     });
   });
 
-  describe("external change events", () => {
-    it("should handle external value + change pattern (preset buttons)", () => {
-      const handler = vi.fn();
-      picker.addEventListener("change", handler);
+  describe("save", () => {
+    it("should call saveToStreamDeck with current value", () => {
+      const saveFn = vi.fn();
+      (picker as unknown as Record<string, unknown>).saveToStreamDeck = saveFn;
 
-      // Simulate preset button pattern: set value then dispatch change
       (picker as HTMLInputElement).value = "#ff0000";
-      picker.dispatchEvent(new Event("change", { bubbles: true }));
+      (picker as unknown as { save(): void }).save();
 
-      // The value should be set
-      expect((picker as HTMLInputElement).value).toBe("#ff0000");
+      expect(saveFn).toHaveBeenCalledWith("#ff0000");
     });
 
-    it("should handle empty value from preset buttons (Global/Default)", () => {
-      (picker as HTMLInputElement).value = "#ff0000";
+    it("should call saveToStreamDeck with empty string when cleared", () => {
+      const saveFn = vi.fn();
+      (picker as unknown as Record<string, unknown>).saveToStreamDeck = saveFn;
+
       (picker as HTMLInputElement).value = "";
-      picker.dispatchEvent(new Event("change", { bubbles: true }));
-      expect((picker as HTMLInputElement).value).toBe("");
+      (picker as unknown as { save(): void }).save();
+
+      expect(saveFn).toHaveBeenCalledWith("");
+    });
+
+    it("should be a no-op when saveToStreamDeck is null", () => {
+      (picker as HTMLInputElement).value = "#ff0000";
+      // saveToStreamDeck is null by default (no SDPIComponents in test)
+      expect(() => (picker as unknown as { save(): void }).save()).not.toThrow();
     });
   });
 });
