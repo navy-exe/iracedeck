@@ -19,7 +19,7 @@ Tire Service is telemetry-aware — the compound display updates with live data 
 |------|-------------|
 | Change All Tires | Request new tires on all four corners (uses iRacing `#t` pit chat macro) |
 | Clear Tires | Clear all tire change requests |
-| Toggle Tires | Toggle tire change per wheel (LF, RF, LR, RR) |
+| Toggle Tires | Toggle tire change per wheel (LF, RF, LR, RR). Uses shorthand macros (`#!t`, `#!l`, `#!r`) when all, left-only, or right-only tires are selected — works with cars that only support all-or-nothing tire changes |
 | Change Compound | Cycle through available tire compounds (DRY/WET) |
 
 ## Encoder Support

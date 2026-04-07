@@ -182,10 +182,44 @@ function getCompoundState(telemetry: TelemetryData | null): { player: number; pi
 /**
  * @internal Exported for testing
  *
+ * Check if all four tires are selected.
+ */
+export function areAllTiresOn(settings: Pick<TireServiceSettings, "lf" | "rf" | "lr" | "rr">): boolean {
+  return settings.lf && settings.rf && settings.lr && settings.rr;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Check if exactly the left-side tires (LF + LR) are selected.
+ */
+export function areLeftTiresOn(settings: Pick<TireServiceSettings, "lf" | "rf" | "lr" | "rr">): boolean {
+  return settings.lf && settings.lr && !settings.rf && !settings.rr;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Check if exactly the right-side tires (RF + RR) are selected.
+ */
+export function areRightTiresOn(settings: Pick<TireServiceSettings, "lf" | "rf" | "lr" | "rr">): boolean {
+  return settings.rf && settings.rr && !settings.lf && !settings.lr;
+}
+
+/**
+ * @internal Exported for testing
+ *
  * Builds a pit macro string to toggle the configured tires.
+ * Uses shorthand macros (#!t, #!l, #!r) when tires match a recognized group pattern.
  * Returns null if no tires are configured.
  */
 export function buildTireToggleMacro(settings: TireServiceSettings): string | null {
+  if (areAllTiresOn(settings)) return "#!t";
+
+  if (areLeftTiresOn(settings)) return "#!l";
+
+  if (areRightTiresOn(settings)) return "#!r";
+
   const parts: string[] = [];
 
   if (settings.lf) parts.push("!lf");
