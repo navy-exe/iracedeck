@@ -390,6 +390,8 @@ export function resolveGraphicSettings(
 
 /** Clamp scale to valid 50–150 range for safety (global settings are not Zod-validated). */
 function clampScale(value: number): number {
+  if (!Number.isFinite(value)) return 100;
+
   return Math.max(50, Math.min(150, value));
 }
 
