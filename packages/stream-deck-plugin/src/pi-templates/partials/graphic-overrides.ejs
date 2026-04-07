@@ -46,7 +46,7 @@
         var rangeEl = document.querySelector('[setting="graphicOverrides.scale"]');
         if (rangeEl && rangeEl.value !== '') {
           rangeEl.value = '';
-          rangeEl.dispatchEvent(new Event('change', { bubbles: true }));
+          rangeEl.save();
         }
       }
       prevVal = cur;

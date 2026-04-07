@@ -50,7 +50,7 @@
       var el = document.querySelector(selector);
       if (el && el.value !== '' && el.value !== 'inherit') {
         el.value = '';
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.save();
       }
     }
 
@@ -103,7 +103,7 @@
         var defaultColor = picker.getAttribute('data-default-color');
         if (defaultColor) {
           picker.value = defaultColor;
-          picker.dispatchEvent(new Event('change', { bubbles: true }));
+          picker.save();
         }
       }
     }
