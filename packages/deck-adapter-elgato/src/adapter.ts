@@ -44,6 +44,7 @@ class ElgatoActionContext implements IDeckActionContext {
       id: string;
       setImage(dataUri: string): Promise<void>;
       setTitle(title: string): Promise<void>;
+      setSettings(settings: unknown): Promise<void>;
       isKey(): boolean;
     },
   ) {}
@@ -60,6 +61,10 @@ class ElgatoActionContext implements IDeckActionContext {
     await this.sdAction.setTitle(title);
   }
 
+  async setSettings(settings: Record<string, unknown>): Promise<void> {
+    await this.sdAction.setSettings(settings);
+  }
+
   isKey(): boolean {
     return this.sdAction.isKey();
   }
@@ -74,6 +79,7 @@ function wrapEvent<T>(ev: {
     id: string;
     setImage(dataUri: string): Promise<void>;
     setTitle(title: string): Promise<void>;
+    setSettings(settings: unknown): Promise<void>;
     isKey(): boolean;
   };
   payload: { settings: T };
@@ -103,6 +109,9 @@ function wrapDisappearEvent<T>(ev: WillDisappearEvent<T & JsonObject>): IDeckWil
         /* no-op: action is disappearing */
       },
       async setTitle() {
+        /* no-op: action is disappearing */
+      },
+      async setSettings() {
         /* no-op: action is disappearing */
       },
       isKey() {

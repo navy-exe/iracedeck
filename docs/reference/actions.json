@@ -511,7 +511,11 @@
               "description": "Request all four tire changes using the iRacing #t pit chat macro"
             },
             { "value": "clear-tires", "label": "Clear Tires" },
-            { "value": "toggle-tires", "label": "Toggle Tires", "description": "Per-wheel selection: LF, RF, LR, RR" },
+            {
+              "value": "toggle-tires",
+              "label": "Toggle Tires",
+              "description": "Per-wheel selection: LF, RF, LR, RR. Uses shorthand macros (#!t, #!l, #!r) when all, left-only, or right-only tires are selected"
+            },
             { "value": "change-compound", "label": "Change Compound", "description": "Cycle tire compounds (DRY/WET)" }
           ]
         }
