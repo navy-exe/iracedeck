@@ -312,8 +312,8 @@
   })();
 
   // Font Size checkbox gate: sdpi-checkbox (persists via setting attribute) + ird-range-input.
-  // When unchecked: hide range, clear fontSize setting.
-  // When checked: show range, sdpi persists fontSize normally.
+  // Visibility only during init/polling — the ird-range-input default attribute handles display.
+  // Value clearing only on explicit user uncheck (change listener).
   (function() {
     async function initFontSizeToggle() {
       await customElements.whenDefined('sdpi-checkbox');
@@ -326,26 +326,26 @@
         return toggle.checked === true || toggle.value === true || toggle.value === 'true';
       }
 
-      function showControls(show) {
+      function setVisibility(show) {
         if (show) {
           item.classList.remove('hidden');
-          if (!range.value || range.value === '') {
-            range.value = '9';
-            range.dispatchEvent(new Event('change', { bubbles: true }));
-          }
         } else {
           item.classList.add('hidden');
-          range.value = '';
-          range.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
 
+      // User interaction: clear fontSize on uncheck so it falls back to defaults
       toggle.addEventListener('change', function() {
-        showControls(isChecked());
+        var checked = isChecked();
+        setVisibility(checked);
+        if (!checked) {
+          range.value = '';
+          range.dispatchEvent(new Event('change', { bubbles: true }));
+        }
       });
 
-      // Initial state check
-      showControls(isChecked());
+      // Initial state — visibility only, no value manipulation
+      setVisibility(isChecked());
 
       // Polling fallback for checkbox state (sdpi-checkbox loads asynchronously)
       var lastChecked = isChecked();
@@ -353,7 +353,7 @@
         var cur = isChecked();
         if (cur !== lastChecked) {
           lastChecked = cur;
-          showControls(cur);
+          setVisibility(cur);
         }
       }, 100);
     }
