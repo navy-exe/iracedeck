@@ -37,7 +37,8 @@ Title text replaces the old `{{mainLabel}}`/`{{subLabel}}` placeholders. Each ic
 {"colors": {...}, "title": {"text": "subLabel\nmainLabel"}}
 ```
 
-- Default format: `"subLabel\nmainLabel"` (first line secondary, second line primary)
+- Prefer short, single-line titles (e.g., `"1x"`, `"DRS"`, `"STOP"`) — they are easier to read on small buttons
+- Only use two-line `"subLabel\nmainLabel"` format when a single line cannot convey the action clearly
 - Title is rendered at the bottom of the icon by `generateTitleText()` at render time
 - Users can override title text, font size, position, and visibility via the Title Overrides section in the Property Inspector
 - Actions can also supply a dynamic `actionDefaultText` string when calling `resolveTitleSettings()`
@@ -82,7 +83,7 @@ All icon SVGs now use this graphic snippet format:
 </svg>
 ```
 
-The default title text format is `"subLabel\nmainLabel"` — first line is the secondary (smaller) label, second line is the primary (bold) label. These are rendered at the bottom of the icon at position y≈118–140 by `generateTitleText()`.
+Prefer short, single-line titles — only use the two-line `"subLabel\nmainLabel"` format when a single line cannot convey the action clearly. When two lines are used, the first line is the secondary (smaller) label and the second line is the primary (bold) label. Titles are rendered at the bottom of the icon at position y≈118–140 by `generateTitleText()`.
 
 The `artworkBounds` field declares the bounding box of the artwork content (`x`, `y`, `width`, `height`). When present and the `graphic` parameter is passed to `assembleIcon()`, the artwork is dynamically scaled and repositioned to fit the available area based on title placement. Auto-detect bounds with `node scripts/generate-artwork-bounds.mjs`.
 

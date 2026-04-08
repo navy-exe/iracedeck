@@ -34,7 +34,7 @@ Icons are graphic snippets — they contain only the artwork and metadata. The b
 </svg>
 ```
 
-The `title.text` field in `<desc>` provides the default title (two lines: `"subLabel\nmainLabel"` format). Title position, font, and visibility are controlled via `resolveTitleSettings()` at render time.
+The `title.text` field in `<desc>` provides the default title. Prefer short, single-line titles (e.g., `"1x"`, `"DRS"`) — only use two lines (`"CATEGORY\nACTION"`) when a single line cannot convey the action clearly. Title position, font, and visibility are controlled via `resolveTitleSettings()` at render time.
 
 Icons can also declare `artworkBounds` in `<desc>` to enable dynamic graphic scaling and repositioning based on title placement:
 
@@ -74,7 +74,7 @@ Icons support up to 4 customizable color slots via Mustache placeholders. Each S
 <desc>{"colors":{"backgroundColor":"#412244","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"CATEGORY\nACTION"},"artworkBounds":{"x":20,"y":18,"width":104,"height":68}}</desc>
 ```
 
-The `title.text` field is the default two-line title text (`"subLabel\nmainLabel"` format). Actions may override this at render time via `resolveTitleSettings()`. The `artworkBounds` field declares the bounding box of the artwork content for dynamic scaling (see "Standalone Icon SVGs" section above).
+The `title.text` field is the default title text. Prefer short, single-line titles — only use two-line `"subLabel\nmainLabel"` format when needed for clarity. Actions may override this at render time via `resolveTitleSettings()`. The `artworkBounds` field declares the bounding box of the artwork content for dynamic scaling (see "Standalone Icon SVGs" section above).
 
 | Slot | Placeholder | Controls | Availability |
 |------|-------------|----------|-------------|
