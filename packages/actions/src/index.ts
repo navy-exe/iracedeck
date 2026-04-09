@@ -14,6 +14,7 @@ export { CAMERA_EDITOR_CONTROLS_UUID, CameraEditorControls } from "./actions/cam
 export { CAR_CONTROL_UUID, CarControl } from "./actions/car-control.js";
 export { CHAT_UUID, Chat } from "./actions/chat.js";
 export { COCKPIT_MISC_UUID, CockpitMisc } from "./actions/cockpit-misc.js";
+export { FORCE_FEEDBACK_UUID, ForceFeedback } from "./actions/force-feedback.js";
 export { FUEL_SERVICE_UUID, FuelService } from "./actions/fuel-service.js";
 export { LOOK_DIRECTION_UUID, LookDirection } from "./actions/look-direction.js";
 export { MEDIA_CAPTURE_UUID, MediaCapture } from "./actions/media-capture.js";

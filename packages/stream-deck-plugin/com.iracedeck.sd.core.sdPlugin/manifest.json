@@ -217,6 +217,31 @@
       ]
     },
     {
+      "Name": "Force Feedback",
+      "UUID": "com.iracedeck.sd.core.force-feedback",
+      "Icon": "imgs/actions/force-feedback/icon",
+      "Tooltip": "Force feedback controls (FFB force, wheel LFE, bass shaker, haptic intensity)",
+      "PropertyInspectorPath": "ui/force-feedback.html",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Increase/Decrease adjustment",
+          "Push": "Activate control"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/force-feedback/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 14
+        }
+      ]
+    },
+    {
       "Name": "Pit Quick Actions",
       "UUID": "com.iracedeck.sd.core.pit-quick-actions",
       "Icon": "imgs/actions/pit-quick-actions/icon",
