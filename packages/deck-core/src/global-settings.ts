@@ -88,6 +88,15 @@ export const GlobalSettingsSchema = z
       (val) => (val === "" ? undefined : val),
       z.coerce.number().min(1).max(65535).default(8888),
     ),
+    /**
+     * When true, changing fuel amount (add/reduce/set) automatically enables the fuel fill checkbox.
+     * When false, the fuel fill state is preserved (uses #-fuel macro prefix).
+     * Default: true (matches iRacing default behavior)
+     */
+    enableFuelingOnChange: z
+      .union([z.boolean(), z.string()])
+      .transform((val) => val === true || val === "true")
+      .default(true),
   })
   .passthrough();
 
