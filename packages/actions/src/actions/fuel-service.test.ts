@@ -783,5 +783,54 @@ describe("FuelService", () => {
         vi.useRealTimers();
       }
     });
+
+    it("should auto-stop repeat after safety timeout", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 1, unit: "l" }) as any);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(true);
+
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should log a warning when safety timeout triggers", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 1, unit: "l" }) as any);
+
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect(action.logger.warn).toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should clear safety timeout when keyUp arrives normally", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 1, unit: "l" }) as any);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(true);
+
+        await vi.advanceTimersByTimeAsync(500);
+        await action.onKeyUp(fakeEvent("action-1") as any);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+
+        // Advance past safety timeout — no error, nothing happens
+        await vi.advanceTimersByTimeAsync(15_000);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+        expect(action.logger.warn).not.toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });
