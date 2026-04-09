@@ -345,6 +345,114 @@ describe("FuelService", () => {
       expect(buildFuelMacro("lap-margin-increase", 5, "l")).toBeNull();
       expect(buildFuelMacro("lap-margin-decrease", 5, "l")).toBeNull();
     });
+
+    it("should use #-fuel prefix when preserveFueling is true", () => {
+      expect(buildFuelMacro("add-fuel", 5, "l", true)).toBe("#-fuel +5l$");
+      expect(buildFuelMacro("reduce-fuel", 3, "k", true)).toBe("#-fuel -3k$");
+      expect(buildFuelMacro("set-fuel-amount", 50, "l", true)).toBe("#-fuel 50l$");
+    });
+
+    it("should use #fuel prefix when preserveFueling is false", () => {
+      expect(buildFuelMacro("add-fuel", 5, "l", false)).toBe("#fuel +5l$");
+      expect(buildFuelMacro("reduce-fuel", 3, "k", false)).toBe("#fuel -3k$");
+      expect(buildFuelMacro("set-fuel-amount", 50, "l", false)).toBe("#fuel 50l$");
+    });
+
+    it("should default preserveFueling to false", () => {
+      expect(buildFuelMacro("add-fuel", 5, "l")).toBe("#fuel +5l$");
+    });
+  });
+
+  describe("enableFuelingOnChange behavior", () => {
+    let action: FuelService;
+
+    beforeEach(() => {
+      action = new FuelService();
+    });
+
+    it("should use #fuel prefix when enableFuelingOnChange is true (default)", async () => {
+      mockGetGlobalSettings.mockReturnValue({ enableFuelingOnChange: true });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+
+      expect(mockSendMessage).toHaveBeenCalledWith("#fuel +5l$");
+    });
+
+    it("should use #-fuel prefix when enableFuelingOnChange is false and fuel fill is off", async () => {
+      mockGetGlobalSettings.mockReturnValue({ enableFuelingOnChange: false });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+
+      expect(mockSendMessage).toHaveBeenCalledWith("#-fuel +5l$");
+    });
+
+    it("should use #fuel prefix when enableFuelingOnChange is false but fuel fill is already on", async () => {
+      mockGetGlobalSettings.mockReturnValue({ enableFuelingOnChange: false });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0010 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+
+      expect(mockSendMessage).toHaveBeenCalledWith("#fuel +5l$");
+    });
+
+    it("should handle string 'false' from sdpi-checkbox (PI stores booleans as strings)", async () => {
+      mockGetGlobalSettings.mockReturnValue({ enableFuelingOnChange: "false" });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+
+      expect(mockSendMessage).toHaveBeenCalledWith("#-fuel +5l$");
+    });
+
+    it("should handle string 'true' from sdpi-checkbox as enabled", async () => {
+      mockGetGlobalSettings.mockReturnValue({ enableFuelingOnChange: "true" });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+
+      expect(mockSendMessage).toHaveBeenCalledWith("#fuel +5l$");
+    });
+
+    it("should clear fuel fill after lap-margin-increase when preserving state", async () => {
+      mockGetGlobalSettings.mockReturnValue({
+        enableFuelingOnChange: false,
+        fuelServiceLapMarginIncrease: '{"key":"x","modifiers":[],"code":45}',
+      });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "lap-margin-increase" }) as any);
+
+      expect(mockTapBinding).toHaveBeenCalledWith("fuelServiceLapMarginIncrease");
+      expect(mockPitClearFuel).toHaveBeenCalledOnce();
+    });
+
+    it("should not clear fuel fill after lap-margin when enableFuelingOnChange is true", async () => {
+      mockGetGlobalSettings.mockReturnValue({
+        enableFuelingOnChange: true,
+        fuelServiceLapMarginIncrease: '{"key":"x","modifiers":[],"code":45}',
+      });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "lap-margin-increase" }) as any);
+
+      expect(mockTapBinding).toHaveBeenCalledWith("fuelServiceLapMarginIncrease");
+      expect(mockPitClearFuel).not.toHaveBeenCalled();
+    });
+
+    it("should not clear fuel fill after toggle-autofuel even when preserving state", async () => {
+      mockGetGlobalSettings.mockReturnValue({
+        enableFuelingOnChange: false,
+        fuelServiceToggleAutofuel: '{"key":"a","modifiers":[],"code":30}',
+      });
+      action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
+
+      await action.onKeyDown(fakeEvent("action-1", { mode: "toggle-autofuel" }) as any);
+
+      expect(mockTapBinding).toHaveBeenCalledWith("fuelServiceToggleAutofuel");
+      expect(mockPitClearFuel).not.toHaveBeenCalled();
+    });
   });
 
   describe("key press behavior (macro modes)", () => {
@@ -352,6 +460,7 @@ describe("FuelService", () => {
 
     beforeEach(() => {
       action = new FuelService();
+      mockGetGlobalSettings.mockReturnValue({ enableFuelingOnChange: true });
     });
 
     it("should send add-fuel macro via chat.sendMessage", async () => {

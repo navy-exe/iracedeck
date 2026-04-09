@@ -178,7 +178,7 @@ Merging
 
 - PRs are merged into `master` via `gh pr merge --merge` (regular merge, not squash).
 - Since commits are logical and self-contained, squashing is not needed — the full commit history is preserved on `master`.
-- **PR titles must include the PR number** at the end in parentheses: `<type>(<scope>): <description> (#<PR>)`. Example: `feat(actions): add Camera Focus action (#42)`.
+- **PR titles must include the issue number** at the end in parentheses: `<type>(<scope>): <description> (#<issue>)`. Example: `feat(actions): add Camera Focus action (#42)`.
 - **PR titles drive release notes.** The conventional commit prefix determines the release notes category via auto-labeling (see **PR Labels** above). Use the correct prefix so the change appears in the right section.
 - Merging is performed manually or by automation — never by a Claude review step.
 

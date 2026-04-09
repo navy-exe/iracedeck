@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<%- include('head-common') %>
+	</head>
+	<body>
+		<%- include('section-header', { title: 'Action Settings' }) %>
+
+		<sdpi-item label="Mode">
+			<sdpi-select id="mode-select" setting="mode" default="auto-compute-ffb-force">
+				<optgroup label="Force Feedback">
+					<option value="auto-compute-ffb-force">Auto Compute FFB Force</option>
+					<option value="ffb-force">FFB Force</option>
+					<option value="wheel-lfe">Wheel LFE</option>
+				</optgroup>
+				<optgroup label="Bass Shaker">
+					<option value="bass-shaker-lfe">BassShaker LFE</option>
+				</optgroup>
+				<optgroup label="Wheel LFE Controls">
+					<option value="wheel-lfe-intensity">Wheel LFE Intensity</option>
+				</optgroup>
+				<optgroup label="Haptic LFE Controls">
+					<option value="haptic-lfe-intensity">Haptic LFE Intensity</option>
+				</optgroup>
+			</sdpi-select>
+		</sdpi-item>
+
+		<sdpi-item label="Direction" id="direction-item">
+			<sdpi-select id="direction-select" setting="direction" default="increase">
+				<option value="increase" id="increase-label">Increase</option>
+				<option value="decrease" id="decrease-label">Decrease</option>
+			</sdpi-select>
+		</sdpi-item>
+
+		<%- include('title-overrides') %>
+		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['force-feedback'] }) %>
+		<%- include('border-overrides', { defaults: require('./data/icon-defaults.json')['force-feedback'] }) %>
+		<%- include('graphic-overrides') %>
+		<%- include('common-settings') %>
+
+		<%- include('section-header', { title: 'Global Settings' }) %>
+
+		<%- include('global-key-bindings', {
+			keyBindings: require('./data/key-bindings.json').forceFeedback
+		}) %>
+		<%- include('global-title-defaults') %>
+		<%- include('global-color-defaults') %>
+		<%- include('global-border-defaults') %>
+		<%- include('global-graphic-defaults') %>
+		<%- include('global-common-settings') %>
+
+		<script>
+			const NON_DIRECTIONAL_MODES = new Set(["auto-compute-ffb-force"]);
+
+			const DIRECTION_LABELS = {
+				"ffb-force": { increase: "Increase", decrease: "Decrease" },
+				"wheel-lfe": { increase: "Louder", decrease: "Quieter" },
+				"bass-shaker-lfe": { increase: "Louder", decrease: "Quieter" },
+				"wheel-lfe-intensity": { increase: "More Intense", decrease: "Less Intense" },
+				"haptic-lfe-intensity": { increase: "More Intense", decrease: "Less Intense" },
+			};
+
+			function updateVisibility(mode) {
+				const directionItem = document.getElementById("direction-item");
+				if (!directionItem) return;
+				directionItem.classList.toggle("hidden", NON_DIRECTIONAL_MODES.has(mode));
+
+				const labels = DIRECTION_LABELS[mode];
+				if (labels) {
+					const increaseOpt = document.getElementById("increase-label");
+					const decreaseOpt = document.getElementById("decrease-label");
+					if (increaseOpt) increaseOpt.textContent = labels.increase;
+					if (decreaseOpt) decreaseOpt.textContent = labels.decrease;
+				}
+			}
+
+			async function initialize() {
+				await customElements.whenDefined("sdpi-select");
+				const modeSelect = document.getElementById("mode-select");
+				if (modeSelect) {
+					const initialValue = modeSelect.value || "auto-compute-ffb-force";
+					updateVisibility(initialValue);
+
+					modeSelect.addEventListener("change", function(ev) { updateVisibility(ev.target.value); });
+					modeSelect.addEventListener("input", function(ev) { updateVisibility(ev.target.value); });
+
+					let lastValue = modeSelect.value || "auto-compute-ffb-force";
+					setInterval(function() {
+						const currentValue = modeSelect.value;
+						if (currentValue && currentValue !== lastValue) {
+							lastValue = currentValue;
+							updateVisibility(currentValue);
+						}
+					}, 100);
+				}
+			}
+
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", initialize);
+			} else {
+				initialize();
+			}
+		</script>
+
+		<style>
+			.hidden { display: none !important; }
+		</style>
+
+		<%- include('docs-link') %>
+		<%- include('version') %>
+	</body>
+</html>

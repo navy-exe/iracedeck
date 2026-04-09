@@ -41,6 +41,17 @@
 			</sdpi-item>
 		</div>
 
+		<div id="fueling-on-change-section" class="hidden">
+			<sdpi-item label="Auto-enable fueling">
+				<sdpi-checkbox
+					setting="enableFuelingOnChange"
+					label="Auto-enable fueling when adjusting fuel or lap margin"
+					global
+					default="true"
+				></sdpi-checkbox>
+			</sdpi-item>
+		</div>
+
 		<%- include('title-overrides') %>
 
 		<%- include('color-overrides', { slots: ['backgroundColor', 'textColor', 'graphic1Color'], defaults: require('./data/icon-defaults.json')['fuel-service'] }) %>
@@ -64,6 +75,7 @@
 
 		<script>
 			const FUEL_MACRO_MODES = ["add-fuel", "reduce-fuel", "set-fuel-amount"];
+			const FUELING_ON_CHANGE_MODES = [...FUEL_MACRO_MODES, "lap-margin-increase", "lap-margin-decrease"];
 			const KEYBOARD_MODES = ["toggle-autofuel", "lap-margin-increase", "lap-margin-decrease"];
 
 			async function initialize() {
@@ -103,11 +115,18 @@
 			function updateVisibility(mode) {
 				const fuelSettings = document.getElementById("fuel-settings");
 				const keyBindings = document.getElementById("key-bindings-section");
+				const fuelingOnChange = document.getElementById("fueling-on-change-section");
 
 				if (FUEL_MACRO_MODES.includes(mode)) {
 					fuelSettings?.classList.remove("hidden");
 				} else {
 					fuelSettings?.classList.add("hidden");
+				}
+
+				if (FUELING_ON_CHANGE_MODES.includes(mode)) {
+					fuelingOnChange?.classList.remove("hidden");
+				} else {
+					fuelingOnChange?.classList.add("hidden");
 				}
 
 				if (KEYBOARD_MODES.includes(mode)) {

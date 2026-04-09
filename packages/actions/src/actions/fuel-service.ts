@@ -9,6 +9,7 @@ import {
   getGlobalBorderSettings,
   getGlobalColors,
   getGlobalGraphicSettings,
+  getGlobalSettings,
   getGlobalTitleSettings,
   type IDeckDialDownEvent,
   type IDeckDialRotateEvent,
@@ -206,16 +207,22 @@ function fuelFillGraphicContent(telemetryState: FuelServiceTelemetryState, graph
  * Uses iRacing pit macro syntax: #fuel [[+|-]<amount>[l|g|k]]$
  * The $ suffix auto-executes without showing the chat window.
  */
-export function buildFuelMacro(mode: FuelServiceMode, amount: number, unit: FuelUnit): string | null {
+export function buildFuelMacro(
+  mode: FuelServiceMode,
+  amount: number,
+  unit: FuelUnit,
+  preserveFueling = false,
+): string | null {
   const rounded = Math.round(amount * 10) / 10;
+  const prefix = preserveFueling ? "#-fuel" : "#fuel";
 
   switch (mode) {
     case "add-fuel":
-      return `#fuel +${rounded}${unit}$`;
+      return `${prefix} +${rounded}${unit}$`;
     case "reduce-fuel":
-      return `#fuel -${rounded}${unit}$`;
+      return `${prefix} -${rounded}${unit}$`;
     case "set-fuel-amount":
-      return `#fuel ${rounded}${unit}$`;
+      return `${prefix} ${rounded}${unit}$`;
     default:
       return null;
   }
@@ -502,13 +509,45 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
         }
 
         await this.tapBinding(settingKey);
+
+        // Lap margin changes through the black box enable the fuel fill checkbox.
+        // When enableFuelingOnChange is off and fuel fill was off, clear it to restore the off state.
+        if (mode !== "toggle-autofuel" && this.shouldPreserveFuelingState()) {
+          this.logger.debug("Clearing fuel fill to preserve off state after lap margin change");
+          const cleared = getCommands().pit.clearFuel();
+
+          if (!cleared) {
+            this.logger.warn("Failed to clear fuel fill when preserving off state");
+          }
+        }
+
         break;
       }
     }
   }
 
+  /**
+   * Determines whether the fuel fill checkbox state should be preserved
+   * (i.e., use #-fuel prefix instead of #fuel).
+   * When enableFuelingOnChange is false AND fuel fill is currently off,
+   * we preserve the off state so the user's checkbox isn't auto-enabled.
+   */
+  private shouldPreserveFuelingState(): boolean {
+    const globalSettings = getGlobalSettings() as Record<string, unknown>;
+    const raw = globalSettings.enableFuelingOnChange;
+    // sdpi-checkbox stores "false" as a string — treat both boolean false and string "false" as disabled
+    const enableFuelingOnChange = raw !== false && raw !== "false";
+
+    if (enableFuelingOnChange) return false;
+
+    const telemetry = this.sdkController.getCurrentTelemetry();
+
+    return !isFuelFillOn(telemetry);
+  }
+
   private executeFuelMacro(mode: FuelServiceMode, settings: FuelServiceSettings): void {
-    const macro = buildFuelMacro(mode, settings.amount, settings.unit);
+    const preserveFueling = this.shouldPreserveFuelingState();
+    const macro = buildFuelMacro(mode, settings.amount, settings.unit, preserveFueling);
 
     if (!macro) {
       this.logger.warn(`No macro for mode: ${mode}`);

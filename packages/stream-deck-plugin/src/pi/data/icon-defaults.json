@@ -8,8 +8,7 @@
   "audio-controls": {
     "backgroundColor": "#2a3a4a",
     "textColor": "#ffffff",
-    "graphic1Color": "#55aa00",
-    "graphic2Color": "#ffffff",
+    "graphic1Color": "#ffffff",
     "borderColor": "#5a6a7a"
   },
   "black-box-selector": {
@@ -64,6 +63,12 @@
     "textColor": "#ffffff",
     "graphic1Color": "#ffffff",
     "borderColor": "#5a5a6a"
+  },
+  "force-feedback": {
+    "backgroundColor": "#2a2a4a",
+    "textColor": "#ffffff",
+    "graphic1Color": "#ffffff",
+    "borderColor": "#5a5a7a"
   },
   "fuel-service": {
     "backgroundColor": "#3a2a2a",
