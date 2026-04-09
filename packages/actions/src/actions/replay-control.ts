@@ -311,7 +311,7 @@ export function generateReplayControlSvg(
   if (mode === "set-speed" && settings.speed) {
     const mainLabel = formatSetSpeedLabel(settings.speed);
     const needleAngle = String(calculateNeedleAngle(settings.speed));
-    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, defaultTitle);
+    const title = resolveTitleSettings(iconSvg, getGlobalTitleSettings(), settings.titleOverrides, mainLabel);
     const rawGraphic = extractGraphicContent(iconSvg);
     let graphicContent = title.showGraphics
       ? renderIconTemplate(rawGraphic, { mainLabel, needleAngle, ...colors })

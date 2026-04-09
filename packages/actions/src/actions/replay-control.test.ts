@@ -432,12 +432,21 @@ describe("ReplayControl", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "set-speed", speed: "4" }));
 
       expect(decoded).toContain("4x");
+      expect(decoded).not.toContain("SET SPEED");
     });
 
     it("should show slow-motion speed label for set-speed mode", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "set-speed", speed: "s4" }));
 
       expect(decoded).toContain("1/4x");
+      expect(decoded).not.toContain("SET SPEED");
+    });
+
+    it("should use dynamic title matching speed for set-speed mode", () => {
+      const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "set-speed", speed: "1" }));
+
+      expect(decoded).toContain("1x");
+      expect(decoded).not.toContain("SET SPEED");
     });
 
     // Speed display labels
