@@ -626,6 +626,7 @@ export interface TelemetryData {
   PitOptRepairLeft?: number;
   FastRepairAvailable?: number;
   FastRepairUsed?: number;
+  dpFuelAutoFillActive?: number;
 
   // Camera & Replay
   CamCameraNumber?: number;
