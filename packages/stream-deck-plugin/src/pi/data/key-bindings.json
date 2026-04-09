@@ -167,6 +167,74 @@
       "setting": "cockpitMiscInLapMode"
     }
   ],
+  "forceFeedback": [
+    {
+      "id": "autoCompute",
+      "label": "Auto Compute FFB Force",
+      "default": "Ctrl+A",
+      "setting": "forceFeedbackAutoCompute"
+    },
+    {
+      "id": "ffForceIncrease",
+      "label": "FFB Force Increase",
+      "default": "",
+      "setting": "cockpitMiscFfbForceIncrease"
+    },
+    {
+      "id": "ffForceDecrease",
+      "label": "FFB Force Decrease",
+      "default": "",
+      "setting": "cockpitMiscFfbForceDecrease"
+    },
+    {
+      "id": "wheelLfeLouder",
+      "label": "Wheel LFE Louder",
+      "default": "",
+      "setting": "forceFeedbackWheelLfeLouder"
+    },
+    {
+      "id": "wheelLfeQuieter",
+      "label": "Wheel LFE Quieter",
+      "default": "",
+      "setting": "forceFeedbackWheelLfeQuieter"
+    },
+    {
+      "id": "bassShakerLfeLouder",
+      "label": "BassShaker LFE Louder",
+      "default": "",
+      "setting": "forceFeedbackBassShakerLfeLouder"
+    },
+    {
+      "id": "bassShakerLfeQuieter",
+      "label": "BassShaker LFE Quieter",
+      "default": "",
+      "setting": "forceFeedbackBassShakerLfeQuieter"
+    },
+    {
+      "id": "wheelLfeIntensityIncrease",
+      "label": "Wheel LFE More Intense",
+      "default": "",
+      "setting": "forceFeedbackWheelLfeIntensityIncrease"
+    },
+    {
+      "id": "wheelLfeIntensityDecrease",
+      "label": "Wheel LFE Less Intense",
+      "default": "",
+      "setting": "forceFeedbackWheelLfeIntensityDecrease"
+    },
+    {
+      "id": "hapticLfeIntensityIncrease",
+      "label": "Haptic LFE More Intense",
+      "default": "",
+      "setting": "forceFeedbackHapticLfeIntensityIncrease"
+    },
+    {
+      "id": "hapticLfeIntensityDecrease",
+      "label": "Haptic LFE Less Intense",
+      "default": "",
+      "setting": "forceFeedbackHapticLfeIntensityDecrease"
+    }
+  ],
   "fuelService": [
     {
       "id": "toggleAutofuel",

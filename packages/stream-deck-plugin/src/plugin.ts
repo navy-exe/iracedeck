@@ -18,6 +18,8 @@ import {
   CHAT_UUID,
   COCKPIT_MISC_UUID,
   CockpitMisc,
+  FORCE_FEEDBACK_UUID,
+  ForceFeedback,
   FUEL_SERVICE_UUID,
   FuelService,
   LOOK_DIRECTION_UUID,
@@ -126,6 +128,7 @@ adapter.registerAction(
 adapter.registerAction(CAR_CONTROL_UUID, new CarControl(adapter.createLogger("CarControl")));
 adapter.registerAction(CHAT_UUID, new Chat(adapter.createLogger("Chat")));
 adapter.registerAction(COCKPIT_MISC_UUID, new CockpitMisc(adapter.createLogger("CockpitMisc")));
+adapter.registerAction(FORCE_FEEDBACK_UUID, new ForceFeedback(adapter.createLogger("ForceFeedback")));
 adapter.registerAction(FUEL_SERVICE_UUID, new FuelService(adapter.createLogger("FuelService")));
 adapter.registerAction(LOOK_DIRECTION_UUID, new LookDirection(adapter.createLogger("LookDirection")));
 adapter.registerAction(MEDIA_CAPTURE_UUID, new MediaCapture(adapter.createLogger("MediaCapture")));

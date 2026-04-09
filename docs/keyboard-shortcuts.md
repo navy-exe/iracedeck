@@ -168,6 +168,8 @@
 | Set FFB Max Force | - | Yes | - |
 | Adjust Wheel LFE | - | No | Wheel LFE Louder / Wheel LFE Quieter |
 | Adjust BassShaker LFE | - | No | BassShaker LFE Louder / BassShaker LFE Quieter |
+| Adjust Wheel LFE Intensity | - | No | Wheel LFE More Intense / Wheel LFE Less Intense |
+| Adjust Haptic LFE Intensity | - | No | Haptic LFE More Intense / Haptic LFE Less Intense |
 
 ## Chat
 

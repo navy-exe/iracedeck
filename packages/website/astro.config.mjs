@@ -128,6 +128,7 @@ export default defineConfig({
               label: "Cockpit & Interface",
               items: [
                 { slug: "docs/actions/cockpit/cockpit-misc" },
+                { slug: "docs/actions/cockpit/force-feedback" },
                 { slug: "docs/actions/cockpit/splits-delta-cycle" },
                 { slug: "docs/actions/cockpit/telemetry-control" },
                 { slug: "docs/actions/cockpit/toggle-ui-elements" },
