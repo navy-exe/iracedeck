@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#3a4a5a","textColor":"#ffffff"},"title":{"text":"SPOTTER\nSILENCE"},"border":{"color":"#6a7a8a"},"artworkBounds":{"x":39,"y":23,"width":62,"height":58}}</desc>
+  <desc>{"colors":{"backgroundColor":"#3a4a5a","textColor":"#ffffff","graphic1Color":"#888888","graphic2Color":"#e74c3c"},"locked":["graphic2Color"],"title":{"text":"SPOTTER\nSILENCE"},"border":{"color":"#6a7a8a"},"artworkBounds":{"x":39,"y":23,"width":62,"height":58}}</desc>
 
-    <path d="M40 40v24h12l16 16V24l-16 16h-12z" fill="none" stroke="#888888" stroke-width="4" stroke-linejoin="round"/>
-    <line x1="78" y1="40" x2="100" y2="64" stroke="#e74c3c" stroke-width="5" stroke-linecap="round"/>
-    <line x1="100" y1="40" x2="78" y2="64" stroke="#e74c3c" stroke-width="5" stroke-linecap="round"/>
+    <path d="M40 40v24h12l16 16V24l-16 16h-12z" fill="none" stroke="{{graphic1Color}}" stroke-width="4" stroke-linejoin="round"/>
+    <line x1="78" y1="40" x2="100" y2="64" stroke="{{graphic2Color}}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="40" x2="78" y2="64" stroke="{{graphic2Color}}" stroke-width="5" stroke-linecap="round"/>
 
 </svg>
