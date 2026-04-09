@@ -185,6 +185,8 @@ const LONG_PRESS_REPEAT_MODES: ReadonlySet<ReplayControlMode> = new Set([
 
 const LONG_PRESS_INITIAL_DELAY = 500;
 const LONG_PRESS_REPEAT_INTERVAL = 250;
+/** Maximum duration for long-press repeat before auto-stop (safety net for missed keyUp) */
+const LONG_PRESS_MAX_DURATION_MS = 15_000;
 
 /**
  * @internal Exported for testing
@@ -446,7 +448,10 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   private pausedSpeed: { speed: number; slowMotion: boolean } | null = null;
 
   /** Active long-press repeat timers, keyed by action context ID */
-  private repeatTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private repeatTimers = new Map<
+    string,
+    { timer: ReturnType<typeof setTimeout>; safety: ReturnType<typeof setTimeout> }
+  >();
 
   /** Cached settings per context for telemetry-driven display updates */
   private activeContexts = new Map<string, ReplayControlSettings>();
@@ -537,18 +542,33 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
         this.executeMode(contextId, settings);
       }, LONG_PRESS_REPEAT_INTERVAL);
 
-      this.repeatTimers.set(contextId, interval);
+      // Replace the initial-delay handle with the interval handle so stopRepeat
+      // clears the right timer. Safe: JS is single-threaded so stopRepeat cannot
+      // interleave with this assignment.
+      const entry = this.repeatTimers.get(contextId);
+
+      if (entry) {
+        entry.timer = interval;
+      }
     }, LONG_PRESS_INITIAL_DELAY);
 
-    this.repeatTimers.set(contextId, timer);
+    const safety = setTimeout(() => {
+      this.logger.warn(
+        `Repeat auto-stopped after ${LONG_PRESS_MAX_DURATION_MS}ms (safety timeout — possible missed keyUp)`,
+      );
+      this.stopRepeat(contextId);
+    }, LONG_PRESS_MAX_DURATION_MS);
+
+    this.repeatTimers.set(contextId, { timer, safety });
   }
 
   private stopRepeat(contextId: string): void {
-    const timer = this.repeatTimers.get(contextId);
+    const entry = this.repeatTimers.get(contextId);
 
-    if (timer) {
-      clearTimeout(timer);
-      clearInterval(timer);
+    if (entry) {
+      clearTimeout(entry.timer);
+      clearInterval(entry.timer);
+      clearTimeout(entry.safety);
       this.repeatTimers.delete(contextId);
     }
   }

@@ -9,6 +9,7 @@ import {
   formatSpeedDisplay,
   generateReplayControlSvg,
   parseSpeedSetting,
+  ReplayControl,
 } from "./replay-control.js";
 
 // Mock all replay-control icon SVGs
@@ -122,6 +123,10 @@ vi.mock("@iracedeck/deck-core", () => ({
     setKeyImage = vi.fn();
     setRegenerateCallback = vi.fn();
     updateKeyImage = vi.fn();
+    setActiveBinding = vi.fn();
+    async onWillAppear() {}
+    async onDidReceiveSettings() {}
+    async onWillDisappear() {}
   },
   getCommands: vi.fn(() => ({
     replay: {
@@ -879,6 +884,72 @@ describe("ReplayControl", () => {
       vi.mocked(getCarNumberFromSessionInfo).mockReturnValue("7");
 
       expect(findAdjacentCarByNumber({}, 0, "next")).toBe(3042);
+    });
+  });
+
+  describe("long-press repeat", () => {
+    /** Create a minimal fake event with the given action ID and settings. */
+    function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
+      return {
+        action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn() },
+        payload: { settings },
+      };
+    }
+
+    let action: ReplayControl;
+
+    beforeEach(async () => {
+      action = new ReplayControl();
+      await action.onWillAppear(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+    });
+
+    it("should auto-stop repeat after safety timeout", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+        expect((action as any).repeatTimers.has("action-1")).toBe(true);
+
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect((action as any).repeatTimers.has("action-1")).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should log a warning when safety timeout triggers", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect(action.logger.warn).toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should clear safety timeout when keyUp arrives normally", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+        expect((action as any).repeatTimers.has("action-1")).toBe(true);
+
+        await vi.advanceTimersByTimeAsync(500);
+        await action.onKeyUp(fakeEvent("action-1") as any);
+        expect((action as any).repeatTimers.has("action-1")).toBe(false);
+
+        // Advance past safety timeout — no error, nothing happens
+        await vi.advanceTimersByTimeAsync(15_000);
+        expect((action as any).repeatTimers.has("action-1")).toBe(false);
+        expect(action.logger.warn).not.toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

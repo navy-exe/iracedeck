@@ -218,6 +218,8 @@ export function buildFuelMacro(mode: FuelServiceMode, amount: number, unit: Fuel
 /** Modes that support long-press repeat (execute at interval while held) */
 const REPEATABLE_MODES = new Set<FuelServiceMode>(["add-fuel", "reduce-fuel"]);
 const REPEAT_INTERVAL_MS = 250;
+/** Maximum duration for long-press repeat before auto-stop (safety net for missed keyUp) */
+const REPEAT_MAX_DURATION_MS = 15_000;
 
 /** Modes that support encoder rotation for +/- adjustments */
 const ROTATABLE_MACRO_MODES = new Set<FuelServiceMode>(["add-fuel", "reduce-fuel"]);
@@ -339,7 +341,10 @@ export const FUEL_SERVICE_UUID = "com.iracedeck.sd.core.fuel-service" as const;
 export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings> {
   private activeContexts = new Map<string, FuelServiceSettings>();
   private lastState = new Map<string, string>();
-  private repeatIntervals = new Map<string, ReturnType<typeof setInterval>>();
+  private repeatIntervals = new Map<
+    string,
+    { interval: ReturnType<typeof setInterval>; safety: ReturnType<typeof setTimeout> }
+  >();
 
   override async onWillAppear(ev: IDeckWillAppearEvent<FuelServiceSettings>): Promise<void> {
     await super.onWillAppear(ev);
@@ -418,7 +423,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   private startRepeat(actionId: string): void {
     this.stopRepeat(actionId);
 
-    const timer = setInterval(() => {
+    const interval = setInterval(() => {
       const currentSettings = this.activeContexts.get(actionId);
 
       if (!currentSettings) {
@@ -432,14 +437,22 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
       });
     }, REPEAT_INTERVAL_MS);
 
-    this.repeatIntervals.set(actionId, timer);
+    const safety = setTimeout(() => {
+      this.logger.warn(
+        `Repeat auto-stopped after ${REPEAT_MAX_DURATION_MS}ms (safety timeout — possible missed keyUp)`,
+      );
+      this.stopRepeat(actionId);
+    }, REPEAT_MAX_DURATION_MS);
+
+    this.repeatIntervals.set(actionId, { interval, safety });
   }
 
   private stopRepeat(actionId: string): void {
-    const timer = this.repeatIntervals.get(actionId);
+    const entry = this.repeatIntervals.get(actionId);
 
-    if (timer) {
-      clearInterval(timer);
+    if (entry) {
+      clearInterval(entry.interval);
+      clearTimeout(entry.safety);
       this.repeatIntervals.delete(actionId);
     }
   }
