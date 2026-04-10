@@ -4,10 +4,10 @@
  * Detects engine startup via telemetry (EngineStalled bit clearing + RPM > threshold)
  * and plays a synchronized frame-based animation across all visible deck buttons.
  *
- * Animation sequence:
- *   Phase 1 — White sweep top → bottom (row-by-row glow)
- *   Phase 2 — White sweep bottom → top
- *   Phase 3 — Green flash on all buttons
+ * Animation sequence (orange snake sweep):
+ *   Phase 1 — Orange snake sweeps across buttons in alternating direction
+ *             per row (left→right, right→left, left→right) with a fading tail
+ *   Phase 2 — Green flash on all buttons (engine started!)
  *
  * The overlay is composited onto each button's current icon by injecting a
  * semi-transparent rect into the original SVG. This preserves the icon artwork
@@ -31,8 +31,8 @@ import type { IDeckActionContext } from "./types.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-/** Frame interval in milliseconds (40ms = 25fps) */
-const FRAME_INTERVAL_MS = 40;
+/** Frame interval in milliseconds (20ms = 50fps) */
+const FRAME_INTERVAL_MS = 20;
 
 /** Minimum RPM to consider engine running */
 const RPM_THRESHOLD = 200;
@@ -42,26 +42,32 @@ const TELEMETRY_SUB_ID = "__engine_startup_animation__";
 
 // ── Animation frame parameters ───────────────────────────────────────────────
 
-/** How many rows the glow spans during sweep */
-const SWEEP_WIDTH = 1.2;
-
-/** Peak white overlay opacity */
-const SWEEP_PEAK_OPACITY = 0.65;
-
-/** Steps per row of travel during sweep */
-const STEPS_PER_ROW = 6;
-
-/** Number of rows to animate (3-row Stream Deck grid) */
+/** Number of rows on the device grid */
 const NUM_ROWS = 3;
 
-/** Pause frames between phases */
-const PAUSE_STEPS = 2;
+/** Number of columns on the device grid */
+const NUM_COLS = 5;
+
+/** Total number of buttons */
+const TOTAL_BUTTONS = NUM_ROWS * NUM_COLS;
+
+/** Frames per button during snake sweep */
+const SWEEP_HOLD = 2;
+
+/** Number of buttons the snake tail spans behind the head */
+const TAIL_LENGTH = 8;
 
 /** Number of frames for the green flash */
 const GREEN_STEPS = 8;
 
+/** Steps before snake tail clears where green flash begins (overlap) */
+const GREEN_OVERLAP = 4;
+
 /** Peak green overlay opacity */
-const GREEN_PEAK_OPACITY = 0.55;
+const GREEN_PEAK_OPACITY = 0.8;
+
+/** Snake overlay color (orange) */
+const SNAKE_COLOR = "#f39c12";
 
 /** Green flash color */
 const GREEN_COLOR = "#2ecc71";
@@ -75,8 +81,10 @@ interface AnimationFrame {
 
 interface RegisteredContext {
   action: IDeckActionContext;
-  /** Row position on the device (0-based) for sweep effect */
+  /** Row position on the device (0-based) */
   row: number;
+  /** Column position on the device (0-based) */
+  column: number;
   /** Stored original SVG data URI to restore after animation */
   originalSvg: string;
 }
@@ -95,8 +103,8 @@ let animationTimer: ReturnType<typeof setInterval> | null = null;
 /** Current frame index during animation */
 let currentFrame = 0;
 
-/** Pre-computed frames per row: row -> AnimationFrame[] */
-const framesByRow = new Map<number, AnimationFrame[]>();
+/** Pre-computed frames per snake index: snakeIndex -> AnimationFrame[] */
+const framesByIndex = new Map<number, AnimationFrame[]>();
 
 /** Total frame count */
 let totalFrames = 0;
@@ -137,79 +145,102 @@ function compositeOverlay(originalDataUri: string, color: string, opacity: numbe
   return svgToDataUri(composited);
 }
 
+// ── Snake order ─────────────────────────────────────────────────────────────
+
+/**
+ * Pre-computed snake order: alternating direction per row.
+ * Row 0 L→R (0,1,2,3,4), Row 1 R→L (9,8,7,6,5), Row 2 L→R (10,11,12,13,14)
+ * Assumes a 3x5 button grid. Buttons outside this range are clamped on registration.
+ */
+const snakeOrder: number[] = [];
+
+function initSnakeOrder(): void {
+  snakeOrder.length = 0;
+
+  for (let r = 0; r < NUM_ROWS; r++) {
+    const rowIndices: number[] = [];
+
+    for (let c = 0; c < NUM_COLS; c++) {
+      rowIndices.push(r * NUM_COLS + c);
+    }
+
+    // Even rows (0, 2): left to right. Odd rows (1): right to left.
+    if (r % 2 !== 0) {
+      rowIndices.reverse();
+    }
+
+    snakeOrder.push(...rowIndices);
+  }
+}
+
 // ── Frame generation ─────────────────────────────────────────────────────────
 
 /**
- * Build the animation frame sequence for a given row.
+ * Build the animation frame sequence for a given snake position.
  *
- * Phase 1: White sweep top → bottom
- * Phase 2: White sweep bottom → top
- * Phase 3: Green flash all
+ * Orange snake sweep with fading tail:
+ *   Phase 1 — Snake head moves through all buttons in alternating row order.
+ *             A tail of TAIL_LENGTH buttons fades behind the head.
+ *   Phase 2 — Green flash on all buttons (engine started!)
  */
-function buildFramesForRow(row: number): AnimationFrame[] {
-  const sweepDownSteps = NUM_ROWS * STEPS_PER_ROW;
-  const sweepUpSteps = NUM_ROWS * STEPS_PER_ROW;
-  const total = sweepDownSteps + PAUSE_STEPS + sweepUpSteps + PAUSE_STEPS + GREEN_STEPS;
+function buildFramesForSnakePosition(snakePos: number): AnimationFrame[] {
   const frames: AnimationFrame[] = [];
+  const totalSteps = TOTAL_BUTTONS + TAIL_LENGTH;
+  const greenStartStep = totalSteps - GREEN_OVERLAP;
+  const greenStartFrame = greenStartStep * SWEEP_HOLD;
+  const totalAnimFrames = greenStartFrame + GREEN_STEPS;
 
-  for (let f = 0; f < total; f++) {
-    let opacity = 0;
-    let color = "white";
-
-    if (f < sweepDownSteps) {
-      // Phase 1: sweep down
-      const sweepPos = (f / sweepDownSteps) * (NUM_ROWS + SWEEP_WIDTH) - SWEEP_WIDTH / 2;
-      const dist = Math.abs(row - sweepPos);
-
-      if (dist < SWEEP_WIDTH) {
-        opacity = SWEEP_PEAK_OPACITY * (1 - dist / SWEEP_WIDTH);
-      }
-    } else if (f < sweepDownSteps + PAUSE_STEPS) {
-      // Pause
-      opacity = 0;
-    } else if (f < sweepDownSteps + PAUSE_STEPS + sweepUpSteps) {
-      // Phase 2: sweep up
-      const phaseF = f - sweepDownSteps - PAUSE_STEPS;
-      const sweepPos = NUM_ROWS - 1 - (phaseF / sweepUpSteps) * (NUM_ROWS + SWEEP_WIDTH) + SWEEP_WIDTH / 2;
-      const dist = Math.abs(row - sweepPos);
-
-      if (dist < SWEEP_WIDTH) {
-        opacity = SWEEP_PEAK_OPACITY * (1 - dist / SWEEP_WIDTH);
-      }
-    } else if (f < sweepDownSteps + PAUSE_STEPS + sweepUpSteps + PAUSE_STEPS) {
-      // Pause
-      opacity = 0;
-    } else {
-      // Phase 3: green flash
-      const phaseF = f - sweepDownSteps - PAUSE_STEPS - sweepUpSteps - PAUSE_STEPS;
+  for (let f = 0; f < totalAnimFrames; f++) {
+    // Check if we're in the green flash zone
+    if (f >= greenStartFrame) {
+      const h = f - greenStartFrame;
       const peak = Math.floor(GREEN_STEPS * 0.3);
-      color = GREEN_COLOR;
+      let opacity: number;
 
-      if (phaseF <= peak) {
-        opacity = (phaseF / peak) * GREEN_PEAK_OPACITY;
+      if (h <= peak) {
+        opacity = (h / peak) * GREEN_PEAK_OPACITY;
       } else {
-        opacity = GREEN_PEAK_OPACITY * (1 - (phaseF - peak) / (GREEN_STEPS - peak));
+        opacity = GREEN_PEAK_OPACITY * (1 - (h - peak) / (GREEN_STEPS - peak));
+      }
+
+      frames.push({ opacity: Math.max(0, opacity), color: GREEN_COLOR });
+      continue;
+    }
+
+    // Snake sweep frame
+    const step = Math.floor(f / SWEEP_HOLD);
+    let opacity = 0;
+
+    for (let t = 0; t < TAIL_LENGTH; t++) {
+      const tailStep = step - t;
+
+      if (tailStep === snakePos) {
+        const fade = t / (TAIL_LENGTH - 1);
+        opacity = t === 0 ? 0.85 : 0.7 * (1 - fade * fade);
+        opacity = Math.max(0.08, opacity);
+        break;
       }
     }
 
-    frames.push({ opacity: Math.max(0, opacity), color });
+    frames.push({ opacity, color: SNAKE_COLOR });
   }
 
   return frames;
 }
 
 /**
- * Pre-compute frame data for all rows.
+ * Pre-compute frame data for all snake positions.
  */
 function precomputeFrames(): void {
-  framesByRow.clear();
+  initSnakeOrder();
+  framesByIndex.clear();
 
-  for (let row = 0; row < NUM_ROWS; row++) {
-    framesByRow.set(row, buildFramesForRow(row));
+  for (let i = 0; i < TOTAL_BUTTONS; i++) {
+    framesByIndex.set(i, buildFramesForSnakePosition(i));
   }
 
   // Derive totalFrames from actual array length (single source of truth)
-  totalFrames = framesByRow.get(0)?.length ?? 0;
+  totalFrames = framesByIndex.get(0)?.length ?? 0;
 }
 
 // ── Telemetry detection ──────────────────────────────────────────────────────
@@ -287,11 +318,17 @@ function triggerAnimation(): void {
 
     // Update all registered contexts
     for (const [contextId, ctx] of contexts) {
-      const rowFrames = framesByRow.get(ctx.row);
+      // Find this button's position in the snake order
+      const buttonIndex = ctx.row * NUM_COLS + ctx.column;
+      const snakePos = snakeOrder.indexOf(buttonIndex);
 
-      if (!rowFrames) continue;
+      if (snakePos < 0) continue;
 
-      const frame = rowFrames[currentFrame];
+      const indexFrames = framesByIndex.get(snakePos);
+
+      if (!indexFrames) continue;
+
+      const frame = indexFrames[currentFrame];
 
       if (frame.opacity <= 0.01) {
         // No overlay needed — show original image
@@ -393,19 +430,22 @@ export function initEngineStartupAnimation(log: ILogger): void {
  * @param contextId - The action context ID
  * @param action - The action context handle (for setImage)
  * @param row - The row position on the device (from event coordinates)
+ * @param column - The column position on the device (from event coordinates)
  * @param currentSvg - The current SVG being displayed
  */
 export function registerStartupAnimationContext(
   contextId: string,
   action: IDeckActionContext,
   row: number,
+  column: number,
   currentSvg: string,
 ): void {
   if (!initialized) return;
 
-  // Clamp row to valid range (0 to NUM_ROWS-1)
+  // Clamp to valid range
   const clampedRow = Math.min(Math.max(0, row), NUM_ROWS - 1);
-  contexts.set(contextId, { action, row: clampedRow, originalSvg: currentSvg });
+  const clampedCol = Math.min(Math.max(0, column), NUM_COLS - 1);
+  contexts.set(contextId, { action, row: clampedRow, column: clampedCol, originalSvg: currentSvg });
   ensureTelemetrySubscription();
 }
 
@@ -460,7 +500,7 @@ export function _resetEngineStartupAnimation(): void {
   }
 
   contexts.clear();
-  framesByRow.clear();
+  framesByIndex.clear();
   isAnimating = false;
   currentFrame = 0;
   prevStalled = null;

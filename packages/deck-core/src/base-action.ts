@@ -98,8 +98,8 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
   /** Last flag state key for change detection */
   private lastFlagStateKey = "";
 
-  /** Pending row coordinates for engine startup animation (registered on first setKeyImage) */
-  private startupAnimationRows = new Map<string, number>();
+  /** Pending coordinates for engine startup animation (registered on first setKeyImage) */
+  private startupAnimationCoords = new Map<string, { row: number; column: number }>();
 
   private static readonly FLAG_FLASH_INTERVAL_MS = 500;
   private static readonly FLAG_SUBSCRIPTION_PREFIX = "__flag_overlay__";
@@ -251,13 +251,15 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     this.logger.debug(`setKeyImage: stored context ${ev.action.id}, isActive=${this._isActive}`);
 
     // Register or update engine startup animation context with real SVG
-    const pendingRow = this.startupAnimationRows.get(ev.action.id);
+    if (isEngineStartupAnimationInitialized()) {
+      const pendingCoords = this.startupAnimationCoords.get(ev.action.id);
 
-    if (pendingRow !== undefined) {
-      registerStartupAnimationContext(ev.action.id, ev.action, pendingRow, svg);
-      this.startupAnimationRows.delete(ev.action.id);
-    } else {
-      updateStartupAnimationSvg(ev.action.id, svg);
+      if (pendingCoords !== undefined) {
+        registerStartupAnimationContext(ev.action.id, ev.action, pendingCoords.row, pendingCoords.column, svg);
+        this.startupAnimationCoords.delete(ev.action.id);
+      } else {
+        updateStartupAnimationSvg(ev.action.id, svg);
+      }
     }
 
     // Skip visual update if flag overlay is active for this context
@@ -309,7 +311,9 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     entry.svg = svg;
 
     // Update engine startup animation service with latest SVG
-    updateStartupAnimationSvg(contextId, svg);
+    if (isEngineStartupAnimationInitialized()) {
+      updateStartupAnimationSvg(contextId, svg);
+    }
 
     // Skip visual update if flag overlay is active for this context
     if (this.flagOverlayActive.has(contextId)) {
@@ -364,7 +368,10 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     // Store coordinates for deferred engine startup animation registration.
     // Actual registration happens in setKeyImage() when the first real SVG is available.
     if (isEngineStartupAnimationInitialized() && ev.action.isKey()) {
-      this.startupAnimationRows.set(ev.action.id, ev.payload.coordinates?.row ?? 0);
+      this.startupAnimationCoords.set(ev.action.id, {
+        row: ev.payload.coordinates?.row ?? 0,
+        column: ev.payload.coordinates?.column ?? 0,
+      });
     }
   }
 
@@ -402,7 +409,7 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     this.flagOverlayContexts.delete(ev.action.id);
     this.flagOverlayActive.delete(ev.action.id);
     this.cleanupFlagSubscriptionIfUnneeded();
-    this.startupAnimationRows.delete(ev.action.id);
+    this.startupAnimationCoords.delete(ev.action.id);
     unregisterStartupAnimationContext(ev.action.id);
     this.contexts.delete(ev.action.id);
     this.logger.debug(`onWillDisappear: removed context ${ev.action.id}, remaining=${this.contexts.size}`);
