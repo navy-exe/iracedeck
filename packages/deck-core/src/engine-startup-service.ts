@@ -202,15 +202,14 @@ function buildFramesForRow(row: number): AnimationFrame[] {
  * Pre-compute frame data for all rows.
  */
 function precomputeFrames(): void {
-  const sweepDownSteps = NUM_ROWS * STEPS_PER_ROW;
-  const sweepUpSteps = NUM_ROWS * STEPS_PER_ROW;
-  totalFrames = sweepDownSteps + PAUSE_STEPS + sweepUpSteps + PAUSE_STEPS + GREEN_STEPS;
-
   framesByRow.clear();
 
   for (let row = 0; row < NUM_ROWS; row++) {
     framesByRow.set(row, buildFramesForRow(row));
   }
+
+  // Derive totalFrames from actual array length (single source of truth)
+  totalFrames = framesByRow.get(0)?.length ?? 0;
 }
 
 // ── Telemetry detection ──────────────────────────────────────────────────────

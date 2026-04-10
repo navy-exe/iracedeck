@@ -98,6 +98,9 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
   /** Last flag state key for change detection */
   private lastFlagStateKey = "";
 
+  /** Pending row coordinates for engine startup animation (registered on first setKeyImage) */
+  private startupAnimationRows = new Map<string, number>();
+
   private static readonly FLAG_FLASH_INTERVAL_MS = 500;
   private static readonly FLAG_SUBSCRIPTION_PREFIX = "__flag_overlay__";
   private static flagSubscriptionCounter = 0;
@@ -153,8 +156,10 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
    */
   private refreshAllImages(): void {
     for (const [contextId, { action, svg }] of this.contexts) {
-      // Skip contexts with active flag overlay
+      // Skip contexts with active flag overlay or startup animation
       if (this.flagOverlayActive.has(contextId)) continue;
+
+      if (isStartupAnimationPlaying()) continue;
 
       const finalImage = this.applyOverlayIfNeeded(svg);
       action.setImage(finalImage).catch((err) => {
@@ -200,9 +205,14 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     this.logger.info(`Refreshing ${this.contexts.size} contexts with overlay=${applyOverlay}`);
 
     for (const [contextId, { action, svg }] of this.contexts) {
-      // Skip contexts with active flag overlay
+      // Skip contexts with active flag overlay or startup animation
       if (this.flagOverlayActive.has(contextId)) {
         this.logger.trace(`setActive: skipped context ${contextId} (flag overlay active)`);
+        continue;
+      }
+
+      if (isStartupAnimationPlaying()) {
+        this.logger.trace(`setActive: skipped context ${contextId} (startup animation active)`);
         continue;
       }
 
@@ -240,8 +250,15 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     this.contexts.set(ev.action.id, { action: ev.action, svg });
     this.logger.debug(`setKeyImage: stored context ${ev.action.id}, isActive=${this._isActive}`);
 
-    // Keep engine startup animation service in sync with latest SVG
-    updateStartupAnimationSvg(ev.action.id, svg);
+    // Register or update engine startup animation context with real SVG
+    const pendingRow = this.startupAnimationRows.get(ev.action.id);
+
+    if (pendingRow !== undefined) {
+      registerStartupAnimationContext(ev.action.id, ev.action, pendingRow, svg);
+      this.startupAnimationRows.delete(ev.action.id);
+    } else {
+      updateStartupAnimationSvg(ev.action.id, svg);
+    }
 
     // Skip visual update if flag overlay is active for this context
     if (this.flagOverlayActive.has(ev.action.id)) {
@@ -291,7 +308,7 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     // Store original SVG for later refresh (always, even during flag overlay or startup animation)
     entry.svg = svg;
 
-    // Keep engine startup animation service in sync with latest SVG
+    // Update engine startup animation service with latest SVG
     updateStartupAnimationSvg(contextId, svg);
 
     // Skip visual update if flag overlay is active for this context
@@ -344,10 +361,10 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
       this.logger.debug(`Flag overlay enabled for context ${ev.action.id}`);
     }
 
-    // Register with engine startup animation service (row from coordinates, default 0)
-    if (isEngineStartupAnimationInitialized()) {
-      const row = ev.payload.coordinates?.row ?? 0;
-      registerStartupAnimationContext(ev.action.id, ev.action, row, "");
+    // Store coordinates for deferred engine startup animation registration.
+    // Actual registration happens in setKeyImage() when the first real SVG is available.
+    if (isEngineStartupAnimationInitialized() && ev.action.isKey()) {
+      this.startupAnimationRows.set(ev.action.id, ev.payload.coordinates?.row ?? 0);
     }
   }
 
@@ -385,6 +402,7 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     this.flagOverlayContexts.delete(ev.action.id);
     this.flagOverlayActive.delete(ev.action.id);
     this.cleanupFlagSubscriptionIfUnneeded();
+    this.startupAnimationRows.delete(ev.action.id);
     unregisterStartupAnimationContext(ev.action.id);
     this.contexts.delete(ev.action.id);
     this.logger.debug(`onWillDisappear: removed context ${ev.action.id}, remaining=${this.contexts.size}`);

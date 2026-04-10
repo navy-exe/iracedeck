@@ -307,6 +307,7 @@ export function generateFuelGaugeTicks(startY: number, endY: number): string {
  */
 export function generateFuelGaugeSideBars(color: string, statusBarColor: string): string {
   // Side tick marks — original 3 from fuel-add.svg plus extras at same ~15.34 gap
+  // Left 60.05 vs right 60.53 matches the source SVG artwork (intentional pixel offset)
   const leftTicks = [14.03, 29.37, 44.71, 60.05, 75.39, 90.73]
     .map((y) => `<rect x="0" y="${y}" width="11.67" height="4" fill="${color}"/>`)
     .join("\n");
