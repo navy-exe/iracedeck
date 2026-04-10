@@ -10,6 +10,18 @@
   accordionId: 'Global Common Settings',
   open: false,
   content: `
+    <div class="ird-section-subtitle">Animations</div>
+    <sdpi-item label="Engine Startup">
+      <sdpi-checkbox
+        setting="engineStartupAnimation"
+        label="Play animation when engine starts"
+        global
+        default="true"
+      ></sdpi-checkbox>
+    </sdpi-item>
+    <div style="padding: 0 16px 8px; font-size: 11px; color: #999;">
+      Plays a visual sweep animation across all buttons when the engine starts in iRacing.
+    </div>
     <div class="ird-section-subtitle">Window Focus</div>
     <sdpi-item label="Focus iRacing">
       <sdpi-checkbox

@@ -77,6 +77,7 @@ import {
 import { VSDPlatformAdapter } from "@iracedeck/deck-adapter-mirabox";
 import {
   initAppMonitor,
+  initEngineStartupAnimation,
   initGlobalSettings,
   initializeBindingDispatcher,
   initializeKeyboard,
@@ -175,6 +176,9 @@ initializeSimHub(adapter.createLogger("SimHub"));
 
 // Initialize binding dispatcher AFTER SimHub so isReady can check reachability
 initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
+
+// Initialize engine startup animation (after SDK, before connect)
+initEngineStartupAnimation(adapter.createLogger("EngineStartupAnimation"));
 
 // Initialize app monitor for iRacing process detection
 initAppMonitor(adapter, adapter.createLogger("AppMonitor"));
