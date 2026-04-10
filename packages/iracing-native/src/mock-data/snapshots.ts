@@ -95,6 +95,8 @@ export const SNAPSHOT_MID_STRAIGHT: MockSnapshotValues = {
   PitOptRepairLeft: 0.0,
   FastRepairAvailable: 1,
   FastRepairUsed: 0,
+  dpFuelAutoFillActive: 1,
+  dpFuelAutoFillEnabled: 1,
 
   // Physics
   LatAccel: 0.5,

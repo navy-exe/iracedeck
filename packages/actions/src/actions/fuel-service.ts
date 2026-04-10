@@ -58,9 +58,10 @@ const UNIT_DISPLAY: Record<FuelUnit, string> = {
 };
 
 /**
- * Label configuration for each fuel service mode.
+ * Label configuration for static fuel service modes.
  * Uses inverted layout: line1 = bold/bottom (primary), line2 = subdued/top (secondary).
  * Fuel macro modes (add-fuel, reduce-fuel, set-fuel-amount) use dynamic labels computed in getFuelServiceLabels().
+ * Telemetry-aware modes (toggle-fuel-fill, toggle-autofuel) use title metadata from their SVG instead.
  */
 const FUEL_SERVICE_LABELS: Partial<Record<FuelServiceMode, { line1: string; line2: string }>> = {
   "add-fuel": { line1: "+1 L", line2: "ADD FUEL" },
@@ -174,7 +175,7 @@ export function isAutofuelActive(telemetry: TelemetryData | null): boolean {
  * @internal Exported for testing
  *
  * Returns whether the autofuel system is enabled for this car/series.
- * When disabled, toggle-autofuel and lap-margin modes should show N/A.
+ * When disabled, toggle-autofuel should show N/A.
  */
 export function isAutofuelEnabled(telemetry: TelemetryData | null): boolean {
   if (!telemetry || telemetry.dpFuelAutoFillEnabled === undefined) return true;
@@ -301,8 +302,7 @@ export function generateFuelServiceSvg(
     const graphic1 = colors.graphic1Color || WHITE;
     const state = telemetryState ?? {};
 
-    // toggle-fuel-fill shows fuel amount text; toggle-autofuel is title-only (no graphic content)
-    const graphicContent = mode === "toggle-fuel-fill" ? fuelFillGraphicContent(state, graphic1) : "";
+    const graphicContent = fuelFillGraphicContent(state, graphic1);
 
     // Status bar: green ON / red OFF / gray N/A based on the relevant toggle state
     let toggleState: "on" | "off" | "na";
@@ -332,6 +332,7 @@ export function generateFuelServiceSvg(
         })
       : "";
 
+    // Status bar is always visible, even when graphics are off
     const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
 
     const border = resolveBorderSettings(
@@ -633,7 +634,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     }
 
     if (settings.mode === "toggle-autofuel") {
-      return `autofuel|${telemetryState.autofuelEnabled ?? true}|${telemetryState.autofuelActive ?? false}|${borderKey}`;
+      return `autofuel|${telemetryState.autofuelEnabled ?? true}|${telemetryState.autofuelActive ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
     }
 
     return settings.mode;

@@ -24,7 +24,7 @@ Fuel Service gives you full control over your pit stop fueling strategy. Toggle 
 
 Toggle Fuel Fill shows the current refuel amount from telemetry (in your display units) with a green ON / red OFF status bar indicating whether fuel fill is enabled.
 
-Toggle Autofuel displays "AUTOFUEL" with a green ON / red OFF status bar indicating whether autofuel is active for the next pit stop.
+Toggle Autofuel displays the current refuel amount with a green ON / red OFF status bar indicating whether autofuel is active for the next pit stop.
 
 ## Encoder Support
 
