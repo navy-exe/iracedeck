@@ -302,8 +302,6 @@ export function generateFuelServiceSvg(
     const graphic1 = colors.graphic1Color || WHITE;
     const state = telemetryState ?? {};
 
-    const graphicContent = fuelFillGraphicContent(state, graphic1);
-
     // Status bar: green ON / red OFF / gray N/A based on the relevant toggle state
     let toggleState: "on" | "off" | "na";
 
@@ -316,6 +314,10 @@ export function generateFuelServiceSvg(
     } else {
       toggleState = state.fuelFillOn ? "on" : "off";
     }
+
+    // Show fuel amount when available; show "--" when the system is unavailable
+    const graphicContent =
+      toggleState === "na" ? fuelFillGraphicContent({}, graphic1) : fuelFillGraphicContent(state, graphic1);
 
     const statusBar = toggleState === "na" ? statusBarNA() : toggleState === "on" ? statusBarOn() : statusBarOff();
 
