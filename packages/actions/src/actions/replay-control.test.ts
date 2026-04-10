@@ -350,33 +350,29 @@ describe("ReplayControl", () => {
     });
 
     // Transport labels
-    it("should include PLAY label for play-pause mode", () => {
+    it("should include PLAY / PAUSE label for play-pause mode", () => {
       const result = generateReplayControlSvg({ mode: "play-pause" });
 
-      expect(decodeURIComponent(result)).toContain("PLAY");
+      expect(decodeURIComponent(result)).toContain("PLAY / PAUSE");
     });
 
-    it("should include PLAY and BACKWARD labels for play-backward mode", () => {
+    it("should include PLAY BACKW label for play-backward mode", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-backward" }));
 
-      expect(decoded).toContain("PLAY");
-      expect(decoded).toContain("BACKWARD");
+      expect(decoded).toContain("PLAY BACKW");
     });
 
-    it("should show PAUSE label and pause icon for play-backward when isPlaying is true", () => {
+    it("should show PLAY BACKW label and pause icon for play-backward when isPlaying is true", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-backward" }, true));
 
-      expect(decoded).toContain("PAUSE");
+      expect(decoded).toContain("PLAY BACKW");
       expect(decoded).toContain("pause-icon");
-      expect(decoded).not.toContain("BACKWARD");
     });
 
-    it("should show PLAY label for play-backward when isPlaying is false", () => {
+    it("should show PLAY BACKW label for play-backward when isPlaying is false", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-backward" }, false));
 
-      expect(decoded).toContain("PLAY");
-      expect(decoded).toContain("BACKWARD");
-      expect(decoded).not.toContain("PAUSE");
+      expect(decoded).toContain("PLAY BACKW");
     });
 
     it("should include STOP label for stop mode", () => {
@@ -553,26 +549,24 @@ describe("ReplayControl", () => {
     });
 
     // Play/pause telemetry-aware label toggle
-    it("should show PLAY label when isPlaying is false", () => {
+    it("should show PLAY / PAUSE label and play icon when not playing", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-pause" }, false));
 
-      expect(decoded).toContain("PLAY");
-      expect(decoded).not.toContain("PAUSE");
+      expect(decoded).toContain("PLAY / PAUSE");
+      expect(decoded).toContain("play-pause");
     });
 
-    it("should show PAUSE label and pause icon when isPlaying is true", () => {
+    it("should show PLAY / PAUSE label and pause icon when playing", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-pause" }, true));
 
-      expect(decoded).toContain("PAUSE");
+      expect(decoded).toContain("PLAY / PAUSE");
       expect(decoded).toContain("pause-icon");
-      expect(decoded).not.toContain("FORWARD");
     });
 
-    it("should show PLAY label when isPlaying is undefined", () => {
+    it("should show PLAY / PAUSE label when isPlaying is undefined", () => {
       const decoded = decodeURIComponent(generateReplayControlSvg({ mode: "play-pause" }));
 
-      expect(decoded).toContain("PLAY");
-      expect(decoded).not.toContain("PAUSE");
+      expect(decoded).toContain("PLAY / PAUSE");
     });
 
     it("should not affect non-play-pause mode labels when isPlaying is true", () => {
@@ -893,6 +887,170 @@ describe("ReplayControl", () => {
       vi.mocked(getCarNumberFromSessionInfo).mockReturnValue("7");
 
       expect(findAdjacentCarByNumber({}, 0, "next")).toBe(3042);
+    });
+  });
+
+  describe("play/pause behavior", () => {
+    function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
+      return {
+        action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn() },
+        payload: { settings },
+      };
+    }
+
+    const mockReplay = {
+      play: vi.fn(() => true),
+      pause: vi.fn(() => true),
+      setPlaySpeed: vi.fn(() => true),
+    };
+
+    let action: ReplayControl;
+
+    beforeEach(async () => {
+      vi.clearAllMocks();
+      const { getCommands } = await import("@iracedeck/deck-core");
+      vi.mocked(getCommands).mockReturnValue({ replay: mockReplay, camera: { switchNum: vi.fn() } } as any);
+      action = new ReplayControl();
+    });
+
+    describe("play-pause toggle", () => {
+      beforeEach(async () => {
+        await action.onWillAppear(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+      });
+
+      it("should pause when playing forward", async () => {
+        (action as any).replaySpeed.set("ctx-1", 1);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+
+        expect(mockReplay.pause).toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+      });
+
+      it("should play at 1x when paused", async () => {
+        (action as any).replaySpeed.set("ctx-1", 0);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+
+        expect(mockReplay.play).toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(1);
+      });
+
+      it("should pause when playing backward (not mirror)", async () => {
+        (action as any).replaySpeed.set("ctx-1", -4);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+
+        expect(mockReplay.pause).toHaveBeenCalled();
+        expect(mockReplay.play).not.toHaveBeenCalled();
+        expect(mockReplay.setPlaySpeed).not.toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+      });
+
+      it("should pause when in slow-motion (not mirror)", async () => {
+        (action as any).replaySpeed.set("ctx-1", 2);
+        (action as any).replaySlowMotion.set("ctx-1", true);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+
+        expect(mockReplay.pause).toHaveBeenCalled();
+        expect(mockReplay.setPlaySpeed).not.toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+      });
+
+      it("should always play at 1x, never restore previous speed", async () => {
+        // Play at 8x, pause, then play again — should be 1x, not 8x
+        (action as any).replaySpeed.set("ctx-1", 8);
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+        expect(mockReplay.pause).toHaveBeenCalled();
+
+        vi.clearAllMocks();
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+        expect(mockReplay.play).toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(1);
+      });
+    });
+
+    describe("play-backward toggle", () => {
+      beforeEach(async () => {
+        await action.onWillAppear(fakeEvent("ctx-1", { mode: "play-backward" }) as any);
+      });
+
+      it("should pause when playing backward", async () => {
+        (action as any).replaySpeed.set("ctx-1", -1);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-backward" }) as any);
+
+        expect(mockReplay.pause).toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+      });
+
+      it("should play backward at -1x when paused", async () => {
+        (action as any).replaySpeed.set("ctx-1", 0);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-backward" }) as any);
+
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledWith(-1);
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(-1);
+      });
+
+      it("should pause when playing forward (not switch to backward)", async () => {
+        (action as any).replaySpeed.set("ctx-1", 4);
+
+        await action.onKeyDown(fakeEvent("ctx-1", { mode: "play-backward" }) as any);
+
+        expect(mockReplay.pause).toHaveBeenCalled();
+        expect(mockReplay.setPlaySpeed).not.toHaveBeenCalled();
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+      });
+    });
+
+    describe("cross-button display sync", () => {
+      it("should update play-pause display when play-backward is pressed", async () => {
+        // Both buttons visible on the same action instance
+        await action.onWillAppear(fakeEvent("pp-ctx", { mode: "play-pause" }) as any);
+        await action.onWillAppear(fakeEvent("pb-ctx", { mode: "play-backward" }) as any);
+
+        // Playing forward — both should show pause state
+        (action as any).replaySpeed.set("pp-ctx", 1);
+        (action as any).replaySpeed.set("pb-ctx", 1);
+
+        // Press play-backward → pauses
+        await action.onKeyDown(fakeEvent("pb-ctx", { mode: "play-backward" }) as any);
+
+        // Both contexts should have speed 0 (paused)
+        expect((action as any).replaySpeed.get("pp-ctx")).toBe(0);
+        expect((action as any).replaySpeed.get("pb-ctx")).toBe(0);
+
+        // Both displays should have been re-rendered
+        expect(action.updateKeyImage).toHaveBeenCalled();
+      });
+    });
+
+    describe("disconnect handling", () => {
+      it("should reset speed to 0 when telemetry becomes null", async () => {
+        await action.onWillAppear(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+
+        (action as any).replaySpeed.set("ctx-1", 4);
+        (action as any).replaySlowMotion.set("ctx-1", false);
+
+        (action as any).updateTelemetryState("ctx-1", null);
+
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+        expect((action as any).replaySlowMotion.get("ctx-1")).toBe(false);
+      });
+
+      it("should reset slow-motion flag on disconnect", async () => {
+        await action.onWillAppear(fakeEvent("ctx-1", { mode: "play-pause" }) as any);
+
+        (action as any).replaySpeed.set("ctx-1", 2);
+        (action as any).replaySlowMotion.set("ctx-1", true);
+
+        (action as any).updateTelemetryState("ctx-1", null);
+
+        expect((action as any).replaySpeed.get("ctx-1")).toBe(0);
+        expect((action as any).replaySlowMotion.get("ctx-1")).toBe(false);
+      });
     });
   });
 
