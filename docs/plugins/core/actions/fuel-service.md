@@ -82,5 +82,7 @@ This setting appears in the PI for: Add Fuel, Reduce Fuel, Set Fuel Amount, Lap 
 | Reduce Fuel | Red-accented icon with amount display |
 | Set Fuel Amount | Yellow-accented icon with amount display |
 | Clear Fuel | Static "CLEAR FUEL" icon |
-| Toggle Autofuel | Static "TOGGLE AUTOFUEL" icon |
+| Toggle Autofuel (on) | "AUTO FUEL" title with fuel amount and green "ON" status bar |
+| Toggle Autofuel (off) | "AUTO FUEL" title with fuel amount and red "OFF" status bar |
+| Toggle Autofuel (n/a) | "AUTO FUEL" title with fuel amount and gray "N/A" status bar (autofuel system not available for this car/series) |
 | Lap Margin +/- | Static "INCREASE/DECREASE LAP MARGIN" icon |

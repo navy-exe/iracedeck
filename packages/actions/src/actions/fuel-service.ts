@@ -36,7 +36,7 @@ import { hasFlag, PitSvFlags, type TelemetryData } from "@iracedeck/iracing-sdk"
 import z from "zod";
 
 import fuelServiceTemplate from "../../icons/fuel-service.svg";
-import { borderColorForState, statusBarOff, statusBarOn } from "../icons/status-bar.js";
+import { borderColorForState, statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type FuelServiceMode =
   | "toggle-fuel-fill"
@@ -58,30 +58,29 @@ const UNIT_DISPLAY: Record<FuelUnit, string> = {
 };
 
 /**
- * Label configuration for each fuel service mode.
+ * Label configuration for static fuel service modes.
  * Uses inverted layout: line1 = bold/bottom (primary), line2 = subdued/top (secondary).
  * Fuel macro modes (add-fuel, reduce-fuel, set-fuel-amount) use dynamic labels computed in getFuelServiceLabels().
+ * Telemetry-aware modes (toggle-fuel-fill, toggle-autofuel) use title metadata from their SVG instead.
  */
 const FUEL_SERVICE_LABELS: Partial<Record<FuelServiceMode, { line1: string; line2: string }>> = {
   "add-fuel": { line1: "+1 L", line2: "ADD FUEL" },
   "reduce-fuel": { line1: "-1 L", line2: "REDUCE FUEL" },
   "set-fuel-amount": { line1: "1 L", line2: "SET FUEL" },
   "clear-fuel": { line1: "CLEAR", line2: "FUEL" },
-  "toggle-autofuel": { line1: "TOGGLE", line2: "AUTOFUEL" },
   "lap-margin-increase": { line1: "INCREASE", line2: "LAP MARGIN" },
   "lap-margin-decrease": { line1: "DECREASE", line2: "LAP MARGIN" },
 };
 
 /**
  * Standalone SVG templates for static fuel service modes (imported from @iracedeck/icons).
- * Telemetry-aware modes (toggle-fuel-fill) use the dynamic template instead.
+ * Telemetry-aware modes (toggle-fuel-fill, toggle-autofuel) use the dynamic template instead.
  */
 const FUEL_SERVICE_ICONS: Partial<Record<FuelServiceMode, string>> = {
   "add-fuel": addFuelIcon,
   "reduce-fuel": reduceFuelIcon,
   "set-fuel-amount": setFuelAmountIcon,
   "clear-fuel": clearFuelIcon,
-  "toggle-autofuel": toggleAutofuelIcon,
   "lap-margin-increase": lapMarginIncreaseIcon,
   "lap-margin-decrease": lapMarginDecreaseIcon,
 };
@@ -102,7 +101,7 @@ export const FUEL_SERVICE_GLOBAL_KEYS: Record<string, string> = {
  * Modes that use telemetry-driven dynamic icons.
  * Keep in sync with getTelemetryState() and buildStateKey().
  */
-const TELEMETRY_AWARE_MODES = new Set<FuelServiceMode>(["toggle-fuel-fill"]);
+const TELEMETRY_AWARE_MODES = new Set<FuelServiceMode>(["toggle-fuel-fill", "toggle-autofuel"]);
 
 const FuelUnit = z.enum(["l", "g", "k"]);
 type FuelUnit = z.infer<typeof FuelUnit>;
@@ -136,6 +135,8 @@ export type FuelServiceTelemetryState = {
   fuelFillOn?: boolean;
   fuelAmount?: number;
   displayUnits?: number;
+  autofuelActive?: boolean;
+  autofuelEnabled?: boolean;
 };
 
 /**
@@ -157,6 +158,29 @@ export function getFuelAmount(telemetry: TelemetryData | null): number | undefin
   if (!telemetry || telemetry.PitSvFuel === undefined) return undefined;
 
   return telemetry.PitSvFuel;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Returns whether autofuel is active for the next pit stop.
+ */
+export function isAutofuelActive(telemetry: TelemetryData | null): boolean {
+  if (!telemetry || telemetry.dpFuelAutoFillActive === undefined) return false;
+
+  return telemetry.dpFuelAutoFillActive !== 0;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Returns whether the autofuel system is enabled for this car/series.
+ * When disabled, toggle-autofuel should show N/A.
+ */
+export function isAutofuelEnabled(telemetry: TelemetryData | null): boolean {
+  if (!telemetry || telemetry.dpFuelAutoFillEnabled === undefined) return true;
+
+  return telemetry.dpFuelAutoFillEnabled !== 0;
 }
 
 const WHITE = "#ffffff";
@@ -188,10 +212,6 @@ function fuelFillGraphicContent(telemetryState: FuelServiceTelemetryState, graph
   return `
     <text x="72" y="75" text-anchor="middle" dominant-baseline="central"
           fill="${graphic1Color}" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${fuelText}</text>`;
-}
-
-function fuelFillStatusBar(telemetryState: FuelServiceTelemetryState): string {
-  return telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
 }
 
 /**
@@ -274,19 +294,34 @@ export function generateFuelServiceSvg(
 ): string {
   const { mode } = settings;
 
-  // Dynamic telemetry-driven mode: toggle-fuel-fill
+  // Dynamic telemetry-driven modes: toggle-fuel-fill, toggle-autofuel
   if (TELEMETRY_AWARE_MODES.has(mode)) {
-    const colors = resolveIconColors(fuelServiceTemplate, getGlobalColors(), settings.colorOverrides) as Record<
-      string,
-      string
-    >;
+    // Use mode-specific SVG for metadata (title text, colors) but shared template for rendering
+    const metadataSvg = mode === "toggle-autofuel" ? toggleAutofuelIcon : fuelServiceTemplate;
+    const colors = resolveIconColors(metadataSvg, getGlobalColors(), settings.colorOverrides) as Record<string, string>;
     const graphic1 = colors.graphic1Color || WHITE;
     const state = telemetryState ?? {};
-    const graphicContent = fuelFillGraphicContent(state, graphic1);
-    // Status bar is always visible, even when graphics are off
-    const statusBar = fuelFillStatusBar(state);
 
-    const resolvedTitle = resolveTitleSettings(fuelServiceTemplate, getGlobalTitleSettings(), settings.titleOverrides);
+    // Status bar: green ON / red OFF / gray N/A based on the relevant toggle state
+    let toggleState: "on" | "off" | "na";
+
+    if (mode === "toggle-autofuel") {
+      if (state.autofuelEnabled === false) {
+        toggleState = "na";
+      } else {
+        toggleState = state.autofuelActive ? "on" : "off";
+      }
+    } else {
+      toggleState = state.fuelFillOn ? "on" : "off";
+    }
+
+    // Show fuel amount when available; show "--" when the system is unavailable
+    const graphicContent =
+      toggleState === "na" ? fuelFillGraphicContent({}, graphic1) : fuelFillGraphicContent(state, graphic1);
+
+    const statusBar = toggleState === "na" ? statusBarNA() : toggleState === "on" ? statusBarOn() : statusBarOff();
+
+    const resolvedTitle = resolveTitleSettings(metadataSvg, getGlobalTitleSettings(), settings.titleOverrides);
 
     const titleContent = resolvedTitle.showTitle
       ? generateTitleText({
@@ -299,14 +334,14 @@ export function generateFuelServiceSvg(
         })
       : "";
 
+    // Status bar is always visible, even when graphics are off
     const iconContent = (resolvedTitle.showGraphics ? graphicContent : "") + statusBar;
 
-    const fuelFillEnabled = state.fuelFillOn ?? false;
     const border = resolveBorderSettings(
-      fuelServiceTemplate,
+      metadataSvg,
       getGlobalBorderSettings(),
       settings.borderOverrides,
-      borderColorForState(fuelFillEnabled ? "on" : "off"),
+      borderColorForState(toggleState),
     );
     const borderSvg = generateBorderParts(border);
 
@@ -587,15 +622,21 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
       fuelFillOn: isFuelFillOn(telemetry),
       fuelAmount: getFuelAmount(telemetry),
       displayUnits: telemetry?.DisplayUnits,
+      autofuelActive: isAutofuelActive(telemetry),
+      autofuelEnabled: isAutofuelEnabled(telemetry),
     };
   }
 
   private buildStateKey(settings: FuelServiceSettings, telemetryState: FuelServiceTelemetryState): string {
-    if (settings.mode === "toggle-fuel-fill") {
-      const bo = settings.borderOverrides;
-      const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
+    const bo = settings.borderOverrides;
+    const borderKey = `${bo?.enabled ?? ""}|${bo?.borderWidth ?? ""}|${bo?.borderColor ?? ""}|${bo?.glowEnabled ?? ""}|${bo?.glowWidth ?? ""}`;
 
+    if (settings.mode === "toggle-fuel-fill") {
       return `fuel-fill|${telemetryState.fuelFillOn ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
+    }
+
+    if (settings.mode === "toggle-autofuel") {
+      return `autofuel|${telemetryState.autofuelEnabled ?? true}|${telemetryState.autofuelActive ?? false}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
     }
 
     return settings.mode;

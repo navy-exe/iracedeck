@@ -9,6 +9,8 @@ import {
   generateFuelServiceSvg,
   getFuelAmount,
   getFuelServiceLabels,
+  isAutofuelActive,
+  isAutofuelEnabled,
   isFuelFillOn,
 } from "./fuel-service.js";
 
@@ -50,6 +52,7 @@ vi.mock("../../icons/fuel-service.svg", () => ({
 vi.mock("../icons/status-bar.js", () => ({
   statusBarOn: () => '<rect class="status-on"/>',
   statusBarOff: () => '<rect class="status-off"/>',
+  statusBarNA: () => '<rect class="status-na"/>',
   borderColorForState: (state: string) => ({ on: "#2ecc71", off: "#e74c3c", na: "#888888" })[state],
 }));
 
@@ -239,7 +242,6 @@ describe("FuelService", () => {
     it("should include correct labels for static modes", () => {
       const staticLabels: Record<string, { line1: string; line2: string }> = {
         "clear-fuel": { line1: "CLEAR", line2: "FUEL" },
-        "toggle-autofuel": { line1: "TOGGLE", line2: "AUTOFUEL" },
         "lap-margin-increase": { line1: "INCREASE", line2: "LAP MARGIN" },
         "lap-margin-decrease": { line1: "DECREASE", line2: "LAP MARGIN" },
       };
@@ -790,6 +792,124 @@ describe("FuelService", () => {
         await action.onWillDisappear(fakeEvent("action-1") as any);
 
         expect(action.sdkController.unsubscribe).toHaveBeenCalledWith("action-1");
+      });
+    });
+  });
+
+  describe("isAutofuelActive", () => {
+    it("returns true when dpFuelAutoFillActive is non-zero", () => {
+      expect(isAutofuelActive({ dpFuelAutoFillActive: 1 } as any)).toBe(true);
+    });
+
+    it("returns false when dpFuelAutoFillActive is 0", () => {
+      expect(isAutofuelActive({ dpFuelAutoFillActive: 0 } as any)).toBe(false);
+    });
+
+    it("returns false when telemetry is null", () => {
+      expect(isAutofuelActive(null)).toBe(false);
+    });
+
+    it("returns false when dpFuelAutoFillActive is undefined", () => {
+      expect(isAutofuelActive({} as any)).toBe(false);
+    });
+  });
+
+  describe("isAutofuelEnabled", () => {
+    it("returns true when dpFuelAutoFillEnabled is non-zero", () => {
+      expect(isAutofuelEnabled({ dpFuelAutoFillEnabled: 1 } as any)).toBe(true);
+    });
+
+    it("returns false when dpFuelAutoFillEnabled is 0", () => {
+      expect(isAutofuelEnabled({ dpFuelAutoFillEnabled: 0 } as any)).toBe(false);
+    });
+
+    it("returns true when telemetry is null (default available)", () => {
+      expect(isAutofuelEnabled(null)).toBe(true);
+    });
+
+    it("returns true when dpFuelAutoFillEnabled is undefined", () => {
+      expect(isAutofuelEnabled({} as any)).toBe(true);
+    });
+  });
+
+  describe("toggle-autofuel mode", () => {
+    describe("generateFuelServiceSvg", () => {
+      it("should generate valid data URI for toggle-autofuel", () => {
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" });
+
+        expect(result).toContain("data:image/svg+xml");
+      });
+
+      it("should show ON status bar when autofuel is active", () => {
+        const telemetryState: FuelServiceTelemetryState = { autofuelActive: true };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-on");
+        expect(decoded).not.toContain("status-off");
+      });
+
+      it("should show OFF status bar when autofuel is inactive", () => {
+        const telemetryState: FuelServiceTelemetryState = { autofuelActive: false };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-off");
+        expect(decoded).not.toContain("status-on");
+      });
+
+      it("should show OFF status bar when no telemetry state is provided", () => {
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" });
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-off");
+      });
+
+      it("should show N/A status bar and -- text when autofuel system is not available", () => {
+        const telemetryState: FuelServiceTelemetryState = {
+          autofuelEnabled: false,
+          autofuelActive: false,
+          fuelAmount: 50.0,
+          displayUnits: 1,
+        };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-na");
+        expect(decoded).not.toContain("status-on");
+        expect(decoded).not.toContain("status-off");
+        expect(decoded).toContain("--");
+        expect(decoded).not.toContain("+50 L");
+      });
+
+      it("should include fuel amount graphic content", () => {
+        const telemetryState: FuelServiceTelemetryState = {
+          autofuelActive: true,
+          fuelAmount: 50.0,
+          displayUnits: 1,
+        };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("+50 L");
+      });
+
+      it("should show -- when no fuel amount is available", () => {
+        const telemetryState: FuelServiceTelemetryState = { autofuelActive: true };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("--");
+      });
+
+      it("should include title content from metadata SVG", () => {
+        const telemetryState: FuelServiceTelemetryState = { autofuelActive: true };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        // The mock generateTitleText returns <text>{text}</text>
+        // resolveTitleSettings returns titleText from SVG desc metadata
+        expect(decoded).toContain("<text>");
       });
     });
   });

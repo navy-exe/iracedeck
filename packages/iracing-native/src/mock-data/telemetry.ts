@@ -189,6 +189,22 @@ function buildVarHeaders(): VarHeader[] {
       unit: "",
     },
     { type: VarType.Int, count: 1, countAsTime: false, name: "FastRepairUsed", desc: "Fast repairs used", unit: "" },
+    {
+      type: VarType.Int,
+      count: 1,
+      countAsTime: false,
+      name: "dpFuelAutoFillActive",
+      desc: "Auto fuel fill active for next stop",
+      unit: "",
+    },
+    {
+      type: VarType.Int,
+      count: 1,
+      countAsTime: false,
+      name: "dpFuelAutoFillEnabled",
+      desc: "Auto fuel fill system available",
+      unit: "",
+    },
 
     // Physics
     {
