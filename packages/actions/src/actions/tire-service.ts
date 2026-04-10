@@ -228,7 +228,7 @@ export function generateTireIcon(compoundType: string): string {
   const isWet = compoundType.toLowerCase() === "wet";
   const paths = isWet ? WET_TIRE_PATHS : DRY_TIRE_PATHS;
 
-  return `<g transform="translate(7, 7) scale(0.9)">${paths}</g>`;
+  return `<circle cx="72" cy="72" r="65" fill="#000000"/><g transform="translate(7, 7) scale(0.9)">${paths}</g>`;
 }
 
 /**
@@ -477,15 +477,21 @@ export function generateTireServiceSvg(
       );
 
       const compoundColors = resolveIconColors(tireServiceTemplate, getGlobalColors(), settings.colorOverrides);
-      // Border: red flash on pit road warning, white during service, compound color otherwise
+      const compoundColor = isWet ? WET_COMPOUND_COLOR : DRY_COMPOUND_COLOR;
+
+      // Background & border: state-driven colors
       let compoundBorderColor: string;
+      let compoundBgColor: string;
 
       if (isPitRoadWarning) {
-        compoundBorderColor = flashVisible ? RED : isWet ? WET_COMPOUND_COLOR : DRY_COMPOUND_COLOR;
+        compoundBorderColor = flashVisible ? RED : compoundColor;
+        compoundBgColor = flashVisible ? RED : compoundColor;
       } else if (isServiceInProgress) {
         compoundBorderColor = WHITE;
+        compoundBgColor = WHITE;
       } else {
-        compoundBorderColor = isWet ? WET_COMPOUND_COLOR : DRY_COMPOUND_COLOR;
+        compoundBorderColor = compoundColor;
+        compoundBgColor = compoundColor;
       }
 
       const border = resolveBorderSettings(
@@ -502,6 +508,7 @@ export function generateTireServiceSvg(
         borderDefs: borderSvg.defs,
         borderContent: borderSvg.rects,
         ...compoundColors,
+        backgroundColor: compoundBgColor,
       });
 
       return svgToDataUri(compoundSvg);
