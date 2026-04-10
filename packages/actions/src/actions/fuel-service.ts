@@ -36,7 +36,7 @@ import { hasFlag, PitSvFlags, type TelemetryData } from "@iracedeck/iracing-sdk"
 import z from "zod";
 
 import fuelServiceTemplate from "../../icons/fuel-service.svg";
-import { borderColorForState, statusBarOff, statusBarOn } from "../icons/status-bar.js";
+import { borderColorForState, statusBarNA, statusBarOff, statusBarOn } from "../icons/status-bar.js";
 
 type FuelServiceMode =
   | "toggle-fuel-fill"
@@ -135,6 +135,7 @@ export type FuelServiceTelemetryState = {
   fuelAmount?: number;
   displayUnits?: number;
   autofuelActive?: boolean;
+  autofuelEnabled?: boolean;
 };
 
 /**
@@ -167,6 +168,18 @@ export function isAutofuelActive(telemetry: TelemetryData | null): boolean {
   if (!telemetry || telemetry.dpFuelAutoFillActive === undefined) return false;
 
   return telemetry.dpFuelAutoFillActive !== 0;
+}
+
+/**
+ * @internal Exported for testing
+ *
+ * Returns whether the autofuel system is enabled for this car/series.
+ * When disabled, toggle-autofuel and lap-margin modes should show N/A.
+ */
+export function isAutofuelEnabled(telemetry: TelemetryData | null): boolean {
+  if (!telemetry || telemetry.dpFuelAutoFillEnabled === undefined) return true;
+
+  return telemetry.dpFuelAutoFillEnabled !== 0;
 }
 
 const WHITE = "#ffffff";
@@ -291,9 +304,20 @@ export function generateFuelServiceSvg(
     // toggle-fuel-fill shows fuel amount text; toggle-autofuel is title-only (no graphic content)
     const graphicContent = mode === "toggle-fuel-fill" ? fuelFillGraphicContent(state, graphic1) : "";
 
-    // Status bar: green ON / red OFF based on the relevant toggle state
-    const toggleOn = mode === "toggle-autofuel" ? (state.autofuelActive ?? false) : (state.fuelFillOn ?? false);
-    const statusBar = toggleOn ? statusBarOn() : statusBarOff();
+    // Status bar: green ON / red OFF / gray N/A based on the relevant toggle state
+    let toggleState: "on" | "off" | "na";
+
+    if (mode === "toggle-autofuel") {
+      if (state.autofuelEnabled === false) {
+        toggleState = "na";
+      } else {
+        toggleState = state.autofuelActive ? "on" : "off";
+      }
+    } else {
+      toggleState = state.fuelFillOn ? "on" : "off";
+    }
+
+    const statusBar = toggleState === "na" ? statusBarNA() : toggleState === "on" ? statusBarOn() : statusBarOff();
 
     const resolvedTitle = resolveTitleSettings(metadataSvg, getGlobalTitleSettings(), settings.titleOverrides);
 
@@ -314,7 +338,7 @@ export function generateFuelServiceSvg(
       metadataSvg,
       getGlobalBorderSettings(),
       settings.borderOverrides,
-      borderColorForState(toggleOn ? "on" : "off"),
+      borderColorForState(toggleState),
     );
     const borderSvg = generateBorderParts(border);
 
@@ -596,6 +620,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
       fuelAmount: getFuelAmount(telemetry),
       displayUnits: telemetry?.DisplayUnits,
       autofuelActive: isAutofuelActive(telemetry),
+      autofuelEnabled: isAutofuelEnabled(telemetry),
     };
   }
 
@@ -608,7 +633,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     }
 
     if (settings.mode === "toggle-autofuel") {
-      return `autofuel|${telemetryState.autofuelActive ?? false}|${borderKey}`;
+      return `autofuel|${telemetryState.autofuelEnabled ?? true}|${telemetryState.autofuelActive ?? false}|${borderKey}`;
     }
 
     return settings.mode;

@@ -10,6 +10,7 @@ import {
   getFuelAmount,
   getFuelServiceLabels,
   isAutofuelActive,
+  isAutofuelEnabled,
   isFuelFillOn,
 } from "./fuel-service.js";
 
@@ -51,6 +52,7 @@ vi.mock("../../icons/fuel-service.svg", () => ({
 vi.mock("../icons/status-bar.js", () => ({
   statusBarOn: () => '<rect class="status-on"/>',
   statusBarOff: () => '<rect class="status-off"/>',
+  statusBarNA: () => '<rect class="status-na"/>',
   borderColorForState: (state: string) => ({ on: "#2ecc71", off: "#e74c3c", na: "#888888" })[state],
 }));
 
@@ -812,6 +814,24 @@ describe("FuelService", () => {
     });
   });
 
+  describe("isAutofuelEnabled", () => {
+    it("returns true when dpFuelAutoFillEnabled is non-zero", () => {
+      expect(isAutofuelEnabled({ dpFuelAutoFillEnabled: 1 } as any)).toBe(true);
+    });
+
+    it("returns false when dpFuelAutoFillEnabled is 0", () => {
+      expect(isAutofuelEnabled({ dpFuelAutoFillEnabled: 0 } as any)).toBe(false);
+    });
+
+    it("returns true when telemetry is null (default available)", () => {
+      expect(isAutofuelEnabled(null)).toBe(true);
+    });
+
+    it("returns true when dpFuelAutoFillEnabled is undefined", () => {
+      expect(isAutofuelEnabled({} as any)).toBe(true);
+    });
+  });
+
   describe("toggle-autofuel mode", () => {
     describe("generateFuelServiceSvg", () => {
       it("should generate valid data URI for toggle-autofuel", () => {
@@ -843,6 +863,16 @@ describe("FuelService", () => {
         const decoded = decodeURIComponent(result);
 
         expect(decoded).toContain("status-off");
+      });
+
+      it("should show N/A status bar when autofuel system is not available", () => {
+        const telemetryState: FuelServiceTelemetryState = { autofuelEnabled: false, autofuelActive: false };
+        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
+        const decoded = decodeURIComponent(result);
+
+        expect(decoded).toContain("status-na");
+        expect(decoded).not.toContain("status-on");
+        expect(decoded).not.toContain("status-off");
       });
 
       it("should not include fuel amount graphic content", () => {
