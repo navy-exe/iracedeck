@@ -479,26 +479,20 @@ export function generateTireServiceSvg(
       const compoundColors = resolveIconColors(tireServiceTemplate, getGlobalColors(), settings.colorOverrides);
       const compoundColor = isWet ? WET_COMPOUND_COLOR : DRY_COMPOUND_COLOR;
 
-      // Background & border: state-driven colors
-      let compoundBorderColor: string;
-      let compoundBgColor: string;
-
-      if (isPitRoadWarning) {
-        compoundBorderColor = flashVisible ? RED : compoundColor;
-        compoundBgColor = flashVisible ? RED : compoundColor;
-      } else if (isServiceInProgress) {
-        compoundBorderColor = WHITE;
-        compoundBgColor = WHITE;
-      } else {
-        compoundBorderColor = compoundColor;
-        compoundBgColor = compoundColor;
-      }
+      // Background & border: state-driven color (same for both)
+      const compoundStateColor = isPitRoadWarning
+        ? flashVisible
+          ? RED
+          : compoundColor
+        : isServiceInProgress
+          ? WHITE
+          : compoundColor;
 
       const border = resolveBorderSettings(
         tireServiceTemplate,
         getGlobalBorderSettings(),
         settings.borderOverrides,
-        compoundBorderColor,
+        compoundStateColor,
       );
       const borderSvg = generateBorderParts(border);
 
@@ -508,7 +502,7 @@ export function generateTireServiceSvg(
         borderDefs: borderSvg.defs,
         borderContent: borderSvg.rects,
         ...compoundColors,
-        backgroundColor: compoundBgColor,
+        backgroundColor: compoundStateColor,
       });
 
       return svgToDataUri(compoundSvg);

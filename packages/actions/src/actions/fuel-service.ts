@@ -106,8 +106,9 @@ export const FUEL_SERVICE_GLOBAL_KEYS: Record<string, string> = {
 };
 
 /**
- * Modes that use telemetry-driven dynamic icons.
- * Keep in sync with getTelemetryState() and buildStateKey().
+ * Modes that subscribe to telemetry updates for live icon rendering.
+ * toggle-fuel-fill: updates fuel amount and on/off status bar.
+ * fuel-level: updates gauge fill and status bar (has its own early-exit rendering path).
  */
 const TELEMETRY_AWARE_MODES = new Set<FuelServiceMode>(["toggle-fuel-fill", "toggle-autofuel", "fuel-level"]);
 
@@ -319,13 +320,13 @@ export function generateFuelGaugeSvg(
   const fillY = gaugeHeight - fillHeight;
   const fillColor = fuelPct !== undefined ? getFuelGaugeColor(pct) : "#888888";
 
-  // Tick marks
-  const ticks = generateFuelGaugeTicks(4, 92);
+  // Tick marks: inset 4px from top/bottom of gauge area to avoid edge overlap
+  const tickPadding = 4;
+  const ticks = generateFuelGaugeTicks(tickPadding, gaugeHeight - tickPadding * 2);
 
   // Status bar
   let statusBarColor: string;
   let statusText: string;
-  const statusTextColor = "#ffffff";
 
   switch (status) {
     case "refuel":
@@ -337,15 +338,14 @@ export function generateFuelGaugeSvg(
       statusText = flashVisible ? "REFUELING" : "";
       break;
     case "tank":
-    default:
       statusBarColor = FUEL_GAUGE_BLUE;
       statusText = "TANK";
       break;
   }
 
   const statusTextEl = statusText
-    ? `<text x="72" y="129" text-anchor="middle" dominant-baseline="central"
-            fill="${statusTextColor}" font-family="Arial" font-size="22" font-weight="700">${statusText}</text>`
+    ? `<text x="72" y="129" text-anchor="middle"
+            fill="${WHITE}" font-family="Arial" font-size="22" font-weight="700">${statusText}</text>`
     : "";
 
   const border = resolveBorderSettings(fuelServiceTemplate, getGlobalBorderSettings(), settings.borderOverrides);
@@ -630,6 +630,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
     this.lastState.delete(ev.action.id);
+    this.fuelFlashToggle.delete(ev.action.id);
     const activeKey = FUEL_SERVICE_GLOBAL_KEYS[settings.mode];
     this.setActiveBinding(activeKey ?? null);
 
@@ -908,12 +909,21 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
         telemetryState.pitSvStatus,
       );
 
+      const regenerateFuelGauge = () => {
+        const t = this.sdkController.getCurrentTelemetry();
+        const ts = this.getTelemetryState(t);
+        const s = getFuelGaugeStatus(ts.fuelLevelPct, ts.pitSvFlags, ts.pitSvStatus);
+
+        return generateFuelGaugeSvg(settings, ts.fuelLevelPct, s);
+      };
+
       // Flash toggle for REFUEL! and REFUELING states (~2Hz via telemetry tick rate)
       if (status === "refuel" || status === "refueling") {
         const currentFlash = this.fuelFlashToggle.get(contextId) ?? true;
         this.fuelFlashToggle.set(contextId, !currentFlash);
         const svgDataUri = generateFuelGaugeSvg(settings, telemetryState.fuelLevelPct, status, currentFlash);
         await this.updateKeyImage(contextId, svgDataUri);
+        this.setRegenerateCallback(contextId, regenerateFuelGauge);
 
         return;
       }
@@ -927,6 +937,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
         this.lastState.set(contextId, stateKey);
         const svgDataUri = generateFuelGaugeSvg(settings, telemetryState.fuelLevelPct, status);
         await this.updateKeyImage(contextId, svgDataUri);
+        this.setRegenerateCallback(contextId, regenerateFuelGauge);
       }
 
       return;
