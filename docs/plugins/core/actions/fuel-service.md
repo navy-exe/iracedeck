@@ -1,6 +1,6 @@
 # Fuel Service
 
-Manages fuel pit stop settings: toggle fueling, add/reduce/set fuel amounts, clear fuel, toggle autofuel, and adjust lap margins.
+Manages fuel pit service operations: toggle fuel fill, add/reduce/set fuel amounts, clear fuel checkbox, autofuel toggle, lap margin adjustments, and fuel level gauge display.
 
 ## Properties
 
@@ -8,81 +8,84 @@ Manages fuel pit stop settings: toggle fueling, add/reduce/set fuel amounts, cle
 |----------|-------|
 | Action ID | `com.iracedeck.sd.core.fuel-service` |
 | Type | Multi-toggle |
-| SDK Support | Yes (toggle, clear) / No (macros, keyboard modes) |
-| Encoder Support | Yes |
+| SDK Support | Yes (toggle-fuel-fill, clear-fuel) |
+| Encoder Support | Yes (add/reduce fuel, lap margin) |
 
 ## Behavior
 
 ### Button Press
-- **Toggle Fuel Fill**: Toggles the "Begin Fueling" pit service checkbox (SDK)
-- **Add Fuel**: Sends `#fuel +<amount><unit>$` chat macro to add fuel
-- **Reduce Fuel**: Sends `#fuel -<amount><unit>$` chat macro to reduce fuel
-- **Set Fuel Amount**: Sends `#fuel <amount><unit>$` chat macro to set fuel
-- **Clear Fuel Checkbox**: Clears the fuel fill checkbox (SDK)
-- **Toggle Autofuel**: Toggles autofuel via keyboard binding
-- **Lap Margin Increase/Decrease**: Adjusts autofuel lap margin via keyboard binding
+- **Toggle Fuel Fill** - Toggles the fuel fill checkbox on/off via SDK
+- **Add Fuel** - Sends pit macro to add the configured amount (repeats while held)
+- **Reduce Fuel** - Sends pit macro to reduce by the configured amount (repeats while held)
+- **Set Fuel Amount** - Sends pit macro to set fuel to the configured amount
+- **Clear Fuel** - Clears the fuel checkbox via SDK
+- **Toggle Autofuel** - Toggles autofuel via keyboard shortcut
+- **Fuel Level Gauge** - Toggles display between percentage and amount (liters/gallons) on key press
+- **Lap Margin Increase** - Increases lap margin via keyboard shortcut
+- **Lap Margin Decrease** - Decreases lap margin via keyboard shortcut
 
 ### Encoder
-- **Rotate clockwise**: Executes the current mode action (or paired increase)
-- **Rotate counter-clockwise**: Executes the opposite action (or paired decrease)
-- **Press**: Same as button press
-
-### Long-Press (Add/Reduce only)
-Holding the button repeats the action every 250ms.
+- **Add/Reduce Fuel**: Clockwise adds, counter-clockwise reduces
+- **Lap Margin**: Clockwise increases, counter-clockwise decreases
+- **Press**: Executes the configured mode action
 
 ## Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Mode | Dropdown | Toggle Fuel Fill | Fuel service operation mode |
-| Amount | Number | 1 | Fuel amount (macro modes only) |
-| Unit | Dropdown | Liters | Fuel unit: Liters, Gallons, Kilograms |
+| Mode | Dropdown | Toggle Fuel Fill | Fuel service operation |
+| Amount | Number | 1 | Fuel amount for add/reduce/set modes |
+| Unit | Dropdown | Liters | Unit for fuel amount (Liters, Gallons, Kilograms) |
 
 ### Mode Options
-- **Toggle Fuel Fill** - Toggles the "Begin Fueling" checkbox on/off
-- **Add Fuel** - Adds the specified amount of fuel
-- **Reduce Fuel** - Reduces fuel by the specified amount
-- **Set Fuel Amount** - Sets fuel to the specified amount
-- **Clear Fuel Checkbox** - Clears the fuel fill checkbox
-- **Toggle Autofuel** - Toggles the autofuel setting
-- **Lap Margin Increase** - Increases the autofuel lap margin
-- **Lap Margin Decrease** - Decreases the autofuel lap margin
+- **Toggle Fuel Fill** - Toggle the pit service fuel fill checkbox on/off
+- **Add Fuel** - Add fuel amount to the pit service request
+- **Reduce Fuel** - Reduce fuel amount from the pit service request
+- **Set Fuel Amount** - Set an exact fuel amount for the pit service request
+- **Clear Fuel** - Clear the fuel checkbox entirely
+- **Toggle Autofuel** - Toggle the autofuel feature on/off
+- **Fuel Level Gauge** - Live fuel level display with gauge fill, percentage/amount toggle
+- **Lap Margin Increase** - Increase the autofuel lap margin
+- **Lap Margin Decrease** - Decrease the autofuel lap margin
 
-## Global Settings
+## Fuel Level Gauge
 
-### Auto-Enable Fueling
+The fuel level gauge mode displays a live visual fuel gauge:
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| Enable fuel fill when changing amount | Checkbox | Checked | Controls whether changing fuel amount auto-enables the "Begin Fueling" checkbox |
+- **Gauge fill**: Full-width colored bar showing current fuel level (y=0 to y=100)
+  - Green (`#3fb23f`) — above 30%
+  - Yellow (`#d3c518`) — between 10% and 30%
+  - Red (`#e74c3c`) — below 10%
+- **Value display**: Press the key to toggle between two views:
+  - **Percentage** (default) — e.g., "75%"
+  - **Amount** — e.g., "82.5 L" or "21.8 gal" (respects iRacing display units)
+  - When no data is available (game not running), shows "--" centered
+- **Decorative side bars**: Three tick marks per side and bottom bars matching the add-fuel/reduce/set layout exactly
+- **Status bar** (bottom):
+  - **TANK** (blue) — normal state
+  - **REFUELING** (green, text flashes) — fuel fill active in pit
+  - **REFUEL!** (red/blue flash) — fuel below 10% and not refueling
 
-When **checked** (default): Fuel macros use `#fuel` prefix, which sets the amount and enables the fueling checkbox (standard iRacing behavior).
-
-When **unchecked**: The action preserves the current fueling state:
-- If "Begin Fueling" is **currently off** → uses `#-fuel` prefix (amount changes without enabling fueling)
-- If "Begin Fueling" is **currently on** → uses `#fuel` prefix (keeps it enabled)
-
-This setting appears in the PI for: Add Fuel, Reduce Fuel, Set Fuel Amount, Lap Margin Increase, and Lap Margin Decrease modes.
-
-### Keyboard Bindings
+## Keyboard Simulation
 
 | Action | Default Key | iRacing Setting |
 |--------|-------------|-----------------|
 | Toggle Autofuel | *(none)* | Toggle Autofuel |
-| Lap Margin Increase | *(none)* | Increase Lap Margin |
-| Lap Margin Decrease | *(none)* | Decrease Lap Margin |
+| Lap Margin Increase | *(none)* | Lap Margin Increase |
+| Lap Margin Decrease | *(none)* | Lap Margin Decrease |
 
 ## Icon States
 
 | Mode | Icon |
 |------|------|
-| Toggle Fuel Fill (on) | Fuel icon with green "ON" status bar |
-| Toggle Fuel Fill (off) | Fuel icon with red "OFF" status bar |
-| Add Fuel | Green-accented icon with amount display |
-| Reduce Fuel | Red-accented icon with amount display |
-| Set Fuel Amount | Yellow-accented icon with amount display |
+| Toggle Fuel Fill | Dynamic: fuel amount + ON/OFF status bar |
+| Add Fuel | Green decorative bars, "+amount unit" value |
+| Reduce Fuel | Red decorative bars, "-amount unit" value |
+| Set Fuel Amount | Yellow decorative bars, "amount unit" value |
 | Clear Fuel | Static "CLEAR FUEL" icon |
 | Toggle Autofuel (on) | "AUTO FUEL" title with fuel amount and green "ON" status bar |
 | Toggle Autofuel (off) | "AUTO FUEL" title with fuel amount and red "OFF" status bar |
 | Toggle Autofuel (n/a) | "AUTO FUEL" title with fuel amount and gray "N/A" status bar (autofuel system not available for this car/series) |
-| Lap Margin +/- | Static "INCREASE/DECREASE LAP MARGIN" icon |
+| Fuel Level Gauge | Colored gauge fill with percentage or amount (toggle on press), decorative side bars, status bar |
+| Lap Margin Increase | Static "INCREASE LAP MARGIN" icon |
+| Lap Margin Decrease | Static "DECREASE LAP MARGIN" icon |
