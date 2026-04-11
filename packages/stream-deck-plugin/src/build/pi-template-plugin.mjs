@@ -95,21 +95,8 @@ function createTemplateRequire(templateDir) {
 /**
  * Rollup plugin for compiling EJS Property Inspector templates
  */
-/**
- * Read the plugin version from manifest.json and trim to semver (first 3 segments).
- * Stream Deck manifests use 4-segment versions (e.g., "1.8.0.0") — display as "1.8.0".
- */
-function readManifestVersion(manifestPath) {
-  if (!manifestPath || !existsSync(manifestPath)) return undefined;
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-  const raw = manifest.Version;
-  if (!raw) return undefined;
-  return raw.split(".").slice(0, 3).join(".");
-}
-
 export function piTemplatePlugin(options) {
-  const { templatesDir, outputDir, partialsDir, additionalPartialsDirs = [], manifestPath } = options;
-  const version = readManifestVersion(manifestPath);
+  const { templatesDir, outputDir, partialsDir, additionalPartialsDirs = [], version } = options;
 
   // Build list of partial search directories
   const partialSearchDirs = [partialsDir, ...additionalPartialsDirs].filter((d) => existsSync(d));
@@ -184,7 +171,7 @@ export function piTemplatePlugin(options) {
           const html = ejs.render(templateContent, {
             // Make data files available as 'data' object
             data: dataFiles,
-            // Plugin version from manifest.json (trimmed)
+            // Plugin version from package.json
             version: version || "unknown",
             // Documentation URL for this action (empty string if not mapped)
             docsUrl,

@@ -9,6 +9,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { piTemplatePlugin } from "./src/build/pi-template-plugin.mjs";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
 const actionsPackagePath = path.resolve(__dirname, "../actions/src");
 
@@ -80,7 +81,7 @@ const config = {
 			templatesDir: "src/pi",
 			outputDir: `${sdPlugin}/ui`,
 			partialsDir: "src/pi-templates/partials",
-			manifestPath: `${sdPlugin}/manifest.json`,
+			version: rootPackageJson.version,
 		}),
 		{
 			name: "watch-externals",
@@ -134,6 +135,16 @@ const config = {
 					}
 				};
 				this.emitFile({ fileName: "package.json", source: JSON.stringify(pkg, null, 2), type: "asset" });
+			},
+		},
+		{
+			name: "emit-plugin-config",
+			generateBundle() {
+				const config = {
+					version: rootPackageJson.version,
+					platform: "stream-deck",
+				};
+				this.emitFile({ fileName: "config.json", source: JSON.stringify(config, null, 2), type: "asset" });
 			},
 		},
 	],

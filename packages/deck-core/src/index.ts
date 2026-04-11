@@ -194,3 +194,14 @@ export {
 
 // Key binding utilities
 export { formatKeyBinding, parseKeyBinding, parseBinding } from "./key-binding-utils.js";
+
+// Plugin config singleton
+export {
+  initPluginConfig,
+  getPluginVersion,
+  getPluginPlatform,
+  isPluginConfigInitialized,
+  _resetPluginConfig,
+  type PluginConfig,
+  type PluginPlatform,
+} from "./plugin-config.js";
