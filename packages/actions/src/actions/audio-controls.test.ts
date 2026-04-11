@@ -288,8 +288,7 @@ describe("AudioControls", () => {
         master: {
           "volume-up": { mainLabel: "MASTER", subLabel: "VOL UP" },
           "volume-down": { mainLabel: "MASTER", subLabel: "VOL DOWN" },
-          // master-mute uses volume-up icon but has its own title "VOLUME\nMASTER"
-          mute: { mainLabel: "MASTER", subLabel: "VOLUME" },
+          mute: { mainLabel: "MASTER", subLabel: "MUTE" },
         },
       };
 
