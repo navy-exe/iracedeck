@@ -98,6 +98,10 @@ function createTemplateRequire(templateDir) {
 export function piTemplatePlugin(options) {
   const { templatesDir, outputDir, partialsDir, additionalPartialsDirs = [], version } = options;
 
+  if (!version) {
+    throw new Error("piTemplatePlugin: version option is required");
+  }
+
   // Build list of partial search directories
   const partialSearchDirs = [partialsDir, ...additionalPartialsDirs].filter((d) => existsSync(d));
 
@@ -172,7 +176,7 @@ export function piTemplatePlugin(options) {
             // Make data files available as 'data' object
             data: dataFiles,
             // Plugin version from package.json
-            version: version || "unknown",
+            version: version,
             // Documentation URL for this action (empty string if not mapped)
             docsUrl,
             // Also expose a require function for inline requires
@@ -180,7 +184,7 @@ export function piTemplatePlugin(options) {
             // Expose locals for checking if variables are defined
             locals: {
               data: dataFiles,
-              version: version || "unknown",
+              version: version,
               docsUrl,
             },
           }, {

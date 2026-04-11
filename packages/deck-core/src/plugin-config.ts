@@ -9,11 +9,9 @@
  * 2. Import getPluginVersion() wherever the version is needed
  */
 
-export type PluginPlatform = "stream-deck" | "mirabox";
-
 export interface PluginConfig {
   version: string;
-  platform: PluginPlatform;
+  platform: string;
 }
 
 let config: PluginConfig | null = null;
@@ -47,11 +45,11 @@ export function getPluginVersion(): string {
 }
 
 /**
- * Get the plugin platform ("stream-deck" or "mirabox").
+ * Get the plugin platform identifier (e.g., "stream-deck", "mirabox").
  *
  * @throws Error if initPluginConfig() has not been called
  */
-export function getPluginPlatform(): PluginPlatform {
+export function getPluginPlatform(): string {
   if (!config) {
     throw new Error("Plugin config not initialized. Call initPluginConfig() first.");
   }

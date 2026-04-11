@@ -203,5 +203,4 @@ export {
   isPluginConfigInitialized,
   _resetPluginConfig,
   type PluginConfig,
-  type PluginPlatform,
 } from "./plugin-config.js";
