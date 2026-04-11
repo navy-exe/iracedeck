@@ -5,6 +5,7 @@ import {
   areLeftTiresOn,
   areRightTiresOn,
   buildTireToggleMacro,
+  doCurrentTiresMatch,
   generateTireIcon,
   generateTireServiceSvg,
   generateToggleTiresIconContent,
@@ -421,6 +422,40 @@ describe("TireService", () => {
     });
   });
 
+  describe("doCurrentTiresMatch", () => {
+    it("should return true when all tires configured and all on", () => {
+      expect(doCurrentTiresMatch({ tires: ["lf", "rf", "lr", "rr"] }, { lf: true, rf: true, lr: true, rr: true })).toBe(
+        true,
+      );
+    });
+
+    it("should return true when right side configured and right side on", () => {
+      expect(doCurrentTiresMatch({ tires: ["rf", "rr"] }, { lf: false, rf: true, lr: false, rr: true })).toBe(true);
+    });
+
+    it("should return true when left side configured and left side on", () => {
+      expect(doCurrentTiresMatch({ tires: ["lf", "lr"] }, { lf: true, rf: false, lr: true, rr: false })).toBe(true);
+    });
+
+    it("should return false when all tires on but only right side configured", () => {
+      expect(doCurrentTiresMatch({ tires: ["rf", "rr"] }, { lf: true, rf: true, lr: true, rr: true })).toBe(false);
+    });
+
+    it("should return false when no tires on but tires configured", () => {
+      expect(
+        doCurrentTiresMatch({ tires: ["lf", "rf", "lr", "rr"] }, { lf: false, rf: false, lr: false, rr: false }),
+      ).toBe(false);
+    });
+
+    it("should return true when no tires configured and no tires on", () => {
+      expect(doCurrentTiresMatch({ tires: [] }, { lf: false, rf: false, lr: false, rr: false })).toBe(true);
+    });
+
+    it("should return false when left side on but right side configured", () => {
+      expect(doCurrentTiresMatch({ tires: ["rf", "rr"] }, { lf: true, rf: false, lr: true, rr: false })).toBe(false);
+    });
+  });
+
   describe("generateToggleTiresIconContent", () => {
     it("should return SVG with 4 tire indicator rects", () => {
       const result = generateToggleTiresIconContent(
@@ -688,37 +723,82 @@ describe("TireService", () => {
     });
 
     describe("toggle-tires mode", () => {
-      it("should send shorthand #!t for all configured tires", async () => {
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+      it("should clear first when current tires do not match configured", async () => {
+        // All tires on, but only right side configured → clear first, then toggle right on
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
-      });
-
-      it("should send shorthand #!l for left side only", async () => {
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "lr"] }) as any);
-
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!l");
-      });
-
-      it("should send shorthand #!r for right side only", async () => {
         await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["rf", "rr"] }) as any);
 
+        expect(mockPitClearTires).toHaveBeenCalledOnce();
         expect(mockSendMessage).toHaveBeenCalledOnce();
         expect(mockSendMessage).toHaveBeenCalledWith("#!r");
       });
 
-      it("should send per-tire macro for non-group combinations", async () => {
+      it("should not clear when current tires match configured (toggles off)", async () => {
+        // Right side on, right side configured → just toggle (turns off)
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000a, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["rf", "rr"] }) as any);
+
+        expect(mockPitClearTires).not.toHaveBeenCalled();
+        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+      });
+
+      it("should clear first when all configured but only some tires on", async () => {
+        // Fronts on, rears off — without clear, #!t would flip to rears only
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0003, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+
+        expect(mockPitClearTires).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+      });
+
+      it("should clear first when all configured but no tires on", async () => {
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+
+        expect(mockPitClearTires).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+      });
+
+      it("should not clear when all configured and all tires on (toggles off)", async () => {
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+
+        expect(mockPitClearTires).not.toHaveBeenCalled();
+        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+      });
+
+      it("should clear first for left side when current state differs", async () => {
+        // All tires on, left side configured → clear first
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "lr"] }) as any);
+
+        expect(mockPitClearTires).toHaveBeenCalledOnce();
+        expect(mockSendMessage).toHaveBeenCalledWith("#!l");
+      });
+
+      it("should clear first for non-group combinations", async () => {
+        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
         await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"] }) as any);
 
-        expect(mockSendMessage).toHaveBeenCalledOnce();
+        expect(mockPitClearTires).toHaveBeenCalledOnce();
         expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf");
       });
 
-      it("should not send message when no tires configured", async () => {
+      it("should not clear or send message when no tires configured", async () => {
         await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: [] }) as any);
 
+        expect(mockPitClearTires).not.toHaveBeenCalled();
         expect(mockSendMessage).not.toHaveBeenCalled();
       });
 
@@ -858,9 +938,22 @@ describe("TireService", () => {
       expect(mockSendMessage).toHaveBeenCalledWith("#t");
     });
 
-    it("should send shorthand #!t on dial down for all tires", async () => {
+    it("should clear first on dial down when tires don't match", async () => {
+      mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
       await action.onDialDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
 
+      expect(mockPitClearTires).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledOnce();
+      expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+    });
+
+    it("should not clear on dial down when tires match", async () => {
+      mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+      await action.onDialDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+
+      expect(mockPitClearTires).not.toHaveBeenCalled();
       expect(mockSendMessage).toHaveBeenCalledOnce();
       expect(mockSendMessage).toHaveBeenCalledWith("#!t");
     });

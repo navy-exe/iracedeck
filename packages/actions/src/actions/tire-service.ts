@@ -264,6 +264,25 @@ export function areRightTiresOn(settings: Pick<TireServiceSettings, "tires">): b
 /**
  * @internal Exported for testing
  *
+ * Check if the current tire change flags exactly match the configured tires.
+ */
+export function doCurrentTiresMatch(
+  settings: Pick<TireServiceSettings, "tires">,
+  tireState: { lf: boolean; rf: boolean; lr: boolean; rr: boolean },
+): boolean {
+  const configured = new Set(settings.tires);
+
+  return (
+    tireState.lf === configured.has("lf") &&
+    tireState.rf === configured.has("rf") &&
+    tireState.lr === configured.has("lr") &&
+    tireState.rr === configured.has("rr")
+  );
+}
+
+/**
+ * @internal Exported for testing
+ *
  * Builds a pit macro string to toggle the configured tires.
  * Uses shorthand macros (#!t, #!l, #!r) when tires match a recognized group pattern.
  * Returns null if no tires are configured.
@@ -620,6 +639,14 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
           this.logger.warn("No tires configured");
 
           return;
+        }
+
+        const telemetry = this.sdkController.getCurrentTelemetry();
+        const tireState = getTireState(telemetry);
+
+        if (!doCurrentTiresMatch(settings, tireState)) {
+          this.logger.debug("Current tires don't match configured — clearing first");
+          getCommands().pit.clearTires();
         }
 
         this.logger.debug(`Sending pit macro: ${macro}`);
