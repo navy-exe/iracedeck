@@ -1,4 +1,10 @@
-import { applyInactiveOverlay, BaseAction, overlayConfig } from "@iracedeck/deck-core";
+import {
+  _resetPluginConfig,
+  applyInactiveOverlay,
+  BaseAction,
+  initPluginConfig,
+  overlayConfig,
+} from "@iracedeck/deck-core";
 import type { FlagInfo } from "@iracedeck/iracing-sdk";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +14,7 @@ function createMockKeyAction(id: string) {
     id,
     isKey: vi.fn().mockReturnValue(true),
     setImage: vi.fn().mockResolvedValue(undefined),
+    setSettings: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -424,6 +431,39 @@ describe("BaseAction", () => {
 
       await testAction.onDidReceiveSettings(ev2);
       expect(testAction.isFlagOverlayEnabled("context-1")).toBe(true);
+    });
+  });
+
+  describe("addedWithVersion persistence", () => {
+    afterEach(() => {
+      _resetPluginConfig();
+    });
+
+    it("should persist addedWithVersion on first appear when missing", async () => {
+      initPluginConfig({ version: "1.13.0", platform: "stream-deck" });
+      const ev = createMockEvent("context-1", {}) as any;
+
+      await testAction.onWillAppear(ev);
+
+      expect(ev.action.setSettings).toHaveBeenCalledOnce();
+      expect(ev.action.setSettings).toHaveBeenCalledWith(expect.objectContaining({ addedWithVersion: "1.13.0" }));
+    });
+
+    it("should not overwrite existing addedWithVersion", async () => {
+      initPluginConfig({ version: "1.14.0", platform: "stream-deck" });
+      const ev = createMockEvent("context-1", { addedWithVersion: "1.12.0" }) as any;
+
+      await testAction.onWillAppear(ev);
+
+      expect(ev.action.setSettings).not.toHaveBeenCalled();
+    });
+
+    it("should not persist when plugin config is not initialized", async () => {
+      const ev = createMockEvent("context-1", {}) as any;
+
+      await testAction.onWillAppear(ev);
+
+      expect(ev.action.setSettings).not.toHaveBeenCalled();
     });
   });
 
