@@ -14,6 +14,7 @@ import {
   getDriverTires,
   isTireSelected,
   migrateTireSettings,
+  resolveToggleMode,
   TireService,
 } from "./tire-service.js";
 
@@ -69,7 +70,7 @@ vi.mock("@iracedeck/iracing-sdk", () => ({
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
     extend: () => {
-      const defaults = { action: "change-all-tires", tires: ["lf", "rf", "lr", "rr"] };
+      const defaults = { action: "change-all-tires", tires: ["lf", "rf", "lr", "rr"], addedWithVersion: "0.0.0" };
       const schema = {
         parse: (data: Record<string, unknown>) => ({ ...defaults, ...data }),
         safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...defaults, ...data } }),
@@ -456,6 +457,32 @@ describe("TireService", () => {
     });
   });
 
+  describe("resolveToggleMode", () => {
+    it("should return explicit toggleMode when set to select", () => {
+      expect(resolveToggleMode({ toggleMode: "select", addedWithVersion: "0.0.0" } as any)).toBe("select");
+    });
+
+    it("should return explicit toggleMode when set to toggle", () => {
+      expect(resolveToggleMode({ toggleMode: "toggle", addedWithVersion: "1.13.0" } as any)).toBe("toggle");
+    });
+
+    it("should default to toggle for pre-existing instances (0.0.0)", () => {
+      expect(resolveToggleMode({ addedWithVersion: "0.0.0" } as any)).toBe("toggle");
+    });
+
+    it("should default to toggle for instances added before 1.13.0", () => {
+      expect(resolveToggleMode({ addedWithVersion: "1.12.0" } as any)).toBe("toggle");
+    });
+
+    it("should default to select for instances added at 1.13.0", () => {
+      expect(resolveToggleMode({ addedWithVersion: "1.13.0" } as any)).toBe("select");
+    });
+
+    it("should default to select for instances added after 1.13.0", () => {
+      expect(resolveToggleMode({ addedWithVersion: "2.0.0" } as any)).toBe("select");
+    });
+  });
+
   describe("generateToggleTiresIconContent", () => {
     it("should return SVG with 4 tire indicator rects", () => {
       const result = generateToggleTiresIconContent(
@@ -655,20 +682,37 @@ describe("TireService", () => {
       action = new TireService();
     });
 
-    it("should call setSettings on fresh instance (no tires key)", async () => {
+    it("should default new instance to select mode (empty raw settings)", async () => {
       const ev = fakeEvent("a1", {});
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setSettings).toHaveBeenCalledOnce();
-      // Should merge raw ({}) with parsed tires value
-      expect(ev.action.setSettings).toHaveBeenCalledWith(expect.objectContaining({ tires: expect.anything() }));
+      expect(ev.action.setSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ tires: expect.anything(), toggleMode: "select" }),
+      );
     });
 
-    it("should not call setSettings when tires key already exists", async () => {
-      const ev = fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"] });
+    it("should not call setSettings when tires and toggleMode already exist", async () => {
+      const ev = fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"], toggleMode: "select" });
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setSettings).not.toHaveBeenCalled();
+    });
+
+    it("should default pre-existing instance to toggle mode (has settings but no addedWithVersion)", async () => {
+      const ev = fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"] });
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setSettings).toHaveBeenCalledOnce();
+      expect(ev.action.setSettings).toHaveBeenCalledWith(expect.objectContaining({ toggleMode: "toggle" }));
+    });
+
+    it("should default to select when addedWithVersion already exists", async () => {
+      const ev = fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"], addedWithVersion: "1.13.0" });
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setSettings).toHaveBeenCalledOnce();
+      expect(ev.action.setSettings).toHaveBeenCalledWith(expect.objectContaining({ toggleMode: "select" }));
     });
 
     it("should call setSettings for legacy boolean settings", async () => {
@@ -723,76 +767,81 @@ describe("TireService", () => {
     });
 
     describe("toggle-tires mode", () => {
-      it("should clear first when current tires do not match configured", async () => {
-        // All tires on, but only right side configured → clear first, then toggle right on
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+      describe("select mode (clear-first)", () => {
+        it("should clear first when current tires do not match configured", async () => {
+          mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["rf", "rr"] }) as any);
+          await action.onKeyDown(
+            fakeEvent("a1", { action: "toggle-tires", toggleMode: "select", tires: ["rf", "rr"] }) as any,
+          );
 
-        expect(mockPitClearTires).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+          expect(mockPitClearTires).toHaveBeenCalledOnce();
+          expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+        });
+
+        it("should not clear when current tires match configured (toggles off)", async () => {
+          mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000a, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+          await action.onKeyDown(
+            fakeEvent("a1", { action: "toggle-tires", toggleMode: "select", tires: ["rf", "rr"] }) as any,
+          );
+
+          expect(mockPitClearTires).not.toHaveBeenCalled();
+          expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+        });
+
+        it("should clear first when all configured but only some tires on", async () => {
+          mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0003, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+          await action.onKeyDown(
+            fakeEvent("a1", {
+              action: "toggle-tires",
+              toggleMode: "select",
+              tires: ["lf", "rf", "lr", "rr"],
+            }) as any,
+          );
+
+          expect(mockPitClearTires).toHaveBeenCalledOnce();
+          expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+        });
+
+        it("should not clear when all configured and all tires on (toggles off)", async () => {
+          mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+          await action.onKeyDown(
+            fakeEvent("a1", {
+              action: "toggle-tires",
+              toggleMode: "select",
+              tires: ["lf", "rf", "lr", "rr"],
+            }) as any,
+          );
+
+          expect(mockPitClearTires).not.toHaveBeenCalled();
+          expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+        });
       });
 
-      it("should not clear when current tires match configured (toggles off)", async () => {
-        // Right side on, right side configured → just toggle (turns off)
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000a, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+      describe("toggle mode (legacy)", () => {
+        it("should never clear tires regardless of state", async () => {
+          mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["rf", "rr"] }) as any);
+          await action.onKeyDown(
+            fakeEvent("a1", { action: "toggle-tires", toggleMode: "toggle", tires: ["rf", "rr"] }) as any,
+          );
 
-        expect(mockPitClearTires).not.toHaveBeenCalled();
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!r");
-      });
+          expect(mockPitClearTires).not.toHaveBeenCalled();
+          expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+        });
 
-      it("should clear first when all configured but only some tires on", async () => {
-        // Fronts on, rears off — without clear, #!t would flip to rears only
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0003, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+        it("should default to toggle mode for pre-existing instances", async () => {
+          // addedWithVersion defaults to "0.0.0" → resolves to "toggle"
+          mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+          await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["rf", "rr"] }) as any);
 
-        expect(mockPitClearTires).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
-      });
-
-      it("should clear first when all configured but no tires on", async () => {
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
-
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
-
-        expect(mockPitClearTires).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
-      });
-
-      it("should not clear when all configured and all tires on (toggles off)", async () => {
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
-
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
-
-        expect(mockPitClearTires).not.toHaveBeenCalled();
-        expect(mockSendMessage).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!t");
-      });
-
-      it("should clear first for left side when current state differs", async () => {
-        // All tires on, left side configured → clear first
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
-
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "lr"] }) as any);
-
-        expect(mockPitClearTires).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!l");
-      });
-
-      it("should clear first for non-group combinations", async () => {
-        mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
-
-        await action.onKeyDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf"] }) as any);
-
-        expect(mockPitClearTires).toHaveBeenCalledOnce();
-        expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf");
+          expect(mockPitClearTires).not.toHaveBeenCalled();
+          expect(mockSendMessage).toHaveBeenCalledWith("#!r");
+        });
       });
 
       it("should not clear or send message when no tires configured", async () => {
@@ -938,24 +987,39 @@ describe("TireService", () => {
       expect(mockSendMessage).toHaveBeenCalledWith("#t");
     });
 
-    it("should clear first on dial down when tires don't match", async () => {
+    it("should clear first on dial down in select mode when tires don't match", async () => {
       mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
-      await action.onDialDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+      await action.onDialDown(
+        fakeEvent("a1", { action: "toggle-tires", toggleMode: "select", tires: ["lf", "rf", "lr", "rr"] }) as any,
+      );
 
       expect(mockPitClearTires).toHaveBeenCalledOnce();
       expect(mockSendMessage).toHaveBeenCalledOnce();
       expect(mockSendMessage).toHaveBeenCalledWith("#!t");
     });
 
-    it("should not clear on dial down when tires match", async () => {
+    it("should not clear on dial down in select mode when tires match", async () => {
       mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
 
-      await action.onDialDown(fakeEvent("a1", { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }) as any);
+      await action.onDialDown(
+        fakeEvent("a1", { action: "toggle-tires", toggleMode: "select", tires: ["lf", "rf", "lr", "rr"] }) as any,
+      );
 
       expect(mockPitClearTires).not.toHaveBeenCalled();
       expect(mockSendMessage).toHaveBeenCalledOnce();
       expect(mockSendMessage).toHaveBeenCalledWith("#!t");
+    });
+
+    it("should never clear on dial down in toggle mode", async () => {
+      mockGetCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x000f, PlayerTireCompound: 0, PitSvTireCompound: 0 });
+
+      await action.onDialDown(
+        fakeEvent("a1", { action: "toggle-tires", toggleMode: "toggle", tires: ["rf", "rr"] }) as any,
+      );
+
+      expect(mockPitClearTires).not.toHaveBeenCalled();
+      expect(mockSendMessage).toHaveBeenCalledWith("#!r");
     });
 
     it("should cycle compound on dial down for change-compound", async () => {
