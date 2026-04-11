@@ -153,6 +153,7 @@ export const GraphicOverridesSchema = z
 export type GraphicOverrides = z.infer<typeof GraphicOverridesSchema>;
 
 export const CommonSettings = z.object({
+  addedWithVersion: z.string().default("0.0.0"),
   flagsOverlay: z
     .union([z.boolean(), z.string()])
     .transform((val) => val === true || val === "true")
