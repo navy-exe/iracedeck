@@ -302,9 +302,13 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
     // Note: setSettings triggers onDidReceiveSettings — benign since it only re-reads
     // the same settings that were just written.
     if (!settings.addedWithVersion && isPluginConfigInitialized()) {
-      const version = getPluginVersion();
-      this.logger.debug(`Persisting addedWithVersion=${version} for context ${ev.action.id}`);
-      await ev.action.setSettings({ ...settings, addedWithVersion: version });
+      try {
+        const version = getPluginVersion();
+        this.logger.debug(`Persisting addedWithVersion=${version} for context ${ev.action.id}`);
+        await ev.action.setSettings({ ...settings, addedWithVersion: version });
+      } catch (err) {
+        this.logger.warn(`Failed to persist addedWithVersion for context ${ev.action.id}: ${err}`);
+      }
     }
 
     if (settings.flagsOverlay === true || settings.flagsOverlay === "true") {
