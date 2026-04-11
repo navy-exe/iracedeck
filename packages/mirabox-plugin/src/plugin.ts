@@ -82,10 +82,20 @@ import {
   initializeKeyboard,
   initializeSDK,
   initializeSimHub,
+  initPluginConfig,
+  type PluginConfig,
 } from "@iracedeck/deck-core";
 import { IRacingNative } from "@iracedeck/iracing-native";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { focusIRacingIfEnabled, initWindowFocus } from "./shared/window-focus.js";
+
+// Load build-time config (version, platform)
+const __binDir = dirname(fileURLToPath(import.meta.url));
+const pluginConfig: PluginConfig = JSON.parse(readFileSync(join(__binDir, "config.json"), "utf-8"));
+initPluginConfig(pluginConfig);
 
 // Create the VSDinside platform adapter
 const adapter = new VSDPlatformAdapter();

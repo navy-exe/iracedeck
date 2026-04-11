@@ -39,6 +39,7 @@ describe("piTemplatePlugin", () => {
       templatesDir,
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     // Mock rollup context
@@ -81,6 +82,7 @@ describe("piTemplatePlugin", () => {
       templatesDir,
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     const context = {
@@ -118,6 +120,7 @@ describe("piTemplatePlugin", () => {
       templatesDir,
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     const context = {
@@ -150,6 +153,7 @@ describe("piTemplatePlugin", () => {
       templatesDir,
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     const context = {
@@ -182,6 +186,7 @@ describe("piTemplatePlugin", () => {
       templatesDir,
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     const context = {
@@ -207,6 +212,7 @@ describe("piTemplatePlugin", () => {
       templatesDir: path.join(testDir, "nonexistent"),
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     const context = {
@@ -240,6 +246,7 @@ describe("piTemplatePlugin", () => {
       templatesDir,
       outputDir,
       partialsDir,
+      version: "1.0.0",
     });
 
     const context = {

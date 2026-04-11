@@ -8,3 +8,4 @@ node_modules/
 
 # Generated PI HTML (built from src/pi/*.ejs templates)
 *.sdPlugin/ui/*.html
+
