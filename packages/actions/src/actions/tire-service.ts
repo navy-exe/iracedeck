@@ -20,6 +20,7 @@ import {
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  migrateLegacyActionToMode,
   parseIconArtworkBounds,
   renderIconTemplate,
   resolveBorderSettings,
@@ -95,35 +96,12 @@ export function resolveToggleMode(settings: TireServiceSettings): "select" | "to
 /**
  * @internal Exported for testing
  *
- * Renames the legacy `action` setting key to `mode`. Returns the (possibly migrated)
- * raw settings object and a `changed` flag indicating whether persistence is needed.
- */
-export function migrateTireServiceLegacyAction(raw: unknown): {
-  migrated: Record<string, unknown>;
-  changed: boolean;
-} {
-  if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
-
-  const record = raw as Record<string, unknown>;
-
-  if (record.mode !== undefined || record.action === undefined) {
-    return { migrated: { ...record }, changed: false };
-  }
-
-  const { action, ...rest } = record;
-
-  return { migrated: { ...rest, mode: action }, changed: true };
-}
-
-/**
- * @internal Exported for testing
- *
  * Migrates legacy boolean tire settings (lf/rf/lr/rr) to the new tires array,
  * and renames the legacy `action` field to `mode`. Tires migration only runs
  * when the tires key is absent from the raw settings and legacy booleans are present.
  */
 export function migrateTireSettings(raw: unknown): TireServiceSettings {
-  const { migrated: rawWithMode } = migrateTireServiceLegacyAction(raw);
+  const { migrated: rawWithMode } = migrateLegacyActionToMode(raw);
   const parsed = TireServiceSettings.safeParse(rawWithMode);
   const data = parsed.success ? parsed.data : TireServiceSettings.parse({});
 
@@ -508,7 +486,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
   override async onWillAppear(ev: IDeckWillAppearEvent<TireServiceSettings>): Promise<void> {
     await super.onWillAppear(ev);
     const raw = ev.payload.settings as Record<string, unknown> | undefined;
-    const { migrated: rawWithMode, changed: actionMigrated } = migrateTireServiceLegacyAction(ev.payload.settings);
+    const { migrated: rawWithMode, changed: actionMigrated } = migrateLegacyActionToMode(ev.payload.settings);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
 

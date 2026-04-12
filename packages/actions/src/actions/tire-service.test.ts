@@ -13,7 +13,6 @@ import {
   getCompoundName,
   getDriverTires,
   isTireSelected,
-  migrateTireServiceLegacyAction,
   migrateTireSettings,
   resolveToggleMode,
   TireService,
@@ -99,6 +98,19 @@ vi.mock("@iracedeck/deck-core", () => ({
     async onWillDisappear() {}
   },
   getCommands: mockGetCommands,
+  migrateLegacyActionToMode: (raw: unknown) => {
+    if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
+
+    const record = raw as Record<string, unknown>;
+
+    if (record.mode !== undefined || record.action === undefined) {
+      return { migrated: { ...record }, changed: false };
+    }
+
+    const { action, ...rest } = record;
+
+    return { migrated: { ...rest, mode: action }, changed: true };
+  },
   applyGraphicTransform: vi.fn((_content: string) => _content),
   computeGraphicArea: vi.fn(() => ({ x: 8, y: 8, width: 128, height: 128 })),
   extractGraphicContent: vi.fn((svg: string) =>
@@ -1110,50 +1122,6 @@ describe("TireService", () => {
       const result = migrateTireSettings({ action: "toggle-tires", tires: ["lf", "rf"] });
       expect(result.mode).toBe("toggle-tires");
       expect((result as Record<string, unknown>).action).toBeUndefined();
-    });
-  });
-
-  describe("migrateTireServiceLegacyAction", () => {
-    it("should rename legacy action key to mode", () => {
-      const result = migrateTireServiceLegacyAction({ action: "toggle-tires" });
-
-      expect(result.changed).toBe(true);
-      expect(result.migrated).toEqual({ mode: "toggle-tires" });
-      expect(result.migrated.action).toBeUndefined();
-    });
-
-    it("should preserve other settings keys during migration", () => {
-      const result = migrateTireServiceLegacyAction({
-        action: "toggle-tires",
-        tires: ["lf", "rf"],
-        toggleMode: "select",
-      });
-
-      expect(result.changed).toBe(true);
-      expect(result.migrated).toEqual({
-        mode: "toggle-tires",
-        tires: ["lf", "rf"],
-        toggleMode: "select",
-      });
-    });
-
-    it("should not change settings that already use mode", () => {
-      const result = migrateTireServiceLegacyAction({ mode: "toggle-tires" });
-
-      expect(result.changed).toBe(false);
-      expect(result.migrated).toEqual({ mode: "toggle-tires" });
-    });
-
-    it("should handle empty raw settings", () => {
-      const result = migrateTireServiceLegacyAction({});
-
-      expect(result.changed).toBe(false);
-      expect(result.migrated).toEqual({});
-    });
-
-    it("should handle null/undefined raw settings", () => {
-      expect(migrateTireServiceLegacyAction(null).changed).toBe(false);
-      expect(migrateTireServiceLegacyAction(undefined).changed).toBe(false);
     });
   });
 });

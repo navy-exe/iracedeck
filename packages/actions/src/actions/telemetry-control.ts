@@ -11,6 +11,7 @@ import {
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
+  migrateLegacyActionToMode,
   resolveBorderSettings,
   resolveGraphicSettings,
   resolveIconColors,
@@ -72,29 +73,6 @@ type TelemetryControlSettings = z.infer<typeof TelemetryControlSettings>;
 /**
  * @internal Exported for testing
  *
- * Migrates legacy `action` setting key to `mode`. Returns the (possibly migrated)
- * raw settings object and a `changed` flag indicating whether persistence is needed.
- */
-export function migrateTelemetryControlLegacyAction(raw: unknown): {
-  migrated: Record<string, unknown>;
-  changed: boolean;
-} {
-  if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
-
-  const record = raw as Record<string, unknown>;
-
-  if (record.mode !== undefined || record.action === undefined) {
-    return { migrated: { ...record }, changed: false };
-  }
-
-  const { action, ...rest } = record;
-
-  return { migrated: { ...rest, mode: action }, changed: true };
-}
-
-/**
- * @internal Exported for testing
- *
  * Generates an SVG data URI icon for the telemetry control action.
  */
 export function generateTelemetryControlSvg(settings: TelemetryControlSettings): string {
@@ -124,7 +102,7 @@ export const TELEMETRY_CONTROL_UUID = "com.iracedeck.sd.core.telemetry-control" 
 export class TelemetryControl extends ConnectionStateAwareAction<TelemetryControlSettings> {
   override async onWillAppear(ev: IDeckWillAppearEvent<TelemetryControlSettings>): Promise<void> {
     await super.onWillAppear(ev);
-    const { migrated, changed } = migrateTelemetryControlLegacyAction(ev.payload.settings);
+    const { migrated, changed } = migrateLegacyActionToMode(ev.payload.settings);
 
     if (changed) {
       try {
@@ -136,10 +114,7 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
 
     const settings = this.parseSettings(migrated);
     const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.mode];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }
@@ -148,10 +123,7 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
     const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.mode];
-
-    if (activeKey) {
-      this.setActiveBinding(activeKey);
-    }
+    this.setActiveBinding(activeKey ?? null);
 
     await this.updateDisplay(ev, settings);
   }
@@ -169,7 +141,7 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
   }
 
   private parseSettings(settings: unknown): TelemetryControlSettings {
-    const { migrated } = migrateTelemetryControlLegacyAction(settings);
+    const { migrated } = migrateLegacyActionToMode(settings);
     const parsed = TelemetryControlSettings.safeParse(migrated);
 
     return parsed.success ? parsed.data : TelemetryControlSettings.parse({});

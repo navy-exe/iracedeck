@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  generateTelemetryControlSvg,
-  migrateTelemetryControlLegacyAction,
-  TELEMETRY_CONTROL_GLOBAL_KEYS,
-} from "./telemetry-control.js";
+import { generateTelemetryControlSvg, TELEMETRY_CONTROL_GLOBAL_KEYS } from "./telemetry-control.js";
 
 vi.mock("@iracedeck/icons/telemetry-control/toggle-logging.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
@@ -50,6 +46,19 @@ vi.mock("@iracedeck/deck-core", () => ({
 
     return b.key;
   }),
+  migrateLegacyActionToMode: (raw: unknown) => {
+    if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
+
+    const record = raw as Record<string, unknown>;
+
+    if (record.mode !== undefined || record.action === undefined) {
+      return { migrated: { ...record }, changed: false };
+    }
+
+    const { action, ...rest } = record;
+
+    return { migrated: { ...rest, mode: action }, changed: true };
+  },
   getCommands: vi.fn(() => ({
     telem: {
       start: vi.fn(() => true),
@@ -200,42 +209,6 @@ describe("TelemetryControl", () => {
         expect(decoded).toContain(labels.mainLabel);
         expect(decoded).toContain(labels.subLabel);
       }
-    });
-  });
-
-  describe("migrateTelemetryControlLegacyAction", () => {
-    it("should rename legacy action key to mode", () => {
-      const result = migrateTelemetryControlLegacyAction({ action: "mark-event" });
-
-      expect(result.changed).toBe(true);
-      expect(result.migrated).toEqual({ mode: "mark-event" });
-      expect(result.migrated.action).toBeUndefined();
-    });
-
-    it("should preserve other settings keys during migration", () => {
-      const result = migrateTelemetryControlLegacyAction({ action: "mark-event", flagsOverlay: true });
-
-      expect(result.changed).toBe(true);
-      expect(result.migrated).toEqual({ mode: "mark-event", flagsOverlay: true });
-    });
-
-    it("should not change settings that already use mode", () => {
-      const result = migrateTelemetryControlLegacyAction({ mode: "mark-event" });
-
-      expect(result.changed).toBe(false);
-      expect(result.migrated).toEqual({ mode: "mark-event" });
-    });
-
-    it("should handle empty raw settings", () => {
-      const result = migrateTelemetryControlLegacyAction({});
-
-      expect(result.changed).toBe(false);
-      expect(result.migrated).toEqual({});
-    });
-
-    it("should handle null/undefined raw settings", () => {
-      expect(migrateTelemetryControlLegacyAction(null).changed).toBe(false);
-      expect(migrateTelemetryControlLegacyAction(undefined).changed).toBe(false);
     });
   });
 });

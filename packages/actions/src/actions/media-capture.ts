@@ -11,6 +11,7 @@ import {
   type IDeckDidReceiveSettingsEvent,
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
+  migrateLegacyActionToMode,
   resolveBorderSettings,
   resolveGraphicSettings,
   resolveIconColors,
@@ -79,29 +80,6 @@ type MediaCaptureSettings = z.infer<typeof MediaCaptureSettings>;
 /**
  * @internal Exported for testing
  *
- * Migrates legacy `action` setting key to `mode`. Returns the (possibly migrated)
- * raw settings object and a `changed` flag indicating whether persistence is needed.
- */
-export function migrateMediaCaptureLegacyAction(raw: unknown): {
-  migrated: Record<string, unknown>;
-  changed: boolean;
-} {
-  if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
-
-  const record = raw as Record<string, unknown>;
-
-  if (record.mode !== undefined || record.action === undefined) {
-    return { migrated: { ...record }, changed: false };
-  }
-
-  const { action, ...rest } = record;
-
-  return { migrated: { ...rest, mode: action }, changed: true };
-}
-
-/**
- * @internal Exported for testing
- *
  * Generates an SVG data URI icon for the media capture action.
  */
 export function generateMediaCaptureSvg(settings: MediaCaptureSettings): string {
@@ -130,7 +108,7 @@ export const MEDIA_CAPTURE_UUID = "com.iracedeck.sd.core.media-capture" as const
 export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSettings> {
   override async onWillAppear(ev: IDeckWillAppearEvent<MediaCaptureSettings>): Promise<void> {
     await super.onWillAppear(ev);
-    const { migrated, changed } = migrateMediaCaptureLegacyAction(ev.payload.settings);
+    const { migrated, changed } = migrateLegacyActionToMode(ev.payload.settings);
 
     if (changed) {
       try {
@@ -169,7 +147,7 @@ export class MediaCapture extends ConnectionStateAwareAction<MediaCaptureSetting
   }
 
   private parseSettings(settings: unknown): MediaCaptureSettings {
-    const { migrated } = migrateMediaCaptureLegacyAction(settings);
+    const { migrated } = migrateLegacyActionToMode(settings);
     const parsed = MediaCaptureSettings.safeParse(migrated);
 
     return parsed.success ? parsed.data : MediaCaptureSettings.parse({});

@@ -14,6 +14,7 @@ import {
   type IDeckKeyDownEvent,
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
+  migrateLegacyActionToMode,
   renderIconTemplate,
   resolveBorderSettings,
   resolveGraphicSettings,
@@ -50,29 +51,6 @@ const PitQuickActionsSettings = CommonSettings.extend({
 });
 
 type PitQuickActionsSettings = z.infer<typeof PitQuickActionsSettings>;
-
-/**
- * @internal Exported for testing
- *
- * Migrates legacy `action` setting key to `mode`. Returns the (possibly migrated)
- * raw settings object and a `changed` flag indicating whether persistence is needed.
- */
-export function migratePitQuickActionsLegacyAction(raw: unknown): {
-  migrated: Record<string, unknown>;
-  changed: boolean;
-} {
-  if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
-
-  const record = raw as Record<string, unknown>;
-
-  if (record.mode !== undefined || record.action === undefined) {
-    return { migrated: { ...record }, changed: false };
-  }
-
-  const { action, ...rest } = record;
-
-  return { migrated: { ...rest, mode: action }, changed: true };
-}
 
 /**
  * @internal Exported for testing
@@ -221,7 +199,7 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
 
   override async onWillAppear(ev: IDeckWillAppearEvent<PitQuickActionsSettings>): Promise<void> {
     await super.onWillAppear(ev);
-    const { migrated, changed } = migratePitQuickActionsLegacyAction(ev.payload.settings);
+    const { migrated, changed } = migrateLegacyActionToMode(ev.payload.settings);
 
     if (changed) {
       try {
@@ -272,7 +250,7 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
   }
 
   private parseSettings(settings: unknown): PitQuickActionsSettings {
-    const { migrated } = migratePitQuickActionsLegacyAction(settings);
+    const { migrated } = migrateLegacyActionToMode(settings);
     const parsed = PitQuickActionsSettings.safeParse(migrated);
 
     return parsed.success ? parsed.data : PitQuickActionsSettings.parse({});

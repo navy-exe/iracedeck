@@ -5,7 +5,6 @@ import {
   isFastRepairAvailable,
   isFastRepairOn,
   isWindshieldOn,
-  migratePitQuickActionsLegacyAction,
   PitQuickActions,
   type PitQuickActionTelemetryState,
 } from "./pit-quick-actions.js";
@@ -80,6 +79,19 @@ vi.mock("@iracedeck/deck-core", () => ({
     async onWillDisappear() {}
   },
   getCommands: mockGetCommands,
+  migrateLegacyActionToMode: (raw: unknown) => {
+    if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
+
+    const record = raw as Record<string, unknown>;
+
+    if (record.mode !== undefined || record.action === undefined) {
+      return { migrated: { ...record }, changed: false };
+    }
+
+    const { action, ...rest } = record;
+
+    return { migrated: { ...rest, mode: action }, changed: true };
+  },
   generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),
   getGlobalBorderSettings: vi.fn(() => ({})),
   getGlobalColors: vi.fn(() => ({})),
@@ -375,29 +387,7 @@ describe("PitQuickActions", () => {
     });
   });
 
-  describe("migratePitQuickActionsLegacyAction", () => {
-    it("should rename legacy action key to mode", () => {
-      const result = migratePitQuickActionsLegacyAction({ action: "windshield-tearoff" });
-
-      expect(result.changed).toBe(true);
-      expect(result.migrated).toEqual({ mode: "windshield-tearoff" });
-      expect(result.migrated.action).toBeUndefined();
-    });
-
-    it("should preserve other settings keys during migration", () => {
-      const result = migratePitQuickActionsLegacyAction({ action: "request-fast-repair", flagsOverlay: true });
-
-      expect(result.changed).toBe(true);
-      expect(result.migrated).toEqual({ mode: "request-fast-repair", flagsOverlay: true });
-    });
-
-    it("should not change settings that already use mode", () => {
-      const result = migratePitQuickActionsLegacyAction({ mode: "windshield-tearoff" });
-
-      expect(result.changed).toBe(false);
-      expect(result.migrated).toEqual({ mode: "windshield-tearoff" });
-    });
-
+  describe("legacy action -> mode migration", () => {
     it("should persist migrated settings on onWillAppear when legacy action is present", async () => {
       const action = new PitQuickActions();
       const setSettings = vi.fn().mockResolvedValue(undefined);
@@ -408,13 +398,6 @@ describe("PitQuickActions", () => {
       await action.onWillAppear(ev as any);
 
       expect(setSettings).toHaveBeenCalledWith({ mode: "windshield-tearoff" });
-    });
-
-    it("should handle empty raw settings", () => {
-      const result = migratePitQuickActionsLegacyAction({});
-
-      expect(result.changed).toBe(false);
-      expect(result.migrated).toEqual({});
     });
   });
 });
