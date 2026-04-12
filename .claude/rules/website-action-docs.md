@@ -32,6 +32,10 @@ Description of what this mode does.
 
 **Encoder:** Describe rotation behavior, or "No rotation support."
 
+**Keyboard:** Default keyboard binding: `Key`. | No default key binding. | No keyboard support.
+
+**SDK support:** Yes. | No.
+
 **Settings:** No additional settings.
 
 ---
@@ -41,6 +45,10 @@ Description of what this mode does.
 Description of what this mode does.
 
 **Encoder:** Describe rotation behavior, or "No rotation support."
+
+**Keyboard:** Default keyboard binding: `Key`. | No default key binding. | No keyboard support.
+
+**SDK support:** Yes. | No.
 
 ##### Setting: Setting Name
 
@@ -60,13 +68,19 @@ Description including default value.
 - Each mode is self-contained — all its settings, encoder behavior, and explanation are within the mode section
 - Repetition across modes is acceptable; clarity over brevity
 
-### Encoder and Settings lines
+### Per-mode lines
 
-- **Encoder** comes before **Settings** within each mode
-- Both use bold labels: `**Encoder:**` and `**Settings:**`
-- Separate them with a blank line so they render on different lines
-- For modes without settings: `**Settings:** No additional settings.`
-- For modes with settings: omit the **Settings** line and use `##### Setting:` subheaders instead
+Each mode section must include the following bold-label lines, in this order, separated by blank lines:
+
+1. `**Encoder:**` — rotation behavior, or `No rotation support.`
+2. `**Keyboard:**` — one of:
+   - `Default keyboard binding: \`Key\`.` (action ships with a default — e.g., `F1`, `Ctrl+Shift+R`)
+   - `No default key binding.` (action uses a configurable keyboard shortcut but ships without a default; user must set both the iRacing binding and the action binding)
+   - `No keyboard support.` (mode does not use the keyboard at all — typically SDK-only)
+3. `**SDK support:**` — `Yes.` or `No.` Reflects whether this specific mode uses an iRacing SDK command (`getCommands().*`) versus a keyboard fallback.
+4. `**Settings:**` — `No additional settings.` when there are none. When the mode has settings, omit this line and use `##### Setting: <name>` subheaders instead.
+
+`**Keyboard:**` and `**SDK support:**` are mode-specific: within a single action, different modes may use SDK for some behaviors and keyboard for others. Document each mode as it actually behaves in code — `packages/actions/src/actions/<action>.ts` (look for `getCommands()` vs `tapBinding`/`holdBinding`) is the source of truth for SDK usage; `packages/stream-deck-plugin/src/pi/<action>.ejs` (the `default` attribute on `ird-key-binding`) and `packages/stream-deck-plugin/src/pi/data/key-bindings.json` are the source of truth for default keys.
 
 ### Setting subheaders
 
