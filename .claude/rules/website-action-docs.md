@@ -30,13 +30,15 @@ Select the mode from the **Action** dropdown in the Property Inspector.
 
 Description of what this mode does.
 
-**Encoder:** Describe rotation behavior, or "No rotation support."
+##### Details
 
-**Keyboard:** Default keyboard binding: `Key`. | No default key binding. | No keyboard support.
+- **Dial:** Describe rotation behavior, or `No rotation support`
+- **Default binding:** `` `Key` ``, or `No default key binding`, or `No keyboard binding`
+- **Telemetry-aware icon:** `Yes` (with a brief note on what updates), or `No`
 
-**SDK support:** Yes. | No.
+##### Settings
 
-**Settings:** No additional settings.
+- No additional settings
 
 ---
 
@@ -44,11 +46,11 @@ Description of what this mode does.
 
 Description of what this mode does.
 
-**Encoder:** Describe rotation behavior, or "No rotation support."
+##### Details
 
-**Keyboard:** Default keyboard binding: `Key`. | No default key binding. | No keyboard support.
-
-**SDK support:** Yes. | No.
+- **Dial:** Describe rotation behavior, or `No rotation support`
+- **Default binding:** `` `Key` ``, or `No default key binding`, or `No keyboard binding`
+- **Telemetry-aware icon:** `Yes` (with a brief note on what updates), or `No`
 
 ##### Setting: Setting Name
 
@@ -65,22 +67,28 @@ Description including default value.
 
 - Each mode gets its own `###` subheader under `## Modes`
 - Modes are separated by horizontal rules (`---`), no trailing rule after the last mode
-- Each mode is self-contained — all its settings, encoder behavior, and explanation are within the mode section
+- Each mode is self-contained — all its settings, dial behavior, and explanation are within the mode section
 - Repetition across modes is acceptable; clarity over brevity
 
-### Per-mode lines
+### Per-mode Details block
 
-Each mode section must include the following bold-label lines, in this order, separated by blank lines:
+Each mode section must include a `##### Details` subheader containing a bullet list with the following items, in order:
 
-1. `**Encoder:**` — rotation behavior, or `No rotation support.`
-2. `**Keyboard:**` — one of:
-   - `Default keyboard binding: \`Key\`.` (action ships with a default — e.g., `F1`, `Ctrl+Shift+R`)
-   - `No default key binding.` (action uses a configurable keyboard shortcut but ships without a default; user must set both the iRacing binding and the action binding)
-   - `No keyboard support.` (mode does not use the keyboard at all — typically SDK-only)
-3. `**SDK support:**` — `Yes.` or `No.` Reflects whether this specific mode uses an iRacing SDK command (`getCommands().*`) versus a keyboard fallback.
-4. `**Settings:**` — `No additional settings.` when there are none. When the mode has settings, omit this line and use `##### Setting: <name>` subheaders instead.
+1. **Dial:** rotation behavior, or `No rotation support`
+2. **Default binding:** one of:
+   - `` `Key` `` — action ships with a default keyboard binding (e.g., `` `F1` ``, `` `Ctrl+Shift+R` ``)
+   - `No default key binding` — action uses a configurable keyboard shortcut but ships without a default; user must set both the iRacing binding and the action binding
+   - `No keyboard binding` — mode does not use the keyboard at all (typically SDK-only)
+3. **Telemetry-aware icon:** `Yes` (followed by a short note on what the icon reflects — e.g., "shows the currently selected pit service compound") or `No`. A mode is telemetry-aware when its icon re-renders in response to live `TelemetryData` updates; a mode that only renders a static icon on settings change is `No`.
 
-`**Keyboard:**` and `**SDK support:**` are mode-specific: within a single action, different modes may use SDK for some behaviors and keyboard for others. Document each mode as it actually behaves in code — `packages/actions/src/actions/<action>.ts` (look for `getCommands()` vs `tapBinding`/`holdBinding`) is the source of truth for SDK usage; `packages/stream-deck-plugin/src/pi/<action>.ejs` (the `default` attribute on `ird-key-binding`) and `packages/stream-deck-plugin/src/pi/data/key-bindings.json` are the source of truth for default keys.
+Trailing periods are omitted from each Details bullet value (the bullet list is terse metadata, not prose).
+
+The Details block is mode-specific: within a single action, different modes may use SDK for some behaviors and keyboard for others, and different modes may or may not react to telemetry. Document each mode as it actually behaves in code — `packages/actions/src/actions/<action>.ts` (look for `getCommands()` vs `tapBinding`/`holdBinding`, and whether the mode's icon-generation path subscribes to `sdkController` / reads `TelemetryData`) is the source of truth for how a mode is triggered and whether it is telemetry-aware; `packages/stream-deck-plugin/src/pi/<action>.ejs` (the `default` attribute on `ird-key-binding`) and `packages/stream-deck-plugin/src/pi/data/key-bindings.json` are the source of truth for default keys.
+
+### Settings block
+
+- For modes without settings, add `##### Settings` followed by a single bullet: `- No additional settings`
+- For modes with settings, omit the `##### Settings` wrapper and use `##### Setting: <name>` subheaders directly under the Details block.
 
 ### Setting subheaders
 
@@ -92,5 +100,5 @@ Each mode section must include the following bold-label lines, in this order, se
 ### What NOT to include
 
 - No settings summary tables (Type/Default columns add no value)
-- No separate "Encoder Support" top-level section (documented per mode)
+- No separate "Dial Support" / "Encoder Support" top-level section (documented per mode)
 - No "Properties" table (Action ID, SDK support, etc. — that belongs in internal docs)
