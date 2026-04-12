@@ -139,10 +139,10 @@ Cancel or close the chat window.
 
 In addition to the mode-specific settings above, two Property Inspector settings apply to every Chat mode.
 
-#### Setting: Icon Color
+### Setting: Icon Color
 
 The background color used for the chat button icon. Defaults to `#4a90d9` (blue).
 
-#### Setting: Key Text
+### Setting: Key Text
 
 Custom text displayed on the Stream Deck button, replacing the default icon labels. Supports two lines (use a line break to split) and [template variables](/docs/features/template-variables/) for live-updating button text.
