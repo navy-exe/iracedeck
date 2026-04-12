@@ -17,13 +17,13 @@ Select the mode from the **Mode** dropdown in the Property Inspector.
 
 Toggle the fuel fill checkbox on or off via the iRacing SDK. The icon shows the current refuel amount from telemetry (in your iRacing display units) with a green ON / red OFF status bar and a matching border color reflecting whether fuel fill is enabled.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — shows the current refuel amount and an on/off indicator driven by `PitSvFlags.FuelFill`
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -31,19 +31,19 @@ Toggle the fuel fill checkbox on or off via the iRacing SDK. The icon shows the 
 
 ### Add Fuel
 
-Queue an "add fuel" chat macro. Pressing the button sends `#+fuel <amount>` to increase the pending fuel for the next pit stop. Dial rotation is bidirectional — clockwise adds, counter-clockwise reduces (using the Reduce Fuel macro) so you can fine-tune with a single dial.
+Queue an "add fuel" chat macro. Pressing the button sends `#fuel +<amount><unit>$` (e.g., `#fuel +2l$`) to increase the pending fuel for the next pit stop. Dial rotation is bidirectional — clockwise adds, counter-clockwise reduces (using the Reduce Fuel macro) so you can fine-tune with a single dial.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts fuel (clockwise = add, counter-clockwise = reduce)
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Amount
+#### Setting: Amount
 
 The increment to add. Numeric — supports comma or period decimal separators (e.g., `1`, `2.5`, `0,5`). Defaults to `1`.
 
-##### Setting: Unit
+#### Setting: Unit
 
 - **L** (default) — Liters
 - **GAL** — Gallons
@@ -53,19 +53,19 @@ The increment to add. Numeric — supports comma or period decimal separators (e
 
 ### Reduce Fuel
 
-Queue a "reduce fuel" chat macro. Pressing the button sends `#-fuel <amount>` to decrease the pending fuel for the next pit stop. Dial rotation is bidirectional — clockwise reduces, counter-clockwise adds (using the Add Fuel macro).
+Queue a "reduce fuel" chat macro. Pressing the button sends `#fuel -<amount><unit>$` (e.g., `#fuel -2l$`) to decrease the pending fuel for the next pit stop. Dial rotation is bidirectional — clockwise reduces, counter-clockwise adds (using the Add Fuel macro).
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts fuel (clockwise = reduce, counter-clockwise = add)
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Amount
+#### Setting: Amount
 
 The decrement to subtract. Numeric — supports comma or period decimal separators. Defaults to `1`.
 
-##### Setting: Unit
+#### Setting: Unit
 
 - **L** (default) — Liters
 - **GAL** — Gallons
@@ -75,19 +75,23 @@ The decrement to subtract. Numeric — supports comma or period decimal separato
 
 ### Set Fuel Amount
 
-Queue a "set fuel" chat macro. Pressing the button sends `#fuel <amount>` to set the pending fuel to an absolute value.
+Queue a "set fuel" chat macro. Pressing the button sends `#fuel <amount><unit>$` (e.g., `#fuel 30l$`) to set the pending fuel to an absolute value.
 
-##### Details
+:::note
+When iRacing's autofuel "enable fueling on change" setting is off and your fuel fill checkbox is currently off, the macro uses the `#-fuel` prefix instead of `#fuel` so your fuel fill stays off after the command. You don't need to do anything for this — it happens automatically based on your live pit service state.
+:::
+
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Amount
+#### Setting: Amount
 
 The target fuel amount. Numeric — supports comma or period decimal separators. Defaults to `1`.
 
-##### Setting: Unit
+#### Setting: Unit
 
 - **L** (default) — Liters
 - **GAL** — Gallons
@@ -99,13 +103,13 @@ The target fuel amount. Numeric — supports comma or period decimal separators.
 
 Clear the pending fuel request via the iRacing SDK. Removes the fuel line from the pit service.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -115,13 +119,13 @@ Clear the pending fuel request via the iRacing SDK. Removes the fuel line from t
 
 Toggle iRacing's autofuel checkbox on or off. The icon shows the current refuel amount and a green ON / red OFF status bar plus matching border color reflecting whether autofuel is active.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Shift+Ctrl+A`
 - **Telemetry-aware icon:** Yes — shows the current refuel amount and an on/off indicator driven by `PitSvFlags.FuelAutofill`
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -131,13 +135,13 @@ Toggle iRacing's autofuel checkbox on or off. The icon shows the current refuel 
 
 Raise the autofuel lap margin by one. Pressing the button taps the iRacing "Lap Margin Increase" hotkey. Dial rotation is bidirectional — clockwise increases, counter-clockwise decreases.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts lap margin (clockwise = increase, counter-clockwise = decrease)
 - **Default binding:** `Shift+Alt+X`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -147,12 +151,12 @@ Raise the autofuel lap margin by one. Pressing the button taps the iRacing "Lap 
 
 Lower the autofuel lap margin by one. Pressing the button taps the iRacing "Lap Margin Decrease" hotkey. Dial rotation is bidirectional — clockwise decreases, counter-clockwise increases.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts lap margin (clockwise = decrease, counter-clockwise = increase)
 - **Default binding:** `Shift+Alt+S`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
