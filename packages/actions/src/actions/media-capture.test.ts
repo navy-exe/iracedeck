@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { generateMediaCaptureSvg, MEDIA_CAPTURE_GLOBAL_KEYS } from "./media-capture.js";
+import {
+  generateMediaCaptureSvg,
+  MEDIA_CAPTURE_GLOBAL_KEYS,
+  migrateMediaCaptureLegacyAction,
+} from "./media-capture.js";
 
 vi.mock("@iracedeck/icons/media-capture/start-stop-video.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
@@ -153,28 +157,28 @@ describe("MediaCapture", () => {
 
   describe("generateMediaCaptureSvg", () => {
     it("should generate a valid data URI for start-stop-video", () => {
-      const result = generateMediaCaptureSvg({ action: "start-stop-video" });
+      const result = generateMediaCaptureSvg({ mode: "start-stop-video" });
 
       expect(result).toContain("data:image/svg+xml");
     });
 
     it("should generate valid data URIs for all 7 actions", () => {
-      for (const action of ALL_ACTIONS) {
-        const result = generateMediaCaptureSvg({ action });
+      for (const mode of ALL_ACTIONS) {
+        const result = generateMediaCaptureSvg({ mode });
 
         expect(result).toContain("data:image/svg+xml");
       }
     });
 
     it("should produce different icons for different actions", () => {
-      const startStop = generateMediaCaptureSvg({ action: "start-stop-video" });
-      const screenshot = generateMediaCaptureSvg({ action: "take-screenshot" });
+      const startStop = generateMediaCaptureSvg({ mode: "start-stop-video" });
+      const screenshot = generateMediaCaptureSvg({ mode: "take-screenshot" });
 
       expect(startStop).not.toBe(screenshot);
     });
 
     it("should include correct labels for start-stop-video", () => {
-      const result = generateMediaCaptureSvg({ action: "start-stop-video" });
+      const result = generateMediaCaptureSvg({ mode: "start-stop-video" });
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("START/STOP");
@@ -182,7 +186,7 @@ describe("MediaCapture", () => {
     });
 
     it("should include correct labels for take-screenshot", () => {
-      const result = generateMediaCaptureSvg({ action: "take-screenshot" });
+      const result = generateMediaCaptureSvg({ mode: "take-screenshot" });
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("SCREENSHOT");
@@ -200,15 +204,58 @@ describe("MediaCapture", () => {
         "reload-car-textures": { mainLabel: "RELOAD CAR", subLabel: "TEXTURES" },
       };
 
-      for (const [action, labels] of Object.entries(expectedLabels)) {
+      for (const [mode, labels] of Object.entries(expectedLabels)) {
         const result = generateMediaCaptureSvg({
-          action: action as (typeof ALL_ACTIONS)[number],
+          mode: mode as (typeof ALL_ACTIONS)[number],
         });
         const decoded = decodeURIComponent(result);
 
         expect(decoded).toContain(labels.mainLabel);
         expect(decoded).toContain(labels.subLabel);
       }
+    });
+  });
+
+  describe("migrateMediaCaptureLegacyAction", () => {
+    it("should rename legacy action key to mode", () => {
+      const result = migrateMediaCaptureLegacyAction({ action: "take-screenshot" });
+
+      expect(result.changed).toBe(true);
+      expect(result.migrated).toEqual({ mode: "take-screenshot" });
+      expect(result.migrated.action).toBeUndefined();
+    });
+
+    it("should preserve other settings keys during migration", () => {
+      const result = migrateMediaCaptureLegacyAction({ action: "take-screenshot", flagsOverlay: true });
+
+      expect(result.changed).toBe(true);
+      expect(result.migrated).toEqual({ mode: "take-screenshot", flagsOverlay: true });
+    });
+
+    it("should not change settings that already use mode", () => {
+      const result = migrateMediaCaptureLegacyAction({ mode: "take-screenshot" });
+
+      expect(result.changed).toBe(false);
+      expect(result.migrated).toEqual({ mode: "take-screenshot" });
+    });
+
+    it("should not migrate when both mode and action are present (mode wins)", () => {
+      const result = migrateMediaCaptureLegacyAction({ mode: "video-timer", action: "take-screenshot" });
+
+      expect(result.changed).toBe(false);
+      expect(result.migrated.mode).toBe("video-timer");
+    });
+
+    it("should handle empty raw settings", () => {
+      const result = migrateMediaCaptureLegacyAction({});
+
+      expect(result.changed).toBe(false);
+      expect(result.migrated).toEqual({});
+    });
+
+    it("should handle null/undefined raw settings", () => {
+      expect(migrateMediaCaptureLegacyAction(null).changed).toBe(false);
+      expect(migrateMediaCaptureLegacyAction(undefined).changed).toBe(false);
     });
   });
 });

@@ -64,7 +64,7 @@ export const TELEMETRY_CONTROL_GLOBAL_KEYS: Record<string, string> = {
 };
 
 const TelemetryControlSettings = CommonSettings.extend({
-  action: z.enum(ACTION_VALUES).default("toggle-logging"),
+  mode: z.enum(ACTION_VALUES).default("toggle-logging"),
 });
 
 type TelemetryControlSettings = z.infer<typeof TelemetryControlSettings>;
@@ -72,10 +72,33 @@ type TelemetryControlSettings = z.infer<typeof TelemetryControlSettings>;
 /**
  * @internal Exported for testing
  *
+ * Migrates legacy `action` setting key to `mode`. Returns the (possibly migrated)
+ * raw settings object and a `changed` flag indicating whether persistence is needed.
+ */
+export function migrateTelemetryControlLegacyAction(raw: unknown): {
+  migrated: Record<string, unknown>;
+  changed: boolean;
+} {
+  if (!raw || typeof raw !== "object") return { migrated: {}, changed: false };
+
+  const record = raw as Record<string, unknown>;
+
+  if (record.mode !== undefined || record.action === undefined) {
+    return { migrated: { ...record }, changed: false };
+  }
+
+  const { action, ...rest } = record;
+
+  return { migrated: { ...rest, mode: action }, changed: true };
+}
+
+/**
+ * @internal Exported for testing
+ *
  * Generates an SVG data URI icon for the telemetry control action.
  */
 export function generateTelemetryControlSvg(settings: TelemetryControlSettings): string {
-  const { action: actionType } = settings;
+  const { mode: actionType } = settings;
 
   const iconSvg = ACTION_ICONS[actionType] || ACTION_ICONS["toggle-logging"];
   const defaultTitle = TELEMETRY_CONTROL_TITLES[actionType] || TELEMETRY_CONTROL_TITLES["toggle-logging"];
@@ -101,8 +124,18 @@ export const TELEMETRY_CONTROL_UUID = "com.iracedeck.sd.core.telemetry-control" 
 export class TelemetryControl extends ConnectionStateAwareAction<TelemetryControlSettings> {
   override async onWillAppear(ev: IDeckWillAppearEvent<TelemetryControlSettings>): Promise<void> {
     await super.onWillAppear(ev);
-    const settings = this.parseSettings(ev.payload.settings);
-    const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.action];
+    const { migrated, changed } = migrateTelemetryControlLegacyAction(ev.payload.settings);
+
+    if (changed) {
+      try {
+        await ev.action.setSettings(migrated);
+      } catch (error) {
+        this.logger.warn(`Failed to persist migrated settings: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+
+    const settings = this.parseSettings(migrated);
+    const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.mode];
 
     if (activeKey) {
       this.setActiveBinding(activeKey);
@@ -114,7 +147,7 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<TelemetryControlSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     const settings = this.parseSettings(ev.payload.settings);
-    const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.action];
+    const activeKey = TELEMETRY_CONTROL_GLOBAL_KEYS[settings.mode];
 
     if (activeKey) {
       this.setActiveBinding(activeKey);
@@ -126,17 +159,18 @@ export class TelemetryControl extends ConnectionStateAwareAction<TelemetryContro
   override async onKeyDown(ev: IDeckKeyDownEvent<TelemetryControlSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeAction(settings.action);
+    await this.executeAction(settings.mode);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<TelemetryControlSettings>): Promise<void> {
     this.logger.info("Dial down received");
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeAction(settings.action);
+    await this.executeAction(settings.mode);
   }
 
   private parseSettings(settings: unknown): TelemetryControlSettings {
-    const parsed = TelemetryControlSettings.safeParse(settings);
+    const { migrated } = migrateTelemetryControlLegacyAction(settings);
+    const parsed = TelemetryControlSettings.safeParse(migrated);
 
     return parsed.success ? parsed.data : TelemetryControlSettings.parse({});
   }

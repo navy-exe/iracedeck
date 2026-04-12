@@ -5,6 +5,7 @@ import {
   isFastRepairAvailable,
   isFastRepairOn,
   isWindshieldOn,
+  migratePitQuickActionsLegacyAction,
   PitQuickActions,
   type PitQuickActionTelemetryState,
 } from "./pit-quick-actions.js";
@@ -56,7 +57,7 @@ vi.mock("../icons/status-bar.js", () => ({
 vi.mock("@iracedeck/deck-core", () => ({
   CommonSettings: {
     extend: () => {
-      const defaults = { action: "clear-all-checkboxes" };
+      const defaults = { mode: "clear-all-checkboxes" };
       const schema = {
         parse: (data: Record<string, unknown>) => ({ ...defaults, ...data }),
         safeParse: (data: Record<string, unknown>) => ({ success: true, data: { ...defaults, ...data } }),
@@ -178,13 +179,13 @@ describe("PitQuickActions", () => {
 
   describe("generatePitQuickActionsSvg", () => {
     it("should generate a valid data URI for clear-all-checkboxes", () => {
-      const result = generatePitQuickActionsSvg({ action: "clear-all-checkboxes" });
+      const result = generatePitQuickActionsSvg({ mode: "clear-all-checkboxes" });
 
       expect(result).toContain("data:image/svg+xml");
     });
 
     it("should include correct labels for static action types", () => {
-      const result = generatePitQuickActionsSvg({ action: "clear-all-checkboxes" });
+      const result = generatePitQuickActionsSvg({ mode: "clear-all-checkboxes" });
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("CLEAR ALL");
@@ -193,7 +194,7 @@ describe("PitQuickActions", () => {
 
     it("should show ON status bar for windshield-tearoff when on", () => {
       const telemetryState: PitQuickActionTelemetryState = { windshieldOn: true };
-      const result = generatePitQuickActionsSvg({ action: "windshield-tearoff" }, telemetryState);
+      const result = generatePitQuickActionsSvg({ mode: "windshield-tearoff" }, telemetryState);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("status-on");
@@ -203,7 +204,7 @@ describe("PitQuickActions", () => {
 
     it("should show OFF status bar for windshield-tearoff when off", () => {
       const telemetryState: PitQuickActionTelemetryState = { windshieldOn: false };
-      const result = generatePitQuickActionsSvg({ action: "windshield-tearoff" }, telemetryState);
+      const result = generatePitQuickActionsSvg({ mode: "windshield-tearoff" }, telemetryState);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("status-off");
@@ -211,7 +212,7 @@ describe("PitQuickActions", () => {
 
     it("should show ON status bar for fast repair when on and available", () => {
       const telemetryState: PitQuickActionTelemetryState = { fastRepairOn: true, fastRepairAvailable: true };
-      const result = generatePitQuickActionsSvg({ action: "request-fast-repair" }, telemetryState);
+      const result = generatePitQuickActionsSvg({ mode: "request-fast-repair" }, telemetryState);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("status-on");
@@ -221,7 +222,7 @@ describe("PitQuickActions", () => {
 
     it("should show N/A status bar for fast repair when not available", () => {
       const telemetryState: PitQuickActionTelemetryState = { fastRepairOn: false, fastRepairAvailable: false };
-      const result = generatePitQuickActionsSvg({ action: "request-fast-repair" }, telemetryState);
+      const result = generatePitQuickActionsSvg({ mode: "request-fast-repair" }, telemetryState);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).toContain("status-na");
@@ -229,7 +230,7 @@ describe("PitQuickActions", () => {
 
     it("should use static icon for clear-all-checkboxes regardless of telemetry", () => {
       const telemetryState: PitQuickActionTelemetryState = { windshieldOn: true };
-      const result = generatePitQuickActionsSvg({ action: "clear-all-checkboxes" }, telemetryState);
+      const result = generatePitQuickActionsSvg({ mode: "clear-all-checkboxes" }, telemetryState);
       const decoded = decodeURIComponent(result);
 
       expect(decoded).not.toContain("status-on");
@@ -245,7 +246,7 @@ describe("PitQuickActions", () => {
     });
 
     it("should call pit.clear() on keyDown for clear-all-checkboxes", async () => {
-      await action.onKeyDown(fakeEvent("action-1", { action: "clear-all-checkboxes" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "clear-all-checkboxes" }) as any);
 
       expect(mockPitClear).toHaveBeenCalledOnce();
       expect(mockPitWindshield).not.toHaveBeenCalled();
@@ -254,7 +255,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.windshield() on keyDown when windshield is not set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
-      await action.onKeyDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
 
       expect(mockPitWindshield).toHaveBeenCalledOnce();
       expect(mockPitClearWindshield).not.toHaveBeenCalled();
@@ -262,7 +263,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.clearWindshield() on keyDown when windshield is already set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0020 });
-      await action.onKeyDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
 
       expect(mockPitClearWindshield).toHaveBeenCalledOnce();
       expect(mockPitWindshield).not.toHaveBeenCalled();
@@ -270,7 +271,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.fastRepair() on keyDown when fast repair is not set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "request-fast-repair" }) as any);
 
       expect(mockPitFastRepair).toHaveBeenCalledOnce();
       expect(mockPitClearFastRepair).not.toHaveBeenCalled();
@@ -278,7 +279,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.clearFastRepair() on keyDown when fast repair is already set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0040 });
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "request-fast-repair" }) as any);
 
       expect(mockPitClearFastRepair).toHaveBeenCalledOnce();
       expect(mockPitFastRepair).not.toHaveBeenCalled();
@@ -286,7 +287,7 @@ describe("PitQuickActions", () => {
 
     it("should not call any pit command when telemetry is null for windshield-tearoff", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue(null);
-      await action.onKeyDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
 
       expect(mockPitWindshield).not.toHaveBeenCalled();
       expect(mockPitClearWindshield).not.toHaveBeenCalled();
@@ -294,7 +295,7 @@ describe("PitQuickActions", () => {
 
     it("should not call any pit command when telemetry is null for request-fast-repair", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue(null);
-      await action.onKeyDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+      await action.onKeyDown(fakeEvent("action-1", { mode: "request-fast-repair" }) as any);
 
       expect(mockPitFastRepair).not.toHaveBeenCalled();
       expect(mockPitClearFastRepair).not.toHaveBeenCalled();
@@ -315,14 +316,14 @@ describe("PitQuickActions", () => {
     });
 
     it("should call pit.clear() on dialDown for clear-all-checkboxes", async () => {
-      await action.onDialDown(fakeEvent("action-1", { action: "clear-all-checkboxes" }) as any);
+      await action.onDialDown(fakeEvent("action-1", { mode: "clear-all-checkboxes" }) as any);
 
       expect(mockPitClear).toHaveBeenCalledOnce();
     });
 
     it("should call pit.windshield() on dialDown when windshield is not set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
-      await action.onDialDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onDialDown(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
 
       expect(mockPitWindshield).toHaveBeenCalledOnce();
       expect(mockPitClearWindshield).not.toHaveBeenCalled();
@@ -330,7 +331,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.clearWindshield() on dialDown when windshield is already set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0020 });
-      await action.onDialDown(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onDialDown(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
 
       expect(mockPitClearWindshield).toHaveBeenCalledOnce();
       expect(mockPitWindshield).not.toHaveBeenCalled();
@@ -338,7 +339,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.fastRepair() on dialDown when fast repair is not set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0 });
-      await action.onDialDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+      await action.onDialDown(fakeEvent("action-1", { mode: "request-fast-repair" }) as any);
 
       expect(mockPitFastRepair).toHaveBeenCalledOnce();
       expect(mockPitClearFastRepair).not.toHaveBeenCalled();
@@ -346,7 +347,7 @@ describe("PitQuickActions", () => {
 
     it("should call pit.clearFastRepair() on dialDown when fast repair is already set", async () => {
       action.sdkController.getCurrentTelemetry.mockReturnValue({ PitSvFlags: 0x0040 });
-      await action.onDialDown(fakeEvent("action-1", { action: "request-fast-repair" }) as any);
+      await action.onDialDown(fakeEvent("action-1", { mode: "request-fast-repair" }) as any);
 
       expect(mockPitClearFastRepair).toHaveBeenCalledOnce();
       expect(mockPitFastRepair).not.toHaveBeenCalled();
@@ -361,16 +362,59 @@ describe("PitQuickActions", () => {
     });
 
     it("should subscribe to telemetry on onWillAppear", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onWillAppear(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
 
       expect(action.sdkController.subscribe).toHaveBeenCalledWith("action-1", expect.any(Function));
     });
 
     it("should unsubscribe from telemetry on onWillDisappear", async () => {
-      await action.onWillAppear(fakeEvent("action-1", { action: "windshield-tearoff" }) as any);
+      await action.onWillAppear(fakeEvent("action-1", { mode: "windshield-tearoff" }) as any);
       await action.onWillDisappear(fakeEvent("action-1") as any);
 
       expect(action.sdkController.unsubscribe).toHaveBeenCalledWith("action-1");
+    });
+  });
+
+  describe("migratePitQuickActionsLegacyAction", () => {
+    it("should rename legacy action key to mode", () => {
+      const result = migratePitQuickActionsLegacyAction({ action: "windshield-tearoff" });
+
+      expect(result.changed).toBe(true);
+      expect(result.migrated).toEqual({ mode: "windshield-tearoff" });
+      expect(result.migrated.action).toBeUndefined();
+    });
+
+    it("should preserve other settings keys during migration", () => {
+      const result = migratePitQuickActionsLegacyAction({ action: "request-fast-repair", flagsOverlay: true });
+
+      expect(result.changed).toBe(true);
+      expect(result.migrated).toEqual({ mode: "request-fast-repair", flagsOverlay: true });
+    });
+
+    it("should not change settings that already use mode", () => {
+      const result = migratePitQuickActionsLegacyAction({ mode: "windshield-tearoff" });
+
+      expect(result.changed).toBe(false);
+      expect(result.migrated).toEqual({ mode: "windshield-tearoff" });
+    });
+
+    it("should persist migrated settings on onWillAppear when legacy action is present", async () => {
+      const action = new PitQuickActions();
+      const setSettings = vi.fn().mockResolvedValue(undefined);
+      const ev = {
+        action: { id: "action-1", setTitle: vi.fn(), setImage: vi.fn(), setSettings },
+        payload: { settings: { action: "windshield-tearoff" } },
+      };
+      await action.onWillAppear(ev as any);
+
+      expect(setSettings).toHaveBeenCalledWith({ mode: "windshield-tearoff" });
+    });
+
+    it("should handle empty raw settings", () => {
+      const result = migratePitQuickActionsLegacyAction({});
+
+      expect(result.changed).toBe(false);
+      expect(result.migrated).toEqual({});
     });
   });
 });

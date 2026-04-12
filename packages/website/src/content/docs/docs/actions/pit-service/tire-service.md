@@ -15,7 +15,7 @@ Tire Service is telemetry-aware — the icon updates with live data from the sim
 
 ## Modes
 
-Select the mode from the **Action** dropdown in the Property Inspector.
+Select the mode from the **Mode** dropdown in the Property Inspector.
 
 ### Change All Tires
 
