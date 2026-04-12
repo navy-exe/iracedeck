@@ -248,6 +248,38 @@ describe("PitQuickActions", () => {
       expect(decoded).not.toContain("status-on");
       expect(decoded).not.toContain("status-off");
     });
+
+    it("should show N/A status bar for windshield-tearoff when no telemetry is available", () => {
+      const telemetryState: PitQuickActionTelemetryState = {};
+      const result = generatePitQuickActionsSvg({ mode: "windshield-tearoff" }, telemetryState);
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("status-na");
+      expect(decoded).not.toContain("status-off");
+    });
+
+    it("should show N/A status bar for windshield-tearoff when telemetryState is undefined", () => {
+      const result = generatePitQuickActionsSvg({ mode: "windshield-tearoff" });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("status-na");
+    });
+
+    it("should show N/A status bar for fast repair when no telemetry is available", () => {
+      const telemetryState: PitQuickActionTelemetryState = {};
+      const result = generatePitQuickActionsSvg({ mode: "request-fast-repair" }, telemetryState);
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("status-na");
+      expect(decoded).not.toContain("status-off");
+    });
+
+    it("should show N/A status bar for fast repair when telemetryState is undefined", () => {
+      const result = generatePitQuickActionsSvg({ mode: "request-fast-repair" });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain("status-na");
+    });
   });
 
   describe("key press behavior", () => {

@@ -99,9 +99,11 @@ function pitQuickActionDynamicIcon(
 ): string {
   switch (actionType) {
     case "windshield-tearoff":
+      if (telemetryState.windshieldOn === undefined) return statusBarNA();
+
       return telemetryState.windshieldOn ? statusBarOn() : statusBarOff();
     case "request-fast-repair":
-      if (telemetryState.fastRepairAvailable === false) {
+      if (telemetryState.fastRepairOn === undefined || telemetryState.fastRepairAvailable === false) {
         return statusBarNA();
       }
 
@@ -158,10 +160,14 @@ export function generatePitQuickActionsSvg(
   // Determine toggle state for border color
   let toggleState: "on" | "off" | "na";
 
-  if (actionType === "request-fast-repair" && state.fastRepairAvailable === false) {
+  if (actionType === "request-fast-repair") {
+    if (state.fastRepairOn === undefined || state.fastRepairAvailable === false) {
+      toggleState = "na";
+    } else {
+      toggleState = state.fastRepairOn ? "on" : "off";
+    }
+  } else if (state.windshieldOn === undefined) {
     toggleState = "na";
-  } else if (actionType === "request-fast-repair") {
-    toggleState = state.fastRepairOn ? "on" : "off";
   } else {
     toggleState = state.windshieldOn ? "on" : "off";
   }
@@ -303,6 +309,10 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
   ): PitQuickActionTelemetryState {
     const state: PitQuickActionTelemetryState = {};
 
+    if (!telemetry) {
+      return state;
+    }
+
     if (actionType === "windshield-tearoff") {
       state.windshieldOn = isWindshieldOn(telemetry);
     } else if (actionType === "request-fast-repair") {
@@ -319,9 +329,9 @@ export class PitQuickActions extends ConnectionStateAwareAction<PitQuickActionsS
 
     switch (settings.mode) {
       case "windshield-tearoff":
-        return `windshield|${telemetryState.windshieldOn ?? false}|${borderKey}`;
+        return `windshield|${telemetryState.windshieldOn ?? "na"}|${borderKey}`;
       case "request-fast-repair":
-        return `fast-repair|${telemetryState.fastRepairOn ?? false}|${telemetryState.fastRepairAvailable ?? true}|${borderKey}`;
+        return `fast-repair|${telemetryState.fastRepairOn ?? "na"}|${telemetryState.fastRepairAvailable ?? true}|${borderKey}`;
       default:
         return settings.mode;
     }

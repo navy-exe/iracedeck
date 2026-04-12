@@ -450,6 +450,64 @@ describe("CarControl", () => {
 
       expect(starter).toBe(starterDefault);
     });
+
+    it("should render DRS ON status bar when drsActive is true", () => {
+      const result = generateCarControlSvg({ control: "drs" }, { drsActive: true });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">ON<");
+    });
+
+    it("should render DRS OFF status bar when drsActive is false", () => {
+      const result = generateCarControlSvg({ control: "drs" }, { drsActive: false });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">OFF<");
+    });
+
+    it("should render DRS N/A status bar when drsActive is undefined (no telemetry)", () => {
+      const result = generateCarControlSvg({ control: "drs" }, {});
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">N/A<");
+      expect(decoded).not.toContain(">OFF<");
+    });
+
+    it("should render DRS N/A status bar when telemetryState is not provided", () => {
+      const result = generateCarControlSvg({ control: "drs" });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">N/A<");
+    });
+
+    it("should render Push-to-Pass ON status bar when pushToPassActive is true", () => {
+      const result = generateCarControlSvg({ control: "push-to-pass" }, { pushToPassActive: true });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">ON<");
+    });
+
+    it("should render Push-to-Pass OFF status bar when pushToPassActive is false", () => {
+      const result = generateCarControlSvg({ control: "push-to-pass" }, { pushToPassActive: false });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">OFF<");
+    });
+
+    it("should render Push-to-Pass N/A status bar when pushToPassActive is undefined (no telemetry)", () => {
+      const result = generateCarControlSvg({ control: "push-to-pass" }, {});
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">N/A<");
+      expect(decoded).not.toContain(">OFF<");
+    });
+
+    it("should render Push-to-Pass N/A status bar when telemetryState is not provided", () => {
+      const result = generateCarControlSvg({ control: "push-to-pass" });
+      const decoded = decodeURIComponent(result);
+
+      expect(decoded).toContain(">N/A<");
+    });
   });
 
   describe("telemetry-aware lifecycle", () => {
