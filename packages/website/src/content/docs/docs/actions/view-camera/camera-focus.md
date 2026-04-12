@@ -17,13 +17,13 @@ Select the mode from the **Target** dropdown in the Property Inspector.
 
 Switch the active camera group to a specific numeric group (1–20). Useful when you want a single button to always jump to the same camera.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Camera Group
+#### Setting: Camera Group
 
 The numeric camera group to select (1–20). Defaults to `9`. The mapping from number to group (Nose, Cockpit, TV1, etc.) depends on the car and track combination — hover over the group dropdown in the Property Inspector for the list of available groups.
 
@@ -33,18 +33,18 @@ The numeric camera group to select (1–20). Defaults to `9`. The mapping from n
 
 Cycle through camera groups. The **Direction** setting picks whether pressing the button advances to the next group or goes back. When a subset is configured, only the selected groups are cycled.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles camera groups (clockwise = next, counter-clockwise = previous), regardless of the Direction setting
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the button shows a preview icon for the currently active camera group (Nose, Cockpit, TV1, etc.)
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Next** (default) — Pressing the button advances to the next camera group
 - **Previous** — Pressing the button goes back to the previous camera group
 
-##### Setting: Camera Group Subset
+#### Setting: Camera Group Subset
 
 A checkbox grid in the Property Inspector lets you pick exactly which groups should participate in the cycle. By default Nose, Cockpit, Chase, TV1, TV2, and TV3 are enabled. Use **Select All** / **Clear Selection** to manage the list quickly.
 
@@ -56,13 +56,13 @@ The subset is stored as a global setting shared across every Camera Controls ins
 
 Cycle sub-cameras within the currently active camera group (e.g., left / right / front nose variants).
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles sub-cameras (clockwise = next, counter-clockwise = previous), regardless of the Direction setting
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Next** (default) — Pressing the button advances to the next sub-camera
 - **Previous** — Pressing the button goes back to the previous sub-camera
@@ -73,13 +73,13 @@ Cycle sub-cameras within the currently active camera group (e.g., left / right /
 
 Switch camera focus to the next / previous car in the field.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles cars (clockwise = next, counter-clockwise = previous), regardless of the Direction setting
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Next** (default) — Pressing the button focuses the next car
 - **Previous** — Pressing the button focuses the previous car
@@ -90,13 +90,13 @@ Switch camera focus to the next / previous car in the field.
 
 Cycle through the driving-style cameras (cockpit, bumper, nose, chase, etc.).
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles driving cameras (clockwise = next, counter-clockwise = previous), regardless of the Direction setting
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Next** (default) — Pressing the button advances to the next driving camera
 - **Previous** — Pressing the button goes back to the previous driving camera
@@ -107,13 +107,13 @@ Cycle through the driving-style cameras (cockpit, bumper, nose, chase, etc.).
 
 Center the camera on your own car.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -123,13 +123,13 @@ Center the camera on your own car.
 
 Focus the camera on the current race leader.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -139,13 +139,13 @@ Focus the camera on the current race leader.
 
 Focus the camera on the latest incident reported by iRacing.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -155,13 +155,13 @@ Focus the camera on the latest incident reported by iRacing.
 
 Focus the camera on a car that is currently exiting pit lane.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -171,13 +171,13 @@ Focus the camera on a car that is currently exiting pit lane.
 
 Switch camera focus to the car currently running in a specific race position.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Position
+#### Setting: Position
 
 The race position to focus. Integer from `1` up. Defaults to `1` (race leader).
 
@@ -187,13 +187,13 @@ The race position to focus. Integer from `1` up. Defaults to `1` (race leader).
 
 Switch camera focus to a car by its car number.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Car Number
+#### Setting: Car Number
 
 The car number to focus. Integer. Defaults to `0`.
 
@@ -203,12 +203,12 @@ The car number to focus. Integer. Defaults to `0`.
 
 Apply a predefined iRacing camera state bit flag. Useful for scripting camera setups during replays.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Camera State
+#### Setting: Camera State
 
 The numeric camera state value passed to the iRacing SDK. Integer. Defaults to `0`.

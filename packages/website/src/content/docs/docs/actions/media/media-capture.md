@@ -17,13 +17,13 @@ Select the mode from the **Action** dropdown in the Property Inspector.
 
 Toggle video recording on or off via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Toggle video recording on or off via the iRacing SDK.
 
 Show the video recording timer overlay via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Show the video recording timer overlay via the iRacing SDK.
 
 Enable or disable the video capture subsystem via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -65,13 +65,13 @@ Enable or disable the video capture subsystem via the iRacing SDK.
 
 Capture a standard screenshot via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -81,13 +81,13 @@ Capture a standard screenshot via the iRacing SDK.
 
 Capture a high-resolution giant screenshot. This mode uses a keyboard binding because iRacing does not expose a giant screenshot SDK command.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Ctrl+Shift+PrintScreen`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -97,13 +97,13 @@ Capture a high-resolution giant screenshot. This mode uses a keyboard binding be
 
 Reload all in-sim textures via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -113,12 +113,12 @@ Reload all in-sim textures via the iRacing SDK.
 
 Reload only the player's car textures via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

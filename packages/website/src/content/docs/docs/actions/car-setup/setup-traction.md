@@ -17,13 +17,13 @@ Select the mode from the **Setting** dropdown in the Property Inspector. TC Slot
 
 Toggle traction control on or off.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Toggle traction control on or off.
 
 Adjust TC slot 1.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts TC slot 1 (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both TC Slot 1 + and TC Slot 1 - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -50,13 +50,13 @@ Adjust TC slot 1.
 
 Adjust TC slot 2.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts TC slot 2 (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both TC Slot 2 + and TC Slot 2 - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -67,13 +67,13 @@ Adjust TC slot 2.
 
 Adjust TC slot 3.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts TC slot 3 (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both TC Slot 3 + and TC Slot 3 - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -84,13 +84,13 @@ Adjust TC slot 3.
 
 Adjust TC slot 4.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts TC slot 4 (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both TC Slot 4 + and TC Slot 4 - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value

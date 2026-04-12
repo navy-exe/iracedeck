@@ -17,13 +17,13 @@ Select the mode from the **Setting** dropdown in the Property Inspector. Every c
 
 Adjust the differential preload value.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts differential preload (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Diff Preload + and Diff Preload - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -34,13 +34,13 @@ Adjust the differential preload value.
 
 Adjust the differential entry (on-throttle) setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts differential entry (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Diff Entry + and Diff Entry - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -51,13 +51,13 @@ Adjust the differential entry (on-throttle) setting.
 
 Adjust the differential middle (coasting) setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts differential middle (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Diff Middle + and Diff Middle - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -68,13 +68,13 @@ Adjust the differential middle (coasting) setting.
 
 Adjust the differential exit setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts differential exit (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Diff Exit + and Diff Exit - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -85,13 +85,13 @@ Adjust the differential exit setting.
 
 Adjust the front anti-roll bar stiffness.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the front ARB (clockwise = stiffer, counter-clockwise = softer), regardless of the Direction setting
 - **Default binding:** No default key binding — both Front ARB + and Front ARB - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button stiffens the ARB
 - **Decrease** — Pressing the button softens the ARB
@@ -102,13 +102,13 @@ Adjust the front anti-roll bar stiffness.
 
 Adjust the rear anti-roll bar stiffness.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the rear ARB (clockwise = stiffer, counter-clockwise = softer), regardless of the Direction setting
 - **Default binding:** No default key binding — both Rear ARB + and Rear ARB - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button stiffens the ARB
 - **Decrease** — Pressing the button softens the ARB
@@ -119,13 +119,13 @@ Adjust the rear anti-roll bar stiffness.
 
 Adjust the left-side spring preload.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the left spring (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Left Spring + and Left Spring - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -136,13 +136,13 @@ Adjust the left-side spring preload.
 
 Adjust the right-side spring preload.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the right spring (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Right Spring + and Right Spring - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -153,13 +153,13 @@ Adjust the right-side spring preload.
 
 Adjust the left-front shock setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the left-front shock (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both LF Shock + and LF Shock - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -170,13 +170,13 @@ Adjust the left-front shock setting.
 
 Adjust the right-front shock setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the right-front shock (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both RF Shock + and RF Shock - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -187,13 +187,13 @@ Adjust the right-front shock setting.
 
 Adjust the left-rear shock setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the left-rear shock (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both LR Shock + and LR Shock - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -204,13 +204,13 @@ Adjust the left-rear shock setting.
 
 Adjust the right-rear shock setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the right-rear shock (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both RR Shock + and RR Shock - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -221,13 +221,13 @@ Adjust the right-rear shock setting.
 
 Adjust the power steering assist level.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts power steering (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Power Steering + and Power Steering - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the assist level
 - **Decrease** — Pressing the button lowers the assist level

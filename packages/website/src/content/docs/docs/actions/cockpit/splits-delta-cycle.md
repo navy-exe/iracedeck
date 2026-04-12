@@ -17,13 +17,13 @@ Select the mode from the **Mode** dropdown in the Property Inspector.
 
 Cycle through iRacing's splits delta display modes. When placed on a key, pressing the button sends the direction chosen in the **Direction** setting. When placed on a dial, rotating the dial cycles next / previous regardless of the Direction setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles splits delta modes (clockwise = next, counter-clockwise = previous); pressing the dial does nothing in this mode
 - **Default binding:** Depends on the selected direction — see the **Direction** setting below
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 Which splits delta hotkey the button press sends. Both directions are globally configurable.
 
@@ -36,13 +36,13 @@ Which splits delta hotkey the button press sends. Both directions are globally c
 
 Toggle the reference car overlay on or off. Replaces the old "Display Reference Car" option from the Toggle UI Elements action.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Ctrl+C`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -52,13 +52,13 @@ Toggle the reference car overlay on or off. Replaces the old "Display Reference 
 
 Mark the start point for a custom sector on the current lap.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -68,13 +68,13 @@ Mark the start point for a custom sector on the current lap.
 
 Mark the end point for a custom sector on the current lap. Together with **Custom Sector Start**, this defines a user-chosen section you can compare against.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -84,13 +84,13 @@ Mark the end point for a custom sector on the current lap. Together with **Custo
 
 Save the current car state — position, speed, temperatures — as a reset snapshot. Solo practice sessions only.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -100,12 +100,12 @@ Save the current car state — position, speed, temperatures — as a reset snap
 
 Teleport the car back to the saved active reset snapshot. Solo practice sessions only.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

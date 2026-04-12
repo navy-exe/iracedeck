@@ -17,13 +17,13 @@ Select the mode from the **Control** dropdown in the Property Inspector.
 
 Ask the spotter to read the current damage status.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Ask the spotter to read the current damage status.
 
 Ask the spotter to read the current weather conditions.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Ask the spotter to read the current weather conditions.
 
 Toggle whether the spotter reports lap information.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -65,13 +65,13 @@ Toggle whether the spotter reports lap information.
 
 Toggle the announcement of the leader crossing the start/finish line.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -81,13 +81,13 @@ Toggle the announcement of the leader crossing the start/finish line.
 
 Raise the spotter volume.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -97,13 +97,13 @@ Raise the spotter volume.
 
 Lower the spotter volume.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -113,12 +113,12 @@ Lower the spotter volume.
 
 Silence the spotter entirely.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

@@ -23,13 +23,13 @@ Select the mode from the **Mode** dropdown in the Property Inspector. The dropdo
 
 Throw a caution flag — sends `!yellow [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Message
+#### Setting: Message
 
 Optional caution message (supports template variables).
 
@@ -39,17 +39,17 @@ Optional caution message (supports template variables).
 
 Issue a penalty — sends `!black <driver> [time/laps/D]`. Black Flag supports three penalty types.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Penalty Type
+#### Setting: Penalty Type
 
 - **Time** (default) — Penalty duration in seconds (e.g., `30`)
 - **Laps** — Number of laps to serve (e.g., `2`)
@@ -61,17 +61,17 @@ See **Shared settings** below — this mode needs a driver.
 
 Disqualify a driver without removing them — sends `!dq <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional disqualification message (supports template variables).
 
@@ -81,13 +81,13 @@ Optional disqualification message (supports template variables).
 
 Display disqualifications for the entire field — sends `!showdqs`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -97,13 +97,13 @@ Display disqualifications for the entire field — sends `!showdqs`.
 
 Display disqualifications for a specific driver — sends `!showdqs <driver>`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
@@ -113,17 +113,17 @@ See **Shared settings** below — this mode needs a driver.
 
 Clear all penalties for a driver — sends `!clear <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional explanation (supports template variables).
 
@@ -133,13 +133,13 @@ Optional explanation (supports template variables).
 
 Clear all penalties for the entire field — sends `!clearall`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -149,17 +149,17 @@ Clear all penalties for the entire field — sends `!clearall`.
 
 Wave a car to the next lap and the end of the pace line — sends `!waveby <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional explanation (supports template variables).
 
@@ -169,17 +169,17 @@ Optional explanation (supports template variables).
 
 Move a driver to the end of the pace line — sends `!eol <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional explanation (supports template variables).
 
@@ -189,13 +189,13 @@ Optional explanation (supports template variables).
 
 Close pit entrances during green flag running — sends `!pitclose`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -205,13 +205,13 @@ Close pit entrances during green flag running — sends `!pitclose`.
 
 Open pit entrances during green flag running — sends `!pitopen`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -221,19 +221,19 @@ Open pit entrances during green flag running — sends `!pitopen`.
 
 Add, subtract, or set pace laps until green — sends `!pacelaps <+n|-n|n>`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Pace Laps Operation
+#### Setting: Pace Laps Operation
 
 - **+** (default) — Add the given number of pace laps
 - **−** — Subtract the given number of pace laps
 - **=** — Set the absolute pace lap count
 
-##### Setting: Pace Laps Value
+#### Setting: Pace Laps Value
 
 The number of laps passed with the operation.
 
@@ -243,13 +243,13 @@ The number of laps passed with the operation.
 
 Switch to single-file restart rules — sends `!restart single`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -259,13 +259,13 @@ Switch to single-file restart rules — sends `!restart single`.
 
 Switch to double-file restart rules — sends `!restart double`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -275,13 +275,13 @@ Switch to double-file restart rules — sends `!restart double`.
 
 Advance to the next session (e.g., qualify to grid) — sends `!advance [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Message
+#### Setting: Message
 
 Optional message to broadcast with the session change (supports template variables).
 
@@ -291,13 +291,13 @@ Optional message to broadcast with the session change (supports template variabl
 
 Disable auto-race start for a number of minutes — sends `!gridset [minutes]` (max 10 minutes).
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Minutes
+#### Setting: Minutes
 
 Number of minutes to delay. iRacing caps this at 10.
 
@@ -307,13 +307,13 @@ Number of minutes to delay. iRacing caps this at 10.
 
 Initiate the pace car or standing start sequence — sends `!gridstart`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -323,13 +323,13 @@ Initiate the pace car or standing start sequence — sends `!gridstart`.
 
 Set the track usage percentage for the next session — sends `!trackstate [percent]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Percent
+#### Setting: Percent
 
 Track usage percent from `0` to `100`, or `-1` to carry the current state forward.
 
@@ -339,17 +339,17 @@ Track usage percent from `0` to `100`, or `-1` to carry the current state forwar
 
 Grant admin privileges to a driver — sends `!admin <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional message (supports template variables).
 
@@ -359,17 +359,17 @@ Optional message (supports template variables).
 
 Revoke admin privileges from a driver — sends `!nadmin <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional message (supports template variables).
 
@@ -379,17 +379,17 @@ Optional message (supports template variables).
 
 Permanently remove a driver from the session — sends `!remove <driver> [message]`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
-##### Setting: Message
+#### Setting: Message
 
 Optional removal message (supports template variables).
 
@@ -399,13 +399,13 @@ Optional removal message (supports template variables).
 
 Re-enable chat for all drivers — sends `!chat`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -415,13 +415,13 @@ Re-enable chat for all drivers — sends `!chat`.
 
 Re-enable chat for a specific driver — sends `!chat <driver>`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
@@ -431,13 +431,13 @@ See **Shared settings** below — this mode needs a driver.
 
 Disable chat for all non-admin drivers — sends `!nchat`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -447,13 +447,13 @@ Disable chat for all non-admin drivers — sends `!nchat`.
 
 Mute a specific driver — sends `!nchat <driver>`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Driver Target
+#### Setting: Driver Target
 
 See **Shared settings** below — this mode needs a driver.
 
@@ -463,13 +463,13 @@ See **Shared settings** below — this mode needs a driver.
 
 Send a message to every participant, bypassing chat disables — sends `/all <message>`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Message
+#### Setting: Message
 
 Required. Supports template variables.
 
@@ -479,13 +479,13 @@ Required. Supports template variables.
 
 Send a message visible only to administrators — sends `/rc <message>`.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Setting: Message
+#### Setting: Message
 
 Required. Supports template variables.
 

@@ -30,13 +30,13 @@ Select the mode from the **Action** dropdown in the Property Inspector.
 
 Description of what this mode does.
 
-##### Details
+#### Details
 
 - **Dial:** Describe rotation behavior, or `No rotation support`
 - **Default binding:** `` `Key` ``, or `No default key binding`, or `No keyboard binding`
 - **Telemetry-aware icon:** `Yes` (with a brief note on what updates), or `No`
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -46,17 +46,17 @@ Description of what this mode does.
 
 Description of what this mode does.
 
-##### Details
+#### Details
 
 - **Dial:** Describe rotation behavior, or `No rotation support`
 - **Default binding:** `` `Key` ``, or `No default key binding`, or `No keyboard binding`
 - **Telemetry-aware icon:** `Yes` (with a brief note on what updates), or `No`
 
-##### Setting: Setting Name
+#### Setting: Setting Name
 
 Description including default value. Options as bullet list if applicable.
 
-##### Setting: Another Setting
+#### Setting: Another Setting
 
 Description including default value.
 ```
@@ -72,7 +72,7 @@ Description including default value.
 
 ### Per-mode Details block
 
-Each mode section must include a `##### Details` subheader containing a bullet list with the following items, in order:
+Each mode section must include a `#### Details` subheader containing a bullet list with the following items, in order:
 
 1. **Dial:** rotation behavior, or `No rotation support`
 2. **Default binding:** one of:
@@ -87,12 +87,12 @@ The Details block is mode-specific: within a single action, different modes may 
 
 ### Settings block
 
-- For modes without settings, add `##### Settings` followed by a single bullet: `- No additional settings`
-- For modes with settings, omit the `##### Settings` wrapper and use `##### Setting: <name>` subheaders directly under the Details block.
+- For modes without settings, add `#### Settings` followed by a single bullet: `- No additional settings`
+- For modes with settings, omit the `#### Settings` wrapper and use `#### Setting: <name>` subheaders directly under the Details block.
 
 ### Setting subheaders
 
-- Use `#####` (h5) with prefix: `##### Setting: Setting Name`
+- Use `####` (h4) with prefix: `#### Setting: Setting Name`
 - Include the default value in the description text (not in a table)
 - List options as bullet points with bold option names: `- **Option** — description`
 - Use `:::tip` blocks for recommendations

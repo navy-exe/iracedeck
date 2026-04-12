@@ -17,13 +17,13 @@ Select the mode from the **Adjustment** dropdown in the Property Inspector. Ever
 
 Move the camera along the latitude axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts latitude (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `D` (increase) and `A` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases latitude
 - **Decrease** — Pressing the button decreases latitude
@@ -34,13 +34,13 @@ Move the camera along the latitude axis.
 
 Move the camera along the longitude axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts longitude (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `S` (increase) and `W` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases longitude
 - **Decrease** — Pressing the button decreases longitude
@@ -51,13 +51,13 @@ Move the camera along the longitude axis.
 
 Move the camera along the altitude axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts altitude (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `Alt+S` (increase) and `Alt+W` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases altitude
 - **Decrease** — Pressing the button decreases altitude
@@ -68,13 +68,13 @@ Move the camera along the altitude axis.
 
 Rotate the camera on the yaw axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts yaw (clockwise = positive, counter-clockwise = negative), regardless of the Direction setting
 - **Default binding:** `Ctrl+D` (increase) and `Ctrl+A` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button rotates yaw clockwise
 - **Decrease** — Pressing the button rotates yaw counter-clockwise
@@ -85,13 +85,13 @@ Rotate the camera on the yaw axis.
 
 Tilt the camera on the pitch axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts pitch (clockwise = up, counter-clockwise = down), regardless of the Direction setting
 - **Default binding:** `Ctrl+W` (increase) and `Ctrl+S` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button tilts pitch upward
 - **Decrease** — Pressing the button tilts pitch downward
@@ -102,13 +102,13 @@ Tilt the camera on the pitch axis.
 
 Adjust the camera field of view.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts FOV zoom (clockwise = zoom in, counter-clockwise = zoom out), regardless of the Direction setting
 - **Default binding:** `[` (increase/zoom in) and `]` (decrease/zoom out)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button zooms in (narrower FOV)
 - **Decrease** — Pressing the button zooms out (wider FOV)
@@ -119,13 +119,13 @@ Adjust the camera field of view.
 
 Adjust the camera editor key step size.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts key step size (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `-` (increase) and `=` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the step size
 - **Decrease** — Pressing the button lowers the step size
@@ -136,13 +136,13 @@ Adjust the camera editor key step size.
 
 Shift the vanishing point along the X axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the vanishing point X (clockwise = right, counter-clockwise = left), regardless of the Direction setting
 - **Default binding:** `Alt+X` (increase/right) and `Ctrl+X` (decrease/left)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button shifts the vanishing point right
 - **Decrease** — Pressing the button shifts the vanishing point left
@@ -153,13 +153,13 @@ Shift the vanishing point along the X axis.
 
 Shift the vanishing point along the Y axis.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the vanishing point Y (clockwise = up, counter-clockwise = down), regardless of the Direction setting
 - **Default binding:** `Alt+Y` (increase/up) and `Ctrl+Y` (decrease/down)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button shifts the vanishing point up
 - **Decrease** — Pressing the button shifts the vanishing point down
@@ -170,13 +170,13 @@ Shift the vanishing point along the Y axis.
 
 Adjust the blimp camera orbit radius.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts blimp radius (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `Ctrl+H` (increase) and `Ctrl+G` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases the radius
 - **Decrease** — Pressing the button decreases the radius
@@ -187,13 +187,13 @@ Adjust the blimp camera orbit radius.
 
 Adjust the blimp camera orbit velocity.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts blimp velocity (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `Alt+H` (increase) and `Alt+G` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases the velocity
 - **Decrease** — Pressing the button decreases the velocity
@@ -204,13 +204,13 @@ Adjust the blimp camera orbit velocity.
 
 Adjust the camera microphone gain.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts mic gain (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `Alt+Up` (increase) and `Alt+Down` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the mic gain
 - **Decrease** — Pressing the button lowers the mic gain
@@ -221,13 +221,13 @@ Adjust the camera microphone gain.
 
 Automatically set the microphone gain for the current camera. Non-directional toggle.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Ctrl+Alt+Down`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -237,13 +237,13 @@ Automatically set the microphone gain for the current camera. Non-directional to
 
 Adjust the camera aperture (depth of field strength).
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the F-number (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `Alt+U` (increase) and `Alt+I` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the F-number
 - **Decrease** — Pressing the button lowers the F-number
@@ -254,13 +254,13 @@ Adjust the camera aperture (depth of field strength).
 
 Adjust the focus depth.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts focus depth (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** `Ctrl+U` (increase) and `Ctrl+I` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases focus depth
 - **Decrease** — Pressing the button decreases focus depth

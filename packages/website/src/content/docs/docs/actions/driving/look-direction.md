@@ -17,13 +17,13 @@ Select the mode from the **Direction** dropdown in the Property Inspector.
 
 Hold the look-left key while the button is pressed.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Z`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Hold the look-left key while the button is pressed.
 
 Hold the look-right key while the button is pressed.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `X`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Hold the look-right key while the button is pressed.
 
 Hold the look-up key while the button is pressed.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -65,12 +65,12 @@ Hold the look-up key while the button is pressed.
 
 Hold the look-down key while the button is pressed.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

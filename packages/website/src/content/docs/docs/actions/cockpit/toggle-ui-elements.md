@@ -17,13 +17,13 @@ Select the mode from the **Element** dropdown in the Property Inspector.
 
 Toggle the dashboard information box.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `D`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Toggle the dashboard information box.
 
 Toggle the speed, gear, and pedal inputs display.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `P`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Toggle the speed, gear, and pedal inputs display.
 
 Toggle the radio communication display.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `O`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -65,13 +65,13 @@ Toggle the radio communication display.
 
 Toggle the FPS and network statistics display.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `F`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -81,13 +81,13 @@ Toggle the FPS and network statistics display.
 
 Toggle the weather radar overlay.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Shift+Alt+R`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -97,13 +97,13 @@ Toggle the weather radar overlay.
 
 Toggle the virtual mirror.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Alt+M`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -113,13 +113,13 @@ Toggle the virtual mirror.
 
 Enter or exit UI edit mode for repositioning overlays.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Alt+K`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -133,13 +133,13 @@ Toggle the reference car display.
 **Deprecated** — use the [Splits & Reference](/docs/actions/cockpit/splits-delta-cycle/) action's **Toggle Reference Car** mode instead. Both modes share the same global key binding, so switching actions will not change your hotkey.
 :::
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Ctrl+C`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -149,12 +149,12 @@ Toggle the reference car display.
 
 Toggle the replay user interface controls. This mode uses the iRacing SDK camera commands and reads the current `CamCameraState` flag from telemetry to decide whether to show or hide the UI.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

@@ -17,13 +17,13 @@ Select the mode from the **Setting** dropdown in the Property Inspector. Directi
 
 Adjust the fuel / air mixture setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts fuel mixture (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Fuel Mixture + and Fuel Mixture - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the mixture
 - **Decrease** — Pressing the button lowers the mixture
@@ -34,13 +34,13 @@ Adjust the fuel / air mixture setting.
 
 Adjust the fuel cut position setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts fuel cut position (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Fuel Cut Position + and Fuel Cut Position - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -51,13 +51,13 @@ Adjust the fuel cut position setting.
 
 Toggle the fuel cut disable setting.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -67,13 +67,13 @@ Toggle the fuel cut disable setting.
 
 Accept the low fuel warning dialog that appears in some series.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -83,12 +83,12 @@ Accept the low fuel warning dialog that appears in some series.
 
 Toggle full-course yellow mode on or off.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

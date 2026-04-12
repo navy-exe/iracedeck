@@ -17,13 +17,13 @@ Select the mode from the **Setting** dropdown in the Property Inspector. Directi
 
 Adjust the front wing angle. The **Direction** setting picks whether pressing the button increases or decreases the angle.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the front wing (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Front Wing + and Front Wing - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases the front wing angle
 - **Decrease** — Pressing the button decreases the front wing angle
@@ -34,13 +34,13 @@ Adjust the front wing angle. The **Direction** setting picks whether pressing th
 
 Adjust the rear wing angle. The **Direction** setting picks whether pressing the button increases or decreases the angle.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the rear wing (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Rear Wing + and Rear Wing - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button increases the rear wing angle
 - **Decrease** — Pressing the button decreases the rear wing angle
@@ -51,13 +51,13 @@ Adjust the rear wing angle. The **Direction** setting picks whether pressing the
 
 Adjust the amount of qualifying tape covering the radiators. The **Direction** setting picks whether pressing the button adds or removes tape.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts qualifying tape (clockwise = more tape, counter-clockwise = less tape), regardless of the Direction setting
 - **Default binding:** No default key binding — both Qualifying Tape + and Qualifying Tape - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button adds more tape
 - **Decrease** — Pressing the button removes tape
@@ -68,12 +68,12 @@ Adjust the amount of qualifying tape covering the radiators. The **Direction** s
 
 Toggle the right-front brake attachment.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

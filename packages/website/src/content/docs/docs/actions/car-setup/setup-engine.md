@@ -17,13 +17,13 @@ Select the mode from the **Setting** dropdown in the Property Inspector. Every e
 
 Adjust the engine power setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts engine power (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Engine Power + and Engine Power - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises engine power
 - **Decrease** — Pressing the button lowers engine power
@@ -34,13 +34,13 @@ Adjust the engine power setting.
 
 Adjust the throttle shape (linear / progressive curve).
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts throttle shaping (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Throttle Shape + and Throttle Shape - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -51,13 +51,13 @@ Adjust the throttle shape (linear / progressive curve).
 
 Adjust the engine boost level.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts boost (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Boost + and Boost - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises boost
 - **Decrease** — Pressing the button lowers boost
@@ -68,13 +68,13 @@ Adjust the engine boost level.
 
 Adjust the launch control RPM target.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts launch RPM (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Launch RPM + and Launch RPM - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the RPM target
 - **Decrease** — Pressing the button lowers the RPM target

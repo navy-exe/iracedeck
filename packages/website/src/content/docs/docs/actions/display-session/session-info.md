@@ -17,13 +17,13 @@ Select the mode from the **Mode** dropdown in the Property Inspector.
 
 Show the live incident count. The icon flashes red when a new incident is received so you notice it even if you weren't looking.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the incident count updates live and the icon flashes when a new incident is added
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Show the live incident count. The icon flashes red when a new incident is receiv
 
 Display the session time remaining. The icon flashes when less than 5 minutes remain so you can spot the cutoff at a glance.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the countdown updates every second and the icon flashes when under 5 minutes remain
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Display the session time remaining. The icon flashes when less than 5 minutes re
 
 Show the current lap number.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the lap number updates as you cross the start/finish line
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -65,13 +65,13 @@ Show the current lap number.
 
 Display the current race position. Optionally shows total cars (e.g., `3/24`) by enabling the **Show Total** setting.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the position updates live as drivers pass or are overtaken
 
-##### Setting: Show Total
+#### Setting: Show Total
 
 - **Off** (default) — Show just your position (e.g., `3`)
 - **On** — Show position out of field size (e.g., `3/24`)
@@ -82,13 +82,13 @@ Display the current race position. Optionally shows total cars (e.g., `3/24`) by
 
 Show fuel amount or fuel percentage remaining.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the fuel reading updates live
 
-##### Setting: Fuel Format
+#### Setting: Fuel Format
 
 - **Amount** (default) — Show the absolute fuel amount, respecting your iRacing display units (liters or gallons)
 - **Percentage** — Show fuel as a percentage of tank capacity
@@ -99,12 +99,12 @@ Show fuel amount or fuel percentage remaining.
 
 Display currently active flags with the corresponding colors and a pulsing animation when flags change.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — the icon updates to reflect the active flag (green, yellow, white, checkered, etc.) and pulses when a new flag is raised
 
-##### Settings
+#### Settings
 
 - No additional settings

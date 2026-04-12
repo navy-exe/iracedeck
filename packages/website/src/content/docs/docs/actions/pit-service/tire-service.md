@@ -17,13 +17,13 @@ Select the mode from the **Action** dropdown in the Property Inspector.
 
 Request new tires on all four corners. Uses iRacing's `#t` pit chat macro.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Request new tires on all four corners. Uses iRacing's `#t` pit chat macro.
 
 Clear all tire change requests — removes all tires from the pit service.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Clear all tire change requests — removes all tires from the pit service.
 
 Toggle tire changes per wheel. You choose which tires (LF, RF, LR, RR) the button controls, and how the button behaves when pressed.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — tire colors reflect the current iRacing pit service state
 
-##### Setting: Operation
+#### Setting: Operation
 
 - **Select configured tires** (default for new actions) — Clears all tires first, then selects exactly the configured set. Pressing "right side" always results in only the right side tires being selected, regardless of what was selected before. If the configured tires are already the only ones selected, pressing the button clears them.
 - **Toggle configured tires** (default for actions created before v1.13.0) — Flips each configured tire without clearing first. The result depends on which tires are currently selected — pressing "right side" when all four tires are selected will turn right side *off*, leaving left side selected.
@@ -64,7 +64,7 @@ Toggle tire changes per wheel. You choose which tires (LF, RF, LR, RR) the butto
 **Select configured tires** is recommended for most setups. It lets you switch between tire configurations (e.g., "all four" → "right side only") with a single button press — useful when pit strategy changes quickly during a caution.
 :::
 
-##### Setting: Tires
+#### Setting: Tires
 
 All four tires are selected by default. Choose which tires the button controls: Left Front, Right Front, Left Rear, Right Rear.
 
@@ -84,12 +84,12 @@ Cycle through available tire compounds. Each press advances to the next compound
 
 The available compounds depend on the car — most cars have DRY and WET, while some have additional options like Soft, Medium, and Hard.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** Yes — shows the currently selected pit service compound
 
-##### Settings
+#### Settings
 
 - No additional settings

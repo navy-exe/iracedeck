@@ -17,13 +17,13 @@ Select the mode from the **Adjustment** dropdown in the Property Inspector. Dire
 
 Adjust the field of view.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts FOV (clockwise = wider, counter-clockwise = narrower), regardless of the Direction setting
 - **Default binding:** `]` (increase) and `[` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button widens the field of view
 - **Decrease** — Pressing the button narrows the field of view
@@ -34,13 +34,13 @@ Adjust the field of view.
 
 Adjust the horizon line position.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts horizon (clockwise = up, counter-clockwise = down), regardless of the Direction setting
 - **Default binding:** `Shift+]` (increase/up) and `Shift+[` (decrease/down)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button moves the horizon line upward
 - **Decrease** — Pressing the button moves the horizon line downward
@@ -51,13 +51,13 @@ Adjust the horizon line position.
 
 Adjust the driver eye position.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts driver height (clockwise = raise, counter-clockwise = lower), regardless of the Direction setting
 - **Default binding:** `Ctrl+]` (increase/up) and `Ctrl+[` (decrease/down)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the driver eye position
 - **Decrease** — Pressing the button lowers the driver eye position
@@ -68,13 +68,13 @@ Adjust the driver eye position.
 
 Re-center the VR headset view.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `;`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -84,13 +84,13 @@ Re-center the VR headset view.
 
 Adjust the in-sim UI element size.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts UI size (clockwise = larger, counter-clockwise = smaller), regardless of the Direction setting
 - **Default binding:** `Ctrl+PageUp` (increase) and `Ctrl+PageDown` (decrease)
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button makes UI elements larger
 - **Decrease** — Pressing the button makes UI elements smaller

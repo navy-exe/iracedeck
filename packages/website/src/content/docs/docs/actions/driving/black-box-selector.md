@@ -17,13 +17,13 @@ Select the mode from the **Mode** dropdown in the Property Inspector. In **Direc
 
 Open a specific black box overlay. Pressing the button toggles the overlay — press once to open, press again to close. The **Black Box** setting picks which overlay the button controls.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles through black boxes (clockwise = next, counter-clockwise = previous), using the **Cycle Next** / **Cycle Previous** bindings regardless of which black box is selected
 - **Default binding:** Depends on the selected black box — see the **Black Box** setting below
 - **Telemetry-aware icon:** No
 
-##### Setting: Black Box
+#### Setting: Black Box
 
 The overlay this button opens. Each option has its own key binding with the defaults shown below; all bindings can be reconfigured.
 
@@ -45,13 +45,13 @@ The overlay this button opens. Each option has its own key binding with the defa
 
 Cycle to the next black box.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles through black boxes (clockwise = next, counter-clockwise = previous)
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -61,12 +61,12 @@ Cycle to the next black box.
 
 Cycle to the previous black box.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles through black boxes (clockwise = next, counter-clockwise = previous)
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

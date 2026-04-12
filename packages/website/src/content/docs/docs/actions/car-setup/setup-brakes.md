@@ -17,13 +17,13 @@ Select the mode from the **Setting** dropdown in the Property Inspector. Directi
 
 Toggle ABS on or off.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No default key binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Toggle ABS on or off.
 
 Step the ABS level up or down. The **Direction** setting picks whether pressing the button raises or lowers the level.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts the ABS level (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both ABS Adjust + and ABS Adjust - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the ABS level
 - **Decrease** — Pressing the button lowers the ABS level
@@ -50,13 +50,13 @@ Step the ABS level up or down. The **Direction** setting picks whether pressing 
 
 Shift the brake bias forward or rearward. The **Direction** setting picks whether pressing the button moves bias forward (increase) or rearward (decrease).
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts brake bias (clockwise = forward, counter-clockwise = rearward), regardless of the Direction setting
 - **Default binding:** `=` (increase) and `-` (decrease) — matches iRacing's default brake bias keys
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button shifts bias forward
 - **Decrease** — Pressing the button shifts bias rearward
@@ -67,13 +67,13 @@ Shift the brake bias forward or rearward. The **Direction** setting picks whethe
 
 Fine-adjust the brake bias in smaller increments than the main Brake Bias mode.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts brake bias fine (clockwise = forward, counter-clockwise = rearward), regardless of the Direction setting
 - **Default binding:** No default key binding — both Brake Bias Fine + and Brake Bias Fine - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button shifts bias fine forward
 - **Decrease** — Pressing the button shifts bias fine rearward
@@ -84,13 +84,13 @@ Fine-adjust the brake bias in smaller increments than the main Brake Bias mode.
 
 Adjust the peak brake bias setting.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts peak brake bias (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Peak Brake Bias + and Peak Brake Bias - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises peak brake bias
 - **Decrease** — Pressing the button lowers peak brake bias
@@ -101,13 +101,13 @@ Adjust the peak brake bias setting.
 
 Adjust iRacing's "brake misc" catch-all setting. The exact effect depends on the car.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts brake misc (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Brake Misc + and Brake Misc - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the value
 - **Decrease** — Pressing the button lowers the value
@@ -118,13 +118,13 @@ Adjust iRacing's "brake misc" catch-all setting. The exact effect depends on the
 
 Adjust the engine braking level.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts engine braking (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both Engine Braking + and Engine Braking - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises engine braking
 - **Decrease** — Pressing the button lowers engine braking

@@ -17,13 +17,13 @@ Select the mode from the **Action** dropdown in the Property Inspector.
 
 Toggle iRacing's telemetry log file on or off.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Alt+L`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Toggle iRacing's telemetry log file on or off.
 
 Mark the current moment in the telemetry log for later review.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `M`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Mark the current moment in the telemetry log for later review.
 
 Start a telemetry recording session via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -65,13 +65,13 @@ Start a telemetry recording session via the iRacing SDK.
 
 Stop the current telemetry recording session via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -81,12 +81,12 @@ Stop the current telemetry recording session via the iRacing SDK.
 
 Stop and immediately restart telemetry recording via the iRacing SDK.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** No keyboard binding
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings

@@ -17,13 +17,13 @@ Select the mode from the **Control** dropdown in the Property Inspector. Directi
 
 Toggle the windshield wipers on or off.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Shift+W`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -33,13 +33,13 @@ Toggle the windshield wipers on or off.
 
 Trigger a single wiper sweep.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Ctrl+Alt+W`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -49,13 +49,13 @@ Trigger a single wiper sweep.
 
 Adjust the force feedback maximum force. The **Direction** setting picks whether pressing the button increases or decreases the force.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation adjusts FFB max force (clockwise = increase, counter-clockwise = decrease), regardless of the Direction setting
 - **Default binding:** No default key binding — both FFB Force Increase and FFB Force Decrease must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button raises the max force
 - **Decrease** — Pressing the button lowers the max force
@@ -66,13 +66,13 @@ Adjust the force feedback maximum force. The **Direction** setting picks whether
 
 Report the current network latency in chat.
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `L`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
 
@@ -82,13 +82,13 @@ Report the current network latency in chat.
 
 Cycle through the pages on dashboard display 1. The **Direction** setting picks whether pressing the button advances to the next page or goes back to the previous one.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles dash page 1 (clockwise = next, counter-clockwise = previous), regardless of the Direction setting
 - **Default binding:** No default key binding — both Dash Page 1 + and Dash Page 1 - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button advances to the next page
 - **Decrease** — Pressing the button goes back to the previous page
@@ -99,13 +99,13 @@ Cycle through the pages on dashboard display 1. The **Direction** setting picks 
 
 Cycle through the pages on dashboard display 2. The **Direction** setting picks whether pressing the button advances to the next page or goes back to the previous one.
 
-##### Details
+#### Details
 
 - **Dial:** Rotation cycles dash page 2 (clockwise = next, counter-clockwise = previous), regardless of the Direction setting
 - **Default binding:** No default key binding — both Dash Page 2 + and Dash Page 2 - must be configured in iRacing and in the Property Inspector
 - **Telemetry-aware icon:** No
 
-##### Setting: Direction
+#### Setting: Direction
 
 - **Increase** (default) — Pressing the button advances to the next page
 - **Decrease** — Pressing the button goes back to the previous page
@@ -116,12 +116,12 @@ Cycle through the pages on dashboard display 2. The **Direction** setting picks 
 
 Toggle in-lap mode (used for practice and qualifying to mark the return to pit).
 
-##### Details
+#### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Shift+Alt+L`
 - **Telemetry-aware icon:** No
 
-##### Settings
+#### Settings
 
 - No additional settings
