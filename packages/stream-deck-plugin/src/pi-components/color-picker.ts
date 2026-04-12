@@ -184,7 +184,10 @@ export class ColorPicker extends HTMLElement {
   private saveHistory: ((value: string) => void) | null = null;
 
   static get observedAttributes(): string[] {
-    return ["value", "setting", "default", "global"];
+    // Only `value` can change after connection. `setting`, `default`,
+    // `global`, and `data-default-color` are set once via EJS templates before
+    // the element upgrades and are never mutated at runtime.
+    return ["value"];
   }
 
   get value(): string {

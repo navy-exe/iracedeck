@@ -5,16 +5,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { historySettingKey, inferSlotType, parseColorHistory } from "./color-picker.js";
 import "./color-picker.js";
 
-/** Test stub for window.SDPIComponents that tracks saves and exposes triggered callbacks. */
+/** Test stub for window.SDPIComponents that tracks saves and lets tests emit values to all registered listeners for a key. */
 function installSDPIStub(initialByKey: Record<string, string> = {}): {
   saves: Record<string, string[]>;
-  callbacks: Record<string, (value: string) => void>;
+  emit: (key: string, value: string) => void;
 } {
   const saves: Record<string, string[]> = {};
-  const callbacks: Record<string, (value: string) => void> = {};
+  const listeners: Record<string, Array<(value: string) => void>> = {};
 
   const makeHook = (key: string, callback: (value: string) => void) => {
-    callbacks[key] = callback;
+    (listeners[key] ??= []).push(callback);
     callback(initialByKey[key] ?? "");
 
     return [
@@ -30,7 +30,12 @@ function installSDPIStub(initialByKey: Record<string, string> = {}): {
     useGlobalSettings: makeHook,
   };
 
-  return { saves, callbacks };
+  return {
+    saves,
+    emit: (key, value) => {
+      for (const listener of listeners[key] ?? []) listener(value);
+    },
+  };
 }
 
 function clearBody(): void {
@@ -536,16 +541,32 @@ describe("ird-color-picker — history persistence", () => {
   });
 
   it("re-renders swatches when an external history change arrives via the subscription", () => {
-    const { callbacks } = installSDPIStub({
+    const { emit } = installSDPIStub({
       _colorHistoryBackgroundColor: "[]",
     });
     const picker = createPicker("colorOverrides.backgroundColor");
     expect(smallSwatches(picker)[4].style.display).toBe("none");
-    callbacks._colorHistoryBackgroundColor!('["#deadbe","#cafeba"]');
+    emit("_colorHistoryBackgroundColor", '["#deadbe","#cafeba"]');
     const after = smallSwatches(picker);
     expect(after[4].style.display).not.toBe("none");
     expect(after[4].style.backgroundColor).toBe("rgb(222, 173, 190)");
     expect(after[5].style.backgroundColor).toBe("rgb(202, 254, 186)");
+  });
+
+  it("two pickers for the same slot stay in sync when one emits new history", () => {
+    const { emit } = installSDPIStub({
+      _colorHistoryBackgroundColor: "[]",
+    });
+    const a = createPicker("colorOverrides.backgroundColor");
+    const b = createPicker("colorBackgroundColor"); // global flat form, same slot
+    expect(smallSwatches(a)[4].style.display).toBe("none");
+    expect(smallSwatches(b)[4].style.display).toBe("none");
+    emit("_colorHistoryBackgroundColor", '["#111111","#222222"]');
+    // Both pickers (per-action and global, same slot) update independently
+    expect(smallSwatches(a)[4].style.backgroundColor).toBe("rgb(17, 17, 17)");
+    expect(smallSwatches(a)[5].style.backgroundColor).toBe("rgb(34, 34, 34)");
+    expect(smallSwatches(b)[4].style.backgroundColor).toBe("rgb(17, 17, 17)");
+    expect(smallSwatches(b)[5].style.backgroundColor).toBe("rgb(34, 34, 34)");
   });
 
   it("commits to history when the native color picker dispatches change", () => {
@@ -607,14 +628,14 @@ describe("ird-color-picker — history persistence", () => {
   });
 
   it("does not re-save when the subscription echoes back the just-saved value", () => {
-    const { saves, callbacks } = installSDPIStub();
+    const { saves, emit } = installSDPIStub();
     const picker = createPicker("colorOverrides.backgroundColor");
     const textInput = picker.querySelector('input[type="text"]') as HTMLInputElement;
     textInput.value = "#abcdef";
     textInput.dispatchEvent(new Event("blur"));
     const savedJson = saves._colorHistoryBackgroundColor!.at(-1)!;
     // Echo back the same value via the subscription
-    callbacks._colorHistoryBackgroundColor!(savedJson);
+    emit("_colorHistoryBackgroundColor", savedJson);
     // No additional save triggered
     expect(saves._colorHistoryBackgroundColor!).toHaveLength(1);
   });
