@@ -6,7 +6,9 @@ import {
   generateCarControlSvg,
   getEnterExitTowState,
   getPitSpeedLimit,
+  isDrsActive,
   isPitLimiterActive,
+  isPushToPassActive,
   parsePitSpeedLimit,
   pitLimiterActiveIcon,
   pitLimiterInactiveIcon,
@@ -324,6 +326,42 @@ describe("CarControl", () => {
 
     it("should return true when pit speed limiter is set among other flags", () => {
       expect(isPitLimiterActive({ EngineWarnings: 0x0011 } as any)).toBe(true);
+    });
+  });
+
+  describe("isDrsActive", () => {
+    it("should return false when telemetry is null", () => {
+      expect(isDrsActive(null)).toBe(false);
+    });
+
+    it("should return false when DRS_Status is undefined (connected car without DRS)", () => {
+      expect(isDrsActive({} as any)).toBe(false);
+    });
+
+    it("should return false when DRS_Status is 0", () => {
+      expect(isDrsActive({ DRS_Status: 0 } as any)).toBe(false);
+    });
+
+    it("should return true when DRS_Status is greater than 0", () => {
+      expect(isDrsActive({ DRS_Status: 1 } as any)).toBe(true);
+    });
+  });
+
+  describe("isPushToPassActive", () => {
+    it("should return false when telemetry is null", () => {
+      expect(isPushToPassActive(null)).toBe(false);
+    });
+
+    it("should return false when P2P_Status is undefined (connected car without P2P)", () => {
+      expect(isPushToPassActive({} as any)).toBe(false);
+    });
+
+    it("should return false when P2P_Status is false", () => {
+      expect(isPushToPassActive({ P2P_Status: false } as any)).toBe(false);
+    });
+
+    it("should return true when P2P_Status is true", () => {
+      expect(isPushToPassActive({ P2P_Status: true } as any)).toBe(true);
     });
   });
 
