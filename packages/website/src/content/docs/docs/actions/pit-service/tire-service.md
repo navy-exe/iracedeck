@@ -11,7 +11,7 @@ Tire Service handles everything tire-related for your pit stops. Change all tire
 
 ## Modes
 
-Select the mode from the **Action** dropdown in the Property Inspector.
+Select the mode from the **Mode** dropdown in the Property Inspector.
 
 ### Change All Tires
 
