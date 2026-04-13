@@ -261,8 +261,9 @@ export class SDKController {
   /**
    * Send a custom chat message to iRacing
    * @param message The message to send
+   * @returns Promise resolving to true on success, false on failure
    */
-  sendChatMessage(message: string): boolean {
+  sendChatMessage(message: string): Promise<boolean> {
     return this.sdk.sendChatMessage(message);
   }
 }

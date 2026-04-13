@@ -24,7 +24,7 @@ const {
   mockBeginChat: vi.fn(() => true),
   mockReply: vi.fn(() => true),
   mockCancel: vi.fn(() => true),
-  mockSendMessage: vi.fn(() => true),
+  mockSendMessage: vi.fn(async () => true),
   mockMacro: vi.fn(() => true),
   mockGetCommands: vi.fn(() => ({
     chat: {

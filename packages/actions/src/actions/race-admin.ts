@@ -187,18 +187,18 @@ export class RaceAdmin extends ConnectionStateAwareAction<RaceAdminSettings> {
   override async onKeyDown(ev: IDeckKeyDownEvent<RaceAdminSettings>): Promise<void> {
     this.logger.info("Key down received");
     const settings = this.parseSettings(ev.payload.settings);
-    this.executeMode(ev.action.id, settings);
+    await this.executeMode(ev.action.id, settings);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<RaceAdminSettings>): Promise<void> {
     this.logger.info("Dial down received");
     const settings = this.parseSettings(ev.payload.settings);
-    this.executeMode(ev.action.id, settings);
+    await this.executeMode(ev.action.id, settings);
   }
 
   // ── Command Execution ───────────────────────────────────────
 
-  private executeMode(contextId: string, settings: RaceAdminSettings): void {
+  private async executeMode(contextId: string, settings: RaceAdminSettings): Promise<void> {
     const { mode } = settings;
     const viewedCarNumber = this.viewedCarNumbers.get(contextId) ?? null;
     const command = buildAdminCommand(mode, settings, viewedCarNumber, this.sdkController);
@@ -210,7 +210,7 @@ export class RaceAdmin extends ConnectionStateAwareAction<RaceAdminSettings> {
     }
 
     const chat = getCommands().chat;
-    const success = chat.sendMessage(command);
+    const success = await chat.sendMessage(command);
     this.logger.info("Admin command executed");
     this.logger.debug(`Command: "${command}", result: ${success}`);
   }

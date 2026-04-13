@@ -555,12 +555,12 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
   override async onKeyDown(ev: IDeckKeyDownEvent<TireServiceSettings>): Promise<void> {
     this.logger.info("Key down received");
-    this.executeAction(ev.payload.settings);
+    await this.executeAction(ev.payload.settings);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<TireServiceSettings>): Promise<void> {
     this.logger.info("Dial down received");
-    this.executeAction(ev.payload.settings);
+    await this.executeAction(ev.payload.settings);
   }
 
   private parseSettings(settings: unknown): TireServiceSettings {
@@ -620,7 +620,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     return `${settings.mode}|${settings.tires.join(",")}|${tireState.lf}|${tireState.rf}|${tireState.lr}|${tireState.rr}|${compound.player}|${compound.pitSv}|${tires.length}|${compoundType}|${borderKey}`;
   }
 
-  private executeAction(rawSettings: unknown): void {
+  private async executeAction(rawSettings: unknown): Promise<void> {
     if (!this.sdkController.getConnectionStatus()) {
       this.logger.info("Not connected to iRacing");
 
@@ -632,7 +632,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     switch (settings.mode) {
       case "change-all-tires": {
         this.logger.debug("Sending change all tires macro");
-        const success = getCommands().chat.sendMessage("#t");
+        const success = await getCommands().chat.sendMessage("#t");
 
         if (success) {
           this.logger.info("Change all tires sent");
@@ -695,7 +695,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
         }
 
         this.logger.debug(`Sending pit macro: ${macro} (toggleMode=${toggleMode})`);
-        const success = getCommands().chat.sendMessage(macro);
+        const success = await getCommands().chat.sendMessage(macro);
 
         if (success) {
           this.logger.info("Tire toggle sent");

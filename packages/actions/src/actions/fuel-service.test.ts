@@ -25,7 +25,7 @@ const {
 } = vi.hoisted(() => ({
   mockPitClearFuel: vi.fn(() => true),
   mockPitFuel: vi.fn(() => true),
-  mockSendMessage: vi.fn(() => true),
+  mockSendMessage: vi.fn(async () => true),
   mockGetCommands: vi.fn(() => ({
     pit: {
       clearFuel: mockPitClearFuel,
@@ -998,21 +998,32 @@ describe("FuelService", () => {
       expect((action as any).repeatIntervals.size).toBe(0);
     });
 
-    it("should repeat command at interval while held", async () => {
+    it("should repeat command while held using a self-awaiting loop", async () => {
       vi.useFakeTimers();
 
       try {
         await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
         expect(mockSendMessage).toHaveBeenCalledTimes(1);
 
-        await vi.advanceTimersByTimeAsync(250);
+        // Hold threshold (400ms) must elapse before the loop starts.
+        await vi.advanceTimersByTimeAsync(399);
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(1);
+        // Hold threshold crossed; loop is now scheduled — next fire is REPEAT_GAP_MS (100ms) later.
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+        // With the synchronously-resolving test mock, each tick fires and immediately
+        // schedules the next one REPEAT_GAP_MS later, so ticks happen every 100ms.
+        await vi.advanceTimersByTimeAsync(100);
         expect(mockSendMessage).toHaveBeenCalledTimes(2);
 
-        await vi.advanceTimersByTimeAsync(250);
+        await vi.advanceTimersByTimeAsync(100);
         expect(mockSendMessage).toHaveBeenCalledTimes(3);
 
         await action.onKeyUp(fakeEvent("action-1") as any);
 
+        // After release, no further fires — loop stops immediately.
         await vi.advanceTimersByTimeAsync(500);
         expect(mockSendMessage).toHaveBeenCalledTimes(3);
       } finally {
@@ -1063,6 +1074,209 @@ describe("FuelService", () => {
         // Advance past safety timeout — no error, nothing happens
         await vi.advanceTimersByTimeAsync(15_000);
         expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+        expect(action.logger.warn).not.toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should fire exactly once for a quick tap shorter than the hold threshold", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+        // Tap released well before the 400ms hold threshold.
+        await vi.advanceTimersByTimeAsync(100);
+        await action.onKeyUp(fakeEvent("action-1") as any);
+
+        // Advance way past any repeat window — must not fire again.
+        await vi.advanceTimersByTimeAsync(5_000);
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should fire exactly N times for N rapid taps with no stale timers", async () => {
+      vi.useFakeTimers();
+
+      try {
+        for (let i = 0; i < 5; i++) {
+          await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+          await vi.advanceTimersByTimeAsync(50);
+          await action.onKeyUp(fakeEvent("action-1") as any);
+          await vi.advanceTimersByTimeAsync(30);
+        }
+
+        expect(mockSendMessage).toHaveBeenCalledTimes(5);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+
+        // Advance past any safety window — still no extra fires.
+        await vi.advanceTimersByTimeAsync(20_000);
+        expect(mockSendMessage).toHaveBeenCalledTimes(5);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should cancel a pending hold if keyDown fires again on the same button", async () => {
+      vi.useFakeTimers();
+
+      try {
+        // First tap starts the hold-detection timer.
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+        // A second keyDown (e.g. if a keyUp was lost) must reset the hold timer,
+        // not leave two pending timers or jump straight into repeat mode.
+        await vi.advanceTimersByTimeAsync(200);
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+        expect(mockSendMessage).toHaveBeenCalledTimes(2);
+
+        await action.onKeyUp(fakeEvent("action-1") as any);
+
+        // No repeats should ever fire for either press.
+        await vi.advanceTimersByTimeAsync(5_000);
+        expect(mockSendMessage).toHaveBeenCalledTimes(2);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should cancel pending repeat when onDidReceiveSettings fires mid-hold", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(true);
+
+        // Settings update arrives before the hold threshold completes.
+        await vi.advanceTimersByTimeAsync(200);
+        await action.onDidReceiveSettings(fakeEvent("action-1", { mode: "add-fuel", amount: 5, unit: "l" }) as any);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(20_000);
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should stop the repeat loop immediately when keyUp arrives during an in-flight send", async () => {
+      // With the old setInterval-based repeat, ticks fired every 250ms regardless of
+      // whether the previous send had finished. The native chat pipeline takes ~440ms
+      // per send, so holding for 2s would enqueue 8 tick-fired sends but only drain ~4
+      // before the mutex — and when the user released, the 4 queued-but-not-yet-started
+      // sends still fired, leaking fuel well past release. The self-awaiting loop pins
+      // at most one in-flight send per button, so releasing stops the repeat promptly.
+      vi.useFakeTimers();
+
+      try {
+        // Resolver for the in-flight send — lets the test control when it completes.
+        let resolveCurrentSend: ((value: boolean) => void) | undefined;
+        mockSendMessage.mockImplementation(
+          () =>
+            new Promise<boolean>((resolve) => {
+              resolveCurrentSend = resolve;
+            }),
+        );
+
+        // Start the hold — first keyDown send is now pending.
+        const keyDownPromise = action.onKeyDown(
+          fakeEvent("action-1", { mode: "add-fuel", amount: 1, unit: "l" }) as any,
+        );
+
+        // Resolve the first send and let onKeyDown complete.
+        resolveCurrentSend?.(true);
+        await keyDownPromise;
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+        // Cross the hold threshold and REPEAT_GAP_MS to get to the first loop tick.
+        await vi.advanceTimersByTimeAsync(400);
+        await vi.advanceTimersByTimeAsync(100);
+        // Loop tick fires a new send — it's now pending.
+        expect(mockSendMessage).toHaveBeenCalledTimes(2);
+
+        // While the loop-tick send is still pending, the user releases.
+        await action.onKeyUp(fakeEvent("action-1") as any);
+
+        // Let the in-flight send resolve — the loop's post-await held check should bail.
+        resolveCurrentSend?.(true);
+        await vi.advanceTimersByTimeAsync(0);
+
+        // Advance far past any further tick windows — no backlog should fire.
+        await vi.advanceTimersByTimeAsync(20_000);
+        expect(mockSendMessage).toHaveBeenCalledTimes(2);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+      } finally {
+        vi.useRealTimers();
+        mockSendMessage.mockImplementation(async () => true);
+      }
+    });
+
+    it("startRepeat should be a no-op when the button is no longer held", () => {
+      // Direct guard test: mirrors the production race where keyUp lands during the
+      // async chat send BEFORE onKeyDown has finished awaiting, so startRepeat runs
+      // against a heldButtons set that no longer contains the id. The guard must
+      // prevent any timers from being installed — otherwise they'd run orphaned until
+      // the 15s safety fires.
+      (action as any).heldButtons.add("action-1");
+      (action as any).heldButtons.delete("action-1");
+
+      (action as any).startRepeat("action-1");
+
+      expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+    });
+
+    it("should not leave stuck timers when keyUp arrives during an async executeMode", async () => {
+      // Real-world scenario that regressed fuel repeats in production:
+      // chat.sendMessage is async (Napi::AsyncWorker), so onKeyDown yields to the
+      // event loop while waiting for the native chat pipeline to finish. keyUp can
+      // arrive DURING that yield — before startRepeat has installed any timers.
+      // Without the heldButtons guard, the eventual startRepeat call would set
+      // timers with no hope of a future keyUp arriving to clear them, leaving the
+      // button stuck repeating until the 15s safety fires (~60 extra fuel adds).
+      vi.useFakeTimers();
+
+      try {
+        // Deferred promise for sendMessage — mimics the ~400ms native pipeline
+        // without actually advancing the fake clock for that slice.
+        let resolveSend: ((value: boolean) => void) | undefined;
+        mockSendMessage.mockImplementationOnce(
+          () =>
+            new Promise<boolean>((resolve) => {
+              resolveSend = resolve;
+            }),
+        );
+
+        // Fire keyDown but don't await it — executeMode is now pending.
+        const keyDownPromise = action.onKeyDown(
+          fakeEvent("action-1", { mode: "add-fuel", amount: 1, unit: "l" }) as any,
+        );
+
+        // While the send is in flight, keyUp arrives. This must cancel everything
+        // even though startRepeat hasn't technically finished installing timers yet.
+        await action.onKeyUp(fakeEvent("action-1") as any);
+
+        // Now let the send resolve. onKeyDown will continue past its await.
+        resolveSend?.(true);
+        await keyDownPromise;
+
+        // No repeat should be scheduled — the button is released.
+        expect((action as any).heldButtons.has("action-1")).toBe(false);
+        expect((action as any).repeatIntervals.has("action-1")).toBe(false);
+
+        // Advance well past the hold threshold, interval, and safety window.
+        // If the guard were missing, the orphaned hold timer would fire at 400ms
+        // and the interval would start dumping fuel macros at 250ms cadence.
+        await vi.advanceTimersByTimeAsync(20_000);
+
+        // Only the single intended send. No stuck repeat, no safety warning.
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
         expect(action.logger.warn).not.toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
       } finally {
         vi.useRealTimers();

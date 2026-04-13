@@ -16,7 +16,7 @@ function createMockSDK(): IRacingSDK {
     getVarNames: vi.fn().mockReturnValue([]),
     getVarHeader: vi.fn().mockReturnValue(null),
     broadcast: vi.fn(),
-    sendChatMessage: vi.fn().mockReturnValue(true),
+    sendChatMessage: vi.fn().mockResolvedValue(true),
   } as unknown as IRacingSDK;
 }
 
@@ -136,16 +136,16 @@ describe("SDKController", () => {
   });
 
   describe("sendChatMessage", () => {
-    it("should delegate to SDK", () => {
-      controller.sendChatMessage("Hello");
+    it("should delegate to SDK", async () => {
+      await controller.sendChatMessage("Hello");
 
       expect(mockSdk.sendChatMessage).toHaveBeenCalledWith("Hello");
     });
 
-    it("should return SDK result", () => {
-      vi.mocked(mockSdk.sendChatMessage).mockReturnValue(false);
+    it("should return SDK result", async () => {
+      vi.mocked(mockSdk.sendChatMessage).mockResolvedValue(false);
 
-      expect(controller.sendChatMessage("test")).toBe(false);
+      await expect(controller.sendChatMessage("test")).resolves.toBe(false);
     });
   });
 

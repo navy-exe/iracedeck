@@ -1063,9 +1063,18 @@ describe("ReplayControl", () => {
       };
     }
 
+    const mockReplay = {
+      play: vi.fn(() => true),
+      pause: vi.fn(() => true),
+      setPlaySpeed: vi.fn(() => true),
+    };
+
     let action: ReplayControl;
 
     beforeEach(async () => {
+      vi.clearAllMocks();
+      const { getCommands } = await import("@iracedeck/deck-core");
+      vi.mocked(getCommands).mockReturnValue({ replay: mockReplay, camera: { switchNum: vi.fn() } } as any);
       action = new ReplayControl();
       await action.onWillAppear(fakeEvent("action-1", { mode: "fast-forward" }) as any);
     });
@@ -1114,6 +1123,99 @@ describe("ReplayControl", () => {
         await vi.advanceTimersByTimeAsync(15_000);
         expect((action as any).repeatTimers.has("action-1")).toBe(false);
         expect(action.logger.warn).not.toHaveBeenCalledWith(expect.stringContaining("safety timeout"));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should fire exactly once for a quick tap shorter than the hold threshold", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+        // Initial keyDown fires executeMode once.
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(1);
+
+        // Release well before the 500ms initial delay.
+        await vi.advanceTimersByTimeAsync(100);
+        await action.onKeyUp(fakeEvent("action-1") as any);
+
+        // No further repeats even after a long wait.
+        await vi.advanceTimersByTimeAsync(5_000);
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(1);
+        expect((action as any).repeatTimers.has("action-1")).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should repeat while held using a self-awaiting loop", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(1);
+
+        // Initial hold delay must elapse before the loop starts.
+        await vi.advanceTimersByTimeAsync(499);
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(1);
+        // Hold threshold crossed; loop is scheduled, first tick fires
+        // LONG_PRESS_REPEAT_GAP_MS (250ms) later.
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(250);
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(2);
+
+        await vi.advanceTimersByTimeAsync(250);
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(3);
+
+        await action.onKeyUp(fakeEvent("action-1") as any);
+
+        // After release, no further fires.
+        await vi.advanceTimersByTimeAsync(500);
+        expect(mockReplay.setPlaySpeed).toHaveBeenCalledTimes(3);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("startRepeat should be a no-op when the button is no longer held", () => {
+      // Direct guard test: same class of race as the fuel-service stuck bug.
+      // Even though replay-control's executeMode is currently sync (SDK broadcast),
+      // the guard keeps us safe if executeMode ever gains an async path.
+      (action as any).heldButtons.add("action-1");
+      (action as any).heldButtons.delete("action-1");
+
+      (action as any).startRepeat("action-1", {
+        mode: "fast-forward",
+        speed: "1",
+        flagsOverlay: false,
+        addedWithVersion: "0.0.0",
+      });
+
+      expect((action as any).repeatTimers.has("action-1")).toBe(false);
+    });
+
+    it("should stop the repeat loop immediately when onDidReceiveSettings fires mid-hold", async () => {
+      vi.useFakeTimers();
+
+      try {
+        await action.onKeyDown(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+        expect((action as any).repeatTimers.has("action-1")).toBe(true);
+
+        // Settings update mid-hold should clear both heldButtons and timers.
+        await vi.advanceTimersByTimeAsync(200);
+        await action.onDidReceiveSettings(fakeEvent("action-1", { mode: "fast-forward" }) as any);
+
+        expect((action as any).heldButtons.has("action-1")).toBe(false);
+        expect((action as any).repeatTimers.has("action-1")).toBe(false);
+
+        // No further fires after the mid-hold settings update.
+        const callsBefore = mockReplay.setPlaySpeed.mock.calls.length;
+        await vi.advanceTimersByTimeAsync(20_000);
+        expect(mockReplay.setPlaySpeed.mock.calls.length).toBe(callsBefore);
       } finally {
         vi.useRealTimers();
       }

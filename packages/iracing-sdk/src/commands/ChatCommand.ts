@@ -75,12 +75,15 @@ export class ChatCommand extends BroadcastCommand {
   }
 
   /**
-   * Send a custom chat message to iRacing
-   * Opens chat, types the message, sends it, and closes the chat window
+   * Send a custom chat message to iRacing.
+   * Opens chat, types the message, sends it, and closes the chat window.
+   * The native pipeline runs on a worker thread so the JS event loop
+   * remains responsive during the ~400ms native work.
+   *
    * @param message The message to send
-   * @returns Success
+   * @returns Promise resolving to true on success, false on failure
    */
-  sendMessage(message: string): boolean {
+  async sendMessage(message: string): Promise<boolean> {
     if (!message || message.trim().length === 0) {
       this.logger.warn("Cannot send empty message");
 
@@ -90,7 +93,7 @@ export class ChatCommand extends BroadcastCommand {
     try {
       this.logger.info(`Sending chat message: "${message}"`);
 
-      const result = this.native.sendChatMessage(message);
+      const result = await this.native.sendChatMessage(message);
 
       if (result) {
         this.logger.info("Chat message sent successfully");

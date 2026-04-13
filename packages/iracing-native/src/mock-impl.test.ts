@@ -125,8 +125,8 @@ describe("IRacingNativeMock", () => {
       expect(console.debug).toHaveBeenCalled();
     });
 
-    it("sendChatMessage should return true", () => {
-      expect(mock.sendChatMessage("test")).toBe(true);
+    it("sendChatMessage should resolve to true", async () => {
+      await expect(mock.sendChatMessage("test")).resolves.toBe(true);
       expect(console.debug).toHaveBeenCalled();
     });
 

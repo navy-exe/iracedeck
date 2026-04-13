@@ -28,7 +28,7 @@ function createMockNative(): INativeSDK {
     getVarHeaderEntry: vi.fn(),
     varNameToIndex: vi.fn().mockReturnValue(-1),
     broadcastMsg: vi.fn(),
-    sendChatMessage: vi.fn().mockReturnValue(true),
+    sendChatMessage: vi.fn().mockResolvedValue(true),
   };
 }
 
@@ -189,15 +189,15 @@ describe("IRacingSDK", () => {
   });
 
   describe("sendChatMessage", () => {
-    it("should return false when not connected", () => {
-      expect(sdk.sendChatMessage("test")).toBe(false);
+    it("should resolve to false when not connected", async () => {
+      await expect(sdk.sendChatMessage("test")).resolves.toBe(false);
     });
 
-    it("should call native sendChatMessage when connected", () => {
+    it("should call native sendChatMessage when connected", async () => {
       vi.mocked(mockNative.getVarHeaderEntry).mockReturnValue(null);
       sdk.connect();
 
-      const result = sdk.sendChatMessage("Hello");
+      const result = await sdk.sendChatMessage("Hello");
 
       expect(mockNative.sendChatMessage).toHaveBeenCalledWith("Hello");
       expect(result).toBe(true);
