@@ -445,6 +445,16 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
       );
     }
 
+    if (flagInfo.label === "DEBRIS") {
+      return svgToDataUri(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">` +
+          `<rect width="72" height="72" rx="8" fill="#f1c40f"/>` +
+          `<rect x="18" width="18" height="72" fill="#e74c3c"/>` +
+          `<rect x="54" width="18" height="72" fill="#e74c3c"/>` +
+          `</svg>`,
+      );
+    }
+
     return svgToDataUri(
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72"><rect width="72" height="72" rx="8" fill="${flagInfo.color}"/></svg>`,
     );
