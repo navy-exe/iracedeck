@@ -70,9 +70,15 @@ Actions live in `packages/stream-deck-plugin/src/actions/`. Each action needs:
 
 Use existing actions as reference, or check the package-level docs in `packages/stream-deck-plugin/`.
 
-## License
+## Contributor license
 
-By submitting a pull request, you agree that your contribution will be licensed under the [MIT License](LICENSE.md) that covers this project.
+By submitting a contribution to this project, you agree that:
+
+1. Your contribution is your own work, or you have the right to submit it.
+2. You license your contribution under the project’s license (MIT).
+3. You grant Niklas Lampén a perpetual, worldwide, non-exclusive, royalty-free license to use, modify, and sublicense your contribution, including as part of commercial and proprietary versions of iRaceDeck.
+
+This allows iRaceDeck to evolve, including commercial versions, while keeping the core project free and available to the community.
 
 ## Questions?
 

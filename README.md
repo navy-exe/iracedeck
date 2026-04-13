@@ -15,16 +15,16 @@
 
 **30 actions** with **254 modes** across 8 categories, with Stream Deck+ dial rotation support on most modes:
 
-| Category | Actions | Modes | Examples |
-|----------|---------|-------|---------|
-| **Display & Session** | 2 | 7 | Incidents, laps, position, fuel, flags |
-| **Driving Controls** | 5 | 27 | AI spotter, audio, black box cycling, look direction, car control |
-| **Cockpit & Interface** | 5 | 33 | Wipers, FFB, splits & reference, telemetry, UI toggles |
-| **View & Camera** | 5 | 87 | FOV, replay, camera controls, broadcast tools |
-| **Media** | 1 | 7 | Video recording, screenshots |
-| **Pit Service** | 3 | 15 | Fuel, tires, compounds, tearoff, fast repair |
-| **Car Setup** | 7 | 44 | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
-| **Communication** | 2 | 34 | Chat, macros, whisper, reply, race admin commands |
+| Category                | Actions | Modes | Examples                                                              |
+| ----------------------- | ------- | ----- | --------------------------------------------------------------------- |
+| **Display & Session**   | 2       | 7     | Incidents, laps, position, fuel, flags                                |
+| **Driving Controls**    | 5       | 27    | AI spotter, audio, black box cycling, look direction, car control     |
+| **Cockpit & Interface** | 5       | 33    | Wipers, FFB, splits & reference, telemetry, UI toggles                |
+| **View & Camera**       | 5       | 87    | FOV, replay, camera controls, broadcast tools                         |
+| **Media**               | 1       | 7     | Video recording, screenshots                                          |
+| **Pit Service**         | 3       | 15    | Fuel, tires, compounds, tearoff, fast repair                          |
+| **Car Setup**           | 7       | 44    | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
+| **Communication**       | 2       | 34    | Chat, macros, whisper, reply, race admin commands                     |
 
 **Key highlights:**
 
@@ -94,19 +94,19 @@ packages/
   website/                 Documentation website (iracedeck.com)
 ```
 
-| Package | Role |
-|---------|------|
-| `@iracedeck/actions` | All 28 action implementations, platform-agnostic |
-| `@iracedeck/deck-core` | Base classes, types, keyboard service, icon templates, global settings |
-| `@iracedeck/deck-adapter-elgato` | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface |
-| `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core |
-| `@iracedeck/icons` | SVG icon Mustache templates with colorization support |
-| `@iracedeck/iracing-native` | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging, scan-code input) |
-| `@iracedeck/iracing-sdk` | TypeScript SDK for reading telemetry and sending iRacing broadcast commands |
-| `@iracedeck/logger` | Shared logging interface with scoped loggers |
-| `@iracedeck/stream-deck-plugin` | Elgato Stream Deck plugin — registers actions, PI templates, manifest |
-| `@iracedeck/mirabox-plugin` | Mirabox plugin — registers the same actions for Mirabox devices |
-| `@iracedeck/website` | Documentation website at [iracedeck.com](https://iracedeck.com) |
+| Package                           | Role                                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `@iracedeck/actions`              | All 28 action implementations, platform-agnostic                                          |
+| `@iracedeck/deck-core`            | Base classes, types, keyboard service, icon templates, global settings                    |
+| `@iracedeck/deck-adapter-elgato`  | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface                    |
+| `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core                             |
+| `@iracedeck/icons`                | SVG icon Mustache templates with colorization support                                     |
+| `@iracedeck/iracing-native`       | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging, scan-code input) |
+| `@iracedeck/iracing-sdk`          | TypeScript SDK for reading telemetry and sending iRacing broadcast commands               |
+| `@iracedeck/logger`               | Shared logging interface with scoped loggers                                              |
+| `@iracedeck/stream-deck-plugin`   | Elgato Stream Deck plugin — registers actions, PI templates, manifest                     |
+| `@iracedeck/mirabox-plugin`       | Mirabox plugin — registers the same actions for Mirabox devices                           |
+| `@iracedeck/website`              | Documentation website at [iracedeck.com](https://iracedeck.com)                           |
 
 ### How it fits together
 
@@ -182,17 +182,31 @@ See the existing actions for reference, or check `packages/stream-deck-plugin/CL
 
 ## Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
+| Problem                                             | Solution                                                                                                                         |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Double-clicking `.streamDeckPlugin` doesn't install | Rename the file to add `.zip` at the end, extract the contents to `%APPDATA%\Elgato\StreamDeck\Plugins`, and restart Stream Deck |
-| Plugin doesn't connect | Make sure iRacing is running and you're in a session (on track) |
-| Buttons show nothing | iRacing telemetry is only available while driving; the plugin reconnects automatically |
-| Native addon build fails | Install Python 3.x and VS Build Tools with C++ workload. Try `npm config set msvs_version 2022` |
-| Key presses don't work | Check your key bindings in the Property Inspector match your iRacing configuration |
+| Plugin doesn't connect                              | Make sure iRacing is running and you're in a session (on track)                                                                  |
+| Buttons show nothing                                | iRacing telemetry is only available while driving; the plugin reconnects automatically                                           |
+| Native addon build fails                            | Install Python 3.x and VS Build Tools with C++ workload. Try `npm config set msvs_version 2022`                                  |
+| Key presses don't work                              | Check your key bindings in the Property Inspector match your iRacing configuration                                               |
 
-## License
+## Usage and license
 
-[MIT](LICENSE)
+iRaceDeck is open source under the [MIT License](LICENSE.md).
+
+You can use, modify, and distribute it freely, including for commercial purposes.
+
+The name “iRaceDeck” and associated branding are not included in the license and may not be used for derived versions without permission.
+
+If you're unsure whether your use case is allowed, feel free to reach out.
+
+## For companies
+
+If you're working on something commercial based on iRaceDeck, feel free to reach out.
+
+I'm open to licensing, collaboration, or helping you build on top of it.
+
+Contact: [niklas@iracedeck.com](niklas@iracedeck.com)
 
 ## Inspiration
 
