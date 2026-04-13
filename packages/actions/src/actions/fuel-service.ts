@@ -228,10 +228,6 @@ function fuelFillGraphicContent(telemetryState: FuelServiceTelemetryState, graph
           fill="${graphic1Color}" font-family="Arial" font-size="40" font-weight="700">${fuelText}</text>`;
 }
 
-function fuelFillStatusBar(telemetryState: FuelServiceTelemetryState): string {
-  return telemetryState.fuelFillOn ? statusBarOn() : statusBarOff();
-}
-
 /** Fuel gauge colors */
 const FUEL_GAUGE_GREEN = "#3fb23f";
 const FUEL_GAUGE_YELLOW = "#d3c518";
