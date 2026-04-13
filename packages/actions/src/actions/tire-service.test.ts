@@ -50,6 +50,11 @@ vi.mock("@iracedeck/icons/tire-service/clear-tires.svg", () => ({
   default: "<svg>clear-tires-icon</svg>",
 }));
 
+vi.mock("@iracedeck/icons/tire-service/toggle-tires.svg", () => ({
+  default:
+    '<svg><desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#888888"},"title":{"text":"TIRES"}}</desc><g>toggle-tires-car</g></svg>',
+}));
+
 vi.mock("../../icons/tire-service.svg", () => ({
   default:
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><desc>{"colors":{"backgroundColor":"#3a2a2a","textColor":"#ffffff","graphic1Color":"#ffffff"}}</desc>{{borderDefs}}<g filter="url(#activity-state)"><rect x="0" y="0" width="144" height="144" rx="24" fill="{{backgroundColor}}"/>{{borderContent}}{{iconContent}}{{textElement}}</g></svg>',
@@ -130,6 +135,9 @@ vi.mock("@iracedeck/deck-core", () => ({
   generateIconText: vi.fn(
     (opts: { text: string; fontSize: number; fill: string }) => `<text fill="${opts.fill}">${opts.text}</text>`,
   ),
+  generateTitleText: vi.fn((opts: { text: string; fill: string }) =>
+    opts.text ? `<text fill="${opts.fill}">${opts.text}</text>` : "",
+  ),
   getGlobalTitleSettings: vi.fn(() => ({})),
   resolveBorderSettings: vi.fn((_svg: unknown, _global: unknown, _overrides?: unknown, _stateColor?: string) => ({
     enabled: false,
@@ -177,7 +185,13 @@ vi.mock("@iracedeck/deck-core", () => ({
 
 function fakeEvent(actionId: string, settings: Record<string, unknown> = {}) {
   return {
-    action: { id: actionId, setTitle: vi.fn(), setImage: vi.fn(), isKey: () => true },
+    action: {
+      id: actionId,
+      setTitle: vi.fn(),
+      setImage: vi.fn(),
+      setSettings: vi.fn().mockResolvedValue(undefined),
+      isKey: () => true,
+    },
     payload: { settings },
   };
 }
@@ -648,16 +662,18 @@ describe("TireService", () => {
         expect(decoded).toContain("#000000ff");
       });
 
-      it("should include car content in output", () => {
+      it("should include car body path in output", () => {
         const result = generateTireServiceSvg({ mode: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }, noTires);
         const decoded = decodeURIComponent(result);
-        expect(decoded).toContain("toggle-tires-car");
+        // Check for distinctive car body path content (inline SVG)
+        expect(decoded).toContain("M59.91,45.74");
       });
 
-      it("should include title text", () => {
+      it("should include tire rectangles", () => {
         const result = generateTireServiceSvg({ mode: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] }, noTires);
         const decoded = decodeURIComponent(result);
-        expect(decoded).toContain("TIRES");
+        // Each tire is rendered as a rect element
+        expect(decoded).toContain("<rect");
       });
     });
 
@@ -1078,7 +1094,7 @@ describe("TireService", () => {
 
       expect(mockPitClearTires).toHaveBeenCalledOnce();
       expect(mockSendMessage).toHaveBeenCalledOnce();
-      expect(mockSendMessage).toHaveBeenCalledWith("#!lf !rf !lr !rr");
+      expect(mockSendMessage).toHaveBeenCalledWith("#!t");
     });
 
     it("should not clear on dial down in select mode when tires match", async () => {

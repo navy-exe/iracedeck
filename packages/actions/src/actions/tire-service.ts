@@ -393,6 +393,12 @@ export function doCurrentTiresMatch(
  * Returns null if no tires are configured.
  */
 export function buildTireToggleMacro(settings: TireServiceSettings): string | null {
+  if (areAllTiresOn(settings)) return "#!t";
+
+  if (areLeftTiresOn(settings)) return "#!l";
+
+  if (areRightTiresOn(settings)) return "#!r";
+
   const parts = settings.tires.map((t) => `!${t}`);
 
   return parts.length > 0 ? `#${parts.join(" ")}` : null;
