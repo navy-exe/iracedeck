@@ -387,7 +387,7 @@ describe("TireService", () => {
 
     it("should use white border color during service in progress", () => {
       const result = generateTireServiceSvg(
-        { action: "change-compound", tires: ["lf", "rf", "lr", "rr"] },
+        { mode: "change-compound", tires: ["lf", "rf", "lr", "rr"] },
         { lf: false, rf: false, lr: false, rr: false },
         { player: 0, pitSv: 1, pitSvStatus: 1 },
         true,
@@ -399,15 +399,15 @@ describe("TireService", () => {
 
   describe("isTireSelected", () => {
     it("should return true when tire is in array", () => {
-      expect(isTireSelected({ action: "toggle-tires", tires: ["lf", "rf"] }, "lf")).toBe(true);
+      expect(isTireSelected({ mode: "toggle-tires", tires: ["lf", "rf"] }, "lf")).toBe(true);
     });
 
     it("should return false when tire is not in array", () => {
-      expect(isTireSelected({ action: "toggle-tires", tires: ["lf", "rf"] }, "lr")).toBe(false);
+      expect(isTireSelected({ mode: "toggle-tires", tires: ["lf", "rf"] }, "lr")).toBe(false);
     });
 
     it("should return false for empty array", () => {
-      expect(isTireSelected({ action: "toggle-tires", tires: [] }, "lf")).toBe(false);
+      expect(isTireSelected({ mode: "toggle-tires", tires: [] }, "lf")).toBe(false);
     });
   });
 
@@ -418,7 +418,7 @@ describe("TireService", () => {
     });
 
     it("should not migrate when tires key is present", () => {
-      const result = migrateTireSettings({ action: "toggle-tires", tires: ["lf"], lf: true, rf: true });
+      const result = migrateTireSettings({ mode: "toggle-tires", tires: ["lf"], lf: true, rf: true });
       expect(result.tires).toEqual(["lf"]);
     });
 
@@ -598,7 +598,7 @@ describe("TireService", () => {
 
     it("should apply bodyColor to the car body path", () => {
       const result = generateToggleTiresIconContent(
-        { action: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] },
+        { mode: "toggle-tires", tires: ["lf", "rf", "lr", "rr"] },
         { lf: true, rf: true, lr: true, rr: true },
         "#ff0000",
       );
@@ -1174,7 +1174,7 @@ describe("TireService", () => {
     });
 
     it("should migrate legacy action key to mode field", () => {
-      const result = migrateTireSettings({ action: "toggle-tires", tires: ["lf", "rf"] });
+      const result = migrateTireSettings({ mode: "toggle-tires", tires: ["lf", "rf"] });
       expect(result.mode).toBe("toggle-tires");
       expect((result as Record<string, unknown>).action).toBeUndefined();
     });

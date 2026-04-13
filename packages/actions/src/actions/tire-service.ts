@@ -14,7 +14,6 @@ import {
   type IDeckWillAppearEvent,
   type IDeckWillDisappearEvent,
   migrateLegacyActionToMode,
-  parseIconArtworkBounds,
   renderIconTemplate,
   resolveBorderSettings,
   resolveIconColors,
@@ -669,7 +668,7 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
     const isPitRoadWarning = isChanging && compound.onPitRoad && !compound.inPitStall && !isServiceInProgress;
 
     // Toggle flash state every telemetry tick (4Hz → 2Hz flash) for pit road warning or service in progress
-    if ((isServiceInProgress || isPitRoadWarning) && settings.action === "change-compound") {
+    if ((isServiceInProgress || isPitRoadWarning) && settings.mode === "change-compound") {
       const currentFlash = this.flashToggle.get(contextId) ?? true;
       this.flashToggle.set(contextId, !currentFlash);
       const svgDataUri = generateTireServiceSvg(settings, tireState, compound, currentFlash);
