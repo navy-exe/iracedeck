@@ -1,4 +1,5 @@
 import {
+  applyGraphicTransform,
   assembleIcon,
   CommonSettings,
   ConnectionStateAwareAction,
@@ -6,6 +7,7 @@ import {
   getCommands,
   getGlobalBorderSettings,
   getGlobalColors,
+  getGlobalGraphicSettings,
   getGlobalTitleSettings,
   getSDK,
   type IDeckDialDownEvent,
@@ -16,6 +18,7 @@ import {
   migrateLegacyActionToMode,
   renderIconTemplate,
   resolveBorderSettings,
+  resolveGraphicSettings,
   resolveIconColors,
   resolveTitleSettings,
   svgToDataUri,
@@ -34,6 +37,10 @@ const GREEN = "#2ecc71";
 const YELLOW = "#f1c40f";
 const RED = "#e74c3c";
 const BLUE = "#3498db";
+
+/** Bounding box of the toggle-tires inline car body + tire artwork (144x144 canvas) */
+const TOGGLE_TIRES_BOUNDS = { x: 30, y: 4, width: 84, height: 133 };
+const FULL_GRAPHIC_AREA = { x: 8, y: 8, width: 128, height: 128 };
 
 /** Compound artwork colors matching the provided tire SVGs */
 const DRY_COMPOUND_COLOR = "#ffd318";
@@ -528,7 +535,18 @@ export function generateTireServiceSvg(
     default: {
       const toggleColors = resolveIconColors(tireServiceTemplate, getGlobalColors(), settings.colorOverrides);
       const bodyColor = (toggleColors as Record<string, string>).graphic1Color || WHITE;
-      const toggleIconContent = generateToggleTiresIconContent(settings, currentState, bodyColor);
+      let toggleIconContent = generateToggleTiresIconContent(settings, currentState, bodyColor);
+
+      const graphic = resolveGraphicSettings(getGlobalGraphicSettings(), settings.graphicOverrides);
+
+      if (graphic.scale !== 100) {
+        toggleIconContent = applyGraphicTransform(
+          toggleIconContent,
+          TOGGLE_TIRES_BOUNDS,
+          FULL_GRAPHIC_AREA,
+          graphic.scale,
+        );
+      }
 
       const border = resolveBorderSettings(tireServiceTemplate, getGlobalBorderSettings(), settings.borderOverrides);
       const borderSvg = generateBorderParts(border);

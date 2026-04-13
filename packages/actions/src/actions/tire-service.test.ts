@@ -119,8 +119,10 @@ vi.mock("@iracedeck/deck-core", () => ({
 
     return { migrated: { ...rest, mode: action }, changed: true };
   },
-  applyGraphicTransform: vi.fn((_content: string) => _content),
+  applyGraphicTransform: vi.fn((content: string) => content),
   computeGraphicArea: vi.fn(() => ({ x: 8, y: 8, width: 128, height: 128 })),
+  getGlobalGraphicSettings: vi.fn(() => ({})),
+  resolveGraphicSettings: vi.fn(() => ({ scale: 100 })),
   extractGraphicContent: vi.fn((svg: string) =>
     svg
       .replace(/<\/?svg[^>]*>/g, "")
