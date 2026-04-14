@@ -3,7 +3,7 @@ title: Development
 description: How iRaceDeck is built, how to contribute, and how to set up a development environment.
 ---
 
-iRaceDeck is a free, source-available project licensed under the [iRaceDeck Non-Commercial License](https://github.com/niklam/iracedeck/blob/master/LICENCE). You can use, modify, and contribute to it for personal and non-commercial purposes. Contributions from the community are welcome and encouraged.
+iRaceDeck is a free, source-available project licensed under the [iRaceDeck Non-Commercial License](https://github.com/niklam/iracedeck/blob/master/LICENSE). You can use, modify, and contribute to it for personal and non-commercial purposes. Contributions from the community are welcome and encouraged.
 
 ## About
 

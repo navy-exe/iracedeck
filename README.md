@@ -192,7 +192,7 @@ See the existing actions for reference, or check `packages/stream-deck-plugin/CL
 
 ## Usage and license
 
-iRaceDeck is source-available and licensed under a [custom non-commercial license](LICENCE).
+iRaceDeck is source-available and licensed under a [custom non-commercial license](LICENSE).
 
 Free for personal and non-commercial use, including use in sim racing events and competitions.
 
