@@ -388,6 +388,10 @@ public:
 
         std::lock_guard<std::mutex> lock(g_chatSendMutex);
 
+        // Best-effort snapshot of any CF_UNICODETEXT already on the clipboard
+        // so we can restore it after the paste. If the clipboard holds
+        // non-text content (image, file list, etc.) we proceed anyway — the
+        // chat send is higher priority than preserving that content.
         std::u16string savedClipboard;
         bool hadClipboardText = false;
 
@@ -412,6 +416,13 @@ public:
 
         if (!copyToClipboard(message_))
         {
+            // copyToClipboard may have called EmptyClipboard before failing.
+            // If we captured a text snapshot, put it back so we don't leave
+            // the clipboard empty.
+            if (hadClipboardText)
+            {
+                copyToClipboard(savedClipboard);
+            }
             result_ = false;
             return;
         }

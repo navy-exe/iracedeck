@@ -418,7 +418,13 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
 
     const chat = getCommands().chat;
     const success = await chat.sendMessage(resolvedMessage);
-    this.logger.info("Send message executed");
+
+    if (success) {
+      this.logger.info("Send message executed");
+    } else {
+      this.logger.warn("Failed to send message");
+    }
+
     this.logger.debug(`Result: ${success}`);
   }
 

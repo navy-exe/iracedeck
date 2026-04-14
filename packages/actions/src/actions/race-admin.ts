@@ -211,7 +211,13 @@ export class RaceAdmin extends ConnectionStateAwareAction<RaceAdminSettings> {
 
     const chat = getCommands().chat;
     const success = await chat.sendMessage(command);
-    this.logger.info("Admin command executed");
+
+    if (success) {
+      this.logger.info("Admin command executed");
+    } else {
+      this.logger.warn("Failed to send admin command");
+    }
+
     this.logger.debug(`Command: "${command}", result: ${success}`);
   }
 

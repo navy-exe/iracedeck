@@ -690,7 +690,13 @@ export class TireService extends ConnectionStateAwareAction<TireServiceSettings>
 
           if (!doCurrentTiresMatch(settings, tireState)) {
             this.logger.debug("Current tires don't match configured — clearing first");
-            getCommands().pit.clearTires();
+            const cleared = getCommands().pit.clearTires();
+
+            if (!cleared) {
+              this.logger.warn("Failed to clear tire selection before applying configured set");
+
+              return;
+            }
           }
         }
 

@@ -690,7 +690,17 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     }
 
     this.logger.debug(`Sending fuel macro: ${macro}`);
-    const success = await getCommands().chat.sendMessage(macro);
+
+    let success = false;
+
+    try {
+      success = await getCommands().chat.sendMessage(macro);
+    } catch (err) {
+      this.logger.warn(`Failed to send fuel macro: ${err}`);
+      this.logger.debug(`Failed macro: ${macro}`);
+
+      return;
+    }
 
     if (success) {
       this.logger.info("Fuel macro sent");
