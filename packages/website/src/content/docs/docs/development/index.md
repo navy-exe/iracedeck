@@ -3,26 +3,26 @@ title: Development
 description: How iRaceDeck is built, how to contribute, and how to set up a development environment.
 ---
 
-iRaceDeck is a free, open-source project licensed under the [MIT License](https://github.com/niklam/iracedeck/blob/master/LICENSE.md). Anyone can use, modify, and distribute it. Contributions from the community are welcome and encouraged.
+iRaceDeck is a free, source-available project licensed under the [iRaceDeck Non-Commercial License](https://github.com/niklam/iracedeck/blob/master/LICENCE). You can use, modify, and contribute to it for personal and non-commercial purposes. Contributions from the community are welcome and encouraged.
 
 ## About
 
 iRaceDeck was created by Niklas Lampén, inspired by iRaceIT but with a different vision. The project is built on the belief that an open-source solution can bring the community the best value and highest quality tool for controlling iRacing.
 
-## Open Source
+## Source Available
 
-Open source means the full source code is publicly available on [GitHub](https://github.com/niklam/iracedeck). You can:
+Source-available means the full source code is publicly available on [GitHub](https://github.com/niklam/iracedeck). You can:
 
 - **Read the code** to understand how it works
 - **Report bugs** or suggest features via [GitHub Issues](https://github.com/niklam/iracedeck/issues)
 - **Submit changes** through pull requests
-- **Fork the project** and build your own version
+- **Fork the project** and build your own version for personal use
 
-The MIT License is one of the most permissive open-source licenses — it allows commercial use, modification, and distribution with minimal restrictions.
+The iRaceDeck Non-Commercial License keeps the plugin free for personal, educational, and sim-racing use while restricting commercial redistribution or sale of the plugin itself. See [USAGE.md](https://github.com/niklam/iracedeck/blob/master/USAGE.md) for a plain-English summary.
 
 ## Support the Project
 
-iRaceDeck is free and open source — servers and Red Bull aren't. If you find iRaceDeck useful, consider supporting its development: [Support iRaceDeck](https://buymeacoffee.com/niklaslampen)
+If you find iRaceDeck useful, consider supporting its development: [Support iRaceDeck](https://buymeacoffee.com/niklaslampen)
 
 ## Learn More
 

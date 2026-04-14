@@ -1,7 +1,7 @@
 # Usage
 
 iRaceDeck is free and source-available, licensed under the
-[iRaceDeck Non-Commercial License](LICENSE.md).
+[iRaceDeck Non-Commercial License](LICENCE).
 
 ## What's Allowed
 
