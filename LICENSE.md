@@ -1,18 +1,73 @@
-# MIT License
+iRaceDeck Non-Commercial License (v1.0)
 
 Copyright (c) 2026 Niklas Lampén
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+of this software and associated documentation files (the “Software”), to use,
+copy, modify, merge, publish, and distribute the Software, subject to the
+following conditions:
+
+1. Non-Commercial Use
+
+The Software may be used for personal, educational, and internal purposes,
+including within companies, as long as such use does not directly generate
+revenue from the Software itself.
+
+Use of the Software in sim racing events, competitions, streams, or similar
+activities is permitted, even if such events are commercial in nature, provided
+that the Software itself is not being sold or commercialized.
+
+2. Commercial Restrictions
+
+You may not, without prior written permission from the copyright holder:
+
+- sell, license, sublicense, or otherwise commercialize the Software;
+- distribute the Software as part of a paid product or service;
+- use the Software to provide a competing product or service;
+- charge fees specifically for access to or use of the Software.
+
+3. Redistribution and Modifications
+
+You may modify and distribute the Software, including in modified form,
+provided that:
+
+- all copies or substantial portions of the Software include this license;
+- modified versions are clearly marked as changed from the original;
+- modified versions must include a notice stating that they are based on the
+  original iRaceDeck project and are not affiliated with or endorsed by the
+  original author.
+
+4. Naming and Branding
+
+You may distribute modified versions of the Software under a different name.
+
+However, you may not:
+
+- use the name "iRaceDeck" for a modified version of the Software;
+- use the name "iRaceDeck" in a way that suggests endorsement by the original author;
+- use any original logos, trademarks, or other branding assets without permission.
+
+Modified versions must be clearly distinguished from the original Software
+and must not imply affiliation with or endorsement by the original author.
+
+5. Attribution
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+6. Contributions
+
+Contributions are governed by the contributor license terms in CONTRIBUTING.md, which
+include a grant of additional commercial rights to the copyright holder. By submitting
+a contribution, you agree to those terms.
+
+7. No Removal of License
+
+You may not remove, alter, or obscure this license from the Software.
+
+8. Disclaimer
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -20,8 +75,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Name and branding
+9. Commercial Licensing
 
-The name “iRaceDeck” and associated logos are not covered by the license.
-
-You may not use them for derived or redistributed versions without permission.
+If you are interested in using the Software for commercial purposes, please
+contact the copyright holder to obtain a separate commercial license.

@@ -75,8 +75,8 @@ Use existing actions as reference, or check the package-level docs in `packages/
 By submitting a contribution to this project, you agree that:
 
 1. Your contribution is your own work, or you have the right to submit it.
-2. You license your contribution under the project’s license (MIT).
-3. You grant Niklas Lampén a perpetual, worldwide, non-exclusive, royalty-free license to use, modify, and sublicense your contribution, including as part of commercial and proprietary versions of iRaceDeck.
+2. You license your contribution under the project’s license.
+3. You grant Niklas Lampén a perpetual, worldwide, non-exclusive, royalty-free license to use, modify, and sublicense your contribution, including as part of commercial and proprietary versions of iRaceDeck. This means your contribution may be used in both non-commercial and commercial versions of the Software.
 
 This allows iRaceDeck to evolve, including commercial versions, while keeping the core project free and available to the community.
 
