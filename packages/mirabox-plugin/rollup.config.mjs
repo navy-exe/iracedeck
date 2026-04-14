@@ -9,6 +9,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync,
 import { piTemplatePlugin } from "../stream-deck-plugin/src/build/pi-template-plugin.mjs";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
 const elgatoPluginPath = path.resolve(__dirname, "../stream-deck-plugin");
 
@@ -105,8 +106,8 @@ const sdPlugin = "com.iracedeck.sd.core.sdPlugin";
 const config = {
 	input: "src/plugin.ts",
 	onwarn(warning, warn) {
-		// Suppress circular dependency warnings from zod internals
-		if (warning.code === "CIRCULAR_DEPENDENCY" && warning.ids?.some(id => id.includes("node_modules\\zod\\") || id.includes("node_modules/zod/"))) return;
+		// Suppress circular dependency warnings from zod and semver internals
+		if (warning.code === "CIRCULAR_DEPENDENCY" && warning.ids?.some(id => id.includes("node_modules\\zod\\") || id.includes("node_modules/zod/") || id.includes("node_modules\\semver\\") || id.includes("node_modules/semver/"))) return;
 		warn(warning);
 	},
 	output: {
@@ -138,7 +139,7 @@ const config = {
 			templatesDir: path.join(elgatoPluginPath, "src/pi"),
 			outputDir: `${sdPlugin}/ui`,
 			partialsDir: path.join(elgatoPluginPath, "src/pi-templates/partials"),
-			manifestPath: `${sdPlugin}/manifest.json`,
+			version: rootPackageJson.version,
 		}),
 		// Copy static assets (imgs/, JS files) from the Elgato plugin
 		copyAssetsPlugin(sdPlugin),
@@ -197,6 +198,16 @@ const config = {
 					}
 				};
 				this.emitFile({ fileName: "package.json", source: JSON.stringify(pkg, null, 2), type: "asset" });
+			},
+		},
+		{
+			name: "emit-plugin-config",
+			generateBundle() {
+				const config = {
+					version: rootPackageJson.version,
+					platform: "mirabox",
+				};
+				this.emitFile({ fileName: "config.json", source: JSON.stringify(config, null, 2), type: "asset" });
 			},
 		},
 	],

@@ -11,6 +11,7 @@ import { type ILogger, silentLogger } from "@iracedeck/logger";
 
 import { getGlobalSettings, onGlobalSettingsChange } from "./global-settings.js";
 import { applyInactiveOverlay, svgToDataUri } from "./overlay-utils.js";
+import { getPluginVersion, isPluginConfigInitialized } from "./plugin-config.js";
 import { getController } from "./sdk-singleton.js";
 import type {
   IDeckActionContext,
@@ -290,12 +291,25 @@ export abstract class BaseAction<T = Record<string, unknown>> implements IDeckAc
 
   /**
    * Called when the action appears on the device.
-   * Tracks flag overlay opt-in from settings.
+   * Persists addedWithVersion on first appearance and tracks flag overlay opt-in.
    *
    * Subclasses should call `super.onWillAppear(ev)` if they override this.
    */
   async onWillAppear(ev: IDeckWillAppearEvent<T>): Promise<void> {
     const settings = ev.payload.settings as Record<string, unknown>;
+
+    // Persist addedWithVersion on first appearance (missing = pre-existing instance).
+    // Note: setSettings triggers onDidReceiveSettings — benign since it only re-reads
+    // the same settings that were just written.
+    if (!settings.addedWithVersion && isPluginConfigInitialized()) {
+      try {
+        const version = getPluginVersion();
+        this.logger.debug(`Persisting addedWithVersion=${version} for context ${ev.action.id}`);
+        await ev.action.setSettings({ ...settings, addedWithVersion: version });
+      } catch (err) {
+        this.logger.warn(`Failed to persist addedWithVersion for context ${ev.action.id}: ${err}`);
+      }
+    }
 
     if (settings.flagsOverlay === true || settings.flagsOverlay === "true") {
       this.flagOverlayContexts.add(ev.action.id);
