@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Open-source <a href="https://www.elgato.com/stream-deck">Elgato Stream Deck</a> and <a href="https://miraboxbuy.com/">Mirabox</a> plugin for <a href="https://www.iracing.com/">iRacing</a>. Turn your Stream Deck or Mirabox into a fully-featured button box with live telemetry, pit controls, camera management, and more.
+  iRaceDeck is an <a href="https://www.elgato.com/stream-deck">Elgato Stream Deck</a> and <a href="https://miraboxbuy.com/">Mirabox</a> plugin for <a href="https://www.iracing.com/">iRacing</a>. Turn your Stream Deck or Mirabox into a fully-featured button box with live telemetry, pit controls, camera management, and more.
 </p>
 
 <p align="center">
@@ -192,13 +192,28 @@ See the existing actions for reference, or check `packages/stream-deck-plugin/CL
 
 ## Usage and license
 
-iRaceDeck is open source under the [MIT License](LICENSE.md).
+iRaceDeck is source-available and licensed under a [custom non-commercial license](LICENSE).
 
-You can use, modify, and distribute it freely, including for commercial purposes.
+Free for personal and non-commercial use, including use in sim racing events and competitions.
+
+For full details, see [USAGE.md](USAGE.md).
 
 The name “iRaceDeck” and associated branding are not included in the license and may not be used for derived versions without permission.
 
 If you're unsure whether your use case is allowed, feel free to reach out.
+
+## Why this license?
+
+iRaceDeck is source-available rather than open source.
+
+The goal is simple:
+- Keep iRaceDeck free for sim racers, hobbyists, and the community
+- Allow people to build on top of it (profiles, icons, tools, integrations)
+- Prevent others from selling or commercializing the plugin itself without permission
+
+If you're just using, modifying, or contributing to iRaceDeck, nothing changes for you.
+
+If you're building something commercial around iRaceDeck, that's usually fine — just don't redistribute or sell the plugin itself. If you're unsure, feel free to reach out.
 
 ## For companies
 
