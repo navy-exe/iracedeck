@@ -123,6 +123,12 @@ export class RepeatController {
    * The held check runs four times per tick: before scheduling, inside the
    * scheduled callback, after execute resolves, and again before the next
    * schedule. Any of them can abort the loop without leaving orphan timers.
+   *
+   * Ownership: the scheduled callback closes over the entry object it was
+   * armed for. If an overlapping onKeyDown replaces that entry mid-await,
+   * the stale callback must not touch `this.timers` or recurse — otherwise
+   * it would install an orphan tick on top of the new entry's hold-driven
+   * loop and produce two overlapping streams of executes.
    */
   private scheduleRepeatTick(buttonId: string): void {
     if (!this.heldButtons.has(buttonId)) {
@@ -136,6 +142,10 @@ export class RepeatController {
     if (!entry) return;
 
     entry.next = setTimeout(async () => {
+      // Ownership check: a new onKeyDown may have replaced this entry before
+      // the setTimeout fired. If so, the new entry owns the loop now — bail.
+      if (this.timers.get(buttonId) !== entry) return;
+
       if (!this.heldButtons.has(buttonId)) {
         this.clearTimers(buttonId);
 
@@ -149,6 +159,11 @@ export class RepeatController {
       } catch (err) {
         this.logger.error(`Repeat execution failed: ${String(err)}`);
       }
+
+      // Ownership check after the await: an overlapping onKeyDown may have
+      // replaced the entry while execute was in flight. The new entry's own
+      // hold timer will drive its loop — do not touch anything here.
+      if (this.timers.get(buttonId) !== entry) return;
 
       if (!keepGoing) {
         this.heldButtons.delete(buttonId);

@@ -243,6 +243,39 @@ describe("RepeatController", () => {
 
       controller.onKeyUp("btn");
     });
+
+    it("does not install a duplicate loop when a new onKeyDown replaces the entry during an in-flight async execute", async () => {
+      // Race: the stale tick callback resumes from its await AFTER a new onKeyDown
+      // has replaced the entry. Without ownership checking it would call
+      // scheduleRepeatTick on the new entry, installing an orphan `next` timer
+      // alongside the new entry's hold-timer-driven loop — two overlapping loops.
+      let resolveFirst!: (value: boolean) => void;
+      const firstPromise = new Promise<boolean>((resolve) => {
+        resolveFirst = resolve;
+      });
+      const execute = vi.fn<() => Promise<boolean>>().mockReturnValueOnce(firstPromise).mockResolvedValue(true);
+
+      // t=0: first press
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      // t=500: hold (400) + first interval (100) fire → first execute awaited
+      await vi.advanceTimersByTimeAsync(500);
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      // t=500: overlapping onKeyDown replaces the entry while the first execute is mid-await.
+      // The new entry's hold timer is armed at t=500, firing at t=900.
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+
+      // Resolve the first execute and let its continuation run on the microtask queue.
+      resolveFirst(true);
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Advance to t=899 — still inside the new entry's hold phase (hold fires at t=900),
+      // so a clean implementation must not have called execute again.
+      await vi.advanceTimersByTimeAsync(399);
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      controller.onKeyUp("btn");
+    });
   });
 
   describe("multiple concurrent buttons", () => {
