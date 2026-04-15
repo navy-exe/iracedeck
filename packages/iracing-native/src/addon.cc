@@ -388,41 +388,17 @@ public:
 
         std::lock_guard<std::mutex> lock(g_chatSendMutex);
 
-        // Best-effort snapshot of any CF_UNICODETEXT already on the clipboard
-        // so we can restore it after the paste. If the clipboard holds
-        // non-text content (image, file list, etc.) we proceed anyway — the
-        // chat send is higher priority than preserving that content.
-        std::u16string savedClipboard;
-        bool hadClipboardText = false;
-
-        if (OpenClipboard(NULL))
-        {
-            HANDLE hData = GetClipboardData(CF_UNICODETEXT);
-
-            if (hData)
-            {
-                const wchar_t *pText = static_cast<const wchar_t *>(GlobalLock(hData));
-
-                if (pText)
-                {
-                    savedClipboard = reinterpret_cast<const char16_t *>(pText);
-                    hadClipboardText = true;
-                    GlobalUnlock(hData);
-                }
-            }
-
-            CloseClipboard();
-        }
-
+        // Sending a chat message uses the clipboard as a fast "type" channel
+        // (copy → BeginChat → paste → Enter). We intentionally do NOT save
+        // and restore the user's prior clipboard content. Every extra
+        // clipboard write wakes clipboard-manager apps via WM_CLIPBOARDUPDATE
+        // and risks one of them stealing focus in the narrow window between
+        // our copy and the subsequent paste/Enter, which can leave the chat
+        // window half-open or drop the send. Fewer writes = fewer chances
+        // for that contention. This behavior is documented on the website
+        // under Troubleshooting → Known issues.
         if (!copyToClipboard(message_))
         {
-            // copyToClipboard may have called EmptyClipboard before failing.
-            // If we captured a text snapshot, put it back so we don't leave
-            // the clipboard empty.
-            if (hadClipboardText)
-            {
-                copyToClipboard(savedClipboard);
-            }
             result_ = false;
             return;
         }
@@ -447,11 +423,6 @@ public:
         Sleep(kChatStepDelayMs);
 
         irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
-
-        if (hadClipboardText)
-        {
-            copyToClipboard(savedClipboard);
-        }
 
         result_ = true;
     }
