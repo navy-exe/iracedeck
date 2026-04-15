@@ -8,7 +8,14 @@
 #include <napi.h>
 #include <windows.h>
 #include <string>
+#include <mutex>
 #include <irsdk_defines.h>
+
+// Serializes all in-flight chat sends so the paste/broadcast sequence can't
+// interleave with itself on different worker threads. Chat sends run on the
+// libuv thread pool, and iRacing only has one chat window — attempting two
+// sends in parallel would clobber the clipboard and chat state.
+static std::mutex g_chatSendMutex;
 
 // ============================================================================
 // SDK Connection Functions
@@ -345,22 +352,110 @@ static void sendPaste()
 static constexpr DWORD kChatStepDelayMs = 100;
 
 /**
- * Send a complete chat message to iRacing using clipboard paste.
- * This function handles the entire chat flow:
- * 1. Saves the current clipboard content (plain text only)
- * 2. Copies the message to the clipboard
- * 3. Cancels any existing chat to ensure clean state, then waits
- * 4. Opens chat window via broadcast message, then waits
- * 5. Pastes the message with Ctrl+V, then waits
- * 6. Presses Enter to send the message, then waits
- * 7. Cancels chat via broadcast to explicitly close the chat window
- *    (Enter sends the message but leaves the input focused)
- * 8. Restores the original clipboard content
+ * Async worker that runs the full chat-send pipeline on a libuv worker
+ * thread and resolves a Promise with the resulting success boolean.
  *
- * Each wait is kChatStepDelayMs to give iRacing time to process.
+ * The actual steps are identical to the previous synchronous version —
+ * save clipboard, paste message, Enter, restore clipboard — but running
+ * off the main thread means the JS event loop stays free during the
+ * ~400ms native pipeline. setTimeout callbacks and Stream Deck events
+ * continue to flow while a chat message is being typed.
+ *
+ * Serialized via g_chatSendMutex so concurrent sends queue up instead of
+ * clobbering each other: iRacing only has one chat window, and two
+ * overlapping sends would fight over the clipboard.
+ */
+class ChatSendWorker : public Napi::AsyncWorker
+{
+public:
+    ChatSendWorker(Napi::Env env, std::u16string message)
+        : Napi::AsyncWorker(env),
+          message_(std::move(message)),
+          deferred_(Napi::Promise::Deferred::New(env)),
+          result_(false)
+    {
+    }
+
+    Napi::Promise GetPromise() { return deferred_.Promise(); }
+
+    void Execute() override
+    {
+        if (message_.empty())
+        {
+            result_ = false;
+            return;
+        }
+
+        std::lock_guard<std::mutex> lock(g_chatSendMutex);
+
+        // Sending a chat message uses the clipboard as a fast "type" channel
+        // (copy → BeginChat → paste → Enter). We intentionally do NOT save
+        // and restore the user's prior clipboard content. Every extra
+        // clipboard write wakes clipboard-manager apps via WM_CLIPBOARDUPDATE
+        // and risks one of them stealing focus in the narrow window between
+        // our copy and the subsequent paste/Enter, which can leave the chat
+        // window half-open or drop the send. Fewer writes = fewer chances
+        // for that contention. This behavior is documented on the website
+        // under Troubleshooting → Known issues.
+        if (!copyToClipboard(message_))
+        {
+            result_ = false;
+            return;
+        }
+
+        irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
+        Sleep(kChatStepDelayMs);
+
+        irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_BeginChat, 0);
+        Sleep(kChatStepDelayMs);
+
+        sendPaste();
+        Sleep(kChatStepDelayMs);
+
+        INPUT enterInputs[2] = {};
+        enterInputs[0].type = INPUT_KEYBOARD;
+        enterInputs[0].ki.wVk = VK_RETURN;
+        enterInputs[1].type = INPUT_KEYBOARD;
+        enterInputs[1].ki.wVk = VK_RETURN;
+        enterInputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(2, enterInputs, sizeof(INPUT));
+
+        Sleep(kChatStepDelayMs);
+
+        irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
+
+        result_ = true;
+    }
+
+    void OnOK() override
+    {
+        Napi::HandleScope scope(Env());
+        deferred_.Resolve(Napi::Boolean::New(Env(), result_));
+    }
+
+    void OnError(const Napi::Error &e) override
+    {
+        Napi::HandleScope scope(Env());
+        deferred_.Reject(e.Value());
+    }
+
+private:
+    std::u16string message_;
+    Napi::Promise::Deferred deferred_;
+    bool result_;
+};
+
+/**
+ * Send a complete chat message to iRacing using clipboard paste.
+ * Returns a Promise that resolves to true on success, false on failure.
+ *
+ * The full pipeline runs on a libuv worker thread (see ChatSendWorker),
+ * so the JS event loop remains responsive during the ~400ms native work.
+ *
+ * Each step waits kChatStepDelayMs to give iRacing time to process.
  *
  * @param message - The message to send
- * @returns Success boolean
+ * @returns Promise<boolean>
  */
 Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
 {
@@ -369,83 +464,16 @@ Napi::Value SendChatMessage(const Napi::CallbackInfo &info)
     if (info.Length() < 1 || !info[0].IsString())
     {
         Napi::TypeError::New(env, "Expected (message: string)").ThrowAsJavaScriptException();
-        return Napi::Boolean::New(env, false);
+        return env.Undefined();
     }
 
     std::u16string message = info[0].As<Napi::String>().Utf16Value();
 
-    if (message.empty())
-    {
-        return Napi::Boolean::New(env, false);
-    }
+    ChatSendWorker *worker = new ChatSendWorker(env, std::move(message));
+    Napi::Promise promise = worker->GetPromise();
+    worker->Queue();
 
-    // 1. Save the current clipboard content (text only)
-    std::u16string savedClipboard;
-    bool hadClipboardText = false;
-
-    if (OpenClipboard(NULL))
-    {
-        HANDLE hData = GetClipboardData(CF_UNICODETEXT);
-
-        if (hData)
-        {
-            const wchar_t *pText = static_cast<const wchar_t *>(GlobalLock(hData));
-
-            if (pText)
-            {
-                savedClipboard = reinterpret_cast<const char16_t *>(pText);
-                hadClipboardText = true;
-                GlobalUnlock(hData);
-            }
-        }
-
-        CloseClipboard();
-    }
-
-    // 2. Copy the message to the clipboard
-    if (!copyToClipboard(message))
-    {
-        return Napi::Boolean::New(env, false);
-    }
-
-    // 3. Cancel any existing chat to ensure clean state
-    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
-    Sleep(kChatStepDelayMs);
-
-    // 4. Open chat window via broadcast
-    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_BeginChat, 0);
-
-    // 5. Wait for chat window to open
-    Sleep(kChatStepDelayMs);
-
-    // 6. Paste the message with Ctrl+V
-    sendPaste();
-
-    // 7. Wait for paste to complete
-    Sleep(kChatStepDelayMs);
-
-    // 8. Press Enter to send
-    INPUT enterInputs[2] = {};
-    enterInputs[0].type = INPUT_KEYBOARD;
-    enterInputs[0].ki.wVk = VK_RETURN;
-    enterInputs[1].type = INPUT_KEYBOARD;
-    enterInputs[1].ki.wVk = VK_RETURN;
-    enterInputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, enterInputs, sizeof(INPUT));
-
-    // 9. Wait for Enter to be processed
-    Sleep(kChatStepDelayMs);
-
-    // 10. Cancel chat to close the window
-    irsdk_broadcastMsg(irsdk_BroadcastChatComand, irsdk_ChatCommand_Cancel, 0);
-
-    // 11. Restore the original clipboard content
-    if (hadClipboardText)
-    {
-        copyToClipboard(savedClipboard);
-    }
-
-    return Napi::Boolean::New(env, true);
+    return promise;
 }
 
 // ============================================================================

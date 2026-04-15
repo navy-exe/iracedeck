@@ -27,7 +27,7 @@ const {
   mockGetCurrentTelemetry,
   mockGetSessionInfo,
 } = vi.hoisted(() => ({
-  mockSendMessage: vi.fn(() => true),
+  mockSendMessage: vi.fn(async () => true),
   mockPitTireCompound: vi.fn(() => true),
   mockPitClearTires: vi.fn(() => true),
   mockGetCommands: vi.fn(() => ({

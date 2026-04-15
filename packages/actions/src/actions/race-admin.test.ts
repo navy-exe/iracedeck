@@ -123,7 +123,7 @@ vi.mock("@iracedeck/deck-core", () => ({
     setRegenerateCallback = vi.fn();
   },
   getCommands: vi.fn(() => ({
-    chat: { sendMessage: vi.fn(() => true) },
+    chat: { sendMessage: vi.fn(async () => true) },
     camera: { switchNum: vi.fn(() => true) },
   })),
   generateBorderParts: vi.fn(() => ({ defs: "", rects: "" })),

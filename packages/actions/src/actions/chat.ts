@@ -354,7 +354,7 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
         this.executeSdkCancel();
         break;
       case "send-message":
-        this.executeSdkSendMessage(settings.message);
+        await this.executeSdkSendMessage(settings.message);
         break;
       case "macro":
         this.executeSdkMacro(settings.macroNumber);
@@ -397,7 +397,7 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     this.logger.debug(`Result: ${success}`);
   }
 
-  private executeSdkSendMessage(message: string): void {
+  private async executeSdkSendMessage(message: string): Promise<void> {
     const trimmed = message?.trim();
 
     if (!trimmed) {
@@ -417,8 +417,14 @@ export class Chat extends ConnectionStateAwareAction<ChatSettings> {
     }
 
     const chat = getCommands().chat;
-    const success = chat.sendMessage(resolvedMessage);
-    this.logger.info("Send message executed");
+    const success = await chat.sendMessage(resolvedMessage);
+
+    if (success) {
+      this.logger.info("Send message executed");
+    } else {
+      this.logger.warn("Failed to send message");
+    }
+
     this.logger.debug(`Result: ${success}`);
   }
 

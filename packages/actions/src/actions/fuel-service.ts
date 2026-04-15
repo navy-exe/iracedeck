@@ -244,7 +244,15 @@ export function buildFuelMacro(
 
 /** Modes that support long-press repeat (execute at interval while held) */
 const REPEATABLE_MODES = new Set<FuelServiceMode>(["add-fuel", "reduce-fuel"]);
-const REPEAT_INTERVAL_MS = 250;
+/** Hold duration required before a keyDown transitions into the repeat loop */
+const REPEAT_HOLD_THRESHOLD_MS = 400;
+/**
+ * Gap between the completion of one repeat send and the start of the next.
+ * The loop is self-awaiting — it does not queue up a backlog — so the effective
+ * cadence is `native_send_duration + REPEAT_GAP_MS` (roughly 440ms + this value).
+ * Keep this small so releases feel instant but the event loop still breathes.
+ */
+const REPEAT_GAP_MS = 100;
 /** Maximum duration for long-press repeat before auto-stop (safety net for missed keyUp) */
 const REPEAT_MAX_DURATION_MS = 15_000;
 
@@ -389,8 +397,18 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   private lastState = new Map<string, string>();
   private repeatIntervals = new Map<
     string,
-    { interval: ReturnType<typeof setInterval>; safety: ReturnType<typeof setTimeout> }
+    {
+      hold?: ReturnType<typeof setTimeout>;
+      next?: ReturnType<typeof setTimeout>;
+      safety: ReturnType<typeof setTimeout>;
+    }
   >();
+  // Authoritative "is this button currently held?" state. onKeyDown adds, onKeyUp removes.
+  // All timer callbacks consult this before doing anything so a keyUp that arrives while
+  // onKeyDown is awaiting the async chat send still reliably cancels the repeat: when the
+  // await resolves and startRepeat finally runs, the button is no longer in the set and
+  // no timers are ever created.
+  private heldButtons = new Set<string>();
 
   override async onWillAppear(ev: IDeckWillAppearEvent<FuelServiceSettings>): Promise<void> {
     await super.onWillAppear(ev);
@@ -411,6 +429,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<FuelServiceSettings>): Promise<void> {
+    this.heldButtons.delete(ev.action.id);
     this.stopRepeat(ev.action.id);
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
@@ -420,6 +439,9 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
 
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<FuelServiceSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
+    // Defensive: settings changes can arrive mid-hold; drop any pending/active repeat.
+    this.heldButtons.delete(ev.action.id);
+    this.stopRepeat(ev.action.id);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
     this.lastState.delete(ev.action.id);
@@ -431,16 +453,25 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
 
   override async onKeyDown(ev: IDeckKeyDownEvent<FuelServiceSettings>): Promise<void> {
     this.logger.info("Key down received");
+    this.heldButtons.add(ev.action.id);
     const settings = this.parseSettings(ev.payload.settings);
-    await this.executeMode(settings.mode, settings);
 
+    // Kick off the first execute without awaiting it here, then arm the repeat timers
+    // synchronously. If we awaited first, onKeyUp could run during the yield and leave
+    // heldButtons/stopRepeat in an already-cleared state — then the late startRepeat
+    // below would install orphan timers that nothing ever cancels. By starting the
+    // repeat immediately, any keyUp that arrives during the in-flight send is guaranteed
+    // to see the timers and clear them.
     if (REPEATABLE_MODES.has(settings.mode)) {
       this.startRepeat(ev.action.id);
     }
+
+    await this.executeMode(settings.mode, settings);
   }
 
   override async onKeyUp(ev: IDeckKeyUpEvent<FuelServiceSettings>): Promise<void> {
     this.logger.info("Key up received");
+    this.heldButtons.delete(ev.action.id);
     this.stopRepeat(ev.action.id);
   }
 
@@ -469,7 +500,73 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
   private startRepeat(actionId: string): void {
     this.stopRepeat(actionId);
 
-    const interval = setInterval(() => {
+    // If the button was already released (e.g. keyUp fired during the await in
+    // onKeyDown and this startRepeat call is running after the fact), do nothing.
+    // Without this, the async chat send yields long enough for keyUp to land before
+    // startRepeat is called, and we'd install orphan timers with no hope of a keyUp
+    // arriving to clear them.
+    if (!this.heldButtons.has(actionId)) return;
+
+    // The safety timeout runs for the entire hold (threshold + repeat loop) so a
+    // dropped keyUp can never leave anything running past REPEAT_MAX_DURATION_MS.
+    const safety = setTimeout(() => {
+      this.logger.warn(
+        `Repeat auto-stopped after ${REPEAT_MAX_DURATION_MS}ms (safety timeout — possible missed keyUp)`,
+      );
+      this.heldButtons.delete(actionId);
+      this.stopRepeat(actionId);
+    }, REPEAT_MAX_DURATION_MS);
+
+    // Quick taps must never enter the repeat loop. We wait REPEAT_HOLD_THRESHOLD_MS
+    // before promoting this context from "pending hold" to "repeating" — if keyUp lands
+    // first, stopRepeat clears the hold timer and nothing ever starts.
+    const hold = setTimeout(() => {
+      const entry = this.repeatIntervals.get(actionId);
+
+      if (!entry) return;
+
+      // Double-check: the button may have been released while the hold timer was pending.
+      if (!this.heldButtons.has(actionId)) {
+        this.stopRepeat(actionId);
+
+        return;
+      }
+
+      entry.hold = undefined;
+      this.scheduleRepeatTick(actionId);
+    }, REPEAT_HOLD_THRESHOLD_MS);
+
+    this.repeatIntervals.set(actionId, { hold, safety });
+  }
+
+  /**
+   * Self-awaiting repeat loop. Each tick fires one executeMode, awaits it to
+   * completion, then schedules the next tick REPEAT_GAP_MS later. Because we
+   * never have more than one in-flight send per button, releasing mid-hold
+   * stops the repeat immediately — there is no queued backlog to drain.
+   *
+   * The held check runs four times per tick: before scheduling, inside the
+   * scheduled callback, after executeMode resolves, and again before the next
+   * schedule. Any of them can abort the loop without leaving orphan timers.
+   */
+  private scheduleRepeatTick(actionId: string): void {
+    if (!this.heldButtons.has(actionId)) {
+      this.stopRepeat(actionId);
+
+      return;
+    }
+
+    const entry = this.repeatIntervals.get(actionId);
+
+    if (!entry) return;
+
+    entry.next = setTimeout(async () => {
+      if (!this.heldButtons.has(actionId)) {
+        this.stopRepeat(actionId);
+
+        return;
+      }
+
       const currentSettings = this.activeContexts.get(actionId);
 
       if (!currentSettings) {
@@ -478,26 +575,32 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
         return;
       }
 
-      void this.executeMode(currentSettings.mode, currentSettings).catch((err) => {
+      try {
+        await this.executeMode(currentSettings.mode, currentSettings);
+      } catch (err) {
         this.logger.error(`Repeat execution failed: ${err}`);
-      });
-    }, REPEAT_INTERVAL_MS);
+      }
 
-    const safety = setTimeout(() => {
-      this.logger.warn(
-        `Repeat auto-stopped after ${REPEAT_MAX_DURATION_MS}ms (safety timeout — possible missed keyUp)`,
-      );
-      this.stopRepeat(actionId);
-    }, REPEAT_MAX_DURATION_MS);
+      // The button may have been released while executeMode was in flight.
+      // Bail before scheduling the next tick so the loop stops promptly.
+      if (!this.heldButtons.has(actionId)) {
+        this.stopRepeat(actionId);
 
-    this.repeatIntervals.set(actionId, { interval, safety });
+        return;
+      }
+
+      this.scheduleRepeatTick(actionId);
+    }, REPEAT_GAP_MS);
   }
 
   private stopRepeat(actionId: string): void {
     const entry = this.repeatIntervals.get(actionId);
 
     if (entry) {
-      clearInterval(entry.interval);
+      if (entry.hold) clearTimeout(entry.hold);
+
+      if (entry.next) clearTimeout(entry.next);
+
       clearTimeout(entry.safety);
       this.repeatIntervals.delete(actionId);
     }
@@ -515,7 +618,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
       case "add-fuel":
       case "reduce-fuel":
       case "set-fuel-amount":
-        this.executeFuelMacro(mode, settings);
+        await this.executeFuelMacro(mode, settings);
         break;
 
       // SDK-based modes
@@ -576,7 +679,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     return !isFuelFillOn(telemetry);
   }
 
-  private executeFuelMacro(mode: FuelServiceMode, settings: FuelServiceSettings): void {
+  private async executeFuelMacro(mode: FuelServiceMode, settings: FuelServiceSettings): Promise<void> {
     const preserveFueling = this.shouldPreserveFuelingState();
     const macro = buildFuelMacro(mode, settings.amount, settings.unit, preserveFueling);
 
@@ -587,7 +690,17 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     }
 
     this.logger.debug(`Sending fuel macro: ${macro}`);
-    const success = getCommands().chat.sendMessage(macro);
+
+    let success = false;
+
+    try {
+      success = await getCommands().chat.sendMessage(macro);
+    } catch (err) {
+      this.logger.warn(`Failed to send fuel macro: ${err}`);
+      this.logger.debug(`Failed macro: ${macro}`);
+
+      return;
+    }
 
     if (success) {
       this.logger.info("Fuel macro sent");
