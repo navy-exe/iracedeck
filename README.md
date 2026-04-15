@@ -11,6 +11,19 @@
   <a href="https://discord.gg/c6nRYywpah"><img src="https://img.shields.io/discord/1477659500851888219?logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord"></a>
 </p>
 
+## Table of contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Project Structure](#project-structure)
+- [Releasing](#releasing)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
+- [Usage and license](#usage-and-license)
+- [For companies](#for-companies)
+- [Inspiration](#inspiration)
+- [Acknowledgements](#acknowledgements)
+
 ## Features
 
 **30 actions** with **254 modes** across 8 categories, with Stream Deck+ dial rotation support on most modes:
@@ -202,7 +215,7 @@ The name “iRaceDeck” and associated branding are not included in the license
 
 If you're unsure whether your use case is allowed, feel free to reach out.
 
-## Why this license?
+### Why this license?
 
 iRaceDeck is source-available rather than open source.
 
