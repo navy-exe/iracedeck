@@ -1,0 +1,285 @@
+import { type ILogger, LogLevel } from "@iracedeck/logger";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { RepeatController } from "./repeat-controller.js";
+
+function createSpyLogger(): ILogger & {
+  trace: ReturnType<typeof vi.fn>;
+  debug: ReturnType<typeof vi.fn>;
+  info: ReturnType<typeof vi.fn>;
+  warn: ReturnType<typeof vi.fn>;
+  error: ReturnType<typeof vi.fn>;
+} {
+  const logger = {
+    trace: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    withLevel: (_level: LogLevel): ILogger => logger,
+    createScope: (_scope: string): ILogger => logger,
+  };
+
+  return logger;
+}
+
+const DEFAULTS = {
+  holdMs: 400,
+  intervalMs: 100,
+  safetyMs: 15_000,
+};
+
+describe("RepeatController", () => {
+  let logger: ReturnType<typeof createSpyLogger>;
+  let controller: RepeatController;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    logger = createSpyLogger();
+    controller = new RepeatController(logger);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  describe("quick tap (shorter than holdMs)", () => {
+    it("never invokes execute when released before the hold threshold", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(399);
+      controller.onKeyUp("btn");
+      await vi.advanceTimersByTimeAsync(5_000);
+
+      expect(execute).not.toHaveBeenCalled();
+    });
+
+    it("never invokes execute when released exactly at the hold threshold - 1 ms", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(399);
+      controller.onKeyUp("btn");
+
+      expect(execute).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("sustained hold", () => {
+    it("fires execute once per intervalMs after holdMs", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+
+      // Before hold threshold: nothing
+      await vi.advanceTimersByTimeAsync(399);
+      expect(execute).not.toHaveBeenCalled();
+
+      // Cross the hold threshold — first repeat tick schedules
+      await vi.advanceTimersByTimeAsync(1);
+      // At this point the hold timer has fired and scheduled the first `next` timer.
+      // The next tick itself has not yet run.
+      expect(execute).not.toHaveBeenCalled();
+
+      // First repeat tick fires after intervalMs
+      await vi.advanceTimersByTimeAsync(100);
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      // Second
+      await vi.advanceTimersByTimeAsync(100);
+      expect(execute).toHaveBeenCalledTimes(2);
+
+      // Third
+      await vi.advanceTimersByTimeAsync(100);
+      expect(execute).toHaveBeenCalledTimes(3);
+
+      controller.onKeyUp("btn");
+    });
+  });
+
+  describe("execute returns false", () => {
+    it("stops the loop when execute returns false", async () => {
+      const execute = vi.fn().mockResolvedValueOnce(false);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(500); // hold + first interval
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      // No further calls even if button is still held
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(execute).toHaveBeenCalledTimes(1);
+    });
+
+    it("stops the loop when a synchronous execute returns false", async () => {
+      const execute = vi.fn(() => false);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("onKeyUp during an in-flight async execute", () => {
+    it("does not fire a further execute after the in-flight promise resolves", async () => {
+      let resolveFirst!: (value: boolean) => void;
+      const firstPromise = new Promise<boolean>((resolve) => {
+        resolveFirst = resolve;
+      });
+      const execute = vi.fn<() => Promise<boolean>>().mockReturnValueOnce(firstPromise).mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(500); // hold + first interval → in-flight
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      // keyUp arrives while the first execute is still pending
+      controller.onKeyUp("btn");
+
+      // Now the first execute finally resolves
+      resolveFirst(true);
+      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(5_000);
+
+      expect(execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("onKeyUp between ticks", () => {
+    it("stops the loop immediately and never fires another execute", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(600); // hold + first + part of second
+      expect(execute).toHaveBeenCalledTimes(2);
+
+      controller.onKeyUp("btn");
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(execute).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("clear", () => {
+    it("behaves identically to onKeyUp", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      controller.clear("btn");
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(execute).toHaveBeenCalledTimes(1);
+      expect(controller.isHeld("btn")).toBe(false);
+    });
+  });
+
+  describe("clearAll", () => {
+    it("clears every held button", async () => {
+      const exec1 = vi.fn().mockResolvedValue(true);
+      const exec2 = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn1", { ...DEFAULTS, execute: exec1 });
+      controller.onKeyDown("btn2", { ...DEFAULTS, execute: exec2 });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(exec1).toHaveBeenCalledTimes(1);
+      expect(exec2).toHaveBeenCalledTimes(1);
+
+      controller.clearAll();
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(exec1).toHaveBeenCalledTimes(1);
+      expect(exec2).toHaveBeenCalledTimes(1);
+      expect(controller.isHeld("btn1")).toBe(false);
+      expect(controller.isHeld("btn2")).toBe(false);
+    });
+  });
+
+  describe("safety timeout", () => {
+    it("auto-stops after safetyMs when keyUp is lost, logs a warning, and releases held state", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      // Let it repeat for a while
+      await vi.advanceTimersByTimeAsync(14_999);
+      expect(controller.isHeld("btn")).toBe(true);
+      const callsBefore = execute.mock.calls.length;
+      expect(callsBefore).toBeGreaterThan(0);
+
+      // Cross the safety deadline
+      await vi.advanceTimersByTimeAsync(2);
+
+      expect(controller.isHeld("btn")).toBe(false);
+      expect(logger.warn).toHaveBeenCalled();
+
+      // No further calls after safety fires
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(execute.mock.calls.length).toBeLessThanOrEqual(callsBefore + 1);
+
+      const finalCalls = execute.mock.calls.length;
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(execute).toHaveBeenCalledTimes(finalCalls);
+    });
+  });
+
+  describe("re-keyDown on an already-held button", () => {
+    it("resets timers so a single stream of repeats happens, not two concurrent loops", async () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      // Second keyDown without a keyUp — should reset, not stack
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+
+      // No extra calls just from the re-down
+      expect(execute).toHaveBeenCalledTimes(1);
+
+      // Drive one more full interval; only one call should be added, not two
+      await vi.advanceTimersByTimeAsync(500);
+      expect(execute).toHaveBeenCalledTimes(2);
+
+      controller.onKeyUp("btn");
+    });
+  });
+
+  describe("multiple concurrent buttons", () => {
+    it("repeats each button independently", async () => {
+      const exec1 = vi.fn().mockResolvedValue(true);
+      const exec2 = vi.fn().mockResolvedValue(true);
+
+      controller.onKeyDown("btn1", { ...DEFAULTS, execute: exec1 });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(exec1).toHaveBeenCalledTimes(1);
+
+      controller.onKeyDown("btn2", { ...DEFAULTS, execute: exec2 });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(exec1).toHaveBeenCalledTimes(6); // 5 more 100ms ticks
+      expect(exec2).toHaveBeenCalledTimes(1);
+
+      // Release btn1, btn2 keeps repeating
+      controller.onKeyUp("btn1");
+      await vi.advanceTimersByTimeAsync(300);
+      expect(exec1).toHaveBeenCalledTimes(6);
+      expect(exec2).toHaveBeenCalledTimes(4);
+
+      controller.onKeyUp("btn2");
+    });
+  });
+
+  describe("isHeld", () => {
+    it("reflects current held state", () => {
+      const execute = vi.fn().mockResolvedValue(true);
+
+      expect(controller.isHeld("btn")).toBe(false);
+
+      controller.onKeyDown("btn", { ...DEFAULTS, execute });
+      expect(controller.isHeld("btn")).toBe(true);
+
+      controller.onKeyUp("btn");
+      expect(controller.isHeld("btn")).toBe(false);
+    });
+  });
+});
