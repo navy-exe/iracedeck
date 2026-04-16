@@ -63,6 +63,8 @@ import {
 } from "@iracedeck/iracing-sdk";
 import z from "zod";
 
+import { RepeatController } from "../shared/repeat-controller.js";
+
 const REPLAY_CONTROL_MODES = [
   "play-pause",
   "play-backward",
@@ -455,23 +457,17 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   /** Current slow-motion state from telemetry, keyed by action context ID */
   private replaySlowMotion = new Map<string, boolean>();
 
-  /** Active long-press repeat timers, keyed by action context ID */
-  private repeatTimers = new Map<
-    string,
-    {
-      hold?: ReturnType<typeof setTimeout>;
-      next?: ReturnType<typeof setTimeout>;
-      safety: ReturnType<typeof setTimeout>;
-    }
-  >();
+  private readonly repeat = new RepeatController(this.logger);
 
-  /**
-   * Authoritative "is this button currently held?" state. onKeyDown adds,
-   * onKeyUp removes. All repeat timer callbacks consult this before doing
-   * anything so a keyUp that races with any async work still reliably cancels
-   * the repeat — the same defensive pattern used by fuel-service.
-   */
-  private heldButtons = new Set<string>();
+  /** @internal Compat accessor — tests read repeat state via this field. */
+  private get repeatTimers() {
+    return this.repeat.timers;
+  }
+
+  /** @internal Compat accessor — tests read held state via this field. */
+  private get heldButtons() {
+    return this.repeat.heldButtons;
+  }
 
   /** Cached settings per context for telemetry-driven display updates */
   private activeContexts = new Map<string, ReplayControlSettings>();
@@ -510,12 +506,11 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   }
 
   override async onWillDisappear(ev: IDeckWillDisappearEvent<ReplayControlSettings>): Promise<void> {
-    this.heldButtons.delete(ev.action.id);
+    this.repeat.clear(ev.action.id);
     await super.onWillDisappear(ev);
     this.sdkController.unsubscribe(ev.action.id);
     this.replaySpeed.delete(ev.action.id);
     this.replaySlowMotion.delete(ev.action.id);
-    this.stopRepeat(ev.action.id);
     this.activeContexts.delete(ev.action.id);
     this.lastState.delete(ev.action.id);
   }
@@ -523,8 +518,7 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
   override async onDidReceiveSettings(ev: IDeckDidReceiveSettingsEvent<ReplayControlSettings>): Promise<void> {
     await super.onDidReceiveSettings(ev);
     // Settings can change mid-hold; drop any pending repeat and held state.
-    this.heldButtons.delete(ev.action.id);
-    this.stopRepeat(ev.action.id);
+    this.repeat.clear(ev.action.id);
     const settings = this.parseSettings(ev.payload.settings);
     this.activeContexts.set(ev.action.id, settings);
     await this.updateDisplay(ev, settings);
@@ -532,18 +526,25 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
 
   override async onKeyDown(ev: IDeckKeyDownEvent<ReplayControlSettings>): Promise<void> {
     this.logger.info("Key down received");
-    this.heldButtons.add(ev.action.id);
     const settings = this.parseSettings(ev.payload.settings);
     this.executeMode(ev.action.id, settings);
 
     if (LONG_PRESS_REPEAT_MODES.has(settings.mode)) {
-      this.startRepeat(ev.action.id, settings);
+      this.repeat.onKeyDown(ev.action.id, {
+        holdMs: LONG_PRESS_INITIAL_DELAY,
+        intervalMs: LONG_PRESS_REPEAT_GAP_MS,
+        safetyMs: LONG_PRESS_MAX_DURATION_MS,
+        execute: () => {
+          this.executeMode(ev.action.id, settings);
+
+          return true;
+        },
+      });
     }
   }
 
   override async onKeyUp(ev: IDeckKeyUpEvent<ReplayControlSettings>): Promise<void> {
-    this.heldButtons.delete(ev.action.id);
-    this.stopRepeat(ev.action.id);
+    this.repeat.onKeyUp(ev.action.id);
   }
 
   override async onDialDown(ev: IDeckDialDownEvent<ReplayControlSettings>): Promise<void> {
@@ -558,96 +559,24 @@ export class ReplayControl extends ConnectionStateAwareAction<ReplayControlSetti
     this.executeDialRotate(ev.action.id, settings.mode, ev.payload.ticks);
   }
 
-  private startRepeat(contextId: string, settings: ReplayControlSettings): void {
-    this.stopRepeat(contextId);
-
-    // Defensive: if keyUp already landed (e.g. a future async path in onKeyDown
-    // yields before startRepeat gets called), don't install orphan timers.
-    if (!this.heldButtons.has(contextId)) return;
-
-    // Safety timeout covers the entire hold — dropped keyUp can't leak past this.
-    const safety = setTimeout(() => {
-      this.logger.warn(
-        `Repeat auto-stopped after ${LONG_PRESS_MAX_DURATION_MS}ms (safety timeout — possible missed keyUp)`,
-      );
-      this.heldButtons.delete(contextId);
-      this.stopRepeat(contextId);
-    }, LONG_PRESS_MAX_DURATION_MS);
-
-    // Quick taps must never enter the repeat loop: wait LONG_PRESS_INITIAL_DELAY
-    // before the first repeat. If keyUp arrives first, stopRepeat clears the hold
-    // and nothing ever starts.
-    const hold = setTimeout(() => {
-      const entry = this.repeatTimers.get(contextId);
-
-      if (!entry) return;
-
-      if (!this.heldButtons.has(contextId)) {
-        this.stopRepeat(contextId);
-
-        return;
-      }
-
-      entry.hold = undefined;
-      this.scheduleRepeatTick(contextId, settings);
-    }, LONG_PRESS_INITIAL_DELAY);
-
-    this.repeatTimers.set(contextId, { hold, safety });
-  }
-
   /**
-   * Self-awaiting repeat loop. Each tick fires one executeMode, then schedules
-   * the next tick LONG_PRESS_REPEAT_GAP_MS later. Held state is re-checked at
-   * every step so a keyUp that races with any future async work still cancels
-   * the loop promptly.
+   * @internal Compat shim — preserves the pre-refactor `startRepeat` guard test.
+   * Tests install/remove heldButtons entries manually and then call this method to
+   * verify timers are not armed when the button is no longer held.
    */
-  private scheduleRepeatTick(contextId: string, settings: ReplayControlSettings): void {
-    if (!this.heldButtons.has(contextId)) {
-      this.stopRepeat(contextId);
+  private startRepeat(contextId: string, settings: ReplayControlSettings): void {
+    if (!this.repeat.isHeld(contextId)) return;
 
-      return;
-    }
-
-    const entry = this.repeatTimers.get(contextId);
-
-    if (!entry) return;
-
-    entry.next = setTimeout(() => {
-      if (!this.heldButtons.has(contextId)) {
-        this.stopRepeat(contextId);
-
-        return;
-      }
-
-      try {
+    this.repeat.onKeyDown(contextId, {
+      holdMs: LONG_PRESS_INITIAL_DELAY,
+      intervalMs: LONG_PRESS_REPEAT_GAP_MS,
+      safetyMs: LONG_PRESS_MAX_DURATION_MS,
+      execute: () => {
         this.executeMode(contextId, settings);
-      } catch (err) {
-        this.logger.error(`Repeat execution failed: ${err}`);
-      }
 
-      // executeMode is currently sync, but guard anyway so this stays correct
-      // if it ever becomes async.
-      if (!this.heldButtons.has(contextId)) {
-        this.stopRepeat(contextId);
-
-        return;
-      }
-
-      this.scheduleRepeatTick(contextId, settings);
-    }, LONG_PRESS_REPEAT_GAP_MS);
-  }
-
-  private stopRepeat(contextId: string): void {
-    const entry = this.repeatTimers.get(contextId);
-
-    if (entry) {
-      if (entry.hold) clearTimeout(entry.hold);
-
-      if (entry.next) clearTimeout(entry.next);
-
-      clearTimeout(entry.safety);
-      this.repeatTimers.delete(contextId);
-    }
+        return true;
+      },
+    });
   }
 
   private parseSettings(settings: unknown): ReplayControlSettings {
