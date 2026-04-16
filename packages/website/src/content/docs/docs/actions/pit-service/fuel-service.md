@@ -117,13 +117,13 @@ Clear the pending fuel request via the iRacing SDK. Removes the fuel line from t
 
 ### Toggle Autofuel
 
-Toggle iRacing's autofuel checkbox on or off. The icon shows the current refuel amount and a green ON / red OFF status bar plus matching border color reflecting whether autofuel is active.
+Toggle iRacing's autofuel checkbox on or off. The icon shows a green ON / red OFF status bar plus matching border color reflecting whether autofuel is active.
 
 #### Details
 
 - **Dial:** No rotation support
 - **Default binding:** `Shift+Ctrl+A`
-- **Telemetry-aware icon:** Yes — shows the current refuel amount and an on/off indicator driven by `PitSvFlags.FuelAutofill`
+- **Telemetry-aware icon:** Yes — shows an on/off indicator driven by `PitSvFlags.FuelAutofill`
 
 #### Settings
 
