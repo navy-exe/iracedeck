@@ -123,7 +123,7 @@ Toggle iRacing's autofuel checkbox on or off. The icon shows a green ON / red OF
 
 - **Dial:** No rotation support
 - **Default binding:** `Shift+Ctrl+A`
-- **Telemetry-aware icon:** Yes — shows an on/off indicator driven by `PitSvFlags.FuelAutofill`
+- **Telemetry-aware icon:** Yes — shows an on/off indicator driven by `dpFuelAutoFillActive`
 
 #### Settings
 
