@@ -328,9 +328,13 @@ export function generateFuelServiceSvg(
       }
     }
 
-    // Show fuel amount when available; show "--" when the system is unavailable
+    // toggle-fuel-fill shows the fuel amount; toggle-autofuel shows only the status bar
     const graphicContent =
-      toggleState === "na" ? fuelFillGraphicContent({}, graphic1) : fuelFillGraphicContent(state, graphic1);
+      mode === "toggle-autofuel"
+        ? ""
+        : toggleState === "na"
+          ? fuelFillGraphicContent({}, graphic1)
+          : fuelFillGraphicContent(state, graphic1);
 
     const statusBar = toggleState === "na" ? statusBarNA() : toggleState === "on" ? statusBarOn() : statusBarOff();
 
@@ -678,7 +682,7 @@ export class FuelService extends ConnectionStateAwareAction<FuelServiceSettings>
     }
 
     if (settings.mode === "toggle-autofuel") {
-      return `autofuel|${telemetryState.autofuelEnabled ?? true}|${telemetryState.autofuelActive ?? "na"}|${telemetryState.fuelAmount ?? "none"}|${telemetryState.displayUnits ?? 0}|${borderKey}`;
+      return `autofuel|${telemetryState.autofuelEnabled ?? true}|${telemetryState.autofuelActive ?? "na"}|${borderKey}`;
     }
 
     return settings.mode;

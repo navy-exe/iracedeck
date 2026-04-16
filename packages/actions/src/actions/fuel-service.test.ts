@@ -872,7 +872,7 @@ describe("FuelService", () => {
         expect(decoded).toContain("status-na");
       });
 
-      it("should show N/A status bar and -- text when autofuel system is not available", () => {
+      it("should show N/A status bar when autofuel system is not available", () => {
         const telemetryState: FuelServiceTelemetryState = {
           autofuelEnabled: false,
           autofuelActive: false,
@@ -885,11 +885,9 @@ describe("FuelService", () => {
         expect(decoded).toContain("status-na");
         expect(decoded).not.toContain("status-on");
         expect(decoded).not.toContain("status-off");
-        expect(decoded).toContain("--");
-        expect(decoded).not.toContain("+50 L");
       });
 
-      it("should include fuel amount graphic content", () => {
+      it("should not include fuel amount graphic content", () => {
         const telemetryState: FuelServiceTelemetryState = {
           autofuelActive: true,
           fuelAmount: 50.0,
@@ -898,15 +896,8 @@ describe("FuelService", () => {
         const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
         const decoded = decodeURIComponent(result);
 
-        expect(decoded).toContain("+50 L");
-      });
-
-      it("should show -- when no fuel amount is available", () => {
-        const telemetryState: FuelServiceTelemetryState = { autofuelActive: true };
-        const result = generateFuelServiceSvg({ mode: "toggle-autofuel", amount: 1, unit: "l" }, telemetryState);
-        const decoded = decodeURIComponent(result);
-
-        expect(decoded).toContain("--");
+        expect(decoded).not.toContain("+50 L");
+        expect(decoded).not.toContain("--");
       });
 
       it("should include title content from metadata SVG", () => {
