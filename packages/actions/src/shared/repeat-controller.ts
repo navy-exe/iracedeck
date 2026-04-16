@@ -152,6 +152,9 @@ export class RepeatController {
         return;
       }
 
+      // Intentional: on exception keepGoing stays true so a transient failure
+      // does not kill the repeat loop. The safety timeout caps how long a
+      // broken execute can spam errors (at most safetyMs / intervalMs attempts).
       let keepGoing = true;
 
       try {
