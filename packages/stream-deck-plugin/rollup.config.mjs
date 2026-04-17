@@ -6,12 +6,13 @@ import path from "node:path";
 import url from "node:url";
 import process from "node:process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
-import { browserDir, partialsDir, piTemplatePlugin, templatesDir } from "@iracedeck/pi-components/build";
+import { browserDir, partialsDir, piTemplatePlugin } from "@iracedeck/pi-components/build";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
 const actionsPackagePath = path.resolve(__dirname, "../actions/src");
+const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 
 /**
  * Rollup plugin to import SVG files as strings.
@@ -78,11 +79,30 @@ const config = {
 		},
 		svgPlugin(),
 		piTemplatePlugin({
-			templatesDir,
+			templatesDir: actionTemplatesDir,
 			outputDir: `${sdPlugin}/ui`,
 			partialsDir,
 			version: rootPackageJson.version,
 		}),
+		// Copy per-action static icons from @iracedeck/actions into {sdPlugin}/imgs/actions/<name>/.
+		// Source of truth: `packages/actions/src/actions/<name>/{icon,key}.svg`.
+		{
+			name: "copy-action-icons",
+			generateBundle() {
+				const destRoot = `${sdPlugin}/imgs/actions`;
+				for (const entry of readdirSync(actionTemplatesDir, { withFileTypes: true })) {
+					if (!entry.isDirectory() || entry.name === "data") continue;
+					const actionDir = path.join(actionTemplatesDir, entry.name);
+					for (const file of ["icon.svg", "key.svg"]) {
+						const src = path.join(actionDir, file);
+						if (!existsSync(src)) continue;
+						const destDir = path.join(destRoot, entry.name);
+						mkdirSync(destDir, { recursive: true });
+						copyFileSync(src, path.join(destDir, file));
+					}
+				}
+			},
+		},
 		// Copy vendored sdpi-components.js and built pi-components.js from @iracedeck/pi-components
 		{
 			name: "copy-pi-browser-assets",
@@ -115,9 +135,10 @@ const config = {
 						// directory may not exist
 					}
 				};
-				// Watch local icons directory and shared icons package
+				// Watch local icons directory, shared icons package, and per-action static assets
 				watchSvgsRecursive(path.resolve("icons"));
 				watchSvgsRecursive(iconsPackagePath);
+				watchSvgsRecursive(actionTemplatesDir);
 			},
 		},
 		typescript({

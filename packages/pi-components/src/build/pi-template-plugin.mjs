@@ -71,12 +71,14 @@ function loadDataFiles(dataDir) {
 }
 
 /**
- * Create a custom require function for use in EJS templates
- * This allows templates to use require('./data/key-bindings.json')
+ * Create a custom require function for use in EJS templates.
+ * Paths are resolved relative to the templates root (where the shared `data/`
+ * directory lives), so templates can live in nested per-action folders and
+ * still reach shared JSON via `require('./data/key-bindings.json')`.
  */
-function createTemplateRequire(templateDir) {
+function createTemplateRequire(templatesDir) {
   return (modulePath) => {
-    const fullPath = path.resolve(templateDir, modulePath);
+    const fullPath = path.resolve(templatesDir, modulePath);
 
     if (!existsSync(fullPath)) {
       throw new Error(`Template require: file not found: ${fullPath}`);
@@ -155,20 +157,31 @@ export function piTemplatePlugin(options) {
       const dataDir = path.join(templatesDir, "data");
       const dataFiles = loadDataFiles(dataDir);
 
+      // Guard against two templates compiling to the same `ui/<name>.html`.
+      const seenBasenames = new Map();
       for (const templatePath of ejsFiles) {
-        const relativePath = path.relative(templatesDir, templatePath);
-        const outputPath = path.join(outputDir, relativePath.replace(/\.ejs$/, ".html"));
-        const outputDirForFile = path.dirname(outputPath);
-
-        // Ensure output subdirectory exists
-        if (!existsSync(outputDirForFile)) {
-          mkdirSync(outputDirForFile, { recursive: true });
+        const basename = path.basename(templatePath, ".ejs");
+        const previous = seenBasenames.get(basename);
+        if (previous) {
+          this.error(
+            `pi-template-plugin: basename collision for "${basename}.ejs" — ` +
+              `${path.relative(templatesDir, previous)} vs ${path.relative(templatesDir, templatePath)}`,
+          );
+          return;
         }
+        seenBasenames.set(basename, templatePath);
+      }
+
+      for (const templatePath of ejsFiles) {
+        const templateName = path.basename(templatePath, ".ejs");
+        const relativePath = path.relative(templatesDir, templatePath);
+        // Flatten nested template paths: every template compiles to `{outputDir}/{name}.html`
+        // regardless of its source-tree location (templates live in per-action subfolders).
+        const outputPath = path.join(outputDir, `${templateName}.html`);
 
         try {
           const templateContent = readFileSync(templatePath, "utf-8");
           const templateDir = path.dirname(templatePath);
-          const templateName = path.basename(templatePath, ".ejs");
           const docsUrl = dataFiles["docs-urls"]?.[templateName] || "";
 
           // Compile the template
@@ -179,8 +192,8 @@ export function piTemplatePlugin(options) {
             version: version,
             // Documentation URL for this action (empty string if not mapped)
             docsUrl,
-            // Also expose a require function for inline requires
-            require: createTemplateRequire(templateDir),
+            // Also expose a require function for inline requires (resolved from templatesDir)
+            require: createTemplateRequire(templatesDir),
             // Expose locals for checking if variables are defined
             locals: {
               data: dataFiles,

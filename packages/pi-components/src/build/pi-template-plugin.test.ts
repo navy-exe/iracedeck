@@ -232,6 +232,108 @@ describe("piTemplatePlugin", () => {
     expect(context.warn).toHaveBeenCalledWith(expect.stringContaining("Templates directory not found"));
   });
 
+  it("should flatten nested template paths to flat output", async () => {
+    // Nest a template two levels deep
+    const actionDir = path.join(templatesDir, "fuel-service");
+    mkdirSync(actionDir, { recursive: true });
+    writeFileSync(path.join(actionDir, "fuel-service.ejs"), "<html><body>Fuel</body></html>");
+
+    const plugin = piTemplatePlugin({
+      templatesDir,
+      outputDir,
+      partialsDir,
+      version: "1.0.0",
+    });
+
+    const context = {
+      addWatchFile: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+    };
+
+    if (plugin.buildStart) {
+      await (plugin.buildStart as AnyFunction).call(context);
+    }
+    if (plugin.generateBundle) {
+      await (plugin.generateBundle as AnyFunction).call(context);
+    }
+
+    // Output is flat: `outputDir/fuel-service.html`, not `outputDir/fuel-service/fuel-service.html`
+    expect(existsSync(path.join(outputDir, "fuel-service.html"))).toBe(true);
+    expect(existsSync(path.join(outputDir, "fuel-service", "fuel-service.html"))).toBe(false);
+  });
+
+  it("should resolve require('./data/...') from templatesDir even for nested templates", async () => {
+    // Shared data at templatesDir/data — the nested template's require must resolve here,
+    // NOT relative to the template's own directory.
+    writeFileSync(path.join(dataDir, "icon-defaults.json"), JSON.stringify({ "fuel-service": { color: "red" } }));
+
+    const actionDir = path.join(templatesDir, "fuel-service");
+    mkdirSync(actionDir, { recursive: true });
+    writeFileSync(
+      path.join(actionDir, "fuel-service.ejs"),
+      "<html><body><%= require('./data/icon-defaults.json')['fuel-service'].color %></body></html>",
+    );
+
+    const plugin = piTemplatePlugin({
+      templatesDir,
+      outputDir,
+      partialsDir,
+      version: "1.0.0",
+    });
+
+    const context = {
+      addWatchFile: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+    };
+
+    if (plugin.buildStart) {
+      await (plugin.buildStart as AnyFunction).call(context);
+    }
+    if (plugin.generateBundle) {
+      await (plugin.generateBundle as AnyFunction).call(context);
+    }
+
+    const content = readFileSync(path.join(outputDir, "fuel-service.html"), "utf-8");
+    expect(content).toContain("red");
+    expect(context.error).not.toHaveBeenCalled();
+  });
+
+  it("should error when two templates share a basename", async () => {
+    const dirA = path.join(templatesDir, "group-a");
+    const dirB = path.join(templatesDir, "group-b");
+    mkdirSync(dirA, { recursive: true });
+    mkdirSync(dirB, { recursive: true });
+    writeFileSync(path.join(dirA, "dup.ejs"), "<html>A</html>");
+    writeFileSync(path.join(dirB, "dup.ejs"), "<html>B</html>");
+
+    const plugin = piTemplatePlugin({
+      templatesDir,
+      outputDir,
+      partialsDir,
+      version: "1.0.0",
+    });
+
+    const context = {
+      addWatchFile: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+    };
+
+    if (plugin.buildStart) {
+      await (plugin.buildStart as AnyFunction).call(context);
+    }
+    if (plugin.generateBundle) {
+      await (plugin.generateBundle as AnyFunction).call(context);
+    }
+
+    expect(context.error).toHaveBeenCalledWith(expect.stringContaining("basename collision"));
+  });
+
   it("should pass variables to partials", async () => {
     // Create a partial that uses a variable
     writeFileSync(path.join(partialsDir, "title.ejs"), "<title><%= title %></title>");

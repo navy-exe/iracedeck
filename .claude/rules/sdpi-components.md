@@ -1,6 +1,6 @@
 ---
 paths:
-  - "packages/pi-components/templates/**"
+  - "packages/actions/src/actions/**/*.ejs"
   - "packages/pi-components/partials/**"
   - "packages/pi-components/src/components/**"
   - "packages/*/*.sdPlugin/ui/**"

@@ -1,11 +1,11 @@
 ---
 paths:
   - "**/icons/**/*.svg"
-  - "**/imgs/actions/**/key.svg"
+  - "packages/actions/src/actions/**/key.svg"
 ---
 # Key Icon Types
 
-This document defines standardized key icon type layouts. Standalone icon SVGs (`packages/icons/**/*.svg`) are 144x144 graphic snippets — they contain only artwork, Mustache color placeholders, and `<desc>` metadata. No background rect and no label text elements. Background, title text, and base layout are composed at render time by `assembleIcon()`. Key icons (`**/imgs/actions/**/key.svg`) are 72x72 static full-color SVGs with no Mustache placeholders.
+This document defines standardized key icon type layouts. Standalone icon SVGs (`packages/icons/**/*.svg`) are 144x144 graphic snippets — they contain only artwork, Mustache color placeholders, and `<desc>` metadata. No background rect and no label text elements. Background, title text, and base layout are composed at render time by `assembleIcon()`. Key icons (`packages/actions/src/actions/<name>/key.svg`) are 72x72 static full-color SVGs with no Mustache placeholders.
 
 ## Default Key Icon Type
 

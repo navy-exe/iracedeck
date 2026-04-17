@@ -186,14 +186,16 @@ Contributions are welcome! Here's how to get started:
 
 ### Adding a new action
 
-Actions live in `packages/actions/src/actions/`. Each action needs:
+Actions live in `packages/actions/src/actions/<action-name>/`, one folder per action. Each action needs:
 
-1. An action class extending `ConnectionStateAwareAction` from `@iracedeck/deck-core`
-2. Icons in `packages/icons/`
-3. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
-4. Manifest entry in each plugin's `manifest.json`
-5. A Property Inspector template (EJS -> HTML) in `packages/pi-components/templates/`
-6. Unit tests
+1. `<action-name>.ts` — action class extending `ConnectionStateAwareAction` from `@iracedeck/deck-core`
+2. `<action-name>.test.ts` — unit tests
+3. `<action-name>.ejs` — Property Inspector template (compiled to `ui/<action-name>.html`)
+4. `icon.svg` + `key.svg` — static category and key icons (copied into each plugin's `imgs/actions/<name>/` at build time)
+5. Mustache SVGs in `packages/icons/<action-name>/` for any dynamic variants
+6. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
+7. Manifest entry in each plugin's `manifest.json`
+8. Entries in `packages/actions/src/actions/data/{key-bindings,docs-urls,icon-defaults}.json` where applicable
 
 See the existing actions for reference, or check `packages/stream-deck-plugin/CLAUDE.md` for step-by-step instructions.
 

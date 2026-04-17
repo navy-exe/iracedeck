@@ -57,7 +57,7 @@ packages/stream-deck-plugin-{name}/
 | Action UUIDs | `com.iracedeck.sd.{name}.{action-name}` |
 
 ### After creating the plugin:
-1. Add `"@iracedeck/pi-components": "workspace:*"` to the plugin's `package.json` dependencies and wire its rollup config to `piTemplatePlugin`, `templatesDir`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build` (see `.claude/rules/pi-templates.md`). The `sdpi-components.js`/`pi-components.js` files are copied automatically by the plugin's rollup build — no manual copy.
+1. Add `"@iracedeck/pi-components": "workspace:*"` and `"@iracedeck/actions": "workspace:*"` to the plugin's `package.json` dependencies. Wire the rollup config to `piTemplatePlugin`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`, and compute `actionTemplatesDir` locally from the `@iracedeck/actions` path (see `.claude/rules/pi-templates.md`). The `sdpi-components.js`/`pi-components.js` files are copied automatically by the plugin's rollup build — no manual copy. Per-action `icon.svg`/`key.svg` are copied from each action folder into `{sdPlugin}/imgs/actions/<name>/` by a dedicated rollup plugin step.
 2. Run `pnpm install` in the package directory
 3. Run `pnpm build` to verify build succeeds
 4. Run `streamdeck link com.iracedeck.sd.{name}.sdPlugin` to register with Stream Deck
