@@ -42,9 +42,9 @@ vi.mock("@iracedeck/icons/pit-quick-actions/clear-all-checkboxes.svg", () => ({
   default: '<svg xmlns="http://www.w3.org/2000/svg">{{mainLabel}} {{subLabel}}</svg>',
 }));
 
-vi.mock("../../../icons/pit-quick-actions.svg", () => ({
-  default: '<svg xmlns="http://www.w3.org/2000/svg">{{titleContent}}{{iconContent}} {{backgroundColor}}</svg>',
-}));
+// Dynamic SVG templates (pit-quick-actions-fast-repair.svg, pit-quick-actions-windshield.svg)
+// are loaded by Vitest's svg-raw plugin from the real files — tests assert against the real
+// template content (labels like "WINDSHIELD", "FAST REPAIR"), so they must NOT be mocked.
 
 vi.mock("../../icons/status-bar.js", () => ({
   statusBarOn: () => '<rect class="status-on"/>',

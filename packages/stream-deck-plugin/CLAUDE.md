@@ -409,7 +409,7 @@ Key points:
 - State caching prevents re-rendering every 250ms tick when nothing changed
 - Update `activeContexts` in both `onWillAppear` and `onDidReceiveSettings`
 
-### Reference implementations
+### Telemetry-aware reference implementations
 
 All action source files are in `packages/actions/src/actions/<action-name>/<action-name>.ts`.
 
@@ -418,7 +418,7 @@ All action source files are in `packages/actions/src/actions/<action-name>/<acti
 | Telemetry-aware icon (single control) | `car-control/car-control.ts` (pit-speed-limiter) |
 | Telemetry-aware icon (full action) | `tire-service/tire-service.ts` |
 
-### Reference implementations
+### General reference implementations
 
 All action source files are in `packages/actions/src/actions/<action-name>/<action-name>.ts`.
 
