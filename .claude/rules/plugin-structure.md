@@ -14,13 +14,13 @@ Actions do NOT import from `@elgato/streamdeck` or any platform SDK. They import
 
 ## Active Plugins
 - `iracing-plugin-stream-deck` (com.iracedeck.sd.core) — Elgato Stream Deck, uses `@iracedeck/deck-adapter-elgato`
-- `mirabox-plugin` (com.iracedeck.sd.core) — Mirabox, uses `@iracedeck/deck-adapter-mirabox`
+- `iracing-plugin-mirabox` (com.iracedeck.sd.core) — Mirabox, uses `@iracedeck/deck-adapter-mirabox`
 
 Both plugins register the same actions from `@iracedeck/iracing-actions`. When adding or modifying actions, changes must be applied to **all** plugin packages (registration in `plugin.ts`, manifest entries, PI templates where applicable).
 
 ## Creating New Plugins
 
-Use `iracing-plugin-stream-deck` as the reference implementation for Elgato plugins, and `mirabox-plugin` for Mirabox/VSD plugins. Create the following structure:
+Use `iracing-plugin-stream-deck` as the reference implementation for Elgato plugins, and `iracing-plugin-mirabox` for Mirabox/VSD plugins. Create the following structure:
 
 ```
 packages/iracing-plugin-stream-deck-{name}/

@@ -1,4 +1,4 @@
-# @iracedeck/mirabox-plugin
+# @iracedeck/iracing-plugin-mirabox
 
 Mirabox plugin for iRaceDeck. Registers actions from `@iracedeck/iracing-actions` with VSD Craft via `@iracedeck/deck-adapter-mirabox`.
 
