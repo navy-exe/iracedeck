@@ -14,7 +14,7 @@ import path from "node:path";
 
 const ICONS_DIR = path.resolve("packages/icons");
 const DYNAMIC_ICONS_DIR = path.resolve("packages/actions/icons");
-const OUTPUT_FILE = path.resolve("packages/stream-deck-plugin/src/pi/data/icon-defaults.json");
+const OUTPUT_FILE = path.resolve("packages/actions/src/actions/data/icon-defaults.json");
 
 const defaults = {};
 

@@ -5,7 +5,6 @@ import { piTemplatePlugin } from "./pi-template-plugin.mjs";
 
 const packageRoot = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "../..");
 
-export const templatesDir = path.join(packageRoot, "templates");
 export const partialsDir = path.join(packageRoot, "partials");
 export const browserDir = path.join(packageRoot, "browser");
 

@@ -6,11 +6,13 @@ import path from "node:path";
 import url from "node:url";
 import process from "node:process";
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { browserDir, partialsDir, piTemplatePlugin, templatesDir } from "@iracedeck/pi-components/build";
+import { browserDir, partialsDir, piTemplatePlugin } from "@iracedeck/pi-components/build";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
+const actionsPackagePath = path.resolve(__dirname, "../actions/src");
+const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 const elgatoPluginPath = path.resolve(__dirname, "../stream-deck-plugin");
 
 /**
@@ -42,21 +44,35 @@ function svgPlugin() {
 
 /**
  * Rollup plugin to copy static assets for the Mirabox plugin.
- * - `imgs/` still comes from the Elgato plugin (plugin-level icons are currently shared there).
+ * - Per-action icons (`imgs/actions/<name>/{icon,key}.svg`) come from `@iracedeck/actions`.
+ * - Plugin-level icons (`imgs/plugin/`) are still sourced from the Elgato plugin until
+ *   the plugin-branding assets are extracted into their own package.
  * - PI browser assets (`sdpi-components.js`, `pi-components.js`) come from `@iracedeck/pi-components`.
  */
 function copyAssetsPlugin(sdPlugin) {
 	return {
 		name: "copy-assets",
 		generateBundle() {
-			const elgatoSdPlugin = path.join(elgatoPluginPath, "com.iracedeck.sd.core.sdPlugin");
+			// Copy per-action static icons from @iracedeck/actions into {sdPlugin}/imgs/actions/<name>/.
+			const destActions = path.join(sdPlugin, "imgs", "actions");
+			for (const entry of readdirSync(actionTemplatesDir, { withFileTypes: true })) {
+				if (!entry.isDirectory() || entry.name === "data") continue;
+				const actionDir = path.join(actionTemplatesDir, entry.name);
+				for (const file of ["icon.svg", "key.svg"]) {
+					const src = path.join(actionDir, file);
+					if (!existsSync(src)) continue;
+					const destDir = path.join(destActions, entry.name);
+					mkdirSync(destDir, { recursive: true });
+					copyFileSync(src, path.join(destDir, file));
+				}
+			}
 
-			// Copy imgs/ directory from the Elgato plugin
-			const srcImgs = path.join(elgatoSdPlugin, "imgs");
-			const destImgs = path.join(sdPlugin, "imgs");
-			if (existsSync(srcImgs)) {
-				cpSync(srcImgs, destImgs, { recursive: true });
-				this.info?.("Copied imgs/ from stream-deck-plugin");
+			// Copy plugin-level icons (category-icon, marketplace, etc.) from the Elgato plugin.
+			// TODO: move to a dedicated branding package when that refactor lands.
+			const srcPluginImgs = path.join(elgatoPluginPath, "com.iracedeck.sd.core.sdPlugin", "imgs", "plugin");
+			const destPluginImgs = path.join(sdPlugin, "imgs", "plugin");
+			if (existsSync(srcPluginImgs)) {
+				cpSync(srcPluginImgs, destPluginImgs, { recursive: true });
 			}
 
 			// Copy PI browser assets from @iracedeck/pi-components
@@ -136,9 +152,9 @@ const config = {
 			},
 		},
 		svgPlugin(),
-		// Compile PI templates from @iracedeck/pi-components
+		// Compile PI templates from @iracedeck/actions
 		piTemplatePlugin({
-			templatesDir,
+			templatesDir: actionTemplatesDir,
 			outputDir: `${sdPlugin}/ui`,
 			partialsDir,
 			version: rootPackageJson.version,
@@ -161,9 +177,10 @@ const config = {
 						// directory may not exist
 					}
 				};
-				// Watch local icons directory and shared icons package
+				// Watch local icons directory, shared icons package, and per-action static assets
 				watchSvgsRecursive(path.resolve("icons"));
 				watchSvgsRecursive(iconsPackagePath);
+				watchSvgsRecursive(actionTemplatesDir);
 			},
 		},
 		typescript({

@@ -12,7 +12,7 @@ Mirrors the structure of `@iracedeck/stream-deck-plugin` but targets Mirabox dev
 - Uses `ws` package for WebSocket communication (VSD bundles Node.js 20)
 - `SDKVersion: 1` instead of `3`
 
-Property Inspector assets (web components, EJS templates, partials, data, `sdpi-components.js`) come from `@iracedeck/pi-components`, the same shared package the Elgato plugin consumes. The `rollup.config.mjs` imports `piTemplatePlugin`, `templatesDir`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`. Generated HTML is then stripped of the `lang="en"` attribute (`stripHtmlLangPlugin`) because VSD Craft does not accept it.
+PI framework (web components, EJS partials, compile plugin, `sdpi-components.js`) comes from `@iracedeck/pi-components`, the same shared package the Elgato plugin consumes. Per-action PI templates, static icons, and template data come from `@iracedeck/actions` (`src/actions/<name>/*.ejs` + `icon.svg` + `key.svg`, and shared `src/actions/data/*.json`). The `rollup.config.mjs` imports `piTemplatePlugin`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`, computes `actionTemplatesDir` locally from the `@iracedeck/actions` path, and copies per-action `icon.svg`/`key.svg` into `com.iracedeck.sd.core.sdPlugin/imgs/actions/<name>/`. The plugin-level branding icons in `imgs/plugin/` are still copied from `stream-deck-plugin` until a dedicated branding package lands. Generated HTML is then stripped of the `lang="en"` attribute (`stripHtmlLangPlugin`) because VSD Craft does not accept it.
 
 ## Build
 
