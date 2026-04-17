@@ -42,10 +42,10 @@ packages/stream-deck-plugin-{name}/
     │   ├── plugin/                        # category-icon.png, marketplace.png (@1x and @2x)
     │   └── actions/{action-name}/         # icon.svg, key.svg for each action
     └── ui/
-        ├── settings.html                  # Global settings (disableWhenDisconnected)
-        ├── sdpi-components.js             # REQUIRED: Copy from existing plugin
-        ├── pi-components.js               # REQUIRED: Copy from existing plugin (for ird-key-binding)
-        └── {action-name}.html             # Action-specific Property Inspector
+        ├── settings.html                  # Global settings (disableWhenDisconnected) — compiled from @iracedeck/pi-components
+        ├── sdpi-components.js             # Copied at build time from @iracedeck/pi-components/browser
+        ├── pi-components.js               # Copied at build time from @iracedeck/pi-components/browser
+        └── {action-name}.html             # Action-specific Property Inspector — compiled from @iracedeck/pi-components
 ```
 
 ### Key identifiers to update when creating a new plugin:
@@ -57,7 +57,7 @@ packages/stream-deck-plugin-{name}/
 | Action UUIDs | `com.iracedeck.sd.{name}.{action-name}` |
 
 ### After creating the plugin:
-1. Copy `sdpi-components.js` and `pi-components.js` from an existing plugin's `ui/` folder to your new plugin's `ui/` folder
+1. Add `"@iracedeck/pi-components": "workspace:*"` to the plugin's `package.json` dependencies and wire its rollup config to `piTemplatePlugin`, `templatesDir`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build` (see `.claude/rules/pi-templates.md`). The `sdpi-components.js`/`pi-components.js` files are copied automatically by the plugin's rollup build — no manual copy.
 2. Run `pnpm install` in the package directory
 3. Run `pnpm build` to verify build succeeds
 4. Run `streamdeck link com.iracedeck.sd.{name}.sdPlugin` to register with Stream Deck

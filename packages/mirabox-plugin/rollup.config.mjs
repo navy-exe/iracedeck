@@ -6,7 +6,7 @@ import path from "node:path";
 import url from "node:url";
 import process from "node:process";
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { piTemplatePlugin } from "../stream-deck-plugin/src/build/pi-template-plugin.mjs";
+import { browserDir, partialsDir, piTemplatePlugin, templatesDir } from "@iracedeck/pi-components/build";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
@@ -41,8 +41,9 @@ function svgPlugin() {
 }
 
 /**
- * Rollup plugin to copy static assets from the Elgato plugin.
- * Copies imgs/ directory and PI JS files (sdpi-components.js, pi-components.js).
+ * Rollup plugin to copy static assets for the Mirabox plugin.
+ * - `imgs/` still comes from the Elgato plugin (plugin-level icons are currently shared there).
+ * - PI browser assets (`sdpi-components.js`, `pi-components.js`) come from `@iracedeck/pi-components`.
  */
 function copyAssetsPlugin(sdPlugin) {
 	return {
@@ -50,7 +51,7 @@ function copyAssetsPlugin(sdPlugin) {
 		generateBundle() {
 			const elgatoSdPlugin = path.join(elgatoPluginPath, "com.iracedeck.sd.core.sdPlugin");
 
-			// Copy imgs/ directory
+			// Copy imgs/ directory from the Elgato plugin
 			const srcImgs = path.join(elgatoSdPlugin, "imgs");
 			const destImgs = path.join(sdPlugin, "imgs");
 			if (existsSync(srcImgs)) {
@@ -58,18 +59,19 @@ function copyAssetsPlugin(sdPlugin) {
 				this.info?.("Copied imgs/ from stream-deck-plugin");
 			}
 
-			// Copy PI JS files
+			// Copy PI browser assets from @iracedeck/pi-components
 			const uiDir = path.join(sdPlugin, "ui");
 			if (!existsSync(uiDir)) {
 				mkdirSync(uiDir, { recursive: true });
 			}
 			for (const jsFile of ["sdpi-components.js", "pi-components.js"]) {
-				const src = path.join(elgatoSdPlugin, "ui", jsFile);
-				if (existsSync(src)) {
-					copyFileSync(src, path.join(uiDir, jsFile));
+				const src = path.join(browserDir, jsFile);
+				if (!existsSync(src)) {
+					this.error(`Missing ${jsFile} in @iracedeck/pi-components. Build it first: pnpm --filter @iracedeck/pi-components build`);
 				}
+				copyFileSync(src, path.join(uiDir, jsFile));
 			}
-			this.info?.("Copied PI JS files from stream-deck-plugin");
+			this.info?.("Copied PI browser assets from @iracedeck/pi-components");
 		},
 	};
 }
@@ -134,14 +136,14 @@ const config = {
 			},
 		},
 		svgPlugin(),
-		// Compile PI templates from the Elgato plugin's source (shared templates)
+		// Compile PI templates from @iracedeck/pi-components
 		piTemplatePlugin({
-			templatesDir: path.join(elgatoPluginPath, "src/pi"),
+			templatesDir,
 			outputDir: `${sdPlugin}/ui`,
-			partialsDir: path.join(elgatoPluginPath, "src/pi-templates/partials"),
+			partialsDir,
 			version: rootPackageJson.version,
 		}),
-		// Copy static assets (imgs/, JS files) from the Elgato plugin
+		// Copy imgs/ from the Elgato plugin and PI browser assets from @iracedeck/pi-components
 		copyAssetsPlugin(sdPlugin),
 		{
 			name: "watch-externals",

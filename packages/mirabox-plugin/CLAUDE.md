@@ -10,8 +10,9 @@ Mirrors the structure of `@iracedeck/stream-deck-plugin` but targets Mirabox dev
 - Manifest uses `"Knob"` instead of `"Encoder"` for dial actions
 - No `Encoder.layout` field (VSD doesn't support encoder layouts)
 - Uses `ws` package for WebSocket communication (VSD bundles Node.js 20)
-- No PI template plugin (PI compatibility is a separate work item)
 - `SDKVersion: 1` instead of `3`
+
+Property Inspector assets (web components, EJS templates, partials, data, `sdpi-components.js`) come from `@iracedeck/pi-components`, the same shared package the Elgato plugin consumes. The `rollup.config.mjs` imports `piTemplatePlugin`, `templatesDir`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`. Generated HTML is then stripped of the `lang="en"` attribute (`stripHtmlLangPlugin`) because VSD Craft does not accept it.
 
 ## Build
 

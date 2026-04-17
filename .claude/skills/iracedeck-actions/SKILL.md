@@ -31,7 +31,7 @@ When asked about actions or controls:
 1. Read `docs/reference/actions.json` and search by action name, mode value, or category
 2. Report: action name, ID, file, modes with labels
 3. For implementation details, check the source at `packages/stream-deck-plugin/src/actions/{file}`
-4. For PI templates, check `packages/stream-deck-plugin/src/pi/{action-name}.ejs`
+4. For PI templates, check `packages/pi-components/templates/{action-name}.ejs`
 
 ## Category Overview
 
@@ -147,7 +147,7 @@ When actions are added, removed, or modified (new modes, renamed settings, chang
 |------|------|
 | `packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
 | `packages/stream-deck-plugin/src/actions/` | Action source files (32 .ts files) |
-| `packages/stream-deck-plugin/src/pi/` | Property Inspector EJS templates |
-| `packages/stream-deck-plugin/src/pi/data/key-bindings.json` | Global key binding definitions |
+| `packages/pi-components/templates/` | Property Inspector EJS templates |
+| `packages/pi-components/templates/data/key-bindings.json` | Global key binding definitions |
 | `packages/stream-deck-plugin/icons/` | SVG icon Mustache templates |
 | `packages/stream-deck-plugin/src/plugin.ts` | Action registration and initialization |

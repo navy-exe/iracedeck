@@ -6,6 +6,8 @@ node_modules/
 *.sdPlugin/logs
 *.sdPlugin/.mock
 
-# Generated PI HTML (built from src/pi/*.ejs templates)
+# PI assets copied/compiled at build time (source of truth in @iracedeck/pi-components)
 *.sdPlugin/ui/*.html
+*.sdPlugin/ui/pi-components.js
+*.sdPlugin/ui/sdpi-components.js
 

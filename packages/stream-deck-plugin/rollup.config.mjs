@@ -5,8 +5,8 @@ import typescript from "@rollup/plugin-typescript";
 import path from "node:path";
 import url from "node:url";
 import process from "node:process";
-import { readFileSync, readdirSync } from "node:fs";
-import { piTemplatePlugin } from "./src/build/pi-template-plugin.mjs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { browserDir, partialsDir, piTemplatePlugin, templatesDir } from "@iracedeck/pi-components/build";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
@@ -78,11 +78,27 @@ const config = {
 		},
 		svgPlugin(),
 		piTemplatePlugin({
-			templatesDir: "src/pi",
+			templatesDir,
 			outputDir: `${sdPlugin}/ui`,
-			partialsDir: "src/pi-templates/partials",
+			partialsDir,
 			version: rootPackageJson.version,
 		}),
+		// Copy vendored sdpi-components.js and built pi-components.js from @iracedeck/pi-components
+		{
+			name: "copy-pi-browser-assets",
+			generateBundle() {
+				const uiDir = `${sdPlugin}/ui`;
+				if (!existsSync(uiDir)) mkdirSync(uiDir, { recursive: true });
+				for (const file of ["sdpi-components.js", "pi-components.js"]) {
+					const src = path.join(browserDir, file);
+					if (!existsSync(src)) {
+						this.error(`Missing ${file} in @iracedeck/pi-components. Build it first: pnpm --filter @iracedeck/pi-components build`);
+					}
+					copyFileSync(src, path.join(uiDir, file));
+				}
+				this.info?.("Copied PI browser assets from @iracedeck/pi-components");
+			},
+		},
 		{
 			name: "watch-externals",
 			buildStart: function () {
