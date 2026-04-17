@@ -212,7 +212,7 @@ import url from "node:url";
 import { browserDir, partialsDir, piTemplatePlugin } from "@iracedeck/pi-components/build";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const actionsPackagePath = path.resolve(__dirname, "../actions/src");
+const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
 const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 
 const sdPlugin = "com.iracedeck.sd.{name}.sdPlugin";

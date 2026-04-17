@@ -94,7 +94,7 @@ A pnpm monorepo built with [Turborepo](https://turbo.build/):
 
 ```text
 packages/
-  actions/                 Platform-agnostic action implementations
+  iracing-actions/         Platform-agnostic iRacing action implementations
   deck-adapter-elgato/     Elgato Stream Deck adapter (bridges Elgato SDK to deck-core)
   deck-adapter-mirabox/    Mirabox VSD Craft adapter (WebSocket protocol to deck-core)
   deck-core/               Platform-agnostic base classes, types, and shared utilities
