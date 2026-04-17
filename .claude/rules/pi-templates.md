@@ -214,7 +214,11 @@ export default {
         const uiDir = `${sdPlugin}/ui`;
         if (!existsSync(uiDir)) mkdirSync(uiDir, { recursive: true });
         for (const file of ["sdpi-components.js", "pi-components.js"]) {
-          copyFileSync(path.join(browserDir, file), path.join(uiDir, file));
+          const src = path.join(browserDir, file);
+          if (!existsSync(src)) {
+            this.error(`Missing ${file} in @iracedeck/pi-components. Build it first: pnpm --filter @iracedeck/pi-components build`);
+          }
+          copyFileSync(src, path.join(uiDir, file));
         }
       },
     },

@@ -1,1 +1,2 @@
-browser/pi-components.js
+browser/
+!browser/sdpi-components.js

@@ -240,9 +240,14 @@ else initialize();
 ```
 
 ### Building PI Components
+
+`pi-components.js` is produced by `@iracedeck/pi-components`. Both plugins copy it (and `sdpi-components.js`) into their own `ui/` folder at build time.
+
 ```bash
-cd packages/stream-deck-plugin
-pnpm build:pi
+# Build the shared PI bundle only
+pnpm --filter @iracedeck/pi-components build
+
+# Or run a workspace build — turbo handles topological order
 pnpm build
 ```
 
