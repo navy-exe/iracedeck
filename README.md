@@ -105,7 +105,7 @@ packages/
   logger/                  Shared logger interface
   mirabox-plugin/          Mirabox device plugin
   pi-components/           Shared Property Inspector assets (web components, EJS templates, partials, data)
-  stream-deck-plugin/      Elgato Stream Deck plugin
+  iracing-plugin-stream-deck/      Elgato Stream Deck plugin
   website/                 Documentation website (iracedeck.com)
 ```
 
@@ -121,7 +121,7 @@ packages/
 | `@iracedeck/iracing-sdk`          | TypeScript SDK for reading telemetry and sending iRacing broadcast commands               |
 | `@iracedeck/logger`               | Shared logging interface with scoped loggers                                              |
 | `@iracedeck/pi-components`        | Shared PI web components, EJS templates + partials, template data, and Rollup EJS plugin  |
-| `@iracedeck/stream-deck-plugin`   | Elgato Stream Deck plugin — registers actions, PI templates, manifest                     |
+| `@iracedeck/iracing-plugin-stream-deck`   | Elgato Stream Deck plugin — registers actions, PI templates, manifest                     |
 | `@iracedeck/mirabox-plugin`       | Mirabox plugin — registers the same actions for Mirabox devices                           |
 | `@iracedeck/website`              | Documentation website at [iracedeck.com](https://iracedeck.com)                           |
 
@@ -179,7 +179,7 @@ A GitHub Actions workflow (`.github/workflows/release-pack.yml`) triggers automa
 Contributions are welcome! Here's how to get started:
 
 1. Fork the repo and create a branch (`feature/123-your-feature`)
-2. Follow [conventional commits](https://www.conventionalcommits.org/) with package scope (e.g. `feat(stream-deck-plugin): add new action`)
+2. Follow [conventional commits](https://www.conventionalcommits.org/) with package scope (e.g. `feat(iracing-plugin-stream-deck): add new action`)
 3. Add tests for new code (Vitest)
 4. Make sure `pnpm build` and `pnpm test` pass
 5. Open a pull request
@@ -193,11 +193,11 @@ Actions live in `packages/iracing-actions/src/actions/<action-name>/`, one folde
 3. `<action-name>.ejs` — Property Inspector template (compiled to `ui/<action-name>.html`)
 4. `icon.svg` + `key.svg` — static category and key icons (copied into each plugin's `imgs/actions/<name>/` at build time)
 5. Mustache SVGs in `packages/icons/<action-name>/` for any dynamic variants
-6. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
+6. Registration in both `iracing-plugin-stream-deck/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
 7. Manifest entry in each plugin's `manifest.json`
 8. Entries in `packages/iracing-actions/src/actions/data/{key-bindings,docs-urls,icon-defaults}.json` where applicable
 
-See the existing actions for reference, or check `packages/stream-deck-plugin/CLAUDE.md` for step-by-step instructions.
+See the existing actions for reference, or check `packages/iracing-plugin-stream-deck/CLAUDE.md` for step-by-step instructions.
 
 ## Troubleshooting
 

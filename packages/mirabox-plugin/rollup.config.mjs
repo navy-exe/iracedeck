@@ -13,7 +13,7 @@ const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../p
 const iconsPackagePath = path.resolve(__dirname, "../icons");
 const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
 const actionTemplatesDir = path.join(actionsPackagePath, "actions");
-const elgatoPluginPath = path.resolve(__dirname, "../stream-deck-plugin");
+const elgatoPluginPath = path.resolve(__dirname, "../iracing-plugin-stream-deck");
 
 /**
  * Rollup plugin to import SVG files as strings.

@@ -1,5 +1,5 @@
 {
-  "name": "@iracedeck/stream-deck-plugin",
+  "name": "@iracedeck/iracing-plugin-stream-deck",
   "version": "1.13.1",
   "description": "Stream Deck plugin for iRacing - Core driving and interface controls",
   "type": "module",

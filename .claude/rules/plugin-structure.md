@@ -13,18 +13,18 @@ The plugin system uses a platform abstraction architecture with these key packag
 Actions do NOT import from `@elgato/streamdeck` or any platform SDK. They import from `@iracedeck/deck-core` and are registered via the platform adapter in each plugin.
 
 ## Active Plugins
-- `stream-deck-plugin` (com.iracedeck.sd.core) — Elgato Stream Deck, uses `@iracedeck/deck-adapter-elgato`
+- `iracing-plugin-stream-deck` (com.iracedeck.sd.core) — Elgato Stream Deck, uses `@iracedeck/deck-adapter-elgato`
 - `mirabox-plugin` (com.iracedeck.sd.core) — Mirabox, uses `@iracedeck/deck-adapter-mirabox`
 
 Both plugins register the same actions from `@iracedeck/iracing-actions`. When adding or modifying actions, changes must be applied to **all** plugin packages (registration in `plugin.ts`, manifest entries, PI templates where applicable).
 
 ## Creating New Plugins
 
-Use `stream-deck-plugin` as the reference implementation for Elgato plugins, and `mirabox-plugin` for Mirabox/VSD plugins. Create the following structure:
+Use `iracing-plugin-stream-deck` as the reference implementation for Elgato plugins, and `mirabox-plugin` for Mirabox/VSD plugins. Create the following structure:
 
 ```
-packages/stream-deck-plugin-{name}/
-├── package.json                           # @iracedeck/stream-deck-plugin-{name}
+packages/iracing-plugin-stream-deck-{name}/
+├── package.json                           # @iracedeck/iracing-plugin-stream-deck-{name}
 ├── tsconfig.json                          # Extends ../../tsconfig.base.json
 ├── rollup.config.mjs                      # Update sdPlugin variable only
 ├── .gitignore                             # node_modules/, *.sdPlugin/bin, *.sdPlugin/logs
@@ -51,7 +51,7 @@ packages/stream-deck-plugin-{name}/
 ### Key identifiers to update when creating a new plugin:
 | Item | Format |
 |------|--------|
-| Package name | `@iracedeck/stream-deck-plugin-{name}` |
+| Package name | `@iracedeck/iracing-plugin-stream-deck-{name}` |
 | Plugin UUID | `com.iracedeck.sd.{name}` |
 | sdPlugin folder | `com.iracedeck.sd.{name}.sdPlugin` |
 | Action UUIDs | `com.iracedeck.sd.{name}.{action-name}` |
@@ -109,7 +109,7 @@ const pkg = {
 };
 ```
 
-Reference `stream-deck-plugin/rollup.config.mjs` for the correct configuration.
+Reference `iracing-plugin-stream-deck/rollup.config.mjs` for the correct configuration.
 
 ### Application Monitoring
 

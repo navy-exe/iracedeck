@@ -36,7 +36,7 @@ packages/pi-components/
     ├── components/            # Web component sources (ird-key-binding, ird-color-picker, …)
     └── build/                 # Rollup EJS compile plugin and path exports
 
-packages/{stream-deck-plugin,mirabox-plugin}/
+packages/{iracing-plugin-stream-deck,mirabox-plugin}/
 └── com.iracedeck.sd.{name}.sdPlugin/
     ├── ui/                    # Compiled HTML output + copied browser assets
     │   ├── <action-name>.html # Generated (do not edit)

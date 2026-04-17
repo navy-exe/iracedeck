@@ -1,6 +1,6 @@
 # @iracedeck/iracing-actions
 
-All 33 platform-agnostic iRaceDeck action classes. These actions contain no platform-specific code — they import from `@iracedeck/deck-core` and are registered by platform-specific entry points (e.g., `stream-deck-plugin/src/plugin.ts`).
+All 33 platform-agnostic iRaceDeck action classes. These actions contain no platform-specific code — they import from `@iracedeck/deck-core` and are registered by platform-specific entry points (e.g., `iracing-plugin-stream-deck/src/plugin.ts`).
 
 ## Package Structure
 
@@ -32,9 +32,9 @@ Actions receive their logger via constructor injection (from `BaseAction`). No `
 
 ## Build
 
-This package has **no build step**. It exports raw TypeScript source. Consumer packages (e.g., `stream-deck-plugin`) bundle it via their Rollup config with `@rollup/plugin-typescript`.
+This package has **no build step**. It exports raw TypeScript source. Consumer packages (e.g., `iracing-plugin-stream-deck`) bundle it via their Rollup config with `@rollup/plugin-typescript`.
 
-The `stream-deck-plugin` Rollup config includes:
+The `iracing-plugin-stream-deck` Rollup config includes:
 - `resolve-actions-ts` plugin — resolves `.js` → `.ts` for relative imports within this package
 - `typescript({ include: ["src/**/*.ts", "../iracing-actions/src/**/*.ts"] })` — compiles action TypeScript
 - `svgPlugin()` — resolves `@iracedeck/icons/` and local `../../icons/` SVG imports
@@ -53,4 +53,4 @@ Tests mock `@iracedeck/deck-core` (not `@elgato/streamdeck`). The mock `Connecti
 
 ## Adding a New Action
 
-See `packages/stream-deck-plugin/CLAUDE.md` for the full step-by-step guide. The action source file goes in this package; registration and PI templates go in `stream-deck-plugin`.
+See `packages/iracing-plugin-stream-deck/CLAUDE.md` for the full step-by-step guide. The action source file goes in this package; registration and PI templates go in `iracing-plugin-stream-deck`.

@@ -145,7 +145,7 @@ When actions are added, removed, or modified (new modes, renamed settings, chang
 
 | File | Role |
 |------|------|
-| `packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
+| `packages/iracing-plugin-stream-deck/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
 | `packages/iracing-actions/src/actions/<name>/` | Per-action folder: `<name>.ts`, `<name>.test.ts`, `<name>.ejs`, `icon.svg`, `key.svg` |
 | `packages/iracing-actions/src/actions/data/key-bindings.json` | Global key binding definitions |
 | `packages/iracing-actions/src/actions/data/icon-defaults.json` | Default icon colors by action/variant |
@@ -153,4 +153,4 @@ When actions are added, removed, or modified (new modes, renamed settings, chang
 | `packages/iracing-actions/src/actions/settings/settings.ejs` | Plugin-global Property Inspector |
 | `packages/iracing-actions/icons/` | Dynamic SVG Mustache templates used at runtime |
 | `packages/icons/` | Standalone icon library (Mustache color placeholders + `<desc>`) |
-| `packages/stream-deck-plugin/src/plugin.ts` | Action registration and initialization |
+| `packages/iracing-plugin-stream-deck/src/plugin.ts` | Action registration and initialization |

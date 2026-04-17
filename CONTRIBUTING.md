@@ -45,7 +45,7 @@ pnpm build
 ## Pull Request Process
 
 1. Fork the repo and create a branch from `master`: `feature/123-short-description` (reference the issue number).
-2. Follow [Conventional Commits](https://www.conventionalcommits.org/) with package scope, e.g. `feat(stream-deck-plugin): add new action`.
+2. Follow [Conventional Commits](https://www.conventionalcommits.org/) with package scope, e.g. `feat(iracing-plugin-stream-deck): add new action`.
 3. Add tests for new code (Vitest).
 4. Make sure `pnpm build` and `pnpm test` pass.
 5. Open a pull request and link the approved issue.
@@ -59,7 +59,7 @@ This project uses ESLint and Prettier. Run `pnpm lint:fix` and `pnpm format:fix`
 
 ## Adding a New Action
 
-Actions live in `packages/stream-deck-plugin/src/actions/`. Each action needs:
+Actions live in `packages/iracing-plugin-stream-deck/src/actions/`. Each action needs:
 
 1. An action class extending `ConnectionStateAwareAction`
 2. Registration in `plugin.ts`
@@ -68,7 +68,7 @@ Actions live in `packages/stream-deck-plugin/src/actions/`. Each action needs:
 5. A Property Inspector template (EJS → HTML)
 6. Unit tests
 
-Use existing actions as reference, or check the package-level docs in `packages/stream-deck-plugin/`.
+Use existing actions as reference, or check the package-level docs in `packages/iracing-plugin-stream-deck/`.
 
 ## Contributor license
 
