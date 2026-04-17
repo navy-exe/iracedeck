@@ -1,12 +1,12 @@
 # @iracedeck/stream-deck-plugin
 
-Core Stream Deck plugin for iRaceDeck. Registers actions from `@iracedeck/actions` with the Elgato Stream Deck via `@iracedeck/deck-adapter-elgato`.
+Core Stream Deck plugin for iRaceDeck. Registers actions from `@iracedeck/iracing-actions` with the Elgato Stream Deck via `@iracedeck/deck-adapter-elgato`.
 
-Action implementations live in `packages/actions/src/actions/<action-name>/`, with one folder per action. Shared utilities (base actions, keyboard service, global settings, icon templates, etc.) live in `packages/deck-core/src/`. Actions import from `@iracedeck/deck-core`. The `src/shared/index.ts` in this package re-exports from `@iracedeck/deck-core` and `@iracedeck/deck-adapter-elgato` for backward compatibility.
+Action implementations live in `packages/iracing-actions/src/actions/<action-name>/`, with one folder per action. Shared utilities (base actions, keyboard service, global settings, icon templates, etc.) live in `packages/deck-core/src/`. Actions import from `@iracedeck/deck-core`. The `src/shared/index.ts` in this package re-exports from `@iracedeck/deck-core` and `@iracedeck/deck-adapter-elgato` for backward compatibility.
 
-Each action folder is self-contained: `<name>.ts`, `<name>.test.ts`, `<name>.ejs` (PI template), and `icon.svg` / `key.svg` (static icons) all live side-by-side. Shared template data (`icon-defaults.json`, `key-bindings.json`, `docs-urls.json`) lives in `packages/actions/src/actions/data/`. The plugin-global Property Inspector template lives in `packages/actions/src/actions/settings/`.
+Each action folder is self-contained: `<name>.ts`, `<name>.test.ts`, `<name>.ejs` (PI template), and `icon.svg` / `key.svg` (static icons) all live side-by-side. Shared template data (`icon-defaults.json`, `key-bindings.json`, `docs-urls.json`) lives in `packages/iracing-actions/src/actions/data/`. The plugin-global Property Inspector template lives in `packages/iracing-actions/src/actions/settings/`.
 
-The PI framework — browser web components (`pi-components.js`), EJS partials, the Rollup EJS compile plugin, and the vendored `sdpi-components.js` — lives in `@iracedeck/pi-components`. This plugin's `rollup.config.mjs` consumes it via `import { piTemplatePlugin, partialsDir, browserDir } from "@iracedeck/pi-components/build"`, passes `packages/actions/src/actions/` as the templates root, copies per-action `icon.svg` / `key.svg` into `com.iracedeck.sd.core.sdPlugin/imgs/actions/<name>/`, and copies the browser assets into `com.iracedeck.sd.core.sdPlugin/ui/` — all at build time.
+The PI framework — browser web components (`pi-components.js`), EJS partials, the Rollup EJS compile plugin, and the vendored `sdpi-components.js` — lives in `@iracedeck/pi-components`. This plugin's `rollup.config.mjs` consumes it via `import { piTemplatePlugin, partialsDir, browserDir } from "@iracedeck/pi-components/build"`, passes `packages/iracing-actions/src/actions/` as the templates root, copies per-action `icon.svg` / `key.svg` into `com.iracedeck.sd.core.sdPlugin/imgs/actions/<name>/`, and copies the browser assets into `com.iracedeck.sd.core.sdPlugin/ui/` — all at build time.
 
 ## Adding a New Action
 
@@ -16,7 +16,7 @@ Each action requires a set of new and modified files. Use `splits-delta-cycle` a
 
 Replace `{action-name}` with the kebab-case name (e.g., `my-action`) and `{ActionName}` with the PascalCase name (e.g., `MyAction`).
 
-#### 1. Action source — `packages/actions/src/actions/{action-name}/{action-name}.ts`
+#### 1. Action source — `packages/iracing-actions/src/actions/{action-name}/{action-name}.ts`
 
 ```typescript
 import {
@@ -107,7 +107,7 @@ Key requirements:
 - Implement `onDidReceiveSettings` to respond to PI changes
 - Logging: `info` for events (no params), `debug` for details (with params)
 
-#### 2. Unit tests — `packages/actions/src/actions/{action-name}/{action-name}.test.ts`
+#### 2. Unit tests — `packages/iracing-actions/src/actions/{action-name}/{action-name}.test.ts`
 
 Must mock `@iracedeck/deck-core` before importing. Test exported constants and SVG generation:
 
@@ -146,7 +146,7 @@ vi.mock("@iracedeck/deck-core", () => ({
 }));
 ```
 
-See `packages/actions/src/actions/splits-delta-cycle/splits-delta-cycle.test.ts` for the full pattern.
+See `packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.test.ts` for the full pattern.
 
 #### 3. Icon SVGs — `packages/icons/{action-name}/*.svg`
 
@@ -178,7 +178,7 @@ Standalone 144x144 SVGs with Mustache label placeholders and `<desc>` color meta
 - All coordinates doubled from 72x72 (Stream Deck downscales as needed)
 - Placeholders: `{{mainLabel}}` (bold), `{{subLabel}}` (smaller)
 
-#### 4. Category icon — `packages/actions/src/actions/{action-name}/icon.svg`
+#### 4. Category icon — `packages/iracing-actions/src/actions/{action-name}/icon.svg`
 
 20x20, monochrome white on transparent. Shown in Stream Deck category browser:
 
@@ -188,7 +188,7 @@ Standalone 144x144 SVGs with Mustache label placeholders and `<desc>` color meta
 </svg>
 ```
 
-#### 5. Key icon — `packages/actions/src/actions/{action-name}/key.svg`
+#### 5. Key icon — `packages/iracing-actions/src/actions/{action-name}/key.svg`
 
 72x72, full color. Default button appearance on Stream Deck. Same structure as icon template but with static content (no Mustache placeholders, no `activity-state` filter):
 
@@ -201,7 +201,7 @@ Standalone 144x144 SVGs with Mustache label placeholders and `<desc>` color meta
 </svg>
 ```
 
-#### 6. PI template — `packages/actions/src/actions/{action-name}/{action-name}.ejs`
+#### 6. PI template — `packages/iracing-actions/src/actions/{action-name}/{action-name}.ejs`
 
 Property Inspector template. For actions with only global key bindings:
 
@@ -221,7 +221,7 @@ Property Inspector template. For actions with only global key bindings:
 
 For actions with per-action settings, add `sdpi-item` elements before the key bindings include. See `splits-delta-cycle/splits-delta-cycle.ejs` or `car-control/car-control.ejs` for examples.
 
-`require('./data/...')` in templates resolves relative to the shared data directory at `packages/actions/src/actions/data/` (the EJS compile plugin rewrites the base path so templates don't need to know their own nesting depth).
+`require('./data/...')` in templates resolves relative to the shared data directory at `packages/iracing-actions/src/actions/data/` (the EJS compile plugin rewrites the base path so templates don't need to know their own nesting depth).
 
 Every action PI template must include the color-overrides, border-overrides, graphic-overrides, and common-settings partials. Place them between action-specific settings and global sections:
 ```ejs
@@ -243,23 +243,23 @@ For the global sections, also include `global-graphic-defaults` after `global-bo
 
 Add import and registration. **Maintain alphabetical order** in both the import block and the registration block.
 
-First, export the UUID and class from `packages/actions/src/index.ts`:
+First, export the UUID and class from `packages/iracing-actions/src/index.ts`:
 
 ```typescript
 export { {ACTION_NAME}_UUID, {ActionName} } from "./actions/{action-name}/{action-name}.js";
 ```
 
-Then in `plugin.ts`, import from `@iracedeck/actions` and register via the adapter:
+Then in `plugin.ts`, import from `@iracedeck/iracing-actions` and register via the adapter:
 
 ```typescript
-import { {ACTION_NAME}_UUID, {ActionName} } from "@iracedeck/actions";
+import { {ACTION_NAME}_UUID, {ActionName} } from "@iracedeck/iracing-actions";
 // ...
 adapter.registerAction({ACTION_NAME}_UUID, new {ActionName}(adapter.createLogger("{ActionName}")));
 ```
 
 #### 7b. Register in Mirabox plugin — `packages/mirabox-plugin/src/plugin.ts`
 
-Same pattern as above — import from `@iracedeck/actions` and register via the VSD adapter. Maintain alphabetical order. The manifest at `packages/mirabox-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json` must also be updated (note: uses `"Knob"` instead of `"Encoder"` for dial actions).
+Same pattern as above — import from `@iracedeck/iracing-actions` and register via the VSD adapter. Maintain alphabetical order. The manifest at `packages/mirabox-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json` must also be updated (note: uses `"Knob"` instead of `"Encoder"` for dial actions).
 
 #### 8. Declare in manifest — `com.iracedeck.sd.core.sdPlugin/manifest.json`
 
@@ -294,7 +294,7 @@ Add entry to the `Actions` array:
 - Omit the `Encoder` block entirely if Keypad-only
 - Only include `TriggerDescription` keys for handlers the action implements
 
-#### 9. Add key bindings — `packages/actions/src/actions/data/key-bindings.json`
+#### 9. Add key bindings — `packages/iracing-actions/src/actions/data/key-bindings.json`
 
 Add a new category with binding entries:
 
@@ -309,7 +309,7 @@ Add a new category with binding entries:
 - `default`: Default key combination (use `""` if no default)
 - `setting`: Flat global setting key — **must match** what the action reads via `getGlobalSettings()`
 
-#### 10. Add documentation URL — `packages/actions/src/actions/data/docs-urls.json`
+#### 10. Add documentation URL — `packages/iracing-actions/src/actions/data/docs-urls.json`
 
 Add an entry mapping the template name to its documentation page:
 
@@ -411,7 +411,7 @@ Key points:
 
 ### Telemetry-aware reference implementations
 
-All action source files are in `packages/actions/src/actions/<action-name>/<action-name>.ts`.
+All action source files are in `packages/iracing-actions/src/actions/<action-name>/<action-name>.ts`.
 
 | Pattern | Example |
 |---------|---------|
@@ -420,7 +420,7 @@ All action source files are in `packages/actions/src/actions/<action-name>/<acti
 
 ### General reference implementations
 
-All action source files are in `packages/actions/src/actions/<action-name>/<action-name>.ts`.
+All action source files are in `packages/iracing-actions/src/actions/<action-name>/<action-name>.ts`.
 
 | Pattern | Example |
 |---------|---------|

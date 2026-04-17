@@ -11,7 +11,7 @@ import { browserDir, partialsDir, piTemplatePlugin } from "@iracedeck/pi-compone
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
-const actionsPackagePath = path.resolve(__dirname, "../actions/src");
+const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
 const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 
 /**
@@ -72,7 +72,7 @@ const config = {
 				if (!importer || !source.startsWith(".") || !source.endsWith(".js")) return null;
 				// Only handle imports from the actions package
 				const normalizedImporter = importer.replace(/\\/g, "/");
-				if (!normalizedImporter.includes("/actions/src/")) return null;
+				if (!normalizedImporter.includes("/iracing-actions/src/")) return null;
 				const tsPath = path.resolve(path.dirname(importer), source.replace(/\.js$/, ".ts"));
 				return tsPath;
 			},
@@ -84,8 +84,8 @@ const config = {
 			partialsDir,
 			version: rootPackageJson.version,
 		}),
-		// Copy per-action static icons from @iracedeck/actions into {sdPlugin}/imgs/actions/<name>/.
-		// Source of truth: `packages/actions/src/actions/<name>/{icon,key}.svg`.
+		// Copy per-action static icons from @iracedeck/iracing-actions into {sdPlugin}/imgs/actions/<name>/.
+		// Source of truth: `packages/iracing-actions/src/actions/<name>/{icon,key}.svg`.
 		{
 			name: "copy-action-icons",
 			generateBundle() {
@@ -144,7 +144,7 @@ const config = {
 		typescript({
 			mapRoot: isWatching ? "./" : undefined,
 			// Include both the plugin source and the raw-TypeScript actions package
-			include: ["src/**/*.ts", "../actions/src/**/*.ts"],
+			include: ["src/**/*.ts", "../iracing-actions/src/**/*.ts"],
 		}),
 		nodeResolve({
 			browser: false,

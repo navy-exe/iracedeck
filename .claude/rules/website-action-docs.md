@@ -83,7 +83,7 @@ Each mode section must include a `#### Details` subheader containing a bullet li
 
 Trailing periods are omitted from each Details bullet value (the bullet list is terse metadata, not prose).
 
-The Details block is mode-specific: within a single action, different modes may use SDK for some behaviors and keyboard for others, and different modes may or may not react to telemetry. Document each mode as it actually behaves in code — `packages/actions/src/actions/<action>/<action>.ts` (look for `getCommands()` vs `tapBinding`/`holdBinding`, and whether the mode's icon-generation path subscribes to `sdkController` / reads `TelemetryData`) is the source of truth for how a mode is triggered and whether it is telemetry-aware; `packages/actions/src/actions/<action>/<action>.ejs` (the `default` attribute on `ird-key-binding`) and `packages/actions/src/actions/data/key-bindings.json` are the source of truth for default keys.
+The Details block is mode-specific: within a single action, different modes may use SDK for some behaviors and keyboard for others, and different modes may or may not react to telemetry. Document each mode as it actually behaves in code — `packages/iracing-actions/src/actions/<action>/<action>.ts` (look for `getCommands()` vs `tapBinding`/`holdBinding`, and whether the mode's icon-generation path subscribes to `sdkController` / reads `TelemetryData`) is the source of truth for how a mode is triggered and whether it is telemetry-aware; `packages/iracing-actions/src/actions/<action>/<action>.ejs` (the `default` attribute on `ird-key-binding`) and `packages/iracing-actions/src/actions/data/key-bindings.json` are the source of truth for default keys.
 
 ### Settings block
 

@@ -13,8 +13,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ICONS_DIR = path.resolve("packages/icons");
-const DYNAMIC_ICONS_DIR = path.resolve("packages/actions/icons");
-const OUTPUT_FILE = path.resolve("packages/actions/src/actions/data/icon-defaults.json");
+const DYNAMIC_ICONS_DIR = path.resolve("packages/iracing-actions/icons");
+const OUTPUT_FILE = path.resolve("packages/iracing-actions/src/actions/data/icon-defaults.json");
 
 const defaults = {};
 
@@ -61,7 +61,7 @@ for (const entry of fs.readdirSync(ICONS_DIR, { withFileTypes: true })) {
   }
 }
 
-// Scan packages/actions/icons/ (dynamic templates, named by action)
+// Scan packages/iracing-actions/icons/ (dynamic templates, named by action)
 if (fs.existsSync(DYNAMIC_ICONS_DIR)) {
   for (const file of fs.readdirSync(DYNAMIC_ICONS_DIR).filter((f) => f.endsWith(".svg"))) {
     const actionName = file.replace(".svg", "");

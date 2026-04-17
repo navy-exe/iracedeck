@@ -11,7 +11,7 @@ import { browserDir, partialsDir, piTemplatePlugin } from "@iracedeck/pi-compone
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
 const iconsPackagePath = path.resolve(__dirname, "../icons");
-const actionsPackagePath = path.resolve(__dirname, "../actions/src");
+const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
 const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 const elgatoPluginPath = path.resolve(__dirname, "../stream-deck-plugin");
 
@@ -44,7 +44,7 @@ function svgPlugin() {
 
 /**
  * Rollup plugin to copy static assets for the Mirabox plugin.
- * - Per-action icons (`imgs/actions/<name>/{icon,key}.svg`) come from `@iracedeck/actions`.
+ * - Per-action icons (`imgs/actions/<name>/{icon,key}.svg`) come from `@iracedeck/iracing-actions`.
  * - Plugin-level icons (`imgs/plugin/`) are still sourced from the Elgato plugin until
  *   the plugin-branding assets are extracted into their own package.
  * - PI browser assets (`sdpi-components.js`, `pi-components.js`) come from `@iracedeck/pi-components`.
@@ -53,7 +53,7 @@ function copyAssetsPlugin(sdPlugin) {
 	return {
 		name: "copy-assets",
 		generateBundle() {
-			// Copy per-action static icons from @iracedeck/actions into {sdPlugin}/imgs/actions/<name>/.
+			// Copy per-action static icons from @iracedeck/iracing-actions into {sdPlugin}/imgs/actions/<name>/.
 			const destActions = path.join(sdPlugin, "imgs", "actions");
 			for (const entry of readdirSync(actionTemplatesDir, { withFileTypes: true })) {
 				if (!entry.isDirectory() || entry.name === "data") continue;
@@ -146,13 +146,13 @@ const config = {
 				if (!importer || !source.startsWith(".") || !source.endsWith(".js")) return null;
 				// Only handle imports from the actions package
 				const normalizedImporter = importer.replace(/\\/g, "/");
-				if (!normalizedImporter.includes("/actions/src/")) return null;
+				if (!normalizedImporter.includes("/iracing-actions/src/")) return null;
 				const tsPath = path.resolve(path.dirname(importer), source.replace(/\.js$/, ".ts"));
 				return tsPath;
 			},
 		},
 		svgPlugin(),
-		// Compile PI templates from @iracedeck/actions
+		// Compile PI templates from @iracedeck/iracing-actions
 		piTemplatePlugin({
 			templatesDir: actionTemplatesDir,
 			outputDir: `${sdPlugin}/ui`,
@@ -186,7 +186,7 @@ const config = {
 		typescript({
 			mapRoot: isWatching ? "./" : undefined,
 			// Include both the plugin source and the raw-TypeScript actions package
-			include: ["src/**/*.ts", "../actions/src/**/*.ts"],
+			include: ["src/**/*.ts", "../iracing-actions/src/**/*.ts"],
 		}),
 		nodeResolve({
 			browser: false,

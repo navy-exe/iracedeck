@@ -1,4 +1,4 @@
-# @iracedeck/actions
+# @iracedeck/iracing-actions
 
 All 33 platform-agnostic iRaceDeck action classes. These actions contain no platform-specific code — they import from `@iracedeck/deck-core` and are registered by platform-specific entry points (e.g., `stream-deck-plugin/src/plugin.ts`).
 
@@ -36,17 +36,17 @@ This package has **no build step**. It exports raw TypeScript source. Consumer p
 
 The `stream-deck-plugin` Rollup config includes:
 - `resolve-actions-ts` plugin — resolves `.js` → `.ts` for relative imports within this package
-- `typescript({ include: ["src/**/*.ts", "../actions/src/**/*.ts"] })` — compiles action TypeScript
+- `typescript({ include: ["src/**/*.ts", "../iracing-actions/src/**/*.ts"] })` — compiles action TypeScript
 - `svgPlugin()` — resolves `@iracedeck/icons/` and local `../../icons/` SVG imports
 
 ## Tests
 
 ```bash
 # From monorepo root
-pnpm test --filter @iracedeck/actions
+pnpm test --filter @iracedeck/iracing-actions
 
 # Or run specific test
-npx vitest run packages/actions/src/actions/splits-delta-cycle.test.ts
+npx vitest run packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.test.ts
 ```
 
 Tests mock `@iracedeck/deck-core` (not `@elgato/streamdeck`). The mock `ConnectionStateAwareAction` provides a logger, `sdkController`, `setKeyImage`, `setRegenerateCallback`, and lifecycle stubs.

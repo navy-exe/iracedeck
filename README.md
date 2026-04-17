@@ -111,7 +111,7 @@ packages/
 
 | Package                           | Role                                                                                      |
 | --------------------------------- | ----------------------------------------------------------------------------------------- |
-| `@iracedeck/actions`              | All 28 action implementations, platform-agnostic                                          |
+| `@iracedeck/iracing-actions`              | All 28 action implementations, platform-agnostic                                          |
 | `@iracedeck/deck-core`            | Base classes, types, keyboard service, icon templates, global settings                    |
 | `@iracedeck/deck-adapter-elgato`  | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface                    |
 | `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core                             |
@@ -186,7 +186,7 @@ Contributions are welcome! Here's how to get started:
 
 ### Adding a new action
 
-Actions live in `packages/actions/src/actions/<action-name>/`, one folder per action. Each action needs:
+Actions live in `packages/iracing-actions/src/actions/<action-name>/`, one folder per action. Each action needs:
 
 1. `<action-name>.ts` — action class extending `ConnectionStateAwareAction` from `@iracedeck/deck-core`
 2. `<action-name>.test.ts` — unit tests
@@ -195,7 +195,7 @@ Actions live in `packages/actions/src/actions/<action-name>/`, one folder per ac
 5. Mustache SVGs in `packages/icons/<action-name>/` for any dynamic variants
 6. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
 7. Manifest entry in each plugin's `manifest.json`
-8. Entries in `packages/actions/src/actions/data/{key-bindings,docs-urls,icon-defaults}.json` where applicable
+8. Entries in `packages/iracing-actions/src/actions/data/{key-bindings,docs-urls,icon-defaults}.json` where applicable
 
 See the existing actions for reference, or check `packages/stream-deck-plugin/CLAUDE.md` for step-by-step instructions.
 
