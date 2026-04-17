@@ -1,4 +1,4 @@
-import { getAllCarNumbers, getCarNumberFromSessionInfo } from "@iracedeck/iracing-sdk";
+import { getAllCarNumbers, getCarNumberFromSessionInfo, TrkLoc } from "@iracedeck/iracing-sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -578,20 +578,26 @@ describe("ReplayControl", () => {
   });
 
   describe("findAdjacentCarOnTrack", () => {
-    function makeTelemetry(camCarIdx: number, cars: Array<{ idx: number; laps: number; dist: number }>) {
+    function makeTelemetry(
+      camCarIdx: number,
+      cars: Array<{ idx: number; laps: number; dist: number; trackSurface?: TrkLoc }>,
+    ) {
       const maxIdx = Math.max(...cars.map((c) => c.idx), camCarIdx, 0);
       const lapCompleted = new Array(maxIdx + 1).fill(-1);
       const lapDistPct = new Array(maxIdx + 1).fill(-1);
+      const trackSurface = new Array(maxIdx + 1).fill(TrkLoc.NotInWorld);
 
       for (const car of cars) {
         lapCompleted[car.idx] = car.laps;
         lapDistPct[car.idx] = car.dist;
+        trackSurface[car.idx] = car.trackSurface ?? TrkLoc.OnTrack;
       }
 
       return {
         CamCarIdx: camCarIdx,
         CarIdxLapCompleted: lapCompleted,
         CarIdxLapDistPct: lapDistPct,
+        CarIdxTrackSurface: trackSurface,
       };
     }
 
@@ -649,14 +655,28 @@ describe("ReplayControl", () => {
       expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(2);
     });
 
-    it("should skip inactive cars", () => {
+    it("should skip disconnected cars (NotInWorld)", () => {
       const telemetry = makeTelemetry(3, [
         { idx: 1, laps: 5, dist: 0.8 },
-        { idx: 2, laps: -1, dist: 0.5 },
+        { idx: 2, laps: 5, dist: 0.5, trackSurface: TrkLoc.NotInWorld },
         { idx: 3, laps: 5, dist: 0.2 },
       ]);
 
       expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(1);
+    });
+
+    it("should include cars during a warmup/pace lap (CarIdxLapCompleted still -1)", () => {
+      // Regression: snapshot 20260417-081043 had everyone at laps=-1 during the formation lap,
+      // which previously caused findNearestCarOnTrack to reject every candidate.
+      const telemetry = makeTelemetry(14, [
+        { idx: 1, laps: -1, dist: 0.8173747 },
+        { idx: 11, laps: -1, dist: 0.8009607 },
+        { idx: 14, laps: -1, dist: 0.8019581 },
+        { idx: 17, laps: -1, dist: 0.8063871 },
+      ]);
+
+      expect(findAdjacentCarOnTrack(telemetry, "ahead")).toBe(17);
+      expect(findAdjacentCarOnTrack(telemetry, "behind")).toBe(11);
     });
 
     it("should return null when telemetry is null", () => {

@@ -1,20 +1,28 @@
 import { describe, expect, it } from "vitest";
 
 import { findNearestCarOnTrack } from "./track-utils.js";
+import { TrkLoc } from "./types.js";
 
-function makeTelemetry(refCarIdx: number, cars: Array<{ idx: number; laps: number; dist: number }>) {
+function makeTelemetry(
+  refCarIdx: number,
+  cars: Array<{ idx: number; laps: number; dist: number; trackSurface?: TrkLoc }>,
+) {
   const maxIdx = Math.max(...cars.map((c) => c.idx), refCarIdx, 0);
   const lapCompleted = new Array(maxIdx + 1).fill(-1);
   const lapDistPct = new Array(maxIdx + 1).fill(-1);
+  // Empty slots default to NotInWorld; listed cars default to OnTrack unless overridden.
+  const trackSurface = new Array(maxIdx + 1).fill(TrkLoc.NotInWorld);
 
   for (const car of cars) {
     lapCompleted[car.idx] = car.laps;
     lapDistPct[car.idx] = car.dist;
+    trackSurface[car.idx] = car.trackSurface ?? TrkLoc.OnTrack;
   }
 
   return {
     CarIdxLapCompleted: lapCompleted,
     CarIdxLapDistPct: lapDistPct,
+    CarIdxTrackSurface: trackSurface,
   };
 }
 
@@ -70,14 +78,38 @@ describe("findNearestCarOnTrack", () => {
     expect(findNearestCarOnTrack(telemetry, 2, "behind")).toBe(1);
   });
 
-  it("should skip inactive cars", () => {
+  it("should skip cars with no track position", () => {
     const telemetry = makeTelemetry(3, [
       { idx: 1, laps: 5, dist: 0.8 },
-      { idx: 2, laps: -1, dist: 0.5 },
+      { idx: 2, laps: 5, dist: -1 },
       { idx: 3, laps: 5, dist: 0.2 },
     ]);
 
     expect(findNearestCarOnTrack(telemetry, 3, "ahead")).toBe(1);
+  });
+
+  it("should skip cars flagged as NotInWorld even with a stale track position", () => {
+    const telemetry = makeTelemetry(3, [
+      { idx: 1, laps: 5, dist: 0.8 },
+      { idx: 2, laps: 5, dist: 0.5, trackSurface: TrkLoc.NotInWorld },
+      { idx: 3, laps: 5, dist: 0.2 },
+    ]);
+
+    expect(findNearestCarOnTrack(telemetry, 3, "ahead")).toBe(1);
+  });
+
+  it("should include cars during a warmup/pace lap (CarIdxLapCompleted still -1)", () => {
+    // Real scenario from telemetry-snapshot-20260417-081043: everyone is on the formation
+    // lap, so CarIdxLapCompleted is -1 for all cars even though CarIdxLapDistPct is valid.
+    const telemetry = makeTelemetry(14, [
+      { idx: 1, laps: -1, dist: 0.8173747 },
+      { idx: 11, laps: -1, dist: 0.8009607 },
+      { idx: 14, laps: -1, dist: 0.8019581 },
+      { idx: 17, laps: -1, dist: 0.8063871 },
+    ]);
+
+    expect(findNearestCarOnTrack(telemetry, 14, "ahead")).toBe(17);
+    expect(findNearestCarOnTrack(telemetry, 14, "behind")).toBe(11);
   });
 
   it("should apply skipIdx filter", () => {

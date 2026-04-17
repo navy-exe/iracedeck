@@ -1,3 +1,4 @@
+import { TrkLoc } from "./types.js";
 import type { TelemetryData } from "./types.js";
 
 export interface FindNearestCarOptions {
@@ -24,12 +25,12 @@ export function findNearestCarOnTrack(
   direction: "ahead" | "behind",
   options?: FindNearestCarOptions,
 ): number | null {
-  if (!telemetry?.CarIdxLapCompleted || !telemetry?.CarIdxLapDistPct) return null;
+  if (!telemetry?.CarIdxLapDistPct) return null;
 
   if (referenceCarIdx < 0) return null;
 
-  const lapCompleted = telemetry.CarIdxLapCompleted as number[];
   const lapDistPct = telemetry.CarIdxLapDistPct as number[];
+  const trackSurface = telemetry.CarIdxTrackSurface as number[] | undefined;
   const skipIdx = options?.skipIdx;
 
   const currentDist = lapDistPct[referenceCarIdx];
@@ -38,12 +39,15 @@ export function findNearestCarOnTrack(
   let bestIdx: number | null = null;
   let bestDist = Infinity;
 
-  for (let idx = 0; idx < lapCompleted.length; idx++) {
+  for (let idx = 0; idx < lapDistPct.length; idx++) {
     if (idx === referenceCarIdx) continue;
 
-    if (lapCompleted[idx] === undefined || lapCompleted[idx] < 0) continue;
-
     if (lapDistPct[idx] === undefined || lapDistPct[idx] < 0) continue;
+
+    // Skip disconnected/empty slots. During a warmup/pace lap CarIdxLapCompleted is
+    // still -1 for active cars, so lap count is not a safe "is active" signal — the
+    // authoritative signals are CarIdxLapDistPct and CarIdxTrackSurface.
+    if (trackSurface?.[idx] === TrkLoc.NotInWorld) continue;
 
     if (skipIdx?.(idx)) continue;
 
