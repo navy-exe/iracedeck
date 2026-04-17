@@ -149,14 +149,14 @@ Directional Actions (increase/decrease, cycle)
 
 ## Property Inspector Components
 
-Shared PI components are in `packages/stream-deck-plugin/src/pi/` and compiled to `pi-components.js`.
+Shared PI components live in `packages/pi-components/src/components/` and are bundled to `pi-components.js` by `packages/pi-components/rollup.config.mjs`.
 
 ### Required Files in UI Folder
 Each plugin's `ui/` folder MUST contain these files:
-- `sdpi-components.js` - Stream Deck Property Inspector components
-- `pi-components.js` - iRaceDeck custom components (for `ird-key-binding`)
+- `sdpi-components.js` - Stream Deck Property Inspector components (vendored in `@iracedeck/pi-components/browser/`)
+- `pi-components.js` - iRaceDeck custom components for `ird-key-binding`, `ird-color-picker`, etc. (built from `@iracedeck/pi-components`)
 
-**IMPORTANT**: These files must be copied from an existing plugin (e.g., `stream-deck-plugin`) when creating a new plugin. The Property Inspector will fail silently if these files are missing.
+**IMPORTANT**: Both files are copied in automatically by each plugin's rollup build from `@iracedeck/pi-components/browser`. You do not copy them manually. Ensure the plugin declares `"@iracedeck/pi-components": "workspace:*"` in `package.json` — pnpm will build the shared package before the plugin. The Property Inspector will fail silently if these files are missing.
 
 ### Required Scripts in HTML
 Always include both scripts in PI HTML files:
@@ -192,7 +192,7 @@ Key pitfalls summarized here for quick reference:
 
 Use this pattern to show/hide sub-settings based on a mode dropdown. Start hidden with `class="hidden"` and toggle via JavaScript.
 
-Reference implementation: `stream-deck-plugin/src/pi/session-info.ejs` (shows position/fuel sub-settings only when their mode is selected).
+Reference implementation: `packages/pi-components/templates/session-info.ejs` (shows position/fuel sub-settings only when their mode is selected).
 
 sdpi-components are web components. To show/hide elements based on select values:
 
@@ -240,9 +240,14 @@ else initialize();
 ```
 
 ### Building PI Components
+
+`pi-components.js` is produced by `@iracedeck/pi-components`. Both plugins copy it (and `sdpi-components.js`) into their own `ui/` folder at build time.
+
 ```bash
-cd packages/stream-deck-plugin
-pnpm build:pi
+# Build the shared PI bundle only
+pnpm --filter @iracedeck/pi-components build
+
+# Or run a workspace build — turbo handles topological order
 pnpm build
 ```
 

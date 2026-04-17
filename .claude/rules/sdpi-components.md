@@ -1,7 +1,8 @@
 ---
 paths:
-  - "packages/*/src/pi/**"
-  - "packages/*/src/pi-templates/**"
+  - "packages/pi-components/templates/**"
+  - "packages/pi-components/partials/**"
+  - "packages/pi-components/src/components/**"
   - "packages/*/*.sdPlugin/ui/**"
 ---
 # sdpi-components Library Reference

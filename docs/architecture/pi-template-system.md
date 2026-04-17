@@ -1,5 +1,7 @@
 # PI Template System for Stream Deck Plugins
 
+> **Current state (as of issue #329):** The template sources, partials, data files, Rollup EJS plugin, web components, and vendored `sdpi-components.js` listed in the original file structure below were extracted into `@iracedeck/pi-components`. Consumer plugins import `piTemplatePlugin`, `templatesDir`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`. See `.claude/rules/pi-templates.md` for the current layout and integration snippet. The sections below describe the original design and remain accurate in intent.
+
 ## Goal
 
 Create a build-time template system for Property Inspector HTML files that allows defining global key bindings once and including them across multiple PI files via an accordion UI.

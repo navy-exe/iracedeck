@@ -98,11 +98,13 @@ packages/
   deck-adapter-elgato/     Elgato Stream Deck adapter (bridges Elgato SDK to deck-core)
   deck-adapter-mirabox/    Mirabox VSD Craft adapter (WebSocket protocol to deck-core)
   deck-core/               Platform-agnostic base classes, types, and shared utilities
+  icon-composer/           Standalone SVG icon assembly (zero dependencies)
   icons/                   SVG icon templates (Mustache)
   iracing-native/          C++ N-API addon (shared memory, window messaging, scan codes)
   iracing-sdk/             TypeScript SDK (telemetry, broadcast commands, session parsing)
   logger/                  Shared logger interface
   mirabox-plugin/          Mirabox device plugin
+  pi-components/           Shared Property Inspector assets (web components, EJS templates, partials, data)
   stream-deck-plugin/      Elgato Stream Deck plugin
   website/                 Documentation website (iracedeck.com)
 ```
@@ -113,10 +115,12 @@ packages/
 | `@iracedeck/deck-core`            | Base classes, types, keyboard service, icon templates, global settings                    |
 | `@iracedeck/deck-adapter-elgato`  | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface                    |
 | `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core                             |
+| `@iracedeck/icon-composer`        | Standalone SVG icon assembly (pure functions, zero dependencies)                          |
 | `@iracedeck/icons`                | SVG icon Mustache templates with colorization support                                     |
 | `@iracedeck/iracing-native`       | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging, scan-code input) |
 | `@iracedeck/iracing-sdk`          | TypeScript SDK for reading telemetry and sending iRacing broadcast commands               |
 | `@iracedeck/logger`               | Shared logging interface with scoped loggers                                              |
+| `@iracedeck/pi-components`        | Shared PI web components, EJS templates + partials, template data, and Rollup EJS plugin  |
 | `@iracedeck/stream-deck-plugin`   | Elgato Stream Deck plugin — registers actions, PI templates, manifest                     |
 | `@iracedeck/mirabox-plugin`       | Mirabox plugin — registers the same actions for Mirabox devices                           |
 | `@iracedeck/website`              | Documentation website at [iracedeck.com](https://iracedeck.com)                           |
@@ -188,7 +192,7 @@ Actions live in `packages/actions/src/actions/`. Each action needs:
 2. Icons in `packages/icons/`
 3. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
 4. Manifest entry in each plugin's `manifest.json`
-5. A Property Inspector template (EJS -> HTML) in `stream-deck-plugin/src/pi/`
+5. A Property Inspector template (EJS -> HTML) in `packages/pi-components/templates/`
 6. Unit tests
 
 See the existing actions for reference, or check `packages/stream-deck-plugin/CLAUDE.md` for step-by-step instructions.

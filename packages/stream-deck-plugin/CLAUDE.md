@@ -4,7 +4,7 @@ Core Stream Deck plugin for iRaceDeck. Registers actions from `@iracedeck/action
 
 Action implementations live in `packages/actions/src/actions/`. Shared utilities (base actions, keyboard service, global settings, icon templates, etc.) live in `packages/deck-core/src/`. Actions import from `@iracedeck/deck-core`. The `src/shared/index.ts` in this package re-exports from `@iracedeck/deck-core` and `@iracedeck/deck-adapter-elgato` for backward compatibility.
 
-PI components (browser-side web components for Property Inspector) live in `src/pi-components/` and are built separately via `rollup.pi.config.mjs`. PI template partials (EJS) live in `src/pi-templates/`. The build plugin for EJS templates is at `src/build/pi-template-plugin.mjs`.
+All Property Inspector assets — browser web components (`pi-components.js`), EJS action templates + partials, template data (`icon-defaults.json`, `key-bindings.json`, `docs-urls.json`), the Rollup EJS compile plugin, and the vendored `sdpi-components.js` — live in `@iracedeck/pi-components`. This plugin's `rollup.config.mjs` consumes them via `import { piTemplatePlugin, templatesDir, partialsDir, browserDir } from "@iracedeck/pi-components/build"` and copies the browser assets into `com.iracedeck.sd.core.sdPlugin/ui/` at build time.
 
 ## Adding a New Action
 
@@ -199,7 +199,7 @@ Standalone 144x144 SVGs with Mustache label placeholders and `<desc>` color meta
 </svg>
 ```
 
-#### 6. PI template — `src/pi/{action-name}.ejs`
+#### 6. PI template — `packages/pi-components/templates/{action-name}.ejs`
 
 Property Inspector template. For actions with only global key bindings:
 
@@ -290,7 +290,7 @@ Add entry to the `Actions` array:
 - Omit the `Encoder` block entirely if Keypad-only
 - Only include `TriggerDescription` keys for handlers the action implements
 
-#### 9. Add key bindings — `src/pi/data/key-bindings.json`
+#### 9. Add key bindings — `packages/pi-components/templates/data/key-bindings.json`
 
 Add a new category with binding entries:
 
@@ -305,7 +305,7 @@ Add a new category with binding entries:
 - `default`: Default key combination (use `""` if no default)
 - `setting`: Flat global setting key — **must match** what the action reads via `getGlobalSettings()`
 
-#### 10. Add documentation URL — `src/pi/data/docs-urls.json`
+#### 10. Add documentation URL — `packages/pi-components/templates/data/docs-urls.json`
 
 Add an entry mapping the template name to its documentation page:
 

@@ -12,6 +12,7 @@ Packages
 - `@iracedeck/deck-adapter-elgato` — Elgato Stream Deck adapter bridging the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface; also provides `createSDLogger`
 - `@iracedeck/deck-adapter-mirabox` — Mirabox adapter bridging the VSD Craft WebSocket protocol to deck-core's `IDeckPlatformAdapter` interface
 - `@iracedeck/actions` — All action implementations; import from `@iracedeck/deck-core` (not `@elgato/streamdeck`)
+- `@iracedeck/pi-components` — Shared Property Inspector assets: web components (compiled to `pi-components.js`), EJS action templates + partials, template data (icon defaults, key bindings, docs URLs), the Rollup EJS compile plugin, and the vendored `sdpi-components.js`. Consumed by both plugins via `import { piTemplatePlugin, templatesDir, partialsDir, browserDir } from "@iracedeck/pi-components/build"`.
 - `@iracedeck/stream-deck-plugin` — has its own `CLAUDE.md` with step-by-step instructions for adding new actions. Registers actions from `@iracedeck/actions` via `ElgatoPlatformAdapter`. The `src/shared/index.ts` re-exports from `@iracedeck/deck-core` and `@iracedeck/deck-adapter-elgato` for backward compatibility.
 - `@iracedeck/mirabox-plugin` — Registers actions from `@iracedeck/actions` via `VSDPlatformAdapter` for Mirabox devices. Has its own `CLAUDE.md` documenting differences from the Elgato plugin.
 - `@iracedeck/website`
