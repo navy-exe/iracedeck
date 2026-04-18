@@ -57,7 +57,7 @@ const AUDIO_CONTROLS_TITLES: Record<string, string> = {
   "voice-chat-mute": "MUTE\nVOICE",
   "master-volume-up": "VOL UP\nMASTER",
   "master-volume-down": "VOL DOWN\nMASTER",
-  "master-mute": "VOLUME\nMASTER",
+  "master-mute": "MUTE\nMASTER",
 };
 
 /**
@@ -96,9 +96,7 @@ export function generateAudioControlsSvg(settings: AudioControlsSettings): strin
     iconKey = "push-to-talk";
     defaultTitle = AUDIO_CONTROLS_TITLES["push-to-talk"] || "TALK";
   } else {
-    // For master category with mute, fall back to volume-up display
-    const effectiveAction = category === "master" && audioAction === "mute" ? "volume-up" : audioAction;
-    iconKey = `${category}-${effectiveAction}`;
+    iconKey = `${category}-${audioAction}`;
     defaultTitle =
       AUDIO_CONTROLS_TITLES[`${category}-${audioAction}`] || AUDIO_CONTROLS_TITLES[iconKey] || "AUDIO\nCONTROLS";
   }

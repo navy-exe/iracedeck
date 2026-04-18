@@ -8,7 +8,8 @@
   "audio-controls": {
     "backgroundColor": "#2a3a4a",
     "textColor": "#ffffff",
-    "graphic1Color": "#ffffff",
+    "graphic1Color": "#888888",
+    "graphic2Color": "#e74c3c",
     "borderColor": "#5a6a7a"
   },
   "black-box-selector": {
