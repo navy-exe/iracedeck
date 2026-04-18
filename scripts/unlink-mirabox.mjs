@@ -24,7 +24,14 @@ function loadEnvLocal() {
 
 loadEnvLocal();
 
-const dest = process.env.MIRABOX_PLUGINS_DIR;
+// Default to the standard HotSpot StreamDock install path on Windows when
+// MIRABOX_PLUGINS_DIR is not explicitly set. Other host apps (e.g. VSD Craft)
+// install elsewhere — set MIRABOX_PLUGINS_DIR in .env.local to override.
+const dest =
+  process.env.MIRABOX_PLUGINS_DIR ??
+  (process.platform === "win32" && process.env.APPDATA
+    ? join(process.env.APPDATA, "HotSpot", "StreamDock", "plugins")
+    : undefined);
 if (!dest) {
   console.log("MIRABOX_PLUGINS_DIR not set — nothing to unlink.");
   process.exit(0);

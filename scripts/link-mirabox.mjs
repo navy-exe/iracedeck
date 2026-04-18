@@ -4,14 +4,13 @@
  * directory, so the host loads the dev build directly (the Mirabox-side
  * equivalent of `streamdeck link` for Elgato).
  *
- * The destination is per-developer because there is no first-party
- * Mirabox CLI and the host app (VSD Craft or another vendor's build)
- * installs plugins to a vendor-specific path. Set MIRABOX_PLUGINS_DIR
- * in your shell or in a gitignored .env.local at the repo root:
+ * On Windows the destination defaults to the standard HotSpot StreamDock
+ * install path (`%APPDATA%\HotSpot\StreamDock\plugins`). Set
+ * MIRABOX_PLUGINS_DIR in your shell or in a gitignored .env.local at the
+ * repo root to override (e.g. for VSD Craft or another vendor's build):
  *
- *   MIRABOX_PLUGINS_DIR=C:\Users\you\AppData\Roaming\VSD Craft\Plugins
+ *   MIRABOX_PLUGINS_DIR=C:\Users\you\AppData\Roaming\HotSpot\StreamDock\plugins
  */
-
 import { existsSync, lstatSync, readFileSync, symlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,11 +36,18 @@ function loadEnvLocal() {
 
 loadEnvLocal();
 
-const dest = process.env.MIRABOX_PLUGINS_DIR;
+// Default to the standard HotSpot StreamDock install path on Windows when
+// MIRABOX_PLUGINS_DIR is not explicitly set. Other host apps (e.g. VSD Craft)
+// install elsewhere — set MIRABOX_PLUGINS_DIR in .env.local to override.
+const dest =
+  process.env.MIRABOX_PLUGINS_DIR ??
+  (process.platform === "win32" && process.env.APPDATA
+    ? join(process.env.APPDATA, "HotSpot", "StreamDock", "plugins")
+    : undefined);
 if (!dest) {
-  console.error("Error: MIRABOX_PLUGINS_DIR is not set.");
+  console.error("Error: MIRABOX_PLUGINS_DIR is not set and no default could be derived.");
   console.error("Set it in your shell or in .env.local at the repo root, e.g.:");
-  console.error('  MIRABOX_PLUGINS_DIR="C:\\\\Users\\\\you\\\\AppData\\\\Roaming\\\\VSD Craft\\\\Plugins"');
+  console.error('  MIRABOX_PLUGINS_DIR="C:\\\\Users\\\\you\\\\AppData\\\\Roaming\\\\HotSpot\\\\StreamDock\\\\plugins"');
   process.exit(1);
 }
 
