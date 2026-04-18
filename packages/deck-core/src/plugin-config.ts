@@ -9,9 +9,42 @@
  * 2. Import getPluginVersion() wherever the version is needed
  */
 
+/**
+ * Platform capabilities — SVG rendering engine support.
+ * These are the source of truth that feature flags depend on.
+ */
+export interface PlatformCapabilities {
+  svgFilters: boolean;
+  svgMasks: boolean;
+  svgPatterns: boolean;
+}
+
+/**
+ * Product-level feature flags that gate user-visible features.
+ * Each flag typically depends on one or more capabilities.
+ */
+export interface PlatformFeatureFlags {
+  borderGlow: boolean;
+}
+
+export interface PlatformFeatures {
+  capabilities: PlatformCapabilities;
+  features: PlatformFeatureFlags;
+}
+
 export interface PluginConfig {
   version: string;
   platform: string;
+  /**
+   * Merged platform feature flags written into /bin/config.json at build time
+   * (committed platform-features.json deep-merged with optional root
+   * feature-flags.local.json). Absent in tests that don't supply it.
+   *
+   * Runtime consumers should normally rely on the `__FEATURE_*__` and
+   * `__CAPABILITY_*__` compile-time constants — this field exists for cases
+   * where a runtime check is needed, and for symmetry with version/platform.
+   */
+  featureFlags?: PlatformFeatures;
 }
 
 let config: PluginConfig | null = null;
@@ -62,6 +95,30 @@ export function getPluginPlatform(): string {
  */
 export function isPluginConfigInitialized(): boolean {
   return config !== null;
+}
+
+/**
+ * Get the full platform feature flags object (capabilities + features) as
+ * baked into this build's config.json, or `undefined` if not set.
+ *
+ * @throws Error if initPluginConfig() has not been called
+ */
+export function getPlatformFeatures(): PlatformFeatures | undefined {
+  if (!config) {
+    throw new Error("Plugin config not initialized. Call initPluginConfig() first.");
+  }
+
+  return config.featureFlags;
+}
+
+/**
+ * Check whether a named product feature flag is enabled for this build.
+ * Returns `undefined` if feature flags are not present in the config.
+ *
+ * @throws Error if initPluginConfig() has not been called
+ */
+export function getFeatureFlag(name: keyof PlatformFeatureFlags): boolean | undefined {
+  return getPlatformFeatures()?.features[name];
 }
 
 /**

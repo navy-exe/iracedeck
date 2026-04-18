@@ -1,0 +1,10 @@
+{
+  "capabilities": {
+    "svgFilters": true,
+    "svgMasks": true,
+    "svgPatterns": true
+  },
+  "features": {
+    "borderGlow": true
+  }
+}

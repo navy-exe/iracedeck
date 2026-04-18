@@ -329,12 +329,9 @@ export function resolveBorderSettings(
       BORDER_DEFAULTS.borderWidth,
     ),
     borderColor,
-    glowEnabled: resolve(
-      actionOverrides?.glowEnabled,
-      globalBorderSettings.glowEnabled,
-      undefined,
-      BORDER_DEFAULTS.glowEnabled,
-    ),
+    glowEnabled:
+      __FEATURE_BORDER_GLOW__ &&
+      resolve(actionOverrides?.glowEnabled, globalBorderSettings.glowEnabled, undefined, BORDER_DEFAULTS.glowEnabled),
     glowWidth: resolve(
       actionOverrides?.glowWidth,
       globalBorderSettings.glowWidth,

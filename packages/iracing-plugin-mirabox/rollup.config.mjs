@@ -1,5 +1,6 @@
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import path from "node:path";
@@ -14,6 +15,86 @@ const iconsPackagePath = path.resolve(__dirname, "../icons");
 const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
 const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 const elgatoPluginPath = path.resolve(__dirname, "../iracing-plugin-stream-deck");
+
+/**
+ * Deep-merge two plain objects. `override` keys win on collision. Nested
+ * objects are merged recursively; arrays and primitives are replaced.
+ */
+function deepMergeObjects(base, override) {
+	const result = { ...base };
+	for (const key of Object.keys(override)) {
+		const overrideVal = override[key];
+		if (overrideVal && typeof overrideVal === "object" && !Array.isArray(overrideVal)) {
+			result[key] = deepMergeObjects(base[key] ?? {}, overrideVal);
+		} else {
+			result[key] = overrideVal;
+		}
+	}
+	return result;
+}
+
+function isPlainObject(value) {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * Split `override` into `known` (keys whose path and shape exist in `committed`)
+ * and `unknown` (dotted paths that don't match). Lets us warn about typos and
+ * shape mismatches in the local override file while guaranteeing they don't
+ * leak into the merged flags or crash the build.
+ */
+function partitionOverride(committed, override, prefix = "") {
+	const known = {};
+	const unknown = [];
+	for (const key of Object.keys(override)) {
+		if (!Object.prototype.hasOwnProperty.call(committed, key)) {
+			unknown.push(`${prefix}${key}`);
+			continue;
+		}
+		const committedVal = committed[key];
+		const overrideVal = override[key];
+		if (isPlainObject(overrideVal)) {
+			if (!isPlainObject(committedVal)) {
+				// Nested object where committed has a leaf → treat as unknown
+				unknown.push(`${prefix}${key}`);
+				continue;
+			}
+			const nested = partitionOverride(committedVal, overrideVal, `${prefix}${key}.`);
+			known[key] = nested.known;
+			unknown.push(...nested.unknown);
+		} else if (isPlainObject(committedVal)) {
+			// Leaf override for a nested branch → treat as unknown
+			unknown.push(`${prefix}${key}`);
+		} else {
+			known[key] = overrideVal;
+		}
+	}
+	return { known, unknown };
+}
+
+/**
+ * Resolve platform feature flags for this build:
+ * 1. Read committed `platform-features.json` next to this rollup config.
+ * 2. If `feature-flags.local.json` exists at the repo root, strip any keys
+ *    not declared in the committed file (warning about each), then deep-merge
+ *    what remains on top of the committed values.
+ * The merged object feeds `@rollup/plugin-replace` (compile-time constants),
+ * `piTemplatePlugin` (EJS `platform` variable), and the emitted `config.json`.
+ */
+const platformFeaturesPath = path.resolve(__dirname, "platform-features.json");
+const localFeaturesPath = path.resolve(__dirname, "../../feature-flags.local.json");
+const committedFeatures = JSON.parse(readFileSync(platformFeaturesPath, "utf-8"));
+let platformFeatures = committedFeatures;
+if (existsSync(localFeaturesPath)) {
+	const localFeatures = JSON.parse(readFileSync(localFeaturesPath, "utf-8"));
+	const { known, unknown } = partitionOverride(committedFeatures, localFeatures);
+	if (unknown.length > 0) {
+		console.warn(
+			`[platform-features] feature-flags.local.json has unknown keys (ignored): ${unknown.join(", ")}`,
+		);
+	}
+	platformFeatures = deepMergeObjects(committedFeatures, known);
+}
 
 /**
  * Rollup plugin to import SVG files as strings.
@@ -152,12 +233,22 @@ const config = {
 			},
 		},
 		svgPlugin(),
+		replace({
+			preventAssignment: true,
+			values: {
+				__CAPABILITY_SVG_FILTERS__: JSON.stringify(platformFeatures.capabilities.svgFilters),
+				__CAPABILITY_SVG_MASKS__: JSON.stringify(platformFeatures.capabilities.svgMasks),
+				__CAPABILITY_SVG_PATTERNS__: JSON.stringify(platformFeatures.capabilities.svgPatterns),
+				__FEATURE_BORDER_GLOW__: JSON.stringify(platformFeatures.features.borderGlow),
+			},
+		}),
 		// Compile PI templates from @iracedeck/iracing-actions
 		piTemplatePlugin({
 			templatesDir: actionTemplatesDir,
 			outputDir: `${sdPlugin}/ui`,
 			partialsDir,
 			version: rootPackageJson.version,
+			platformFeatures,
 		}),
 		// Copy imgs/ from the Elgato plugin and PI browser assets from @iracedeck/pi-components
 		copyAssetsPlugin(sdPlugin),
@@ -165,6 +256,8 @@ const config = {
 			name: "watch-externals",
 			buildStart: function () {
 				this.addWatchFile(`${sdPlugin}/manifest.json`);
+				this.addWatchFile(platformFeaturesPath);
+				if (existsSync(localFeaturesPath)) this.addWatchFile(localFeaturesPath);
 				// Recursively watch SVG files in a directory
 				const watchSvgsRecursive = (dir) => {
 					try {
@@ -225,6 +318,7 @@ const config = {
 				const config = {
 					version: rootPackageJson.version,
 					platform: "mirabox",
+					featureFlags: platformFeatures,
 				};
 				this.emitFile({ fileName: "config.json", source: JSON.stringify(config, null, 2), type: "asset" });
 			},
