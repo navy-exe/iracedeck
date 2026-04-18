@@ -1,13 +1,10 @@
 #!/usr/bin/env node
 /**
- * Removes the Mirabox plugin symlink created by link-mirabox.mjs.
+ * Removes the Mirabox plugin entry created by link-mirabox.mjs, or a real
+ * plugin directory installed by the host app from a packaged build.
  * Tolerates the not-linked state (exits 0 with an info message).
- *
- * Refuses to delete anything that is not a symlink/junction, to avoid
- * accidentally wiping a real plugin copy someone placed there manually.
  */
-
-import { existsSync, lstatSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, rmSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -44,10 +41,13 @@ if (!stat) {
   process.exit(0);
 }
 
-if (!stat.isSymbolicLink()) {
-  console.error(`Error: ${link} exists but is not a symlink — refusing to delete.`);
-  process.exit(1);
+// Branch on entry type. `rmSync(..., { recursive, force })` on a Windows
+// junction with a missing target silently no-ops (recurse fails, force
+// swallows the error, the junction itself is never unlinked). So unlink
+// symlinks/junctions explicitly; only recursively remove real directories.
+if (stat.isSymbolicLink()) {
+  unlinkSync(link);
+} else {
+  rmSync(link, { recursive: true, force: true });
 }
-
-unlinkSync(link);
-console.log(`Unlinked ${link}`);
+console.log(`Removed ${link}`);
