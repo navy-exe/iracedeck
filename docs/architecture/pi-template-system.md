@@ -197,9 +197,9 @@ plugins: [
 ## Verification
 
 1. Run `pnpm build` in iracing-plugin-stream-deck
-3. Check `ui/black-box-selector.html` contains compiled accordion
-4. Open Stream Deck, verify PI renders with collapsible key bindings
-5. Verify key binding changes persist to global settings
+2. Check `ui/black-box-selector.html` contains compiled accordion
+3. Open Stream Deck, verify PI renders with collapsible key bindings
+4. Verify key binding changes persist to global settings
 
 ## Files to Modify
 

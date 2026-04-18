@@ -22,7 +22,7 @@ Both plugins register the same actions from `@iracedeck/iracing-actions`. When a
 
 Use `iracing-plugin-stream-deck` as the reference implementation for Elgato plugins, and `iracing-plugin-mirabox` for Mirabox/VSD plugins. Create the following structure:
 
-```
+```text
 packages/iracing-plugin-stream-deck-{name}/
 ├── package.json                           # @iracedeck/iracing-plugin-stream-deck-{name}
 ├── tsconfig.json                          # Extends ../../tsconfig.base.json

@@ -126,9 +126,9 @@ override async onWillDisappear(ev: IDeckWillDisappearEvent<Settings>): Promise<v
 ```
 
 ### Reference implementations
-- Tap action with global key bindings: `packages/iracing-actions/src/actions/black-box-selector.ts`
-- Cycle action with global key bindings: `packages/iracing-actions/src/actions/splits-delta-cycle.ts`
-- Long-press (key hold): `packages/iracing-actions/src/actions/look-direction.ts`
+- Tap action with global key bindings: `packages/iracing-actions/src/actions/black-box-selector/black-box-selector.ts`
+- Cycle action with global key bindings: `packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.ts`
+- Long-press (key hold): `packages/iracing-actions/src/actions/look-direction/look-direction.ts`
 
 ## Direct Keyboard Access (Plugin-Level Only)
 
@@ -225,9 +225,9 @@ if (binding && !isSimHubBinding(binding)) {
 ```
 
 ## Reference Implementations
-- Binding dispatch (tap): `packages/iracing-actions/src/actions/black-box-selector.ts`
-- Binding dispatch (cycle): `packages/iracing-actions/src/actions/splits-delta-cycle.ts`
-- Binding dispatch (hold/release): `packages/iracing-actions/src/actions/look-direction.ts`
+- Binding dispatch (tap): `packages/iracing-actions/src/actions/black-box-selector/black-box-selector.ts`
+- Binding dispatch (cycle): `packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.ts`
+- Binding dispatch (hold/release): `packages/iracing-actions/src/actions/look-direction/look-direction.ts`
 - Binding dispatcher service: `packages/deck-core/src/binding-dispatcher.ts`
 
 ## Do NOT Use
