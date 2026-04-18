@@ -30,7 +30,7 @@ The `bin/` folder contains build output and must not be committed to git.
 
 ## Action Locations
 
-- Action implementations live in `packages/actions/src/actions/`.
+- Action implementations live in `packages/iracing-actions/src/actions/`.
 - Actions import from `@iracedeck/deck-core` (NOT from `@elgato/streamdeck` or `../shared/index.js`).
 
 Requirements
@@ -192,7 +192,7 @@ Key pitfalls summarized here for quick reference:
 
 Use this pattern to show/hide sub-settings based on a mode dropdown. Start hidden with `class="hidden"` and toggle via JavaScript.
 
-Reference implementation: `packages/actions/src/actions/session-info/session-info.ejs` (shows position/fuel sub-settings only when their mode is selected).
+Reference implementation: `packages/iracing-actions/src/actions/session-info/session-info.ejs` (shows position/fuel sub-settings only when their mode is selected).
 
 sdpi-components are web components. To show/hide elements based on select values:
 

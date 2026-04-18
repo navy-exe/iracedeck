@@ -14,7 +14,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@iracedeck/actions": "workspace:*",
+    "@iracedeck/iracing-actions": "workspace:*",
     "@iracedeck/deck-adapter-mirabox": "workspace:*",
     "@iracedeck/deck-core": "workspace:*",
     "@iracedeck/iracing-native": "workspace:*",

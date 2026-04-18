@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@elgato/streamdeck": "2.0.4",
-    "@iracedeck/actions": "workspace:*",
+    "@iracedeck/iracing-actions": "workspace:*",
     "@iracedeck/deck-adapter-elgato": "workspace:*",
     "@iracedeck/deck-core": "workspace:*",
     "@iracedeck/iracing-native": "workspace:*",

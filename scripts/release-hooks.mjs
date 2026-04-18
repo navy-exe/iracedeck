@@ -12,7 +12,7 @@ const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1"
 
 // Bump version in all packages/*/package.json
 const packageJsonPaths = [
-  "packages/actions/package.json",
+  "packages/iracing-actions/package.json",
   "packages/deck-adapter-elgato/package.json",
   "packages/deck-adapter-mirabox/package.json",
   "packages/deck-core/package.json",

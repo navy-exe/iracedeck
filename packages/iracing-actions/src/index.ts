@@ -1,5 +1,5 @@
 /**
- * @iracedeck/actions
+ * @iracedeck/iracing-actions
  *
  * Platform-agnostic iRaceDeck action classes.
  * Each action exports a UUID constant and a class extending ConnectionStateAwareAction.

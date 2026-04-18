@@ -1,5 +1,5 @@
 {
-  "name": "@iracedeck/actions",
+  "name": "@iracedeck/iracing-actions",
   "version": "1.13.1",
   "description": "Platform-agnostic iRaceDeck action classes",
   "type": "module",

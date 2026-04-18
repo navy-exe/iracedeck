@@ -8,7 +8,7 @@ The plugin system uses a platform abstraction architecture with these key packag
 - `@iracedeck/deck-core` — Platform-agnostic base classes, types (`IDeckWillAppearEvent`, etc.), and shared utilities
 - `@iracedeck/deck-adapter-elgato` — Elgato Stream Deck adapter implementing `IDeckPlatformAdapter`
 - `@iracedeck/deck-adapter-mirabox` — Mirabox adapter implementing `IDeckPlatformAdapter` via WebSocket
-- `@iracedeck/actions` — All action implementations (import from `@iracedeck/deck-core`, not platform-specific SDKs)
+- `@iracedeck/iracing-actions` — All action implementations (import from `@iracedeck/deck-core`, not platform-specific SDKs)
 
 Actions do NOT import from `@elgato/streamdeck` or any platform SDK. They import from `@iracedeck/deck-core` and are registered via the platform adapter in each plugin.
 
@@ -16,7 +16,7 @@ Actions do NOT import from `@elgato/streamdeck` or any platform SDK. They import
 - `stream-deck-plugin` (com.iracedeck.sd.core) — Elgato Stream Deck, uses `@iracedeck/deck-adapter-elgato`
 - `mirabox-plugin` (com.iracedeck.sd.core) — Mirabox, uses `@iracedeck/deck-adapter-mirabox`
 
-Both plugins register the same actions from `@iracedeck/actions`. When adding or modifying actions, changes must be applied to **all** plugin packages (registration in `plugin.ts`, manifest entries, PI templates where applicable).
+Both plugins register the same actions from `@iracedeck/iracing-actions`. When adding or modifying actions, changes must be applied to **all** plugin packages (registration in `plugin.ts`, manifest entries, PI templates where applicable).
 
 ## Creating New Plugins
 
@@ -57,7 +57,7 @@ packages/stream-deck-plugin-{name}/
 | Action UUIDs | `com.iracedeck.sd.{name}.{action-name}` |
 
 ### After creating the plugin:
-1. Add `"@iracedeck/pi-components": "workspace:*"` and `"@iracedeck/actions": "workspace:*"` to the plugin's `package.json` dependencies. Wire the rollup config to `piTemplatePlugin`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`, and compute `actionTemplatesDir` locally from the `@iracedeck/actions` path (see `.claude/rules/pi-templates.md`). The `sdpi-components.js`/`pi-components.js` files are copied automatically by the plugin's rollup build — no manual copy. Per-action `icon.svg`/`key.svg` are copied from each action folder into `{sdPlugin}/imgs/actions/<name>/` by a dedicated rollup plugin step.
+1. Add `"@iracedeck/pi-components": "workspace:*"` and `"@iracedeck/iracing-actions": "workspace:*"` to the plugin's `package.json` dependencies. Wire the rollup config to `piTemplatePlugin`, `partialsDir`, and `browserDir` from `@iracedeck/pi-components/build`, and compute `actionTemplatesDir` locally from the `@iracedeck/iracing-actions` path (see `.claude/rules/pi-templates.md`). The `sdpi-components.js`/`pi-components.js` files are copied automatically by the plugin's rollup build — no manual copy. Per-action `icon.svg`/`key.svg` are copied from each action folder into `{sdPlugin}/imgs/actions/<name>/` by a dedicated rollup plugin step.
 2. Run `pnpm install` in the package directory
 3. Run `pnpm build` to verify build succeeds
 4. Run `streamdeck link com.iracedeck.sd.{name}.sdPlugin` to register with Stream Deck
@@ -131,7 +131,7 @@ The initialization order in `plugin.ts` is critical. The plugin uses `ElgatoPlat
 
 ```typescript
 import streamDeck from "@elgato/streamdeck";
-import { MY_ACTION_UUID, MyAction } from "@iracedeck/actions";
+import { MY_ACTION_UUID, MyAction } from "@iracedeck/iracing-actions";
 import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
 import {
   focusIRacingIfEnabled,
@@ -195,6 +195,6 @@ adapter.connect();
 - All init calls must be BEFORE `adapter.connect()` (handlers must register first)
 - `initializeSimHub()` must come AFTER `initGlobalSettings()` (reads host/port from settings)
 - `initializeBindingDispatcher()` must come AFTER `initGlobalSettings()`, `initializeKeyboard()`, and `initializeSimHub()`
-- Actions are imported from `@iracedeck/actions` and registered via `adapter.registerAction(UUID, handler)`
+- Actions are imported from `@iracedeck/iracing-actions` and registered via `adapter.registerAction(UUID, handler)`
 - Logger is injected into each action via constructor: `new MyAction(adapter.createLogger("MyAction"))`
 - `initAppMonitor` requires `initializeSDK()` to be called first

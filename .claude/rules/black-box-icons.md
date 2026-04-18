@@ -1,7 +1,7 @@
 ---
 paths:
-  - packages/actions/src/actions/black-box-selector/*.ts
-  - packages/actions/src/actions/black-box-selector/*.svg
+  - packages/iracing-actions/src/actions/black-box-selector/*.ts
+  - packages/iracing-actions/src/actions/black-box-selector/*.svg
   - packages/icons/black-box-selector/*
 ---
 # Black Box Icon Design Guidelines

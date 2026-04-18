@@ -1,4 +1,15 @@
 import streamDeck from "@elgato/streamdeck";
+import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
+import {
+  initAppMonitor,
+  initGlobalSettings,
+  initializeBindingDispatcher,
+  initializeKeyboard,
+  initializeSDK,
+  initializeSimHub,
+  initPluginConfig,
+  type PluginConfig,
+} from "@iracedeck/deck-core";
 import {
   AI_SPOTTER_CONTROLS_UUID,
   AiSpotterControls,
@@ -66,18 +77,7 @@ import {
   ToggleUiElements,
   VIEW_ADJUSTMENT_UUID,
   ViewAdjustment,
-} from "@iracedeck/actions";
-import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
-import {
-  initAppMonitor,
-  initGlobalSettings,
-  initializeBindingDispatcher,
-  initializeKeyboard,
-  initializeSDK,
-  initializeSimHub,
-  initPluginConfig,
-  type PluginConfig,
-} from "@iracedeck/deck-core";
+} from "@iracedeck/iracing-actions";
 import { IRacingNative } from "@iracedeck/iracing-native";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
