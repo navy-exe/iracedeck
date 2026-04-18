@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@elgato/streamdeck": "2.0.4",
-    "@iracedeck/iracing-actions": "workspace:*",
     "@iracedeck/deck-adapter-elgato": "workspace:*",
     "@iracedeck/deck-core": "workspace:*",
+    "@iracedeck/iracing-actions": "workspace:*",
     "@iracedeck/iracing-native": "workspace:*",
     "@iracedeck/iracing-sdk": "workspace:*",
     "@iracedeck/logger": "workspace:*",
@@ -28,6 +28,7 @@
     "@elgato/utils": "0.4.4",
     "@rollup/plugin-commonjs": "29.0.2",
     "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-replace": "6.0.3",
     "@rollup/plugin-terser": "1.0.0",
     "@rollup/plugin-typescript": "12.3.0",
     "@tsconfig/node22": "22.0.5",

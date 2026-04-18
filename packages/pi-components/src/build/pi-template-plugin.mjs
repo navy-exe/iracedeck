@@ -98,7 +98,14 @@ function createTemplateRequire(templatesDir) {
  * Rollup plugin for compiling EJS Property Inspector templates
  */
 export function piTemplatePlugin(options) {
-  const { templatesDir, outputDir, partialsDir, additionalPartialsDirs = [], version } = options;
+  const {
+    templatesDir,
+    outputDir,
+    partialsDir,
+    additionalPartialsDirs = [],
+    version,
+    platformFeatures = { capabilities: {}, features: {} },
+  } = options;
 
   if (!version) {
     throw new Error("piTemplatePlugin: version option is required");
@@ -192,6 +199,8 @@ export function piTemplatePlugin(options) {
             version: version,
             // Documentation URL for this action (empty string if not mapped)
             docsUrl,
+            // Platform capabilities + feature flags for this plugin build
+            platform: platformFeatures,
             // Also expose a require function for inline requires (resolved from templatesDir)
             require: createTemplateRequire(templatesDir),
             // Expose locals for checking if variables are defined
@@ -199,6 +208,7 @@ export function piTemplatePlugin(options) {
               data: dataFiles,
               version: version,
               docsUrl,
+              platform: platformFeatures,
             },
           }, {
             // Search directories for includes

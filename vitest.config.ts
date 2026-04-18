@@ -39,6 +39,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@iracedeck/deck-core": resolve(__dirname, "packages/deck-core/src/index.ts"),
+      "@iracedeck/icon-composer": resolve(__dirname, "packages/icon-composer/src/index.ts"),
       "@iracedeck/iracing-sdk": resolve(__dirname, "packages/iracing-sdk/src/index.ts"),
       "@iracedeck/iracing-native": resolve(__dirname, "packages/iracing-native/src/index.ts"),
       "@iracedeck/logger": resolve(__dirname, "packages/logger/src/index.ts"),
@@ -46,6 +47,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    setupFiles: ["./test-setup.ts"],
     include: ["packages/*/src/**/*.test.ts"],
   },
 });

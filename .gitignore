@@ -44,6 +44,9 @@ desktop.ini
 .env.local
 .env.*.local
 
+# Platform feature flag local override (dev-only, merges over platform-features.json at build time)
+feature-flags.local.json
+
 # Debug
 *.pdb
 

@@ -334,6 +334,81 @@ describe("piTemplatePlugin", () => {
     expect(context.error).toHaveBeenCalledWith(expect.stringContaining("basename collision"));
   });
 
+  it("should expose platformFeatures as locals.platform to templates", async () => {
+    writeFileSync(
+      path.join(templatesDir, "flags.ejs"),
+      "<!DOCTYPE html><html><body>" +
+        "<% if (locals.platform?.features?.borderGlow !== false) { %>GLOW<% } %>" +
+        "|<%= locals.platform?.capabilities?.svgFilters %>" +
+        "</body></html>",
+    );
+
+    const plugin = piTemplatePlugin({
+      templatesDir,
+      outputDir,
+      partialsDir,
+      version: "1.0.0",
+      platformFeatures: {
+        capabilities: { svgFilters: false, svgMasks: false, svgPatterns: false },
+        features: { borderGlow: false },
+      },
+    });
+
+    const context = {
+      addWatchFile: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+    };
+
+    if (plugin.buildStart) {
+      await (plugin.buildStart as AnyFunction).call(context);
+    }
+    if (plugin.generateBundle) {
+      await (plugin.generateBundle as AnyFunction).call(context);
+    }
+
+    const content = readFileSync(path.join(outputDir, "flags.html"), "utf-8");
+    expect(content).not.toContain("GLOW");
+    expect(content).toContain("|false");
+  });
+
+  it("should default platformFeatures to empty objects so templates without flags still render", async () => {
+    writeFileSync(
+      path.join(templatesDir, "no-flags.ejs"),
+      "<!DOCTYPE html><html><body>" +
+        "<% if (locals.platform?.features?.borderGlow !== false) { %>GLOW<% } %>" +
+        "</body></html>",
+    );
+
+    const plugin = piTemplatePlugin({
+      templatesDir,
+      outputDir,
+      partialsDir,
+      version: "1.0.0",
+    });
+
+    const context = {
+      addWatchFile: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+    };
+
+    if (plugin.buildStart) {
+      await (plugin.buildStart as AnyFunction).call(context);
+    }
+    if (plugin.generateBundle) {
+      await (plugin.generateBundle as AnyFunction).call(context);
+    }
+
+    // With default platformFeatures = { capabilities: {}, features: {} },
+    // features.borderGlow is undefined (!== false), so GLOW is emitted — preserving
+    // backward-compatible behavior for templates without platform gating.
+    const content = readFileSync(path.join(outputDir, "no-flags.html"), "utf-8");
+    expect(content).toContain("GLOW");
+  });
+
   it("should pass variables to partials", async () => {
     // Create a partial that uses a variable
     writeFileSync(path.join(partialsDir, "title.ejs"), "<title><%= title %></title>");

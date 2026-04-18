@@ -191,6 +191,7 @@ export default defineConfig({
             { slug: "docs/development/tech-stack" },
             { slug: "docs/development/contributing" },
             { slug: "docs/development/setup" },
+            { slug: "docs/development/feature-flags" },
           ],
         },
         {

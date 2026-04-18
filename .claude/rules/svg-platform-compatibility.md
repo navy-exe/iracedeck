@@ -10,6 +10,8 @@ This project renders SVG icons on two platforms with different SVG engines:
 
 **Rule: All icons must render correctly on the lowest common denominator (QT5 / SVG Tiny 1.2 static).** Features unsupported by QT5 are silently ignored — the icon renders but without the effect.
 
+For code paths that generate QT6-only SVG (e.g., filters), gate them behind platform feature flags so the Mirabox bundle doesn't ship unused code and the Mirabox PI doesn't show controls that have no effect. See `@.claude/rules/platform-feature-flags.md`.
+
 ## Safe to Use (both platforms)
 
 These features are part of SVG Tiny 1.2 static and work on both Elgato and Mirabox:

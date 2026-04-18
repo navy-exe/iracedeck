@@ -204,6 +204,11 @@ export {
   getPluginVersion,
   getPluginPlatform,
   isPluginConfigInitialized,
+  getFeatureFlag,
+  getPlatformFeatures,
   _resetPluginConfig,
   type PluginConfig,
+  type PlatformCapabilities,
+  type PlatformFeatureFlags,
+  type PlatformFeatures,
 } from "./plugin-config.js";

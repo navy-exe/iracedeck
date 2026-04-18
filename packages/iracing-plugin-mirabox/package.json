@@ -14,9 +14,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@iracedeck/iracing-actions": "workspace:*",
     "@iracedeck/deck-adapter-mirabox": "workspace:*",
     "@iracedeck/deck-core": "workspace:*",
+    "@iracedeck/iracing-actions": "workspace:*",
     "@iracedeck/iracing-native": "workspace:*",
     "@iracedeck/iracing-sdk": "workspace:*",
     "@iracedeck/logger": "workspace:*",
@@ -25,11 +25,12 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
+    "@elgato/cli": "1.7.3",
     "@rollup/plugin-commonjs": "29.0.2",
     "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-replace": "6.0.3",
     "@rollup/plugin-terser": "1.0.0",
     "@rollup/plugin-typescript": "12.3.0",
-    "@elgato/cli": "1.7.3",
     "@tsconfig/node22": "22.0.5",
     "@types/node": "25.6.0",
     "rimraf": "6.1.3",
