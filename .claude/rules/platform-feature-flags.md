@@ -109,9 +109,12 @@ cat > feature-flags.local.json <<'EOF'
 EOF
 pnpm build
 
-# Verify:
+# Verify bundle (tree-shaken by @rollup/plugin-replace + terser):
 grep -c feGaussianBlur packages/iracing-plugin-stream-deck/com.iracedeck.sd.core.sdPlugin/bin/plugin.js   # -> 0
 grep -c ird-border-glow packages/iracing-plugin-stream-deck/com.iracedeck.sd.core.sdPlugin/bin/plugin.js # -> 0
+
+# Verify PI output (emitted by piTemplatePlugin; `ird-border-glow` is the control id):
+grep -R -l ird-border-glow packages/iracing-plugin-stream-deck/com.iracedeck.sd.core.sdPlugin/ui         # -> (no matches)
 
 # Revert:
 rm feature-flags.local.json

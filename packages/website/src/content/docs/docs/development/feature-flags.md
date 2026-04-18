@@ -84,8 +84,8 @@ A committed `feature-flags.local.json.example` at the repo root documents the sh
 Short version (see the in-repo rule `.claude/rules/platform-feature-flags.md` for full details):
 
 1. Add the flag to both `platform-features.json` files with the correct per-platform default.
-2. Add it to the `PlatformFeatureFlags` interface in `packages/deck-core/src/plugin-config.ts`.
-3. Declare the `__FEATURE_*__` ambient global in `packages/icon-composer/src/platform-features.d.ts`.
+2. For a new `features.*` flag, add it to the `PlatformFeatureFlags` interface in `packages/deck-core/src/plugin-config.ts`. For a new `capabilities.*` flag, add it to the `PlatformCapabilities` interface in the same file.
+3. Declare the `__FEATURE_*__` or `__CAPABILITY_*__` ambient global in `packages/icon-composer/src/platform-features.d.ts`.
 4. Add a replace entry in **both** plugin `rollup.config.mjs` files.
-5. Gate the affected code and/or PI partials (`locals.platform?.features?.yourFlag !== false`).
+5. Gate the affected code and/or PI partials (`locals.platform?.features?.yourFlag !== false`, or `locals.platform?.capabilities?.yourCapability` for capability checks).
 6. Seed the default in `test-setup.ts` and cover both the `true` and `false` paths with `vi.stubGlobal`.

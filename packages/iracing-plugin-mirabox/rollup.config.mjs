@@ -34,11 +34,12 @@ function deepMergeObjects(base, override) {
 }
 
 /**
- * Collect keys in `override` that have no matching key in `committed`, returning
- * dotted paths (e.g. `features.brorderGlow`). Used to warn about typos in
- * `feature-flags.local.json` that would otherwise silently have no effect.
+ * Split `override` into `known` (keys whose path exists in `committed`) and
+ * `unknown` (dotted paths that don't). Lets us warn about typos in the local
+ * override file while guaranteeing they don't leak into the merged flags.
  */
-function findUnknownKeys(committed, override, prefix = "") {
+function partitionOverride(committed, override, prefix = "") {
+	const known = {};
 	const unknown = [];
 	for (const key of Object.keys(override)) {
 		if (!(key in committed)) {
@@ -47,19 +48,24 @@ function findUnknownKeys(committed, override, prefix = "") {
 		}
 		const overrideVal = override[key];
 		if (overrideVal && typeof overrideVal === "object" && !Array.isArray(overrideVal)) {
-			unknown.push(...findUnknownKeys(committed[key], overrideVal, `${prefix}${key}.`));
+			const nested = partitionOverride(committed[key], overrideVal, `${prefix}${key}.`);
+			known[key] = nested.known;
+			unknown.push(...nested.unknown);
+		} else {
+			known[key] = overrideVal;
 		}
 	}
-	return unknown;
+	return { known, unknown };
 }
 
 /**
  * Resolve platform feature flags for this build:
  * 1. Read committed `platform-features.json` next to this rollup config.
- * 2. If `feature-flags.local.json` exists at the repo root, deep-merge it on top.
+ * 2. If `feature-flags.local.json` exists at the repo root, strip any keys
+ *    not declared in the committed file (warning about each), then deep-merge
+ *    what remains on top of the committed values.
  * The merged object feeds `@rollup/plugin-replace` (compile-time constants),
  * `piTemplatePlugin` (EJS `platform` variable), and the emitted `config.json`.
- * Unknown keys in the local file are warned about and ignored (never merged).
  */
 const platformFeaturesPath = path.resolve(__dirname, "platform-features.json");
 const localFeaturesPath = path.resolve(__dirname, "../../feature-flags.local.json");
@@ -67,13 +73,13 @@ const committedFeatures = JSON.parse(readFileSync(platformFeaturesPath, "utf-8")
 let platformFeatures = committedFeatures;
 if (existsSync(localFeaturesPath)) {
 	const localFeatures = JSON.parse(readFileSync(localFeaturesPath, "utf-8"));
-	const unknown = findUnknownKeys(committedFeatures, localFeatures);
+	const { known, unknown } = partitionOverride(committedFeatures, localFeatures);
 	if (unknown.length > 0) {
 		console.warn(
 			`[platform-features] feature-flags.local.json has unknown keys (ignored): ${unknown.join(", ")}`,
 		);
 	}
-	platformFeatures = deepMergeObjects(committedFeatures, localFeatures);
+	platformFeatures = deepMergeObjects(committedFeatures, known);
 }
 
 /**
