@@ -11,9 +11,10 @@ Packages
 - `@iracedeck/deck-core` — Platform-agnostic base classes, types, and shared utilities (base actions, keyboard service, global settings, icon templates, etc.). Re-exports icon-composer and adds global settings readers.
 - `@iracedeck/deck-adapter-elgato` — Elgato Stream Deck adapter bridging the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface; also provides `createSDLogger`
 - `@iracedeck/deck-adapter-mirabox` — Mirabox adapter bridging the VSD Craft WebSocket protocol to deck-core's `IDeckPlatformAdapter` interface
-- `@iracedeck/actions` — All action implementations; import from `@iracedeck/deck-core` (not `@elgato/streamdeck`)
-- `@iracedeck/stream-deck-plugin` — has its own `CLAUDE.md` with step-by-step instructions for adding new actions. Registers actions from `@iracedeck/actions` via `ElgatoPlatformAdapter`. The `src/shared/index.ts` re-exports from `@iracedeck/deck-core` and `@iracedeck/deck-adapter-elgato` for backward compatibility.
-- `@iracedeck/mirabox-plugin` — Registers actions from `@iracedeck/actions` via `VSDPlatformAdapter` for Mirabox devices. Has its own `CLAUDE.md` documenting differences from the Elgato plugin.
+- `@iracedeck/iracing-actions` — All action implementations; import from `@iracedeck/deck-core` (not `@elgato/streamdeck`). Each action lives in its own folder under `src/actions/<name>/` containing `<name>.ts`, `<name>.test.ts`, `<name>.ejs` (PI template), and `icon.svg`/`key.svg` (static icons). Shared template data lives in `src/actions/data/`. Plugin-global PI templates (e.g., `settings.ejs`) live in `src/actions/settings/`.
+- `@iracedeck/pi-components` — Shared Property Inspector framework: web components (compiled to `pi-components.js`), EJS partials, the Rollup EJS compile plugin, and the vendored `sdpi-components.js`. Per-action templates and template data live in `@iracedeck/iracing-actions`. Consumed by both plugins via `import { piTemplatePlugin, partialsDir, browserDir } from "@iracedeck/pi-components/build"`.
+- `@iracedeck/iracing-plugin-stream-deck` — has its own `CLAUDE.md` with step-by-step instructions for adding new actions. Registers actions from `@iracedeck/iracing-actions` via `ElgatoPlatformAdapter`. The `src/shared/index.ts` re-exports from `@iracedeck/deck-core` and `@iracedeck/deck-adapter-elgato` for backward compatibility.
+- `@iracedeck/iracing-plugin-mirabox` — Registers actions from `@iracedeck/iracing-actions` via `VSDPlatformAdapter` for Mirabox devices. Has its own `CLAUDE.md` documenting differences from the Elgato plugin.
 - `@iracedeck/website`
 
 High-level guidance

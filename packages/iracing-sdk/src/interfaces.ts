@@ -27,5 +27,5 @@ export interface INativeSDK {
   broadcastMsg(msg: BroadcastMsg | number, var1: number, var2?: number, var3?: number): void;
 
   // Chat
-  sendChatMessage(message: string): boolean;
+  sendChatMessage(message: string): Promise<boolean>;
 }

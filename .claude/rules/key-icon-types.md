@@ -1,11 +1,11 @@
 ---
 paths:
   - "**/icons/**/*.svg"
-  - "**/imgs/actions/**/key.svg"
+  - "packages/iracing-actions/src/actions/**/key.svg"
 ---
 # Key Icon Types
 
-This document defines standardized key icon type layouts. Standalone icon SVGs (`packages/icons/**/*.svg`) are 144x144 graphic snippets — they contain only artwork, Mustache color placeholders, and `<desc>` metadata. No background rect and no label text elements. Background, title text, and base layout are composed at render time by `assembleIcon()`. Key icons (`**/imgs/actions/**/key.svg`) are 72x72 static full-color SVGs with no Mustache placeholders.
+This document defines standardized key icon type layouts. Standalone icon SVGs (`packages/icons/**/*.svg`) are 144x144 graphic snippets — they contain only artwork, Mustache color placeholders, and `<desc>` metadata. No background rect and no label text elements. Background, title text, and base layout are composed at render time by `assembleIcon()`. Key icons (`packages/iracing-actions/src/actions/<name>/key.svg`) are 72x72 static full-color SVGs with no Mustache placeholders.
 
 ## Default Key Icon Type
 
@@ -114,4 +114,4 @@ Optimized for showing live telemetry values. Small title at top, large centered 
 - **Value**: Large bold centered text at dynamic y (~100, uses `{{textColor}}`, dynamic font size)
 - **Background**: Dynamic — can change color for alert effects (e.g., flash red on incident), defaults to `{{backgroundColor}}`
 - **Placeholders**: `{{backgroundColor}}`, `{{textColor}}`, `{{titleLabel}}`, `{{value}}`, `{{valueFontSize}}`
-- Reference: `packages/stream-deck-plugin/icons/session-info.svg`
+- Reference: `packages/iracing-plugin-stream-deck/icons/session-info.svg`

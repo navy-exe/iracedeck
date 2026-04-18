@@ -65,6 +65,7 @@ local/*
 
 # Claude Code
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # Superpowers brainstorming artifacts
 .superpowers/

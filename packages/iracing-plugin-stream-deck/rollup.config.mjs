@@ -1,0 +1,190 @@
+import commonjs from "@rollup/plugin-commonjs";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
+import typescript from "@rollup/plugin-typescript";
+import path from "node:path";
+import url from "node:url";
+import process from "node:process";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { browserDir, partialsDir, piTemplatePlugin } from "@iracedeck/pi-components/build";
+
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const rootPackageJson = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
+const iconsPackagePath = path.resolve(__dirname, "../icons");
+const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
+const actionTemplatesDir = path.join(actionsPackagePath, "actions");
+
+/**
+ * Rollup plugin to import SVG files as strings.
+ * Handles both relative imports and @iracedeck/icons/ package imports.
+ */
+function svgPlugin() {
+	return {
+		name: "svg",
+		resolveId(source, importer) {
+			if (source.endsWith(".svg")) {
+				if (source.startsWith("@iracedeck/icons/")) {
+					const relativePath = source.replace("@iracedeck/icons/", "");
+					return path.join(iconsPackagePath, relativePath);
+				}
+				if (importer) {
+					return path.resolve(path.dirname(importer), source);
+				}
+			}
+		},
+		load(id) {
+			if (id.endsWith(".svg")) {
+				const content = readFileSync(id, "utf-8");
+				return `export default ${JSON.stringify(content)};`;
+			}
+		}
+	};
+}
+
+const isWatching = !!process.env.ROLLUP_WATCH;
+const sdPlugin = "com.iracedeck.sd.core.sdPlugin";
+
+/**
+ * @type {import('rollup').RollupOptions}
+ */
+const config = {
+	input: "src/plugin.ts",
+	onwarn(warning, warn) {
+		// Suppress circular dependency warnings from zod and semver internals
+		if (warning.code === "CIRCULAR_DEPENDENCY" && warning.ids?.some(id => id.includes("node_modules\\zod\\") || id.includes("node_modules/zod/") || id.includes("node_modules\\semver\\") || id.includes("node_modules/semver/"))) return;
+		warn(warning);
+	},
+	output: {
+		file: `${sdPlugin}/bin/plugin.js`,
+		sourcemap: isWatching,
+		sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+			return url.pathToFileURL(path.resolve(path.dirname(sourcemapPath), relativeSourcePath)).href;
+		},
+		inlineDynamicImports: true
+	},
+	external: ["@iracedeck/iracing-native", "yaml", "keysender"],
+	plugins: [
+		// Resolve .js imports to .ts files for the raw-TypeScript actions package.
+		// Only applies to relative imports (starting with ".") within the actions package.
+		{
+			name: "resolve-actions-ts",
+			resolveId(source, importer) {
+				if (!importer || !source.startsWith(".") || !source.endsWith(".js")) return null;
+				// Only handle imports from the actions package
+				const normalizedImporter = importer.replace(/\\/g, "/");
+				if (!normalizedImporter.includes("/iracing-actions/src/")) return null;
+				const tsPath = path.resolve(path.dirname(importer), source.replace(/\.js$/, ".ts"));
+				return tsPath;
+			},
+		},
+		svgPlugin(),
+		piTemplatePlugin({
+			templatesDir: actionTemplatesDir,
+			outputDir: `${sdPlugin}/ui`,
+			partialsDir,
+			version: rootPackageJson.version,
+		}),
+		// Copy per-action static icons from @iracedeck/iracing-actions into {sdPlugin}/imgs/actions/<name>/.
+		// Source of truth: `packages/iracing-actions/src/actions/<name>/{icon,key}.svg`.
+		{
+			name: "copy-action-icons",
+			generateBundle() {
+				const destRoot = `${sdPlugin}/imgs/actions`;
+				for (const entry of readdirSync(actionTemplatesDir, { withFileTypes: true })) {
+					if (!entry.isDirectory() || entry.name === "data") continue;
+					const actionDir = path.join(actionTemplatesDir, entry.name);
+					for (const file of ["icon.svg", "key.svg"]) {
+						const src = path.join(actionDir, file);
+						if (!existsSync(src)) continue;
+						const destDir = path.join(destRoot, entry.name);
+						mkdirSync(destDir, { recursive: true });
+						copyFileSync(src, path.join(destDir, file));
+					}
+				}
+			},
+		},
+		// Copy vendored sdpi-components.js and built pi-components.js from @iracedeck/pi-components
+		{
+			name: "copy-pi-browser-assets",
+			generateBundle() {
+				const uiDir = `${sdPlugin}/ui`;
+				if (!existsSync(uiDir)) mkdirSync(uiDir, { recursive: true });
+				for (const file of ["sdpi-components.js", "pi-components.js"]) {
+					const src = path.join(browserDir, file);
+					if (!existsSync(src)) {
+						this.error(`Missing ${file} in @iracedeck/pi-components. Build it first: pnpm --filter @iracedeck/pi-components build`);
+					}
+					copyFileSync(src, path.join(uiDir, file));
+				}
+				this.info?.("Copied PI browser assets from @iracedeck/pi-components");
+			},
+		},
+		{
+			name: "watch-externals",
+			buildStart: function () {
+				this.addWatchFile(`${sdPlugin}/manifest.json`);
+				// Recursively watch SVG files in a directory
+				const watchSvgsRecursive = (dir) => {
+					try {
+						for (const entry of readdirSync(dir, { withFileTypes: true })) {
+							const fullPath = path.join(dir, entry.name);
+							if (entry.isDirectory()) watchSvgsRecursive(fullPath);
+							else if (entry.name.endsWith(".svg")) this.addWatchFile(fullPath);
+						}
+					} catch {
+						// directory may not exist
+					}
+				};
+				// Watch local icons directory, shared icons package, and per-action static assets
+				watchSvgsRecursive(path.resolve("icons"));
+				watchSvgsRecursive(iconsPackagePath);
+				watchSvgsRecursive(actionTemplatesDir);
+			},
+		},
+		typescript({
+			mapRoot: isWatching ? "./" : undefined,
+			// Include both the plugin source and the raw-TypeScript actions package
+			include: ["src/**/*.ts", "../iracing-actions/src/**/*.ts"],
+		}),
+		nodeResolve({
+			browser: false,
+			exportConditions: ["node"],
+			preferBuiltins: true
+		}),
+		commonjs({
+			ignore: (id) => {
+				// Exclude .node native modules from bundling
+				return id.endsWith(".node");
+			},
+		}),
+		!isWatching && terser(),
+		{
+			name: "emit-module-package-file",
+			generateBundle() {
+				const pkg = {
+					type: "module",
+					dependencies: {
+						"@iracedeck/iracing-native": "file:../../../iracing-native",
+						yaml: "2.8.2",
+					},
+					optionalDependencies: {
+						"keysender": "2.4.0",
+					}
+				};
+				this.emitFile({ fileName: "package.json", source: JSON.stringify(pkg, null, 2), type: "asset" });
+			},
+		},
+		{
+			name: "emit-plugin-config",
+			generateBundle() {
+				const config = {
+					version: rootPackageJson.version,
+					platform: "stream-deck",
+				};
+				this.emitFile({ fileName: "config.json", source: JSON.stringify(config, null, 2), type: "asset" });
+			},
+		},
+	],
+};
+
+export default config;

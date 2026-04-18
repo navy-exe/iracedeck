@@ -126,9 +126,9 @@ override async onWillDisappear(ev: IDeckWillDisappearEvent<Settings>): Promise<v
 ```
 
 ### Reference implementations
-- Tap action with global key bindings: `packages/actions/src/actions/black-box-selector.ts`
-- Cycle action with global key bindings: `packages/actions/src/actions/splits-delta-cycle.ts`
-- Long-press (key hold): `packages/actions/src/actions/look-direction.ts`
+- Tap action with global key bindings: `packages/iracing-actions/src/actions/black-box-selector/black-box-selector.ts`
+- Cycle action with global key bindings: `packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.ts`
+- Long-press (key hold): `packages/iracing-actions/src/actions/look-direction/look-direction.ts`
 
 ## Direct Keyboard Access (Plugin-Level Only)
 
@@ -225,9 +225,9 @@ if (binding && !isSimHubBinding(binding)) {
 ```
 
 ## Reference Implementations
-- Binding dispatch (tap): `packages/actions/src/actions/black-box-selector.ts`
-- Binding dispatch (cycle): `packages/actions/src/actions/splits-delta-cycle.ts`
-- Binding dispatch (hold/release): `packages/actions/src/actions/look-direction.ts`
+- Binding dispatch (tap): `packages/iracing-actions/src/actions/black-box-selector/black-box-selector.ts`
+- Binding dispatch (cycle): `packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.ts`
+- Binding dispatch (hold/release): `packages/iracing-actions/src/actions/look-direction/look-direction.ts`
 - Binding dispatcher service: `packages/deck-core/src/binding-dispatcher.ts`
 
 ## Do NOT Use
@@ -241,7 +241,7 @@ When modifying keyboard functionality, changes must be synchronized across all l
 1. **Native addon** (`iracing-native/src/addon.cc`) — C++ implementation + register in `Init()`
 2. **TS wrapper** (`iracing-native/src/index.ts`) — must mirror every native export
 3. **Keyboard service** (`deck-core/src/keyboard-service.ts`) — callback types, `IKeyboardService` interface, `KeyboardService` implementation, `initializeKeyboard()` signature
-4. **Plugin init** (all plugin `plugin.ts` files: `stream-deck-plugin`, `mirabox-plugin`) — `initializeKeyboard()` call must pass all callbacks
+4. **Plugin init** (all plugin `plugin.ts` files: `iracing-plugin-stream-deck`, `iracing-plugin-mirabox`) — `initializeKeyboard()` call must pass all callbacks
 5. **Tests** (`keyboard-service.test.ts`) — must cover all paths (scan code + keysender fallback)
 6. **Rules** (`.claude/rules/keyboard-shortcuts.md`, `.claude/rules/plugin-structure.md`) — must reflect the current API
 7. **Package CLAUDE.md** (`iracing-native/CLAUDE.md`) — must document all native keyboard functions

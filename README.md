@@ -11,6 +11,19 @@
   <a href="https://discord.gg/c6nRYywpah"><img src="https://img.shields.io/discord/1477659500851888219?logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord"></a>
 </p>
 
+## Table of contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Project Structure](#project-structure)
+- [Releasing](#releasing)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
+- [Usage and license](#usage-and-license)
+- [For companies](#for-companies)
+- [Inspiration](#inspiration)
+- [Acknowledgements](#acknowledgements)
+
 ## Features
 
 **30 actions** with **254 modes** across 8 categories, with Stream Deck+ dial rotation support on most modes:
@@ -81,31 +94,35 @@ A pnpm monorepo built with [Turborepo](https://turbo.build/):
 
 ```text
 packages/
-  actions/                 Platform-agnostic action implementations
+  iracing-actions/         Platform-agnostic iRacing action implementations
   deck-adapter-elgato/     Elgato Stream Deck adapter (bridges Elgato SDK to deck-core)
   deck-adapter-mirabox/    Mirabox VSD Craft adapter (WebSocket protocol to deck-core)
   deck-core/               Platform-agnostic base classes, types, and shared utilities
+  icon-composer/           Standalone SVG icon assembly (zero dependencies)
   icons/                   SVG icon templates (Mustache)
   iracing-native/          C++ N-API addon (shared memory, window messaging, scan codes)
   iracing-sdk/             TypeScript SDK (telemetry, broadcast commands, session parsing)
   logger/                  Shared logger interface
-  mirabox-plugin/          Mirabox device plugin
-  stream-deck-plugin/      Elgato Stream Deck plugin
+  iracing-plugin-mirabox/          Mirabox device plugin
+  pi-components/           Shared Property Inspector assets (web components, EJS templates, partials, data)
+  iracing-plugin-stream-deck/      Elgato Stream Deck plugin
   website/                 Documentation website (iracedeck.com)
 ```
 
 | Package                           | Role                                                                                      |
 | --------------------------------- | ----------------------------------------------------------------------------------------- |
-| `@iracedeck/actions`              | All 28 action implementations, platform-agnostic                                          |
+| `@iracedeck/iracing-actions`              | All 30 action implementations, platform-agnostic                                          |
 | `@iracedeck/deck-core`            | Base classes, types, keyboard service, icon templates, global settings                    |
 | `@iracedeck/deck-adapter-elgato`  | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface                    |
 | `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core                             |
+| `@iracedeck/icon-composer`        | Standalone SVG icon assembly (pure functions, zero dependencies)                          |
 | `@iracedeck/icons`                | SVG icon Mustache templates with colorization support                                     |
 | `@iracedeck/iracing-native`       | C++ Node.js addon for Win32 APIs (memory-mapped files, window messaging, scan-code input) |
 | `@iracedeck/iracing-sdk`          | TypeScript SDK for reading telemetry and sending iRacing broadcast commands               |
 | `@iracedeck/logger`               | Shared logging interface with scoped loggers                                              |
-| `@iracedeck/stream-deck-plugin`   | Elgato Stream Deck plugin — registers actions, PI templates, manifest                     |
-| `@iracedeck/mirabox-plugin`       | Mirabox plugin — registers the same actions for Mirabox devices                           |
+| `@iracedeck/pi-components`        | Shared PI web components, EJS templates + partials, template data, and Rollup EJS plugin  |
+| `@iracedeck/iracing-plugin-stream-deck`   | Elgato Stream Deck plugin — registers actions, PI templates, manifest                     |
+| `@iracedeck/iracing-plugin-mirabox`       | Mirabox plugin — registers the same actions for Mirabox devices                           |
 | `@iracedeck/website`              | Documentation website at [iracedeck.com](https://iracedeck.com)                           |
 
 ### How it fits together
@@ -162,23 +179,25 @@ A GitHub Actions workflow (`.github/workflows/release-pack.yml`) triggers automa
 Contributions are welcome! Here's how to get started:
 
 1. Fork the repo and create a branch (`feature/123-your-feature`)
-2. Follow [conventional commits](https://www.conventionalcommits.org/) with package scope (e.g. `feat(stream-deck-plugin): add new action`)
+2. Follow [conventional commits](https://www.conventionalcommits.org/) with package scope (e.g. `feat(iracing-plugin-stream-deck): add new action`)
 3. Add tests for new code (Vitest)
 4. Make sure `pnpm build` and `pnpm test` pass
 5. Open a pull request
 
 ### Adding a new action
 
-Actions live in `packages/actions/src/actions/`. Each action needs:
+Actions live in `packages/iracing-actions/src/actions/<action-name>/`, one folder per action. Each action needs:
 
-1. An action class extending `ConnectionStateAwareAction` from `@iracedeck/deck-core`
-2. Icons in `packages/icons/`
-3. Registration in both `stream-deck-plugin/src/plugin.ts` and `mirabox-plugin/src/plugin.ts`
-4. Manifest entry in each plugin's `manifest.json`
-5. A Property Inspector template (EJS -> HTML) in `stream-deck-plugin/src/pi/`
-6. Unit tests
+1. `<action-name>.ts` — action class extending `ConnectionStateAwareAction` from `@iracedeck/deck-core`
+2. `<action-name>.test.ts` — unit tests
+3. `<action-name>.ejs` — Property Inspector template (compiled to `ui/<action-name>.html`)
+4. `icon.svg` + `key.svg` — static category and key icons (copied into each plugin's `imgs/actions/<name>/` at build time)
+5. Mustache SVGs in `packages/icons/<action-name>/` for any dynamic variants
+6. Registration in both `packages/iracing-plugin-stream-deck/src/plugin.ts` and `packages/iracing-plugin-mirabox/src/plugin.ts`
+7. Manifest entry in each plugin's `manifest.json`
+8. Entries in `packages/iracing-actions/src/actions/data/{key-bindings,docs-urls,icon-defaults}.json` where applicable
 
-See the existing actions for reference, or check `packages/stream-deck-plugin/CLAUDE.md` for step-by-step instructions.
+See the existing actions for reference, or check `packages/iracing-plugin-stream-deck/CLAUDE.md` for step-by-step instructions.
 
 ## Troubleshooting
 
@@ -192,7 +211,7 @@ See the existing actions for reference, or check `packages/stream-deck-plugin/CL
 
 ## Usage and license
 
-iRaceDeck is source-available and licensed under a [custom non-commercial license](LICENSE).
+iRaceDeck is source-available and licensed under the [iRaceDeck Non-Commercial License](LICENSE).
 
 Free for personal and non-commercial use, including use in sim racing events and competitions.
 
@@ -202,7 +221,7 @@ The name “iRaceDeck” and associated branding are not included in the license
 
 If you're unsure whether your use case is allowed, feel free to reach out.
 
-## Why this license?
+### Why this license?
 
 iRaceDeck is source-available rather than open source.
 

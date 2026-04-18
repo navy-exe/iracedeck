@@ -1,7 +1,8 @@
 ---
 paths:
-  - "packages/*/src/pi/**"
-  - "packages/*/src/pi-templates/**"
+  - "packages/iracing-actions/src/actions/**/*.ejs"
+  - "packages/pi-components/partials/**"
+  - "packages/pi-components/src/components/**"
   - "packages/*/*.sdPlugin/ui/**"
 ---
 # sdpi-components Library Reference

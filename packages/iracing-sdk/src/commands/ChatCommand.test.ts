@@ -108,66 +108,64 @@ describe("ChatCommand", () => {
   });
 
   describe("sendMessage", () => {
-    it("should call native sendChatMessage with message", () => {
-      vi.mocked(mockNative.sendChatMessage).mockReturnValue(true);
+    it("should call native sendChatMessage with message", async () => {
+      vi.mocked(mockNative.sendChatMessage).mockResolvedValue(true);
 
-      chatCommand.sendMessage("Hello world");
+      await chatCommand.sendMessage("Hello world");
 
       expect(mockNative.sendChatMessage).toHaveBeenCalledWith("Hello world");
     });
 
-    it("should return true when sendChatMessage succeeds", () => {
-      vi.mocked(mockNative.sendChatMessage).mockReturnValue(true);
+    it("should return true when sendChatMessage succeeds", async () => {
+      vi.mocked(mockNative.sendChatMessage).mockResolvedValue(true);
 
-      const result = chatCommand.sendMessage("Test message");
+      const result = await chatCommand.sendMessage("Test message");
 
       expect(result).toBe(true);
     });
 
-    it("should return false when sendChatMessage fails", () => {
-      vi.mocked(mockNative.sendChatMessage).mockReturnValue(false);
+    it("should return false when sendChatMessage fails", async () => {
+      vi.mocked(mockNative.sendChatMessage).mockResolvedValue(false);
 
-      const result = chatCommand.sendMessage("Test message");
+      const result = await chatCommand.sendMessage("Test message");
 
       expect(result).toBe(false);
     });
 
-    it("should return false for empty message", () => {
-      const result = chatCommand.sendMessage("");
-
-      expect(result).toBe(false);
-      expect(mockNative.sendChatMessage).not.toHaveBeenCalled();
-    });
-
-    it("should return false for whitespace-only message", () => {
-      const result = chatCommand.sendMessage("   ");
+    it("should return false for empty message", async () => {
+      const result = await chatCommand.sendMessage("");
 
       expect(result).toBe(false);
       expect(mockNative.sendChatMessage).not.toHaveBeenCalled();
     });
 
-    it("should return false for null-ish message", () => {
+    it("should return false for whitespace-only message", async () => {
+      const result = await chatCommand.sendMessage("   ");
+
+      expect(result).toBe(false);
+      expect(mockNative.sendChatMessage).not.toHaveBeenCalled();
+    });
+
+    it("should return false for null-ish message", async () => {
       // Testing edge case where message might be coerced
-      const result = chatCommand.sendMessage(null as unknown as string);
+      const result = await chatCommand.sendMessage(null as unknown as string);
 
       expect(result).toBe(false);
       expect(mockNative.sendChatMessage).not.toHaveBeenCalled();
     });
 
-    it("should return false when sendChatMessage throws", () => {
-      vi.mocked(mockNative.sendChatMessage).mockImplementation(() => {
-        throw new Error("Native error");
-      });
+    it("should return false when sendChatMessage rejects", async () => {
+      vi.mocked(mockNative.sendChatMessage).mockRejectedValue(new Error("Native error"));
 
-      const result = chatCommand.sendMessage("Test message");
+      const result = await chatCommand.sendMessage("Test message");
 
       expect(result).toBe(false);
     });
 
-    it("should handle messages with special characters", () => {
-      vi.mocked(mockNative.sendChatMessage).mockReturnValue(true);
+    it("should handle messages with special characters", async () => {
+      vi.mocked(mockNative.sendChatMessage).mockResolvedValue(true);
 
-      const result = chatCommand.sendMessage("Hello! @driver #1 - good race!");
+      const result = await chatCommand.sendMessage("Hello! @driver #1 - good race!");
 
       expect(result).toBe(true);
       expect(mockNative.sendChatMessage).toHaveBeenCalledWith("Hello! @driver #1 - good race!");

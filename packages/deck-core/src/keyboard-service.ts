@@ -174,7 +174,7 @@ class KeyboardService implements IKeyboardService {
     this.initPromise = (async () => {
       try {
         // Dynamic import — keysender is a Windows-only native module provided
-        // at runtime by the platform plugin (e.g., stream-deck-plugin).
+        // at runtime by the platform plugin (e.g., iracing-plugin-stream-deck).
         // Use a variable to prevent TypeScript from resolving the module at compile time.
         const moduleName = "keysender";
         const keysender = (await import(moduleName)) as {

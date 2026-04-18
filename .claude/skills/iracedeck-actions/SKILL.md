@@ -30,8 +30,8 @@ Each action entry:
 When asked about actions or controls:
 1. Read `docs/reference/actions.json` and search by action name, mode value, or category
 2. Report: action name, ID, file, modes with labels
-3. For implementation details, check the source at `packages/stream-deck-plugin/src/actions/{file}`
-4. For PI templates, check `packages/stream-deck-plugin/src/pi/{action-name}.ejs`
+3. For implementation details, check the source at `packages/iracing-actions/src/actions/{action-name}/{action-name}.ts`
+4. For PI templates, check `packages/iracing-actions/src/actions/{action-name}/{action-name}.ejs`
 
 ## Category Overview
 
@@ -145,9 +145,12 @@ When actions are added, removed, or modified (new modes, renamed settings, chang
 
 | File | Role |
 |------|------|
-| `packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
-| `packages/stream-deck-plugin/src/actions/` | Action source files (32 .ts files) |
-| `packages/stream-deck-plugin/src/pi/` | Property Inspector EJS templates |
-| `packages/stream-deck-plugin/src/pi/data/key-bindings.json` | Global key binding definitions |
-| `packages/stream-deck-plugin/icons/` | SVG icon Mustache templates |
-| `packages/stream-deck-plugin/src/plugin.ts` | Action registration and initialization |
+| `packages/iracing-plugin-stream-deck/com.iracedeck.sd.core.sdPlugin/manifest.json` | Action registration, UUIDs, encoder config |
+| `packages/iracing-actions/src/actions/<name>/` | Per-action folder: `<name>.ts`, `<name>.test.ts`, `<name>.ejs`, `icon.svg`, `key.svg` |
+| `packages/iracing-actions/src/actions/data/key-bindings.json` | Global key binding definitions |
+| `packages/iracing-actions/src/actions/data/icon-defaults.json` | Default icon colors by action/variant |
+| `packages/iracing-actions/src/actions/data/docs-urls.json` | PI "Open documentation" links |
+| `packages/iracing-actions/src/actions/settings/settings.ejs` | Plugin-global Property Inspector |
+| `packages/iracing-actions/icons/` | Dynamic SVG Mustache templates used at runtime |
+| `packages/icons/` | Standalone icon library (Mustache color placeholders + `<desc>`) |
+| `packages/iracing-plugin-stream-deck/src/plugin.ts` | Action registration and initialization |

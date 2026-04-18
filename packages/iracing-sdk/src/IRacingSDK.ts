@@ -261,12 +261,13 @@ export class IRacingSDK {
   /**
    * Send a custom chat message to iRacing
    * @param message The message to send
+   * @returns Promise resolving to true on success, false on failure
    */
-  sendChatMessage(message: string): boolean {
+  sendChatMessage(message: string): Promise<boolean> {
     if (!this.isConnected()) {
       this.logger.warn("[IRacingSDK] Cannot send chat message - not connected");
 
-      return false;
+      return Promise.resolve(false);
     }
 
     return this.native.sendChatMessage(message);

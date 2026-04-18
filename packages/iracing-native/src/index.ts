@@ -179,18 +179,16 @@ export class IRacingNative {
   // ============================================================================
 
   /**
-   * Send a complete chat message to iRacing
-   * This function handles the entire chat flow:
-   * 1. Opens chat window via broadcast message
-   * 2. Waits for chat window to open
-   * 3. Types the message using WM_CHAR
-   * 4. Presses Enter to send
-   * 5. Closes the chat window
+   * Send a complete chat message to iRacing.
+   *
+   * The native addon runs the entire chat-send pipeline on a libuv worker
+   * thread and returns a Promise, so the JS event loop remains responsive
+   * during the ~400ms native work. Concurrent sends are serialized natively.
    *
    * @param message - The message to send
-   * @returns Success boolean
+   * @returns Promise resolving to true on success, false on failure
    */
-  sendChatMessage(message: string): boolean {
+  sendChatMessage(message: string): Promise<boolean> {
     return addon ? addon.sendChatMessage(message) : this.getMock().sendChatMessage(message);
   }
 
