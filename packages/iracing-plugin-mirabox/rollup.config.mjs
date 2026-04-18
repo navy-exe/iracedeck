@@ -33,24 +33,38 @@ function deepMergeObjects(base, override) {
 	return result;
 }
 
+function isPlainObject(value) {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
 /**
- * Split `override` into `known` (keys whose path exists in `committed`) and
- * `unknown` (dotted paths that don't). Lets us warn about typos in the local
- * override file while guaranteeing they don't leak into the merged flags.
+ * Split `override` into `known` (keys whose path and shape exist in `committed`)
+ * and `unknown` (dotted paths that don't match). Lets us warn about typos and
+ * shape mismatches in the local override file while guaranteeing they don't
+ * leak into the merged flags or crash the build.
  */
 function partitionOverride(committed, override, prefix = "") {
 	const known = {};
 	const unknown = [];
 	for (const key of Object.keys(override)) {
-		if (!(key in committed)) {
+		if (!Object.prototype.hasOwnProperty.call(committed, key)) {
 			unknown.push(`${prefix}${key}`);
 			continue;
 		}
+		const committedVal = committed[key];
 		const overrideVal = override[key];
-		if (overrideVal && typeof overrideVal === "object" && !Array.isArray(overrideVal)) {
-			const nested = partitionOverride(committed[key], overrideVal, `${prefix}${key}.`);
+		if (isPlainObject(overrideVal)) {
+			if (!isPlainObject(committedVal)) {
+				// Nested object where committed has a leaf → treat as unknown
+				unknown.push(`${prefix}${key}`);
+				continue;
+			}
+			const nested = partitionOverride(committedVal, overrideVal, `${prefix}${key}.`);
 			known[key] = nested.known;
 			unknown.push(...nested.unknown);
+		} else if (isPlainObject(committedVal)) {
+			// Leaf override for a nested branch → treat as unknown
+			unknown.push(`${prefix}${key}`);
 		} else {
 			known[key] = overrideVal;
 		}

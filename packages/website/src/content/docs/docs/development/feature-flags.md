@@ -58,7 +58,7 @@ Each plugin's build deep-merges this file on top of its own committed `platform-
 
 **You must rebuild for the override to take effect** (`pnpm build` or restart `pnpm watch:*`). There's no runtime reload — flags are baked into the bundle.
 
-If you create `feature-flags.local.json` while `pnpm watch:*` is already running, the file isn't in the watcher's file set yet — trigger one manual rebuild (edit any watched file, or restart the watcher) to pick it up. After that, edits are picked up normally.
+**Always restart the watcher after editing a flag file.** Rollup resolves the flags once when its config module loads, and that resolution is held for the lifetime of the watcher — editing `platform-features.json` or `feature-flags.local.json` mid-watch will trigger a rebuild but the output will still reflect the flag values from watcher startup.
 
 Unknown keys in the local file are **ignored with a warning** during the build — watch the console for `[platform-features] feature-flags.local.json has unknown keys (ignored): …` to catch typos.
 

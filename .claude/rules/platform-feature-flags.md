@@ -98,7 +98,12 @@ it("strips glow when flag is false", () => {
 
 ## Watch mode caveat
 
-Both plugin Rollup configs call `this.addWatchFile(localFeaturesPath)` **only when the file already exists at `buildStart`**. If you start `pnpm watch:*` and then create `feature-flags.local.json` afterwards, the watcher won't see it — trigger one manual rebuild (edit any watched file, or restart the watcher) to pick it up. Once the file exists at watcher start, edits are picked up normally.
+Rollup loads each plugin config module **once per watcher session**, so the resolved `platformFeatures` object is captured at watcher startup and held for the lifetime of the watcher. Consequences:
+
+- Creating `feature-flags.local.json` while a watcher is running: the file isn't in the watch set yet, and even once a rebuild is triggered by some other change, the resolved flags are still the ones from startup.
+- Editing an existing `platform-features.json` or `feature-flags.local.json` while a watcher is running: a rebuild fires (the file is in the watch set), but it uses the flags captured at startup — the edit won't affect the output.
+
+**Always restart the watcher after changing any flag file.** This is a deliberate trade-off: refreshing the flags on every rebuild would require either reinstantiating `@rollup/plugin-replace` (not possible mid-watch) or threading mutable state through `replace`, `piTemplatePlugin`, and `emit-plugin-config`, which adds complexity for a scenario that's already covered by a one-line restart.
 
 ## Local override round-trip
 
