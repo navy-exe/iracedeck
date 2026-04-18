@@ -6,7 +6,7 @@
 - **Category icons** (`icon.svg`, 20x20): Must be monochrome white (`#ffffff`) on transparent background. No colors. Keep designs simple—text is often too small to read at this size.
 - **Key icons** (`key.svg`, 72x72): Can use full color palette. These appear on Stream Deck buttons. See [key-icon-types.md](key-icon-types.md) for standardized layouts.
 - **Standalone icon SVGs** (`packages/icons/{action-name}/*.svg`): Graphic snippet SVGs — 144x144 viewBox with color Mustache placeholders and `<desc>` metadata, but no background rect and no label text elements. The background, title text, and base layout are added at render time by `assembleIcon()`. Imported at build time via `@iracedeck/icons/{action-name}/{variant}.svg`.
-- **Dynamic templates** (e.g., `packages/iracing-plugin-stream-deck/icons/*.svg`): 144x144 Mustache templates for actions with telemetry-driven content that can't be pre-rendered as standalone SVGs. May exist in any plugin package that needs them.
+- **Dynamic templates** (e.g., `packages/iracing-actions/icons/*.svg`): 144x144 Mustache templates for actions with telemetry-driven content that can't be pre-rendered as standalone SVGs.
 
 ## Standalone Icon SVGs (preferred)
 
@@ -138,7 +138,7 @@ packages/icons/preview/   # Mirrors source structure with colors resolved
 
 ## Dynamic Templates (for telemetry-driven content)
 
-Actions where icon content changes at runtime based on telemetry (e.g., tire colors, speed values) keep their templates in the plugin's `icons/` directory (e.g., `packages/iracing-plugin-stream-deck/icons/`). These use 144x144 viewBox, `<desc>` color metadata, and can have arbitrary placeholders.
+Actions where icon content changes at runtime based on telemetry (e.g., tire colors, speed values) keep their templates in `packages/iracing-actions/icons/`. These use 144x144 viewBox, `<desc>` color metadata, and can have arbitrary placeholders.
 
 All dynamic templates include `{{borderDefs}}` (inside `<defs>`) and `{{borderContent}}` (after the background rect) placeholders. Actions must call `resolveBorderSettings(...)` then `generateBorderParts(...)` to obtain `borderDefs` and `borderContent` strings, and pass them when calling `renderIconTemplate()`. Pass `borderDefs: ""` and `borderContent: ""` if border is not used.
 

@@ -59,16 +59,16 @@ This project uses ESLint and Prettier. Run `pnpm lint:fix` and `pnpm format:fix`
 
 ## Adding a New Action
 
-Actions live in `packages/iracing-plugin-stream-deck/src/actions/`. Each action needs:
+Actions live in `packages/iracing-actions/src/actions/<action-name>/`. Each action needs:
 
 1. An action class extending `ConnectionStateAwareAction`
-2. Registration in `plugin.ts`
-3. An entry in `manifest.json`
+2. Registration in the plugin packages' `plugin.ts` (`packages/iracing-plugin-stream-deck/` and `packages/mirabox-plugin/`)
+3. An entry in each plugin's `manifest.json`
 4. Category icon (20x20 SVG) and key icon (72x72 SVG)
-5. A Property Inspector template (EJS → HTML)
+5. A Property Inspector template (EJS → HTML) alongside the action source
 6. Unit tests
 
-Use existing actions as reference, or check the package-level docs in `packages/iracing-plugin-stream-deck/`.
+Use existing actions as reference, or check the package-level docs in `packages/iracing-actions/CLAUDE.md` and `packages/iracing-plugin-stream-deck/CLAUDE.md`.
 
 ## Contributor license
 
