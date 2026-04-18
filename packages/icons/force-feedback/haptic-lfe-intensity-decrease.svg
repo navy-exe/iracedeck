@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"LESS INTENSE\nHAPTIC LFE"},"border":{"color":"#5a5a7a"},"artworkBounds":{"x":24,"y":19,"width":100,"height":58}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"LESS INTENSE\nHAPTIC LFE"},"border":{"color":"#5a5a7a"},"artworkBounds":{"x":17,"y":21,"width":108,"height":50}}</desc>
 
     <circle cx="52" cy="46" r="10" fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>
     <path d="M36 30 Q28 46 36 62" fill="none" stroke="{{graphic1Color}}" stroke-width="3" stroke-linecap="round"/>

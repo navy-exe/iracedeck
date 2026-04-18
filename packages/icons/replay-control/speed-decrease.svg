@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"REPLAY\nSLOWER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":40,"y":36,"width":66,"height":42}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"title":{"text":"REPLAY\nSLOWER"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":39,"y":35,"width":67,"height":42}}</desc>
 
     
       <ellipse fill="{{graphic1Color}}" cx="69.6" cy="53.6" rx="22.4" ry="16.8"/>
