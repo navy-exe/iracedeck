@@ -35,7 +35,7 @@
     "link:mirabox": "node scripts/link-mirabox.mjs",
     "unlink:mirabox": "node scripts/unlink-mirabox.mjs",
     "relink:mirabox": "pnpm unlink:mirabox && pnpm link:mirabox",
-    "switch-test-env": "pnpm switch-test-env:stream-deck",
+    "switch-test-env": "pnpm install && pnpm build && pnpm relink:stream-deck && pnpm relink:mirabox",
     "switch-test-env:stream-deck": "pnpm install && pnpm build && pnpm relink:stream-deck",
     "switch-test-env:mirabox": "pnpm install && pnpm build && pnpm relink:mirabox",
     "telemetry-snapshot": "pnpm --filter @iracedeck/iracing-sdk telemetry-snapshot -- --include-session --output-dir=local",
