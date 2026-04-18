@@ -42,28 +42,38 @@
 		<%- include('global-common-settings') %>
 
 		<script>
+			// Master doesn't support mute. The option is removed from the DOM when Master
+			// is selected (style.display is ignored by sdpi-select, which re-renders options
+			// from the source list via a MutationObserver).
+			let muteOption = null;
+			let muteOptionParent = null;
+
 			function updateVisibility(category) {
 				const actionItem = document.getElementById("action-item");
 				const actionSelect = document.getElementById("action-select");
-				const muteOption = document.querySelector('#action-select option[value="mute"]');
 
 				if (category === "push-to-talk") {
 					// Hide the entire action dropdown for PTT
 					if (actionItem) actionItem.classList.add("hidden");
-				} else {
-					if (actionItem) actionItem.classList.remove("hidden");
+					return;
+				}
 
-					if (muteOption) {
-						if (category === "master") {
-							muteOption.style.display = "none";
-							// If mute was selected, switch to volume-up
-							if (actionSelect && actionSelect.value === "mute") {
-								actionSelect.value = "volume-up";
-							}
-						} else {
-							muteOption.style.display = "";
-						}
+				if (actionItem) actionItem.classList.remove("hidden");
+				if (!muteOption || !muteOptionParent) return;
+
+				const isAttached = muteOption.parentNode === muteOptionParent;
+
+				if (category === "master") {
+					// Switch selection away from mute before detaching the option so the
+					// persisted setting stays consistent with what's rendered.
+					if (actionSelect && actionSelect.value === "mute") {
+						actionSelect.value = "volume-up";
+						actionSelect.dispatchEvent(new Event("input", { bubbles: true }));
+						actionSelect.dispatchEvent(new Event("change", { bubbles: true }));
 					}
+					if (isAttached) muteOption.remove();
+				} else if (!isAttached) {
+					muteOptionParent.appendChild(muteOption);
 				}
 			}
 
@@ -71,6 +81,8 @@
 				await customElements.whenDefined("sdpi-select");
 
 				const categorySelect = document.getElementById("category-select");
+				muteOption = document.querySelector('#action-select option[value="mute"]');
+				muteOptionParent = muteOption ? muteOption.parentNode : null;
 
 				if (categorySelect) {
 					const initialValue = categorySelect.value || "push-to-talk";
