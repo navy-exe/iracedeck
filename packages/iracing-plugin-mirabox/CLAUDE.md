@@ -20,6 +20,29 @@ PI framework (web components, EJS partials, compile plugin, `sdpi-components.js`
 pnpm build  # Rollup → com.iracedeck.sd.core.sdPlugin/bin/plugin.js
 ```
 
+## Dev Linking
+
+Unlike the Elgato plugin (which has a first-party `streamdeck link` CLI), Mirabox has no official plugin-link tool and the host app's install path varies by vendor (VSD Craft, other Mirabox-compatible hosts). Use the repo's `*:mirabox` scripts, which create a symlink from the built plugin folder into a per-developer destination read from `MIRABOX_PLUGINS_DIR`.
+
+**One-time setup:**
+
+1. Copy `.env.local.example` to `.env.local` at the repo root (it's gitignored).
+2. Set `MIRABOX_PLUGINS_DIR` to your host app's plugins folder, e.g. for VSD Craft on Windows:
+   ```env
+   MIRABOX_PLUGINS_DIR=C:\Users\you\AppData\Roaming\VSD Craft\Plugins
+   ```
+
+**Scripts:**
+
+| Script | Action |
+|---|---|
+| `pnpm link:mirabox`            | Create the symlink (fails fast if one exists). |
+| `pnpm unlink:mirabox`          | Remove the symlink (safe to run when not linked). |
+| `pnpm relink:mirabox`          | Unlink + link. Useful after recreating the folder. |
+| `pnpm switch-test-env:mirabox` | `pnpm install && pnpm build && pnpm relink:mirabox`. |
+
+On Windows, `link:mirabox` creates a directory **junction** (via `fs.symlinkSync(..., "junction")`), which does not require admin/developer mode.
+
 ## Window Focus
 
 The `window-focus.ts` module is duplicated from `iracing-plugin-stream-deck` rather than shared via `deck-core`, to avoid adding test infrastructure to `deck-core`. Extraction is planned as a follow-up.
