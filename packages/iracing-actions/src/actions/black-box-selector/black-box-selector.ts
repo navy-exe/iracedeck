@@ -127,10 +127,10 @@ export function generateBlackBoxSelectorSvg(settings: BlackBoxSelectorSettings):
 
   if (mode === "next") {
     iconSvg = CYCLE_ICONS.next;
-    defaultTitle = "\nNEXT";
+    defaultTitle = "NEXT";
   } else if (mode === "previous") {
     iconSvg = CYCLE_ICONS.previous;
-    defaultTitle = "\nPREVIOUS";
+    defaultTitle = "PREVIOUS";
   } else {
     iconSvg = DIRECT_ICONS[blackBox] || DIRECT_ICONS["lap-timing"];
     defaultTitle = BLACK_BOX_TITLE_TEXT[blackBox] || "\nBLACK BOX";
