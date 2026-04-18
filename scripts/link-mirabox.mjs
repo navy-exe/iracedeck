@@ -18,6 +18,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = join(ROOT, "packages", "iracing-plugin-mirabox", "com.iracedeck.sd.core.sdPlugin");
+// Build output — presence confirms the plugin has actually been built
+// (the plugin folder itself has manifest.json and icons checked in, so
+// existence of the folder alone does not mean a build has run).
+const BUILT_PLUGIN_ENTRY = join(SOURCE, "bin", "plugin.js");
 const LINK_NAME = "com.iracedeck.sd.core.sdPlugin";
 
 function loadEnvLocal() {
@@ -41,8 +45,8 @@ if (!dest) {
   process.exit(1);
 }
 
-if (!existsSync(SOURCE)) {
-  console.error(`Error: Mirabox plugin folder does not exist. Run \`pnpm build\` first.\n  ${SOURCE}`);
+if (!existsSync(BUILT_PLUGIN_ENTRY)) {
+  console.error(`Error: Mirabox plugin is not built. Run \`pnpm build\` first.\n  Missing: ${BUILT_PLUGIN_ENTRY}`);
   process.exit(1);
 }
 
