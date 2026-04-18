@@ -191,9 +191,9 @@ describe("AiSpotterControls", () => {
       expect(SPOTTER_TITLES["weather-report"]).toContain("REPORT");
       expect(SPOTTER_TITLES["toggle-report-laps"]).toContain("REPORT");
       expect(SPOTTER_TITLES["announce-leader"]).toContain("SPOTTER");
-      expect(SPOTTER_TITLES["louder"]).toContain("SPOTTER");
-      expect(SPOTTER_TITLES["quieter"]).toContain("SPOTTER");
-      expect(SPOTTER_TITLES["silence"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["louder"]).toContain("VOL UP");
+      expect(SPOTTER_TITLES["quieter"]).toContain("VOL DOWN");
+      expect(SPOTTER_TITLES["silence"]).toContain("MUTE");
     });
 
     it("should have correct second-line labels (mainLabel) for all controls", () => {
@@ -201,9 +201,9 @@ describe("AiSpotterControls", () => {
       expect(SPOTTER_TITLES["weather-report"]).toContain("WEATHER");
       expect(SPOTTER_TITLES["toggle-report-laps"]).toContain("LAPS");
       expect(SPOTTER_TITLES["announce-leader"]).toContain("LEADER");
-      expect(SPOTTER_TITLES["louder"]).toContain("LOUDER");
-      expect(SPOTTER_TITLES["quieter"]).toContain("QUIETER");
-      expect(SPOTTER_TITLES["silence"]).toContain("SILENCE");
+      expect(SPOTTER_TITLES["louder"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["quieter"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["silence"]).toContain("SPOTTER");
     });
   });
 
@@ -247,16 +247,16 @@ describe("AiSpotterControls", () => {
       const result = generateAiSpotterControlsSvg({ control: "louder" });
       const decoded = decodeURIComponent(result);
 
+      expect(decoded).toContain("VOL UP");
       expect(decoded).toContain("SPOTTER");
-      expect(decoded).toContain("LOUDER");
     });
 
     it("should include correct labels for silence", () => {
       const result = generateAiSpotterControlsSvg({ control: "silence" });
       const decoded = decodeURIComponent(result);
 
+      expect(decoded).toContain("MUTE");
       expect(decoded).toContain("SPOTTER");
-      expect(decoded).toContain("SILENCE");
     });
 
     it("should include correct labels for all controls", () => {

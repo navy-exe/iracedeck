@@ -57,9 +57,9 @@ export const SPOTTER_TITLES: Record<SpotterControl, string> = {
   "weather-report": "REPORT\nWEATHER",
   "toggle-report-laps": "REPORT\nLAPS",
   "announce-leader": "SPOTTER\nLEADER",
-  louder: "SPOTTER\nLOUDER",
-  quieter: "SPOTTER\nQUIETER",
-  silence: "SPOTTER\nSILENCE",
+  louder: "VOL UP\nSPOTTER",
+  quieter: "VOL DOWN\nSPOTTER",
+  silence: "MUTE\nSPOTTER",
 };
 
 /**
