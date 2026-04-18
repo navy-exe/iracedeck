@@ -31,14 +31,14 @@ jobs:
 
       - name: Pack Mirabox plugin
         run: |
-          npx @elgato/cli@latest pack packages/mirabox-plugin/com.iracedeck.sd.core.sdPlugin --force --ignore-validation
+          npx @elgato/cli@latest pack packages/iracing-plugin-mirabox/com.iracedeck.sd.core.sdPlugin --force --ignore-validation
           Rename-Item "com.iracedeck.sd.core.streamDeckPlugin" "com.iracedeck.sd.core.sdPlugin"
         shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: mirabox-plugin
+          name: iracing-plugin-mirabox
           path: com.iracedeck.sd.core.sdPlugin
 
       - name: Attach plugin to GitHub Release
