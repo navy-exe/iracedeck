@@ -99,4 +99,4 @@ describe("MyAction", () => {
 
 ### Reference Implementation
 
-See `packages/iracing-actions/src/actions/splits-delta-cycle.test.ts` for a complete example.
+See `packages/iracing-actions/src/actions/splits-delta-cycle/splits-delta-cycle.test.ts` for a complete example.

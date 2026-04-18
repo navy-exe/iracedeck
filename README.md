@@ -111,7 +111,7 @@ packages/
 
 | Package                           | Role                                                                                      |
 | --------------------------------- | ----------------------------------------------------------------------------------------- |
-| `@iracedeck/iracing-actions`              | All 28 action implementations, platform-agnostic                                          |
+| `@iracedeck/iracing-actions`              | All 30 action implementations, platform-agnostic                                          |
 | `@iracedeck/deck-core`            | Base classes, types, keyboard service, icon templates, global settings                    |
 | `@iracedeck/deck-adapter-elgato`  | Bridges the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface                    |
 | `@iracedeck/deck-adapter-mirabox` | Bridges the Mirabox VSD Craft WebSocket protocol to deck-core                             |
@@ -193,7 +193,7 @@ Actions live in `packages/iracing-actions/src/actions/<action-name>/`, one folde
 3. `<action-name>.ejs` — Property Inspector template (compiled to `ui/<action-name>.html`)
 4. `icon.svg` + `key.svg` — static category and key icons (copied into each plugin's `imgs/actions/<name>/` at build time)
 5. Mustache SVGs in `packages/icons/<action-name>/` for any dynamic variants
-6. Registration in both `iracing-plugin-stream-deck/src/plugin.ts` and `iracing-plugin-mirabox/src/plugin.ts`
+6. Registration in both `packages/iracing-plugin-stream-deck/src/plugin.ts` and `packages/iracing-plugin-mirabox/src/plugin.ts`
 7. Manifest entry in each plugin's `manifest.json`
 8. Entries in `packages/iracing-actions/src/actions/data/{key-bindings,docs-urls,icon-defaults}.json` where applicable
 

@@ -1,21 +1,30 @@
 # @iracedeck/iracing-actions
 
-All 33 platform-agnostic iRaceDeck action classes. These actions contain no platform-specific code — they import from `@iracedeck/deck-core` and are registered by platform-specific entry points (e.g., `iracing-plugin-stream-deck/src/plugin.ts`).
+All 30 platform-agnostic iRaceDeck action classes. These actions contain no platform-specific code — they import from `@iracedeck/deck-core` and are registered by platform-specific entry points (e.g., `iracing-plugin-stream-deck/src/plugin.ts`).
 
 ## Package Structure
 
 ```text
 src/
-  index.ts                    # Barrel export of all actions + UUIDs
+  index.ts                               # Barrel export of all actions + UUIDs
   actions/
-    splits-delta-cycle.ts     # Action class + UUID constant
-    splits-delta-cycle.test.ts
-    black-box-selector.ts
-    ...                       # 33 action files + 33 test files
-    race-admin-commands.ts    # Helper (no action class)
-    race-admin-modes.ts       # Helper (no action class)
-icons/
-  car-control.svg             # Dynamic SVG templates (telemetry-driven)
+    <action-name>/                       # One folder per action, self-contained
+      <action-name>.ts                   # Action class + UUID constant
+      <action-name>.test.ts              # Unit tests
+      <action-name>.ejs                  # Property Inspector template
+      icon.svg                           # Category icon (20x20)
+      key.svg                            # Key icon (72x72)
+    race-admin/                          # Same layout plus helpers
+      race-admin-commands.ts             # Helper (no action class)
+      race-admin-modes.ts                # Helper (no action class)
+    data/                                # Shared template data
+      icon-defaults.json
+      key-bindings.json
+      docs-urls.json
+    settings/                            # Plugin-global PI template
+      settings.ejs
+icons/                                   # Dynamic SVG templates (telemetry-driven)
+  car-control.svg
   session-info.svg
   telemetry-display.svg
   tire-service.svg
@@ -53,4 +62,4 @@ Tests mock `@iracedeck/deck-core` (not `@elgato/streamdeck`). The mock `Connecti
 
 ## Adding a New Action
 
-See `packages/iracing-plugin-stream-deck/CLAUDE.md` for the full step-by-step guide. The action source file goes in this package; registration and PI templates go in `iracing-plugin-stream-deck`.
+See `packages/iracing-plugin-stream-deck/CLAUDE.md` for the full step-by-step guide. The action source file and PI template (`<name>.ejs`) stay in this package alongside the action code; action registration and `manifest.json` entries are done in each plugin package (`packages/iracing-plugin-stream-deck/src/plugin.ts` and `packages/iracing-plugin-mirabox/src/plugin.ts`).
