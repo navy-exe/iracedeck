@@ -125,7 +125,7 @@ Examples of good commit splits for a new action:
 
 ```
 feat(actions): add FuelCalculator action and icons
-feat(stream-deck-plugin): register FuelCalculator action and PI
+feat(iracing-plugin-stream-deck): register FuelCalculator action and PI
 feat(mirabox-plugin): register FuelCalculator action
 test(actions): add FuelCalculator unit tests
 docs: add FuelCalculator action documentation
@@ -168,7 +168,7 @@ Issue templates automatically apply labels (`bug`, `enhancement`). These are sep
 
 When creating issues, always include requirements for updating all affected artifacts beyond the code itself. If the change affects actions, features, or behavior described in any of these, the issue must list them:
 
-- **All plugin packages** — registration in `plugin.ts`, manifest entries, and PI templates for every applicable plugin (`stream-deck-plugin`, `mirabox-plugin`)
+- **All plugin packages** — registration in `plugin.ts`, manifest entries, and PI templates for every applicable plugin (`iracing-plugin-stream-deck`, `mirabox-plugin`)
 - **Website** (`@iracedeck/website`) — action descriptions, feature lists, action counts
 - **Action documentation** (`docs/`) — action docs, keyboard shortcut tables
 - **Skills** (`iracedeck-actions`, `iracing-telemetry`, etc.) — action/mode/sub-action listings

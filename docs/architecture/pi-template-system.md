@@ -26,7 +26,7 @@ Create a build-time template system for Property Inspector HTML files that allow
 
 ```text
 packages/
-  stream-deck-plugin/
+  iracing-plugin-stream-deck/
     src/
       pi-templates/                    # Template partials
         partials/
@@ -59,13 +59,13 @@ packages/
       ui/                              # Output (compiled HTML)
 ```
 
-**Note:** The build tooling and reusable UI partials live alongside the plugin code in `stream-deck-plugin`.
+**Note:** The build tooling and reusable UI partials live alongside the plugin code in `iracing-plugin-stream-deck`.
 
 ## Implementation Steps
 
-### 1. Add EJS dependency to stream-deck-plugin
+### 1. Add EJS dependency to iracing-plugin-stream-deck
 
-- `pnpm add ejs` in stream-deck-plugin
+- `pnpm add ejs` in iracing-plugin-stream-deck
 - Add `@types/ejs` for TypeScript support
 
 ### 2. Create Rollup plugin (`pi-template-plugin.mjs`)
@@ -108,7 +108,7 @@ packages/
 **`key-bindings.json`** - Plugin-specific key binding definitions (lives in each plugin, not shared):
 
 ```json
-// Example: stream-deck-plugin/src/pi/data/key-bindings.json
+// Example: iracing-plugin-stream-deck/src/pi/data/key-bindings.json
 {
   "blackBox": [
     { "id": "lapTiming", "label": "Lap Timing", "default": "F1", "setting": "keys.blackBox.lapTiming" },
@@ -117,7 +117,7 @@ packages/
 }
 ```
 
-The key bindings, accordion partial, and build tooling all live within `stream-deck-plugin`.
+The key bindings, accordion partial, and build tooling all live within `iracing-plugin-stream-deck`.
 
 ### 4. Update `ird-key-binding` component
 
@@ -196,16 +196,16 @@ plugins: [
 
 ## Verification
 
-1. Run `pnpm build` in stream-deck-plugin
+1. Run `pnpm build` in iracing-plugin-stream-deck
 3. Check `ui/black-box-selector.html` contains compiled accordion
 4. Open Stream Deck, verify PI renders with collapsible key bindings
 5. Verify key binding changes persist to global settings
 
 ## Files to Modify
 
-- `packages/stream-deck-plugin/package.json` - Add ejs dependency
-- `packages/stream-deck-plugin/src/build/pi-template-plugin.mjs` - Rollup plugin for EJS
-- `packages/stream-deck-plugin/src/pi-templates/` - Template partials directory
-- `packages/stream-deck-plugin/src/shared/pi/key-binding-input.ts` - Global attribute support
-- `packages/stream-deck-plugin/rollup.config.mjs` - Add plugin
-- `packages/stream-deck-plugin/src/pi/` - EJS template sources
+- `packages/iracing-plugin-stream-deck/package.json` - Add ejs dependency
+- `packages/iracing-plugin-stream-deck/src/build/pi-template-plugin.mjs` - Rollup plugin for EJS
+- `packages/iracing-plugin-stream-deck/src/pi-templates/` - Template partials directory
+- `packages/iracing-plugin-stream-deck/src/shared/pi/key-binding-input.ts` - Global attribute support
+- `packages/iracing-plugin-stream-deck/rollup.config.mjs` - Add plugin
+- `packages/iracing-plugin-stream-deck/src/pi/` - EJS template sources

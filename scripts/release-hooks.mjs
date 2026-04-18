@@ -20,7 +20,7 @@ const packageJsonPaths = [
   "packages/iracing-native/package.json",
   "packages/iracing-sdk/package.json",
   "packages/logger/package.json",
-  "packages/stream-deck-plugin/package.json",
+  "packages/iracing-plugin-stream-deck/package.json",
   "packages/mirabox-plugin/package.json",
   "packages/website/package.json",
 ];
@@ -35,7 +35,7 @@ for (const rel of packageJsonPaths) {
 
 // Bump Version in manifest.json files (4-part format: x.y.z.0)
 const manifestPaths = [
-  "packages/stream-deck-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json",
+  "packages/iracing-plugin-stream-deck/com.iracedeck.sd.core.sdPlugin/manifest.json",
   "packages/mirabox-plugin/com.iracedeck.sd.core.sdPlugin/manifest.json",
 ];
 

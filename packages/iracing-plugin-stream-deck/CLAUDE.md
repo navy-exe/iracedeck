@@ -1,4 +1,4 @@
-# @iracedeck/stream-deck-plugin
+# @iracedeck/iracing-plugin-stream-deck
 
 Core Stream Deck plugin for iRaceDeck. Registers actions from `@iracedeck/iracing-actions` with the Elgato Stream Deck via `@iracedeck/deck-adapter-elgato`.
 
@@ -239,7 +239,7 @@ For the global sections, also include `global-graphic-defaults` after `global-bo
 
 ### Files to modify
 
-#### 7. Register in Stream Deck plugin — `packages/stream-deck-plugin/src/plugin.ts`
+#### 7. Register in Stream Deck plugin — `packages/iracing-plugin-stream-deck/src/plugin.ts`
 
 Add import and registration. **Maintain alphabetical order** in both the import block and the registration block.
 
@@ -345,7 +345,7 @@ node scripts/generate-icon-defaults.mjs
 **Also update the actions reference** when adding, removing, or modifying actions:
 - `docs/reference/actions.json` — add/update the action entry with all modes
 - `.claude/skills/iracedeck-actions/SKILL.md` — update category overview and per-category tables
-- All plugin packages — registration in `plugin.ts` and manifest for both `stream-deck-plugin` and `mirabox-plugin`
+- All plugin packages — registration in `plugin.ts` and manifest for both `iracing-plugin-stream-deck` and `mirabox-plugin`
 
 ## Telemetry-Aware Icons
 

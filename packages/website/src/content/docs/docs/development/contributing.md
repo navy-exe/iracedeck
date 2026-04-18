@@ -19,7 +19,7 @@ Found a bug or have a feature idea? [Open an issue](https://github.com/niklam/ir
 3. Ensure the build passes (`pnpm build`)
 4. Submit a pull request with a clear description of what changed and why
 
-The project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages (e.g., `feat(stream-deck-plugin): add new action`, `fix(iracing-sdk): handle disconnection`).
+The project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages (e.g., `feat(iracing-plugin-stream-deck): add new action`, `fix(iracing-sdk): handle disconnection`).
 
 ## Community
 
