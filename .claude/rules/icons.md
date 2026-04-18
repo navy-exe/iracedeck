@@ -116,6 +116,17 @@ Icons can declare title fields as `"locked"` in their `<desc>` title metadata to
 - Supported lockable fields: `showTitle`, `showGraphics`, `bold`, `fontSize`, `position`, `customPosition`
 - Omitting `"locked"` or using `[]` means all title fields are globally overridable (backward compatible)
 
+### Never use a leading newline in title text
+
+Do not prefix `title.text` with `\n` to "push" the artwork upward — the empty leading line still counts as a full line in `calculateYPositions` / `computeGraphicArea`, which shrinks the available graphic area from the bottom and pushes the art up by ~11 px (the center of the available area moves from y=60.5 to y=49.7).
+
+```json
+{"title":{"text":"\nFUEL"}}     // wrong: phantom first line steals graphic height
+{"title":{"text":"FUEL"}}        // right: single-line title
+```
+
+Two-line titles are only appropriate when both lines carry visible text (e.g., `"VOL UP\nSPOTTER"`). If the artwork looks too high without the phantom line, adjust the artwork's y coordinates — don't compensate via the title.
+
 ### What stays fixed (never colorizable)
 
 - Semantic data colors: green (`#2ecc71`), red (`#e74c3c`), yellow (`#f39c12`), blue (`#3498db`)
