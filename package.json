@@ -33,7 +33,7 @@
     "unlink:stream-deck": "streamdeck unlink -d com.iracedeck.sd.core",
     "relink:stream-deck": "streamdeck unlink -d com.iracedeck.sd.core 2>NUL & streamdeck link .\\packages\\iracing-plugin-stream-deck\\com.iracedeck.sd.core.sdPlugin",
     "switch-test-env": "pnpm switch-test-env:stream-deck",
-    "switch-test-env:stream-deck": "pnpm unlink:stream-deck -d && pnpm install && pnpm build && pnpm link:stream-deck",
+    "switch-test-env:stream-deck": "pnpm install && pnpm build && pnpm relink:stream-deck",
     "telemetry-snapshot": "pnpm --filter @iracedeck/iracing-sdk telemetry-snapshot -- --include-session --output-dir=local",
     "watch:stream-deck": "pnpm --filter \"@iracedeck/iracing-plugin-stream-deck\" run watch",
     "release": "node scripts/release.mjs",
