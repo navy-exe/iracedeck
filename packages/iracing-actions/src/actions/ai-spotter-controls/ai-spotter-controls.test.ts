@@ -187,23 +187,23 @@ describe("AiSpotterControls", () => {
 
   describe("SPOTTER_TITLES", () => {
     it("should have correct first-line labels (subLabel) for all controls", () => {
-      expect(SPOTTER_TITLES["damage-report"]).toContain("REPORT");
-      expect(SPOTTER_TITLES["weather-report"]).toContain("REPORT");
-      expect(SPOTTER_TITLES["toggle-report-laps"]).toContain("REPORT");
-      expect(SPOTTER_TITLES["announce-leader"]).toContain("SPOTTER");
-      expect(SPOTTER_TITLES["louder"]).toContain("VOL UP");
-      expect(SPOTTER_TITLES["quieter"]).toContain("VOL DOWN");
-      expect(SPOTTER_TITLES["silence"]).toContain("MUTE");
+      expect(SPOTTER_TITLES["damage-report"].split("\n")[0]).toBe("REPORT");
+      expect(SPOTTER_TITLES["weather-report"].split("\n")[0]).toBe("REPORT");
+      expect(SPOTTER_TITLES["toggle-report-laps"].split("\n")[0]).toBe("REPORT");
+      expect(SPOTTER_TITLES["announce-leader"].split("\n")[0]).toBe("SPOTTER");
+      expect(SPOTTER_TITLES["louder"].split("\n")[0]).toBe("VOL UP");
+      expect(SPOTTER_TITLES["quieter"].split("\n")[0]).toBe("VOL DOWN");
+      expect(SPOTTER_TITLES["silence"].split("\n")[0]).toBe("MUTE");
     });
 
     it("should have correct second-line labels (mainLabel) for all controls", () => {
-      expect(SPOTTER_TITLES["damage-report"]).toContain("DAMAGE");
-      expect(SPOTTER_TITLES["weather-report"]).toContain("WEATHER");
-      expect(SPOTTER_TITLES["toggle-report-laps"]).toContain("LAPS");
-      expect(SPOTTER_TITLES["announce-leader"]).toContain("LEADER");
-      expect(SPOTTER_TITLES["louder"]).toContain("SPOTTER");
-      expect(SPOTTER_TITLES["quieter"]).toContain("SPOTTER");
-      expect(SPOTTER_TITLES["silence"]).toContain("SPOTTER");
+      expect(SPOTTER_TITLES["damage-report"].split("\n")[1]).toBe("DAMAGE");
+      expect(SPOTTER_TITLES["weather-report"].split("\n")[1]).toBe("WEATHER");
+      expect(SPOTTER_TITLES["toggle-report-laps"].split("\n")[1]).toBe("LAPS");
+      expect(SPOTTER_TITLES["announce-leader"].split("\n")[1]).toBe("LEADER");
+      expect(SPOTTER_TITLES["louder"].split("\n")[1]).toBe("SPOTTER");
+      expect(SPOTTER_TITLES["quieter"].split("\n")[1]).toBe("SPOTTER");
+      expect(SPOTTER_TITLES["silence"].split("\n")[1]).toBe("SPOTTER");
     });
   });
 
