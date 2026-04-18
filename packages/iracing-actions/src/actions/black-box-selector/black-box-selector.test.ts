@@ -230,17 +230,17 @@ describe("BlackBoxSelector", () => {
 
     it("should include correct labels for all direct black boxes", () => {
       const expectedTitleText: Record<string, string> = {
-        "lap-timing": "\nLAP TIMING",
-        standings: "\nSTANDINGS",
-        relative: "\nRELATIVE",
-        fuel: "\nFUEL",
-        tires: "\nTIRES",
-        "tire-info": "\nTIRE INFO",
-        "pit-stop": "\nPIT-STOP",
-        "in-car": "\nIN-CAR",
-        mirror: "\nGRAPHICS",
-        radio: "\nRADIO",
-        weather: "\nWEATHER",
+        "lap-timing": "LAP TIMING",
+        standings: "STANDINGS",
+        relative: "RELATIVE",
+        fuel: "FUEL",
+        tires: "TIRES",
+        "tire-info": "TIRE INFO",
+        "pit-stop": "PIT-STOP",
+        "in-car": "IN-CAR",
+        mirror: "GRAPHICS",
+        radio: "RADIO",
+        weather: "WEATHER",
       };
 
       for (const [blackBox, titleText] of Object.entries(expectedTitleText)) {

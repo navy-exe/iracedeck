@@ -50,20 +50,22 @@ const CYCLE_ICONS: Record<string, string> = {
 };
 
 /**
- * Title text for each black box type (format: "subLabel\nmainLabel")
+ * Title text for each black box type. Single-line — a leading newline
+ * would reserve a phantom first line in the title block and pull the
+ * artwork upward (see .claude/rules/icons.md).
  */
 const BLACK_BOX_TITLE_TEXT: Record<string, string> = {
-  "lap-timing": "\nLAP TIMING",
-  standings: "\nSTANDINGS",
-  relative: "\nRELATIVE",
-  fuel: "\nFUEL",
-  tires: "\nTIRES",
-  "tire-info": "\nTIRE INFO",
-  "pit-stop": "\nPIT-STOP",
-  "in-car": "\nIN-CAR",
-  mirror: "\nGRAPHICS",
-  radio: "\nRADIO",
-  weather: "\nWEATHER",
+  "lap-timing": "LAP TIMING",
+  standings: "STANDINGS",
+  relative: "RELATIVE",
+  fuel: "FUEL",
+  tires: "TIRES",
+  "tire-info": "TIRE INFO",
+  "pit-stop": "PIT-STOP",
+  "in-car": "IN-CAR",
+  mirror: "GRAPHICS",
+  radio: "RADIO",
+  weather: "WEATHER",
 };
 
 /**
@@ -133,7 +135,7 @@ export function generateBlackBoxSelectorSvg(settings: BlackBoxSelectorSettings):
     defaultTitle = "PREVIOUS";
   } else {
     iconSvg = DIRECT_ICONS[blackBox] || DIRECT_ICONS["lap-timing"];
-    defaultTitle = BLACK_BOX_TITLE_TEXT[blackBox] || "\nBLACK BOX";
+    defaultTitle = BLACK_BOX_TITLE_TEXT[blackBox] || "BLACK BOX";
   }
 
   const colors = resolveIconColors(iconSvg, getGlobalColors(), settings.colorOverrides);
