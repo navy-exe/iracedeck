@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"\nTIRES"},"border":{"color":"#5a5a5a"},"artworkBounds":{"x":15,"y":30,"width":114,"height":58}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a2a","textColor":"#ffffff"},"title":{"text":"TIRES"},"border":{"color":"#5a5a5a"},"artworkBounds":{"x":15,"y":15,"width":114,"height":58}}</desc>
 
-    <rect x="16" y="31" width="112" height="56" rx="6" fill="#2d2510" stroke="#4a3728" stroke-width="4"/>
-    <circle cx="56" cy="59" r="20" fill="none" stroke="#888888" stroke-width="4"/>
-    <circle cx="56" cy="59" r="10" fill="none" stroke="#888888" stroke-width="3"/>
-    <circle cx="56" cy="59" r="4" fill="#888888"/>
-    <text x="92" y="51" fill="#ffffff" font-family="Arial, sans-serif" font-size="10">FL</text>
-    <text x="92" y="67" fill="#2ecc71" font-family="Arial, sans-serif" font-size="12" font-weight="bold">98%</text>
-    <text x="92" y="81" fill="#888888" font-family="Arial, sans-serif" font-size="8">WEAR</text>
+    <rect x="16" y="16" width="112" height="56" rx="6" fill="#2d2510" stroke="#4a3728" stroke-width="4"/>
+    <circle cx="56" cy="44" r="20" fill="none" stroke="#888888" stroke-width="4"/>
+    <circle cx="56" cy="44" r="10" fill="none" stroke="#888888" stroke-width="3"/>
+    <circle cx="56" cy="44" r="4" fill="#888888"/>
+    <text x="92" y="36" fill="#ffffff" font-family="Arial, sans-serif" font-size="10">FL</text>
+    <text x="92" y="52" fill="#2ecc71" font-family="Arial, sans-serif" font-size="12" font-weight="bold">98%</text>
+    <text x="92" y="66" fill="#888888" font-family="Arial, sans-serif" font-size="8">WEAR</text>
 
 </svg>

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#55aa00","graphic2Color":"#ffffff"},"title":{"text":"TALK"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":38,"y":14,"width":68,"height":68}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a3a4a","textColor":"#ffffff","graphic1Color":"#55aa00","graphic2Color":"#ffffff"},"title":{"text":"TALK"},"border":{"color":"#5a6a7a"},"artworkBounds":{"x":37,"y":13,"width":70,"height":70}}</desc>
 
   <!-- Circle -->
   <circle cx="72" cy="48" r="34" fill="{{graphic1Color}}"/>

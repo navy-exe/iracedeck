@@ -230,26 +230,26 @@ describe("BlackBoxSelector", () => {
 
     it("should include correct labels for all direct black boxes", () => {
       const expectedTitleText: Record<string, string> = {
-        "lap-timing": "\nLAP TIMING",
-        standings: "\nSTANDINGS",
-        relative: "\nRELATIVE",
-        fuel: "\nFUEL",
-        tires: "\nTIRES",
-        "tire-info": "\nTIRE INFO",
-        "pit-stop": "\nPIT-STOP",
-        "in-car": "\nIN-CAR",
-        mirror: "\nGRAPHICS",
-        radio: "\nRADIO",
-        weather: "\nWEATHER",
+        "lap-timing": "LAP TIMING",
+        standings: "STANDINGS",
+        relative: "RELATIVE",
+        fuel: "FUEL",
+        tires: "TIRES",
+        "tire-info": "TIRE INFO",
+        "pit-stop": "PIT-STOP",
+        "in-car": "IN-CAR",
+        mirror: "GRAPHICS",
+        radio: "RADIO",
+        weather: "WEATHER",
       };
 
       for (const [blackBox, titleText] of Object.entries(expectedTitleText)) {
         const result = generateBlackBoxSelectorSvg({ mode: "direct", blackBox: blackBox as any });
         const decoded = decodeURIComponent(result);
 
-        // The main label should appear in the output
-        const mainLabel = titleText.split("\n").filter(Boolean)[0];
-        expect(decoded).toContain(mainLabel);
+        expect(decoded).toContain(titleText);
+        // Regression guard: catch anyone reintroducing a leading "\n" in BLACK_BOX_TITLE_TEXT.
+        expect(decoded).not.toContain(`\n${titleText}`);
       }
     });
   });

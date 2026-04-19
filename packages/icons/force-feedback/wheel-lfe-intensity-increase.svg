@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <desc>{"colors":{"backgroundColor":"#2a2a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"MORE INTENSE\nWHEEL LFE"},"border":{"color":"#5a5a7a"},"artworkBounds":{"x":28,"y":19,"width":96,"height":58}}</desc>
+  <desc>{"colors":{"backgroundColor":"#2a2a4a","textColor":"#ffffff","graphic1Color":"#ffffff"},"locked":["graphic1Color"],"title":{"text":"MORE INTENSE\nWHEEL LFE"},"border":{"color":"#5a5a7a"},"artworkBounds":{"x":33,"y":23,"width":92,"height":46}}</desc>
 
     <circle cx="56" cy="46" r="22" fill="none" stroke="{{graphic1Color}}" stroke-width="4"/>
     <circle cx="56" cy="46" r="7" fill="none" stroke="#888888" stroke-width="3"/>
