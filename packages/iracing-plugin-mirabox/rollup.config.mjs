@@ -15,6 +15,25 @@ const iconsPackagePath = path.resolve(__dirname, "../icons");
 const actionsPackagePath = path.resolve(__dirname, "../iracing-actions/src");
 const actionTemplatesDir = path.join(actionsPackagePath, "actions");
 const elgatoPluginPath = path.resolve(__dirname, "../iracing-plugin-stream-deck");
+const audioAssetsPath = path.resolve(__dirname, "../audio-assets");
+
+/**
+ * Rollup plugin to copy shared audio assets into the sdPlugin directory.
+ * Mirrors iracing-plugin-stream-deck so `audio-assets/` is the single source
+ * of truth for MP3s used by both plugins.
+ */
+function copyAudioAssetsPlugin(sdPlugin) {
+	return {
+		name: "copy-audio-assets",
+		generateBundle() {
+			const dest = path.join(sdPlugin, "assets", "audio");
+			if (existsSync(audioAssetsPath)) {
+				cpSync(audioAssetsPath, dest, { recursive: true, filter: (src) => !src.endsWith("package.json") });
+				this.info?.("Copied audio assets from @iracedeck/audio-assets");
+			}
+		},
+	};
+}
 
 /**
  * Deep-merge two plain objects. `override` keys win on collision. Nested
@@ -252,6 +271,8 @@ const config = {
 		}),
 		// Copy imgs/ from the Elgato plugin and PI browser assets from @iracedeck/pi-components
 		copyAssetsPlugin(sdPlugin),
+		// Copy shared audio assets from @iracedeck/audio-assets
+		copyAudioAssetsPlugin(sdPlugin),
 		{
 			name: "watch-externals",
 			buildStart: function () {

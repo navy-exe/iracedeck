@@ -5,10 +5,10 @@ Project-wide instructions and overview for iRaceDeck. See the `.claude/rules/` d
 Packages
 
 - `@iracedeck/logger`
-- `@iracedeck/iracing-native` — has its own `CLAUDE.md` documenting native keyboard functions
+- `@iracedeck/iracing-native` — has its own `CLAUDE.md` documenting native keyboard functions and the miniaudio audio engine
 - `@iracedeck/iracing-sdk`
 - `@iracedeck/icon-composer` — Standalone SVG icon assembly with zero dependencies. Contains all pure assembly functions (assembleIcon, resolveIconColors, resolveTitleSettings, resolveBorderSettings, resolveGraphicSettings, etc.). Re-exported by deck-core for backward compatibility.
-- `@iracedeck/deck-core` — Platform-agnostic base classes, types, and shared utilities (base actions, keyboard service, global settings, icon templates, etc.). Re-exports icon-composer and adds global settings readers.
+- `@iracedeck/deck-core` — Platform-agnostic base classes, types, and shared utilities (base actions, keyboard service, audio service, global settings, icon templates, etc.). Re-exports icon-composer and adds global settings readers.
 - `@iracedeck/deck-adapter-elgato` — Elgato Stream Deck adapter bridging the Elgato SDK to deck-core's `IDeckPlatformAdapter` interface; also provides `createSDLogger`
 - `@iracedeck/deck-adapter-mirabox` — Mirabox adapter bridging the VSD Craft WebSocket protocol to deck-core's `IDeckPlatformAdapter` interface
 - `@iracedeck/iracing-actions` — All action implementations; import from `@iracedeck/deck-core` (not `@elgato/streamdeck`). Each action lives in its own folder under `src/actions/<name>/` containing `<name>.ts`, `<name>.test.ts`, `<name>.ejs` (PI template), and `icon.svg`/`key.svg` (static icons). Shared template data lives in `src/actions/data/`. Plugin-global PI templates (e.g., `settings.ejs`) live in `src/actions/settings/`.

@@ -13,7 +13,12 @@
       "defines": ["NAPI_DISABLE_CPP_EXCEPTIONS"],
       "conditions": [
         ["OS=='win'", {
-          "libraries": ["user32.lib", "kernel32.lib", "winmm.lib"]
+          "libraries": ["user32.lib", "kernel32.lib", "ole32.lib"],
+          "msvs_settings": {
+            "VCCLCompilerTool": {
+              "DisableSpecificWarnings": ["4244", "4267", "4996"]
+            }
+          }
         }]
       ]
     }

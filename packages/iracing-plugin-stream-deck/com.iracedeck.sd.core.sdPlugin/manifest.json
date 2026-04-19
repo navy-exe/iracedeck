@@ -315,6 +315,23 @@
       ]
     },
     {
+      "Name": "Pit Engineer",
+      "UUID": "com.iracedeck.sd.core.pit-engineer",
+      "Icon": "imgs/actions/pit-engineer/icon",
+      "Tooltip": "Pit engineer with directional spotter, pit approach/exit alerts, and service reminders",
+      "PropertyInspectorPath": "ui/pit-engineer.html",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/pit-engineer/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 14
+        }
+      ]
+    },
+    {
       "Name": "Chat",
       "UUID": "com.iracedeck.sd.core.chat",
       "Icon": "imgs/actions/chat/icon",

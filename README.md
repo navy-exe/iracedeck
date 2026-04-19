@@ -26,7 +26,7 @@
 
 ## Features
 
-**30 actions** with **254 modes** across 8 categories, with Stream Deck+ dial rotation support on most modes:
+**31 actions** with **254+ modes** across 8 categories, with Stream Deck+ dial rotation support on most modes:
 
 | Category                | Actions | Modes | Examples                                                              |
 | ----------------------- | ------- | ----- | --------------------------------------------------------------------- |
@@ -35,16 +35,17 @@
 | **Cockpit & Interface** | 5       | 33    | Wipers, FFB, splits & reference, telemetry, UI toggles                |
 | **View & Camera**       | 5       | 87    | FOV, replay, camera controls, broadcast tools                         |
 | **Media**               | 1       | 7     | Video recording, screenshots                                          |
-| **Pit Service**         | 3       | 15    | Fuel, tires, compounds, tearoff, fast repair                          |
+| **Pit Service**         | 4       | 15    | Fuel, tires, compounds, tearoff, fast repair, pit engineer             |
 | **Car Setup**           | 7       | 44    | Brakes, chassis, aero, engine, fuel mix, hybrid/ERS, traction control |
 | **Communication**       | 2       | 34    | Chat, macros, whisper, reply, race admin commands                     |
 
 **Key highlights:**
 
 - Live telemetry at 4 Hz with automatic iRacing connection/reconnection
+- **Pit Engineer** with directional spotter, pit approach/exit alerts, flag callouts, overtake detection, and racing tips via multi-channel audio mixer (miniaudio)
 - All keyboard shortcuts are user-configurable via the Property Inspector
 - SDK-first design: uses iRacing broadcast commands where possible, keyboard simulation only as fallback
-- Native C++ addon for low-latency Win32 API access
+- Native C++ addon for low-latency Win32 API access (iRacing SDK, keyboard input, audio engine)
 
 ## Installation
 

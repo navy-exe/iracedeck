@@ -1,14 +1,19 @@
 import streamDeck from "@elgato/streamdeck";
 import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
 import {
+  getAudio,
   initAppMonitor,
+  initEngineStartupAnimation,
   initGlobalSettings,
+  initializeAudio,
   initializeBindingDispatcher,
   initializeKeyboard,
   initializeSDK,
   initializeSimHub,
   initPluginConfig,
+  onGlobalSettingsChange,
   type PluginConfig,
+  updateGlobalSettings,
 } from "@iracedeck/deck-core";
 import {
   AI_SPOTTER_CONTROLS_UUID,
@@ -37,7 +42,9 @@ import {
   LookDirection,
   MEDIA_CAPTURE_UUID,
   MediaCapture,
+  PIT_ENGINEER_UUID,
   PIT_QUICK_ACTIONS_UUID,
+  PitEngineer,
   PitQuickActions,
   RACE_ADMIN_UUID,
   RaceAdmin,
@@ -108,6 +115,37 @@ initializeKeyboard(
   (scanCodes) => native.sendScanKeyUp(scanCodes),
 );
 
+// Initialize audio engine for pit engineer voice playback
+initializeAudio(adapter.createLogger("Audio"), native);
+getAudio().init();
+
+// Publish audio device list and apply saved device selection
+let audioDeviceInitialized = false;
+let currentAudioDevice = -1;
+onGlobalSettingsChange((settings) => {
+  const s = settings as Record<string, unknown>;
+
+  // Publish device list for PI consumption (once, on first settings receipt)
+  if (!audioDeviceInitialized) {
+    const devices = getAudio().getAudioDevices();
+    updateGlobalSettings({ _audioDeviceList: JSON.stringify(devices) });
+  }
+
+  // Apply audio output device (on startup and when changed from PI)
+  const saved = s.audioOutputDevice;
+  const deviceIndex = saved !== undefined && saved !== null && saved !== "" ? Number(saved) : -1;
+
+  if (deviceIndex !== currentAudioDevice) {
+    currentAudioDevice = deviceIndex;
+
+    if (deviceIndex !== -1 || audioDeviceInitialized) {
+      getAudio().setAudioDevice(deviceIndex);
+    }
+  }
+
+  audioDeviceInitialized = true;
+});
+
 // Initialize window focus service for focusing iRacing before any action
 initWindowFocus(adapter.createLogger("WindowFocus"), () => native.focusIRacingWindow());
 
@@ -142,6 +180,7 @@ adapter.registerAction(FORCE_FEEDBACK_UUID, new ForceFeedback(adapter.createLogg
 adapter.registerAction(FUEL_SERVICE_UUID, new FuelService(adapter.createLogger("FuelService")));
 adapter.registerAction(LOOK_DIRECTION_UUID, new LookDirection(adapter.createLogger("LookDirection")));
 adapter.registerAction(MEDIA_CAPTURE_UUID, new MediaCapture(adapter.createLogger("MediaCapture")));
+adapter.registerAction(PIT_ENGINEER_UUID, new PitEngineer(adapter.createLogger("PitEngineer")));
 adapter.registerAction(PIT_QUICK_ACTIONS_UUID, new PitQuickActions(adapter.createLogger("PitQuickActions")));
 adapter.registerAction(RACE_ADMIN_UUID, new RaceAdmin(adapter.createLogger("RaceAdmin")));
 adapter.registerAction(REPLAY_CONTROL_UUID, new ReplayControl(adapter.createLogger("ReplayControl")));
@@ -171,6 +210,9 @@ initializeSimHub(adapter.createLogger("SimHub"));
 
 // Initialize binding dispatcher AFTER SimHub so isReady can check reachability
 initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
+
+// Initialize engine startup animation (after SDK, before connect)
+initEngineStartupAnimation(adapter.createLogger("EngineStartupAnimation"));
 
 // Initialize app monitor for iRacing process detection
 initAppMonitor(adapter, adapter.createLogger("AppMonitor"));

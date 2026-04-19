@@ -135,8 +135,10 @@ import { MY_ACTION_UUID, MyAction } from "@iracedeck/iracing-actions";
 import { ElgatoPlatformAdapter } from "@iracedeck/deck-adapter-elgato";
 import {
   focusIRacingIfEnabled,
+  getAudio,
   initAppMonitor,
   initGlobalSettings,
+  initializeAudio,
   initializeBindingDispatcher,
   initializeKeyboard,
   initializeSDK,
@@ -163,36 +165,41 @@ initializeKeyboard(
   (scanCodes) => native.sendScanKeyUp(scanCodes),      // release only (key release)
 );
 
-// 5. Initialize window focus service
+// 5. Initialize audio engine for pit engineer voice playback
+initializeAudio(adapter.createLogger("Audio"), native);
+getAudio().init();
+
+// 6. Initialize window focus service
 initWindowFocus(adapter.createLogger("WindowFocus"), () => native.focusIRacingWindow());
 
-// 6. Register focus-before-action listeners (BEFORE registering actions)
+// 7. Register focus-before-action listeners (BEFORE registering actions)
 adapter.onKeyDown(() => focusIRacingIfEnabled());
 adapter.onDialDown(() => focusIRacingIfEnabled());
 adapter.onDialRotate(() => focusIRacingIfEnabled());
 
-// 7. Register actions via the adapter (logger injected via constructor)
+// 8. Register actions via the adapter (logger injected via constructor)
 adapter.registerAction(MY_ACTION_UUID, new MyAction(adapter.createLogger("MyAction")));
 
-// 8. Initialize global settings BEFORE connect() - pass adapter!
+// 9. Initialize global settings BEFORE connect() - pass adapter!
 initGlobalSettings(adapter, adapter.createLogger("GlobalSettings"));
 
-// 9. Initialize SimHub service AFTER global settings (reads host/port from settings)
+// 10. Initialize SimHub service AFTER global settings (reads host/port from settings)
 initializeSimHub(adapter.createLogger("SimHub"));
 
-// 10. Initialize binding dispatcher AFTER global settings, keyboard, and SimHub
+// 11. Initialize binding dispatcher AFTER global settings, keyboard, and SimHub
 initializeBindingDispatcher(adapter.createLogger("BindingDispatcher"));
 
-// 11. Initialize app monitor BEFORE connect() - pass adapter!
+// 12. Initialize app monitor BEFORE connect() - pass adapter!
 initAppMonitor(adapter, adapter.createLogger("AppMonitor"));
 
-// 12. Connect LAST
+// 13. Connect LAST
 adapter.connect();
 ```
 
 **CRITICAL**:
 - Both `initGlobalSettings()` and `initAppMonitor()` take an `IDeckPlatformAdapter` (not `typeof StreamDeck`)
 - All init calls must be BEFORE `adapter.connect()` (handlers must register first)
+- `initializeAudio()` creates the audio service singleton; `getAudio().init()` starts the miniaudio engine. Both must be called before actions that use audio (e.g., Pit Engineer)
 - `initializeSimHub()` must come AFTER `initGlobalSettings()` (reads host/port from settings)
 - `initializeBindingDispatcher()` must come AFTER `initGlobalSettings()`, `initializeKeyboard()`, and `initializeSimHub()`
 - Actions are imported from `@iracedeck/iracing-actions` and registered via `adapter.registerAction(UUID, handler)`
