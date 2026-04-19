@@ -247,9 +247,9 @@ describe("BlackBoxSelector", () => {
         const result = generateBlackBoxSelectorSvg({ mode: "direct", blackBox: blackBox as any });
         const decoded = decodeURIComponent(result);
 
-        // The main label should appear in the output
-        const mainLabel = titleText.split("\n").filter(Boolean)[0];
-        expect(decoded).toContain(mainLabel);
+        expect(decoded).toContain(titleText);
+        // Regression guard: catch anyone reintroducing a leading "\n" in BLACK_BOX_TITLE_TEXT.
+        expect(decoded).not.toContain(`\n${titleText}`);
       }
     });
   });
